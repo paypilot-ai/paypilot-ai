@@ -1,31 +1,140 @@
-async function generateResponse() {
-  const text = document.getElementById("objection").value;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PayPilot AI</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f3f4f6; margin:0; padding:20px; color:#111827; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; margin-bottom:14px; }
+    input, textarea, select { width:100%; padding:12px; margin:8px 0 12px; border:1px solid #d1d5db; border-radius:8px; box-sizing:border-box; font-size:16px; }
+    button { background:#111827; color:#fff; border:none; border-radius:8px; padding:12px 14px; font-size:15px; }
+    .hidden { display:none; }
+    .small { color:#6b7280; font-size:12px; }
+    .history-item { border-top:1px solid #e5e7eb; padding-top:10px; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>PayPilot AI</h1>
+      <p class="small">Live supplier call assistant demo</p>
+    </div>
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer YOUR_API_KEY_HERE",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are a top payment enrollment expert. You confidently convert suppliers from checks to ACH or virtual card."
-        },
-        {
-          role: "user",
-          content: text
-        }
-      ]
-    })
-  });
+    <div class="card" id="loginCard">
+      <h3>Login</h3>
+      <input id="email" placeholder="Email" />
+      <input id="password" type="password" placeholder="Password" />
+      <button onclick="login()">Login</button>
+      <p class="small">Use: demo@paypilot.ai / demo123</p>
+    </div>
 
-  const data = await res.json();
+    <div id="app" class="hidden">
+      <div class="card">
+        <h3>Supplier</h3>
+        <p><strong>Company:</strong> Novacore Electrical</p>
+        <p><strong>Contact:</strong> Anthony King</p>
+      </div>
 
-  document.getElementById("response").textContent =
-    data.choices?.[0]?.message?.content || "Error generating response";
+      <div class="card">
+        <h3>Supplier Objection</h3>
+        <textarea id="objection" placeholder="Type what the supplier says..."></textarea>
+        <button onclick="generateResponse()">Generate Response</button>
+        <p id="response" style="margin-top:12px;">—</p>
+      </div>
 
-  document.getElementById("confidence").textContent = "AI Generated";
-}
+      <div class="card">
+        <h3>Outcome</h3>
+        <select id="outcome">
+          <option>Pending</option>
+          <option>Follow Up Needed</option>
+          <option>Converted</option>
+          <option>Rejected</option>
+        </select>
+        <button onclick="logCall()">Log Call</button>
+      </div>
+
+      <div class="card">
+        <h3>Call History</h3>
+        <div id="history"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function login() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (email === 'demo@paypilot.ai' && password === 'demo123') {
+        document.getElementById('loginCard').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        renderHistory();
+      } else {
+        alert('Wrong login');
+      }
+    }
+
+    function generateResponse() {
+      const text = document.getElementById('objection').value.toLowerCase();
+      let response = 'I understand. ACH can help speed up payment and reduce manual handling.';
+
+      if (text.includes('check')) {
+        response = 'Many suppliers move to ACH because it removes mail delays and deposits funds directly into the bank account.';
+      } else if (text.includes('fee')) {
+        response = 'I understand the concern. ACH avoids card fees and is often the easiest electronic option.';
+      } else if (text.includes('busy')) {
+        response = 'Understood. This only takes a moment, and I can keep it simple for you.';
+      }
+
+      document.getElementById('response').textContent = response;
+    }
+
+    function getHistory() {
+      return JSON.parse(localStorage.getItem('paypilot_history') || '[]');
+    }
+
+    function saveHistory(history) {
+      localStorage.setItem('paypilot_history', JSON.stringify(history));
+    }
+
+    function logCall() {
+      const objection = document.getElementById('objection').value.trim();
+      const outcome = document.getElementById('outcome').value;
+      const history = getHistory();
+
+      history.unshift({
+        objection: objection || '(none)',
+        outcome,
+        createdAt: new Date().toLocaleString()
+      });
+
+      saveHistory(history);
+      renderHistory();
+
+      document.getElementById('objection').value = '';
+      document.getElementById('response').textContent = '—';
+      document.getElementById('outcome').value = 'Pending';
+    }
+
+    function renderHistory() {
+      const history = getHistory();
+      const el = document.getElementById('history');
+
+      if (!history.length) {
+        el.innerHTML = '<p class="small">No calls logged yet.</p>';
+        return;
+      }
+
+      el.innerHTML = history.map(item => `
+        <div class="history-item">
+          <p><strong>Objection:</strong> ${item.objection}</p>
+          <p><strong>Outcome:</strong> ${item.outcome}</p>
+          <p class="small">${item.createdAt}</p>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
