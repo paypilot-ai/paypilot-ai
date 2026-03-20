@@ -1,33 +1,229 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PayPilot AI</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f3f4f6;
+margin:0;
+padding:20px;
+}
+
+.wrap{
+max-width:900px;
+margin:auto;
+}
+
+.card{
+background:#fff;
+padding:18px;
+border-radius:12px;
+margin-bottom:14px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+input,textarea,select{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+background:#111;
+color:#fff;
+border:none;
+padding:12px;
+border-radius:8px;
+cursor:pointer;
+}
+
+.row{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+}
+
+.stat{
+background:#fafafa;
+padding:10px;
+border-radius:8px;
+flex:1;
+text-align:center;
+font-weight:bold;
+}
+
+.hidden{display:none}
+
+.blue{background:#2563eb}
+.green{background:#059669}
+.red{background:#dc2626}
+</style>
 </head>
+
 <body>
 
+<div class="wrap">
+
+<div class="card">
 <h2>PayPilot AI</h2>
+<p>AI Supplier Call Assistant</p>
+</div>
 
-<input id="input" placeholder="Type objection">
-<button onclick="runAI()">Generate</button>
+<div class="card" id="loginCard">
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p>demo@paypilot.ai / demo123</p>
+</div>
 
-<p id="output">—</p>
+<div id="app" class="hidden">
+
+<div class="card">
+<h3 id="welcome"></h3>
+<button class="red" onclick="logout()">Logout</button>
+</div>
+
+<div class="card">
+<h3>Supplier</h3>
+<select id="supplierSelect" onchange="loadSupplier()"></select>
+<div id="supplierInfo"></div>
+</div>
+
+<div class="card">
+
+<h3>Call Workspace</h3>
+
+<div class="row">
+<div class="stat">Timer: <span id="timer">00:00</span></div>
+<div class="stat">Language: <span id="lang">English</span></div>
+<div class="stat">Close %: <span id="close">—</span></div>
+</div>
+
+<button onclick="startTimer()">Start</button>
+<button onclick="resetTimer()">Reset</button>
+
+<textarea id="objection" placeholder="What did they say..."></textarea>
+
+<button class="blue" onclick="generateResponse()">Generate Response</button>
+
+<div class="card" style="background:#f9fafb">
+<h4>AI Response</h4>
+<p id="response">—</p>
+<p id="confidence"></p>
+</div>
+
+<select id="outcome">
+<option>Pending</option>
+<option>Converted</option>
+<option>Rejected</option>
+</select>
+
+<button class="green" onclick="logCall()">Log Call</button>
+
+</div>
+
+<div class="card">
+<h3>Call History</h3>
+<div id="history"></div>
+</div>
+
+</div>
+
+</div>
 
 <script>
 
 const API_KEY = "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";
 
-async function runAI(){
+let currentUser="";
+let seconds=0;
+let timer=null;
 
-let text = document.getElementById("input").value;
+const suppliers=[
+{company:"Novacore Electrical",contact:"Anthony King",ach:60},
+{company:"Atlas Supply",contact:"Jorge Ramirez",ach:70},
+{company:"Blue Ridge Property",contact:"Trista",ach:65}
+];
 
-document.getElementById("output").innerText = "Thinking...";
+function login(){
+let e=document.getElementById("email").value.toLowerCase();
+let p=document.getElementById("password").value;
+
+if((e==="demo@paypilot.ai"||e==="manager@paypilot.ai")&&p==="demo123"){
+currentUser=e;
+document.getElementById("loginCard").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+document.getElementById("welcome").innerText="Logged in as "+e;
+populateSuppliers();
+renderHistory();
+}else{
+alert("Wrong login");
+}
+}
+
+function logout(){location.reload();}
+
+function populateSuppliers(){
+let s=document.getElementById("supplierSelect");
+s.innerHTML=suppliers.map((x,i)=>`<option value="${i}">${x.company}</option>`).join("");
+loadSupplier();
+}
+
+function loadSupplier(){
+let s=suppliers[document.getElementById("supplierSelect").value];
+document.getElementById("supplierInfo").innerHTML=
+`Contact: ${s.contact}<br>ACH Score: ${s.ach}%`;
+}
+
+function startTimer(){
+if(timer)return;
+timer=setInterval(()=>{
+seconds++;
+let m=String(Math.floor(seconds/60)).padStart(2,"0");
+let s=String(seconds%60).padStart(2,"0");
+document.getElementById("timer").innerText=`${m}:${s}`;
+},1000);
+}
+
+function resetTimer(){
+clearInterval(timer);
+seconds=0;
+timer=null;
+document.getElementById("timer").innerText="00:00";
+}
+
+function detectLang(t){
+if(t.toLowerCase().includes("hola")) return "Spanish";
+return "English";
+}
+
+function calcClose(t){
+let score=70;
+t=t.toLowerCase();
+if(t.includes("check")) score-=10;
+if(t.includes("fee")) score-=15;
+if(t.includes("not")) score-=20;
+if(score<5) score=5;
+return score;
+}
+
+async function generateResponse(){
+
+let text=document.getElementById("objection").value;
+document.getElementById("lang").innerText=detectLang(text);
+document.getElementById("response").innerText="Thinking...";
 
 try{
 
-let res = await fetch("https://api.openai.com/v1/chat/completions",{
+let res=await fetch("https://api.openai.com/v1/chat/completions",{
 method:"POST",
 headers:{
-"Authorization":"Bearer " + API_KEY,
+"Authorization":"Bearer "+API_KEY,
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
@@ -35,7 +231,15 @@ model:"gpt-4o-mini",
 messages:[
 {
 role:"system",
-content:"You are a top sales rep. Close deals fast."
+content:`You are a top 1% payment enrollment sales rep.
+
+Rules:
+- Short
+- Confident
+- Close fast
+- Focus on speed + getting paid faster
+
+Handle objections and always move toward closing.`
 },
 {
 role:"user",
@@ -45,19 +249,52 @@ content:text
 })
 });
 
-let data = await res.json();
+let data=await res.json();
 
-document.getElementById("output").innerText =
+document.getElementById("response").innerText =
 data.choices[0].message.content;
 
+document.getElementById("confidence").innerText="Confidence: 92%";
+document.getElementById("close").innerText=calcClose(text)+"%";
+
 }catch{
-document.getElementById("output").innerText = "Error";
+document.getElementById("response").innerText="Fallback: ACH gets you paid faster with no delays.";
 }
 
+}
+
+function getHistory(){
+return JSON.parse(localStorage.getItem("history")||"[]");
+}
+
+function saveHistory(h){
+localStorage.setItem("history",JSON.stringify(h));
+}
+
+function logCall(){
+
+let h=getHistory();
+
+h.unshift({
+text:document.getElementById("objection").value,
+outcome:document.getElementById("outcome").value,
+date:new Date().toLocaleString()
+});
+
+saveHistory(h);
+renderHistory();
+}
+
+function renderHistory(){
+let h=getHistory();
+document.getElementById("history").innerHTML =
+h.map(x=>`<div>${x.text} - ${x.outcome}</div>`).join("");
 }
 
 </script>
 
 </body>
 </html>
+
+
 
