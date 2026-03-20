@@ -5,124 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PayPilot AI</title>
 <style>
-body{
-margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:#f3f4f6;
-color:#111827;
-}
-.wrap{
-max-width:1000px;
-margin:0 auto;
-padding:16px;
-}
-.card{
-background:#fff;
-border:1px solid #e5e7eb;
-border-radius:14px;
-padding:18px;
-margin-bottom:14px;
-box-shadow:0 2px 10px rgba(0,0,0,.06);
-}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f4f6;color:#111827}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
 h1,h2,h3,p{margin:0 0 10px}
 .muted{color:#6b7280}
-input, textarea, select{
-width:100%;
-padding:12px;
-margin-top:8px;
-margin-bottom:12px;
-border:1px solid #d1d5db;
-border-radius:10px;
-font-size:16px;
-background:#fff;
-box-sizing:border-box;
-}
-textarea{min-height:110px; resize:vertical;}
-button{
-border:none;
-border-radius:10px;
-padding:12px 14px;
-font-size:15px;
-font-weight:600;
-cursor:pointer;
-background:#111827;
-color:#fff;
-}
-button.secondary{
-background:#fff;
-color:#111827;
-border:1px solid #e5e7eb;
-}
+input,textarea,select{width:100%;padding:12px;margin-top:8px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;background:#fff;box-sizing:border-box}
+textarea{min-height:110px;resize:vertical}
+button{border:none;border-radius:10px;padding:12px 14px;font-size:15px;font-weight:600;cursor:pointer;background:#111827;color:#fff}
+button.secondary{background:#fff;color:#111827;border:1px solid #e5e7eb}
 button.blue{background:#2563eb}
 button.green{background:#059669}
 button.amber{background:#d97706}
 button.red{background:#dc2626}
 .hidden{display:none}
-.row{
-display:grid;
-gap:12px;
-}
+.row{display:grid;gap:12px}
 .row-2{grid-template-columns:1fr 1fr}
 .row-4{grid-template-columns:1fr 1fr 1fr 1fr}
-.top-actions{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-}
-.pill{
-display:inline-block;
-padding:6px 10px;
-border-radius:999px;
-font-size:12px;
-font-weight:700;
-background:#eef2ff;
-color:#3730a3;
-margin-right:6px;
-margin-bottom:6px;
-}
-.stat{
-padding:14px;
-border:1px solid #e5e7eb;
-border-radius:12px;
-background:#fff;
-}
-.stat .label{
-color:#6b7280;
-font-size:12px;
-margin-bottom:6px;
-}
-.stat .value{
-font-size:26px;
-font-weight:800;
-}
-.history-item{
-border-top:1px solid #e5e7eb;
-padding-top:10px;
-margin-top:10px;
-}
-.small{
-font-size:12px;
-color:#6b7280;
-}
-.tag{
-display:inline-block;
-padding:6px 10px;
-border-radius:999px;
-font-size:12px;
-font-weight:700;
-margin-right:6px;
-margin-bottom:6px;
-background:#f3f4f6;
-}
+.top-actions{display:flex;gap:10px;flex-wrap:wrap}
+.pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#eef2ff;color:#3730a3;margin-right:6px;margin-bottom:6px}
+.stat{padding:14px;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
+.stat .label{color:#6b7280;font-size:12px;margin-bottom:6px}
+.stat .value{font-size:26px;font-weight:800}
+.history-item{border-top:1px solid #e5e7eb;padding-top:10px;margin-top:10px}
+.small{font-size:12px;color:#6b7280}
+.tag{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-right:6px;margin-bottom:6px;background:#f3f4f6}
 .hot{background:#dcfce7;color:#166534}
 .warm{background:#fef3c7;color:#92400e}
 .cold{background:#fee2e2;color:#991b1b}
-.soft{
-background:#f9fafb;
-}
-@media (max-width:800px){
-.row-2,.row-4{grid-template-columns:1fr}
-}
+.soft{background:#f9fafb}
+@media (max-width:800px){.row-2,.row-4{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -177,7 +89,7 @@ background:#f9fafb;
 </div>
 
 <div class="card">
-<h3>Call Workspace</h3>
+<h3>Live Call Workspace</h3>
 
 <div class="row row-4">
 <div class="stat">
@@ -193,8 +105,8 @@ background:#f9fafb;
 <div class="value" style="font-size:20px" id="paymentDisplay">ACH</div>
 </div>
 <div class="stat">
-<div class="label">Close %</div>
-<div class="value" style="font-size:20px" id="closeProbabilityValue">—</div>
+<div class="label">Voice Status</div>
+<div class="value" style="font-size:20px" id="voiceStatus">Idle</div>
 </div>
 </div>
 
@@ -204,9 +116,11 @@ background:#f9fafb;
 <button class="secondary" onclick="resetTimer()">Reset</button>
 <button class="secondary" onclick="toggleTranslate()" id="translateBtn">Translation Off</button>
 <button class="secondary" id="liveModeBtn" onclick="toggleLiveMode()">Live Mode On</button>
+<button class="blue" onclick="startVoiceCapture()">Start Mic</button>
+<button class="secondary" onclick="stopVoiceCapture()">Stop Mic</button>
 </div>
 
-<textarea id="objection" placeholder="Type what the supplier says..."></textarea>
+<textarea id="objection" placeholder="Type what the supplier says or use the microphone..."></textarea>
 
 <div id="translationBox" class="card hidden" style="background:#eff6ff;">
 <h3>Live Translation</h3>
@@ -217,6 +131,7 @@ background:#f9fafb;
 <div class="top-actions">
 <button class="blue" onclick="generateResponse()">Generate Response</button>
 <button class="secondary" onclick="copyResponse()">Copy Response</button>
+<button class="secondary" onclick="copyTranslatedReply()">Copy Translated Reply</button>
 </div>
 
 <div class="card soft" style="margin-top:12px;">
@@ -314,36 +229,9 @@ const USE_REAL_AI = true;
 const OPENAI_API_KEY = "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";
 
 const suppliers = [
-{
-company: "Novacore Electrical",
-contact: "Anthony King",
-email: "anthony@novacore.com",
-phone: "919-555-0198",
-industry: "Electrical",
-avgInvoice: "$9,200",
-achScore: 58,
-vccScore: 33
-},
-{
-company: "Atlas Industrial Supply",
-contact: "Jorge Ramirez",
-email: "jorge@atlasindustrial.com",
-phone: "704-555-0184",
-industry: "Industrial",
-avgInvoice: "$6,200",
-achScore: 74,
-vccScore: 18
-},
-{
-company: "Blue Ridge Property Services",
-contact: "Trista Jamieson",
-email: "trista@blueridgeps.com",
-phone: "980-555-0128",
-industry: "Property",
-avgInvoice: "$4,100",
-achScore: 69,
-vccScore: 22
-}
+{ company:"Novacore Electrical", contact:"Anthony King", email:"anthony@novacore.com", phone:"919-555-0198", industry:"Electrical", avgInvoice:"$9,200", achScore:58, vccScore:33 },
+{ company:"Atlas Industrial Supply", contact:"Jorge Ramirez", email:"jorge@atlasindustrial.com", phone:"704-555-0184", industry:"Industrial", avgInvoice:"$6,200", achScore:74, vccScore:18 },
+{ company:"Blue Ridge Property Services", contact:"Trista Jamieson", email:"trista@blueridgeps.com", phone:"980-555-0128", industry:"Property", avgInvoice:"$4,100", achScore:69, vccScore:22 }
 ];
 
 let currentUser = "";
@@ -353,23 +241,21 @@ let translateOn = false;
 let liveMode = true;
 let typingTimer = null;
 let requestCounter = 0;
+let recognition = null;
 
 function getHistory() {
-return JSON.parse(localStorage.getItem("paypilot_history_hybrid") || "[]");
+return JSON.parse(localStorage.getItem("paypilot_voice_history") || "[]");
 }
 
 function saveHistory(data) {
-localStorage.setItem("paypilot_history_hybrid", JSON.stringify(data));
+localStorage.setItem("paypilot_voice_history", JSON.stringify(data));
 }
 
 function login() {
 const email = document.getElementById("email").value.trim().toLowerCase();
 const password = document.getElementById("password").value.trim();
 
-if (
-(email === "demo@paypilot.ai" || email === "manager@paypilot.ai") &&
-password === "demo123"
-) {
+if ((email === "demo@paypilot.ai" || email === "manager@paypilot.ai") && password === "demo123") {
 currentUser = email === "manager@paypilot.ai" ? "Manager" : "Sean";
 document.getElementById("loginCard").classList.add("hidden");
 document.getElementById("app").classList.remove("hidden");
@@ -459,6 +345,59 @@ document.getElementById("liveModeBtn").textContent = liveMode ? "Live Mode On" :
 document.getElementById("liveStatus").textContent = liveMode ? "Live Status: Waiting" : "Live Status: Manual";
 }
 
+function startVoiceCapture() {
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SpeechRecognition) {
+alert("Voice input is not supported in this browser.");
+return;
+}
+
+if (recognition) {
+recognition.stop();
+}
+
+recognition = new SpeechRecognition();
+recognition.continuous = true;
+recognition.interimResults = true;
+recognition.lang = "en-US";
+
+recognition.onstart = () => {
+document.getElementById("voiceStatus").textContent = "Listening";
+document.getElementById("liveStatus").textContent = "Live Status: Listening";
+};
+
+recognition.onerror = () => {
+document.getElementById("voiceStatus").textContent = "Error";
+};
+
+recognition.onend = () => {
+document.getElementById("voiceStatus").textContent = "Idle";
+};
+
+recognition.onresult = (event) => {
+let transcript = "";
+for (let i = event.resultIndex; i < event.results.length; i++) {
+transcript += event.results[i][0].transcript + " ";
+}
+transcript = transcript.trim();
+document.getElementById("objection").value = transcript;
+updateTranslation();
+updateGeneratedBlocks();
+
+clearTimeout(typingTimer);
+typingTimer = setTimeout(() => {
+generateResponse();
+}, 500);
+};
+
+recognition.start();
+}
+
+function stopVoiceCapture() {
+if (recognition) recognition.stop();
+document.getElementById("voiceStatus").textContent = "Idle";
+}
+
 function detectLanguage(text) {
 const t = text.toLowerCase();
 if (t.includes("hola") || t.includes("cheques") || t.includes("tarjeta") || t.includes("gracias") || t.includes("solo aceptamos")) return "Spanish";
@@ -499,7 +438,6 @@ document.getElementById("translatedReply").textContent = reply;
 function calcCloseProbability(text) {
 let score = 65;
 const t = text.toLowerCase();
-
 if (t.includes("check") || t.includes("checks") || t.includes("cheques")) score -= 10;
 if (t.includes("fee") || t.includes("fees") || t.includes("tarifas")) score -= 15;
 if (t.includes("busy") || t.includes("later")) score -= 8;
@@ -509,7 +447,6 @@ if (t.includes("yes")) score += 20;
 if (t.includes("interested")) score += 15;
 if (t.includes("how much")) score -= 5;
 if (t.includes("500")) score -= 3;
-
 if (score < 5) score = 5;
 if (score > 95) score = 95;
 return score;
@@ -557,41 +494,28 @@ return "Send follow-up email";
 
 function fallbackRebuttal(text, supplier) {
 const t = text.toLowerCase();
-const score = calcCloseProbability(text);
-const strategy = strategyType(text, score);
 
 if (t.includes("check") || t.includes("checks") || t.includes("cheques")) {
 return "I hear you. The only issue with checks is the delay and risk that comes with mailing and depositing them. ACH gets the money straight into your account faster, and if it makes sense, we can get that handled in just a couple minutes.";
 }
-
 if (t.includes("fee") || t.includes("fees") || t.includes("tarifas")) {
 return "I get that. That’s exactly why ACH is usually the better fit, because it keeps things electronic without creating card fee concerns. The bigger win is getting paid faster and cutting out the check delay.";
 }
-
-if (t.includes("how much") || t.includes("500")) {
-return "That’s fair. Even on a smaller payment, the value is still in speed, security, and not having to deal with check handling. It keeps the process cleaner now and easier on future payments too.";
-}
-
 if (t.includes("busy") || t.includes("later")) {
 return "Understood. This is actually quick, and if we handle it now you do not have to keep dealing with paper checks later. We can keep it simple and get through the basic setup fast.";
 }
-
 if (t.includes("accountant") || t.includes("contable")) {
 return "That makes sense. I can absolutely send the details over to accounting, but the setup itself is straightforward and only takes a few minutes. If you want, we can get the easy part done now so nothing gets delayed.";
 }
-
 if (t.includes("card") || t.includes("cards") || t.includes("tarjeta")) {
 return "That is completely fine. If card is not the right fit, ACH is usually the easiest option because it is secure, direct, and faster than waiting on checks.";
 }
-
+if (t.includes("500")) {
+return "If the payment is around $500, the bigger issue usually is not the amount, it is speed and reliability. Electronic payment still helps you avoid delays and manual handling, and it keeps the process cleaner going forward.";
+}
 if (t.includes("not interested")) {
 return "I understand. A lot of suppliers say that at first until they realize this is really about getting paid faster and more securely. If we take two minutes now, you are set up and you do not have to think about it again.";
 }
-
-if (strategy === "Push Next Step") {
-return `This looks like a strong fit for ${supplier.company}. ACH would keep payments moving faster and reduce manual handling, so if you’re open to it, we can get the next step handled now.`;
-}
-
 return `Based on what ${supplier.company} shared, I would position ACH first because it simplifies payment delivery, reduces manual handling, and helps them get paid faster.`;
 }
 
@@ -645,15 +569,6 @@ Rules:
 - reframe it based on value
 - close softly with a next step
 
-Available strategy types:
-- Reframe Value
-- Reduce Risk
-- Push Next Step
-- Keep Momentum
-- Lower Friction
-- Slow Nurture
-- Hybrid Close
-
 Current objection tag: ${tag}
 Current strategy: ${strategy}
 Lead heat: ${heat}
@@ -701,6 +616,16 @@ updateGeneratedBlocks();
 function copyResponse() {
 navigator.clipboard.writeText(document.getElementById("response").textContent);
 alert("Response copied");
+}
+
+function copyTranslatedReply() {
+const txt = document.getElementById("translatedReply").textContent;
+if (!txt || txt === "—") {
+alert("No translated reply yet");
+return;
+}
+navigator.clipboard.writeText(txt);
+alert("Translated reply copied");
 }
 
 function updateGeneratedBlocks() {
@@ -873,6 +798,8 @@ updateGeneratedBlocks();
 </script>
 </body>
 </html>
+
+
 
 
 
