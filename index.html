@@ -37,7 +37,7 @@ font-size:16px;
 background:#fff;
 box-sizing:border-box;
 }
-textarea{min-height:100px; resize:vertical;}
+textarea{min-height:110px; resize:vertical;}
 button{
 border:none;
 border-radius:10px;
@@ -103,6 +103,9 @@ margin-top:10px;
 .small{
 font-size:12px;
 color:#6b7280;
+}
+.soft{
+background:#f9fafb;
 }
 @media (max-width:800px){
 .row-2,.row-4{grid-template-columns:1fr}
@@ -203,7 +206,7 @@ color:#6b7280;
 <button class="secondary" onclick="copyResponse()">Copy Response</button>
 </div>
 
-<div class="card" style="background:#f9fafb; margin-top:12px;">
+<div class="card soft" style="margin-top:12px;">
 <h3>AI Response</h3>
 <p id="response">—</p>
 <p class="small" id="confidence">Confidence: —</p>
@@ -293,7 +296,7 @@ color:#6b7280;
 
 <script>
 const USE_REAL_AI = true;
-const OPENAI_API_KEY = "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";
+const OPENAI_API_KEY = "YOUR_API_KEY_HERE";
 
 const suppliers = [
 {
@@ -383,6 +386,421 @@ renderManager();
 
 function populateSuppliers() {
 const select = document.getElementById("supplierSelect");
-select.innerHTML = suppliers.map((s, i) => `<option value="${i}">${
+select.innerHTML = suppliers.map((s, i) => `<option value="${i}">${s.company}</option>`).join("");
+}
+
+function loadSupplier() {
+const s = suppliers[document.getElementById("supplierSelect").value || 0];
+document.getElementById("supplierInfo").innerHTML = `
+<p><strong>Contact:</strong> ${s.contact}</p>
+<p><strong>Email:</strong> ${s.email}</p>
+<p><strong>Phone:</strong> ${s.phone}</p>
+<p><strong>Industry:</strong> ${s.industry}</p>
+<p><strong>Avg Invoice:</strong> ${s.avgInvoice}</p>
+<p>
+<span class="pill">ACH ${s.achScore}%</span>
+<span class="pill">VCC ${s.vccScore}%</span>
+</p>
+`;
+document.getElementById("paymentDisplay").textContent = s.achScore >= s.vccScore ? "ACH" : "Virtual Card";
+updateGeneratedBlocks();
+}
+
+function startTimer() {
+if (timer) return;
+timer = setInterval(() => {
+seconds++;
+renderTimer();
+}, 1000);
+}
+
+function pauseTimer() {
+clearInterval(timer);
+timer = null;
+}
+
+function resetTimer() {
+pauseTimer();
+seconds = 0;
+renderTimer();
+}
+
+function renderTimer() {
+const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+const secs = String(seconds % 60).padStart(2, "0");
+document.getElementById("timerDisplay").textContent = `${mins}:${secs}`;
+}
+
+function toggleTranslate() {
+translateOn = !translateOn;
+document.getElementById("translateBtn").textContent = translateOn ? "Translation On" : "Translation Off";
+document.getElementById("translationBox").classList.toggle("hidden", !translateOn);
+updateTranslation();
+}
+
+function toggleLiveMode() {
+liveMode = !liveMode;
+document.getElementById("liveModeBtn").textContent = liveMode ? "Live Mode On" : "Live Mode Off";
+document.getElementById("liveStatus").textContent = liveMode ? "Live Status: Waiting" : "Live Status: Manual";
+}
+
+function detectLanguage(text) {
+const t = text.toLowerCase();
+if (t.includes("hola") || t.includes("cheques") || t.includes("tarjeta") || t.includes("gracias") || t.includes("solo aceptamos")) return "Spanish";
+if (t.includes("bonjour") || t.includes("chèques")) return "French";
+if (t.includes("hallo")) return "German";
+return "English";
+}
+
+function updateTranslation() {
+const text = document.getElementById("objection").value.trim();
+const lang = detectLanguage(text);
+document.getElementById("languageDisplay").textContent = lang;
+
+if (!translateOn) return;
+
+let english = text || "—";
+let reply = "—";
+
+if (lang === "Spanish") {
+english = text
+.replace(/solo aceptamos cheques/gi, "we only accept checks")
+.replace(/no quiero pagar tarifas/gi, "i do not want to pay fees")
+.replace(/no aceptamos tarjetas/gi, "we do not accept cards");
+reply = "Entiendo. ACH deposita los fondos directamente en su cuenta bancaria y evita retrasos por correo.";
+} else if (lang === "French") {
+english = text.replace(/nous acceptons seulement les chèques/gi, "we only accept checks");
+reply = "Je comprends. L’ACH dépose les fonds directement sur votre compte bancaire et évite les retards postaux.";
+} else if (lang === "German") {
+reply = "Ich verstehe. ACH überweist das Geld direkt auf Ihr Bankkonto und vermeidet Postverzögerungen.";
+} else {
+reply = "I understand. ACH deposits funds directly into your bank account and avoids mail delays.";
+}
+
+document.getElementById("translatedEnglish").textContent = english || "—";
+document.getElementById("translatedReply").textContent = reply;
+}
+
+function calcCloseProbability(text) {
+let score = 65;
+const t = text.toLowerCase();
+if (t.includes("check") || t.includes("checks") || t.includes("cheques")) score -= 10;
+if (t.includes("fee") || t.includes("fees") || t.includes("tarifas")) score -= 15;
+if (t.includes("busy") || t.includes("later")) score -= 5;
+if (t.includes("accountant") || t.includes("contable")) score -= 8;
+if (t.includes("yes")) score += 20;
+if (t.includes("interested")) score += 15;
+if (score < 5) score = 5;
+if (score > 95) score = 95;
+return score;
+}
+
+function objectionTag(text) {
+const t = text.toLowerCase();
+if (t.includes("check") || t.includes("checks") || t.includes("cheques")) return "Payment Method";
+if (t.includes("fee") || t.includes("fees") || t.includes("tarifas")) return "Cost";
+if (t.includes("later") || t.includes("busy")) return "Timing";
+if (t.includes("not interested")) return "Rejection";
+if (t.includes("accountant") || t.includes("contable")) return "Accounting";
+if (t.includes("card") || t.includes("cards") || t.includes("tarjeta")) return "Card Rejection";
+return "General";
+}
+
+function nextBestAction(text, outcome) {
+const tag = objectionTag(text);
+if (outcome === "Converted") return "Send enrollment link";
+if (outcome === "Rejected") return "Close supplier";
+if (tag === "Payment Method") return "Send ACH benefits email";
+if (tag === "Cost") return "Position ACH to avoid card fees";
+if (tag === "Timing") return "Schedule follow-up in 3 days";
+if (tag === "Accounting") return "Send details to accounting contact";
+return "Send follow-up email";
+}
+
+function fallbackRebuttal(text, supplier) {
+const t = text.toLowerCase();
+
+if (t.includes("check") || t.includes("checks") || t.includes("cheques")) {
+return "I understand. The only issue with checks is the delay and risk of something getting held up in the mail. ACH gets the money straight into your account faster, and we can get that knocked out in just a couple minutes.";
+}
+
+if (t.includes("fee") || t.includes("fees") || t.includes("tarifas")) {
+return "I get that. That’s exactly why ACH is usually the better fit, because it keeps things electronic without creating card fee concerns. The main win is getting paid faster without dealing with paper checks.";
+}
+
+if (t.includes("busy") || t.includes("later")) {
+return "Understood. This is actually quick, and if we handle it now you do not have to keep dealing with check delays on future payments. We can keep it simple and get through it fast.";
+}
+
+if (t.includes("accountant") || t.includes("contable")) {
+return "That makes sense. I can absolutely send the details over to accounting, but the setup itself is straightforward and only takes a few minutes. If you want, we can get the basic part done now so nothing is delayed.";
+}
+
+if (t.includes("card") || t.includes("cards") || t.includes("tarjeta")) {
+return "That is completely fine. If card is not the right fit, ACH is usually the easiest option because it is secure, direct, and faster than waiting on checks.";
+}
+
+if (t.includes("500")) {
+return "If the payment is around $500, the bigger issue usually is not the amount, it is speed and reliability. Electronic payment still helps you avoid delays and manual handling, and it keeps the process cleaner going forward.";
+}
+
+if (t.includes("not interested")) {
+return "I understand. A lot of suppliers say that at first until they realize this is really about getting paid faster and more securely. If we take two minutes now, you are set up and do not have to think about it again.";
+}
+
+return `Based on what ${supplier.company} shared, I would position ACH first because it simplifies payment delivery, reduces manual handling, and helps them get paid faster.`;
+}
+
+async function generateResponse() {
+const text = document.getElementById("objection").value.trim();
+const supplier = suppliers[document.getElementById("supplierSelect").value || 0];
+const thisRequest = ++requestCounter;
+
+document.getElementById("response").textContent = "Thinking...";
+document.getElementById("confidence").textContent = "Confidence: —";
+document.getElementById("closeProbabilityValue").textContent = "—";
+document.getElementById("objectionTag").textContent = "Objection Tag: —";
+document.getElementById("nextBestAction").textContent = "Next Best Action: —";
+document.getElementById("liveStatus").textContent = "Live Status: Thinking";
+
+let response = "";
+let confidence = 0;
+
+if (USE_REAL_AI && OPENAI_API_KEY && OPENAI_API_KEY !== "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") {
+try {
+const res = await fetch("https://api.openai.com/v1/chat/completions", {
+method: "POST",
+headers: {
+"Authorization": "Bearer " + OPENAI_API_KEY,
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+model: "gpt-4o-mini",
+messages: [
+{
+role: "system",
+content: `You are a top 1% payment enrollment rep.
+
+Your goal is to get suppliers to accept ACH or virtual card.
+
+Rules:
+- Keep responses short: 2 to 4 sentences
+- Sound natural, confident, and persuasive
+- Do not sound robotic or like support
+- Focus on speed, convenience, security, and getting paid faster
+- Briefly acknowledge the objection, reframe it, then move toward a close
+- End with a soft close when possible
+
+If the message is in Spanish, answer in both English and Spanish.`
+},
+{
+role: "user",
+content: text
+}
+]
+})
+});
+
+const data = await res.json();
+response = data.choices?.[0]?.message?.content || "";
+confidence = 95;
+} catch (err) {
+response = "";
+}
+}
+
+if (!response) {
+response = fallbackRebuttal(text, supplier);
+confidence = 88;
+}
+
+if (thisRequest !== requestCounter) return;
+
+const tag = objectionTag(text);
+const score = calcCloseProbability(text);
+const action = nextBestAction(text, document.getElementById("outcome").value);
+
+document.getElementById("response").textContent = response;
+document.getElementById("confidence").textContent = "Confidence: " + confidence + "%";
+document.getElementById("closeProbabilityValue").textContent = score + "%";
+document.getElementById("objectionTag").textContent = "Objection Tag: " + tag;
+document.getElementById("nextBestAction").textContent = "Next Best Action: " + action;
+document.getElementById("liveStatus").textContent = "Live Status: Updated";
+
+updateTranslation();
+updateGeneratedBlocks();
+}
+
+function copyResponse() {
+navigator.clipboard.writeText(document.getElementById("response").textContent);
+alert("Response copied");
+}
+
+function updateGeneratedBlocks() {
+const supplier = suppliers[document.getElementById("supplierSelect").value || 0];
+const outcome = document.getElementById("outcome").value;
+const payment = supplier.achScore >= supplier.vccScore ? "ACH" : "Virtual Card";
+
+document.getElementById("crmNote").textContent =
+`${supplier.company}: Discussed ${payment} as recommended payment option. Outcome: ${outcome}. Contact: ${supplier.contact}.`;
+
+document.getElementById("followupEmail").textContent =
+`Hi ${supplier.contact}, Thank you for speaking with me today. Based on our conversation, ${payment} may be the best fit for your payment process. Please let me know if you'd like the next steps. Thank you, ${currentUser || "Sean"}.`;
+}
+
+function logCall() {
+const supplier = suppliers[document.getElementById("supplierSelect").value || 0];
+const objection = document.getElementById("objection").value.trim();
+const response = document.getElementById("response").textContent.trim();
+const outcome = document.getElementById("outcome").value;
+const enrollment = document.getElementById("enrollment").value;
+const payment = document.getElementById("paymentDisplay").textContent;
+const action = nextBestAction(objection, outcome);
+
+const history = getHistory();
+history.unshift({
+supplier: supplier.company,
+contact: supplier.contact,
+rep: currentUser || "Sean",
+objection,
+response,
+outcome,
+enrollment,
+payment,
+action,
+tag: objectionTag(objection),
+duration: document.getElementById("timerDisplay").textContent,
+createdAt: new Date().toLocaleString()
+});
+saveHistory(history);
+
+renderHistory();
+renderManager();
+updateQuickStats();
+updateGeneratedBlocks();
+alert("Call logged");
+}
+
+function markEnrollmentComplete() {
+document.getElementById("enrollment").value = "Completed";
+document.getElementById("outcome").value = "Converted";
+updateGeneratedBlocks();
+alert("Enrollment marked complete");
+}
+
+function renderHistory() {
+const history = getHistory();
+const el = document.getElementById("history");
+
+if (!history.length) {
+el.innerHTML = `<p class="muted">No calls logged yet.</p>`;
+return;
+}
+
+el.innerHTML = history.map(item => `
+<div class="history-item">
+<p><strong>${item.supplier}</strong> — ${item.outcome}</p>
+<p class="small">${item.createdAt} • ${item.rep} • ${item.payment} • ${item.duration}</p>
+<p><strong>Objection:</strong> ${item.objection || "—"}</p>
+<p class="small">Tag: ${item.tag} • Next: ${item.action}</p>
+</div>
+`).join("");
+}
+
+function renderManager() {
+const history = getHistory();
+const total = history.length;
+const converted = history.filter(x => x.outcome === "Converted").length;
+const completed = history.filter(x => x.enrollment === "Completed").length;
+const rate = total ? Math.round((converted / total) * 100) : 0;
+
+document.getElementById("statCalls").textContent = total;
+document.getElementById("statConverted").textContent = converted;
+document.getElementById("statRate").textContent = rate + "%";
+document.getElementById("statEnrollment").textContent = completed;
+
+const outcomes = {};
+const reps = {};
+
+history.forEach(h => {
+outcomes[h.outcome] = (outcomes[h.outcome] || 0) + 1;
+if (!reps[h.rep]) reps[h.rep] = { calls: 0, converted: 0 };
+reps[h.rep].calls++;
+if (h.outcome === "Converted") reps[h.rep].converted++;
+});
+
+document.getElementById("outcomeBreakdown").innerHTML =
+Object.keys(outcomes).length
+? Object.entries(outcomes).map(([k,v]) => `<p><strong>${k}:</strong> ${v}</p>`).join("")
+: `<p class="muted">No data yet.</p>`;
+
+document.getElementById("leaderboard").innerHTML =
+Object.keys(reps).length
+? Object.entries(reps).map(([rep, data]) => {
+const repRate = data.calls ? Math.round((data.converted / data.calls) * 100) : 0;
+return `<p><strong>${rep}</strong> — Calls: ${data.calls} • Converted: ${data.converted} • Rate: ${repRate}%</p>`;
+}).join("")
+: `<p class="muted">No rep activity yet.</p>`;
+}
+
+function updateQuickStats() {
+const history = getHistory();
+const total = history.length;
+const converted = history.filter(x => x.outcome === "Converted").length;
+const rate = total ? Math.round((converted / total) * 100) : 0;
+
+const tagCounts = {};
+history.forEach(h => {
+tagCounts[h.tag || "General"] = (tagCounts[h.tag || "General"] || 0) + 1;
+});
+
+let topTag = "None";
+let topCount = 0;
+for (const key in tagCounts) {
+if (tagCounts[key] > topCount) {
+topTag = key;
+topCount = tagCounts[key];
+}
+}
+
+document.getElementById("quickCalls").textContent = total;
+document.getElementById("quickConverted").textContent = converted;
+document.getElementById("quickRate").textContent = rate + "%";
+document.getElementById("quickTopObjection").textContent = topTag;
+}
+
+document.getElementById("objection").addEventListener("input", function() {
+updateTranslation();
+updateGeneratedBlocks();
+
+if (!liveMode) return;
+
+clearTimeout(typingTimer);
+
+const text = this.value.trim();
+if (!text) {
+document.getElementById("response").textContent = "—";
+document.getElementById("confidence").textContent = "Confidence: —";
+document.getElementById("closeProbabilityValue").textContent = "—";
+document.getElementById("objectionTag").textContent = "Objection Tag: —";
+document.getElementById("nextBestAction").textContent = "Next Best Action: —";
+document.getElementById("liveStatus").textContent = "Live Status: Waiting";
+return;
+}
+
+document.getElementById("liveStatus").textContent = "Live Status: Typing";
+
+typingTimer = setTimeout(() => {
+generateResponse();
+}, 700);
+});
+
+document.getElementById("outcome").addEventListener("input", function() {
+updateGeneratedBlocks();
+});
+</script>
+</body>
+</html>
+
 
 
