@@ -774,3 +774,59 @@ generateExtras();
 </script>
 </body>
 </html>
+
+let recognition;
+let isListening = false;
+
+function startListening(){
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if(!SpeechRecognition){
+alert("Mic not supported on this device/browser");
+return;
+}
+
+recognition = new SpeechRecognition();
+recognition.continuous = true;
+recognition.interimResults = true;
+recognition.lang = "en-US";
+
+recognition.onstart = () => {
+isListening = true;
+document.getElementById("liveCoaching").textContent = "🎤 Listening...";
+};
+
+recognition.onerror = () => {
+document.getElementById("liveCoaching").textContent = "Mic error";
+};
+
+recognition.onend = () => {
+isListening = false;
+document.getElementById("liveCoaching").textContent = "Mic stopped";
+};
+
+recognition.onresult = (event) => {
+let transcript = "";
+
+for(let i = event.resultIndex; i < event.results.length; i++){
+transcript += event.results[i][0].transcript;
+}
+
+transcript = transcript.trim();
+
+document.getElementById("objection").value = transcript;
+
+updateTranslation();
+generateResponse(); // 🔥 auto respond live
+};
+
+recognition.start();
+}
+
+function stopListening(){
+if(recognition){
+recognition.stop();
+}
+}
+
+
