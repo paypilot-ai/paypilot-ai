@@ -104,6 +104,19 @@ margin-top:10px;
 font-size:12px;
 color:#6b7280;
 }
+.tag{
+display:inline-block;
+padding:6px 10px;
+border-radius:999px;
+font-size:12px;
+font-weight:700;
+margin-right:6px;
+margin-bottom:6px;
+background:#f3f4f6;
+}
+.hot{background:#dcfce7;color:#166534}
+.warm{background:#fef3c7;color:#92400e}
+.cold{background:#fee2e2;color:#991b1b}
 .soft{
 background:#f9fafb;
 }
@@ -212,6 +225,8 @@ background:#f9fafb;
 <p class="small" id="confidence">Confidence: —</p>
 <p class="small" id="objectionTag">Objection Tag: —</p>
 <p class="small" id="nextBestAction">Next Best Action: —</p>
+<p class="small" id="strategyTag">Strategy: —</p>
+<p class="small" id="leadHeat">Lead Status: —</p>
 <p class="small" id="liveStatus">Live Status: Waiting</p>
 </div>
 
@@ -296,7 +311,7 @@ background:#f9fafb;
 
 <script>
 const USE_REAL_AI = true;
-const OPENAI_API_KEY = "YOUR_API_KEY_HERE";
+const OPENAI_API_KEY = "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";
 
 const suppliers = [
 {
@@ -340,11 +355,11 @@ let typingTimer = null;
 let requestCounter = 0;
 
 function getHistory() {
-return JSON.parse(localStorage.getItem("paypilot_history_live") || "[]");
+return JSON.parse(localStorage.getItem("paypilot_history_hybrid") || "[]");
 }
 
 function saveHistory(data) {
-localStorage.setItem("paypilot_history_live", JSON.stringify(data));
+localStorage.setItem("paypilot_history_hybrid", JSON.stringify(data));
 }
 
 function login() {
@@ -484,12 +499,17 @@ document.getElementById("translatedReply").textContent = reply;
 function calcCloseProbability(text) {
 let score = 65;
 const t = text.toLowerCase();
+
 if (t.includes("check") || t.includes("checks") || t.includes("cheques")) score -= 10;
 if (t.includes("fee") || t.includes("fees") || t.includes("tarifas")) score -= 15;
-if (t.includes("busy") || t.includes("later")) score -= 5;
-if (t.includes("accountant") || t.includes("contable")) score -= 8;
+if (t.includes("busy") || t.includes("later")) score -= 8;
+if (t.includes("accountant") || t.includes("contable")) score -= 10;
+if (t.includes("not interested")) score -= 18;
 if (t.includes("yes")) score += 20;
 if (t.includes("interested")) score += 15;
+if (t.includes("how much")) score -= 5;
+if (t.includes("500")) score -= 3;
+
 if (score < 5) score = 5;
 if (score > 95) score = 95;
 return score;
@@ -498,7 +518,7 @@ return score;
 function objectionTag(text) {
 const t = text.toLowerCase();
 if (t.includes("check") || t.includes("checks") || t.includes("cheques")) return "Payment Method";
-if (t.includes("fee") || t.includes("fees") || t.includes("tarifas")) return "Cost";
+if (t.includes("fee") || t.includes("fees") || t.includes("tarifas") || t.includes("how much")) return "Cost";
 if (t.includes("later") || t.includes("busy")) return "Timing";
 if (t.includes("not interested")) return "Rejection";
 if (t.includes("accountant") || t.includes("contable")) return "Accounting";
@@ -506,46 +526,70 @@ if (t.includes("card") || t.includes("cards") || t.includes("tarjeta")) return "
 return "General";
 }
 
-function nextBestAction(text, outcome) {
+function strategyType(text, score) {
+const tag = objectionTag(text);
+if (score >= 80) return "Push Next Step";
+if (tag === "Cost") return "Reframe Value";
+if (tag === "Payment Method") return "Reduce Risk";
+if (tag === "Timing") return "Keep Momentum";
+if (tag === "Accounting") return "Lower Friction";
+if (tag === "Rejection") return "Slow Nurture";
+return "Hybrid Close";
+}
+
+function leadHeat(score) {
+if (score >= 80) return "Hot";
+if (score >= 55) return "Warm";
+return "Cold";
+}
+
+function nextBestAction(text, outcome, score) {
 const tag = objectionTag(text);
 if (outcome === "Converted") return "Send enrollment link";
 if (outcome === "Rejected") return "Close supplier";
-if (tag === "Payment Method") return "Send ACH benefits email";
-if (tag === "Cost") return "Position ACH to avoid card fees";
-if (tag === "Timing") return "Schedule follow-up in 3 days";
-if (tag === "Accounting") return "Send details to accounting contact";
+if (score >= 80) return "Ask for setup now";
+if (tag === "Payment Method") return "Position ACH as faster and safer";
+if (tag === "Cost") return "Remove fee concern and shift to cash flow";
+if (tag === "Timing") return "Shorten the ask and keep momentum";
+if (tag === "Accounting") return "Offer to loop in accounting and simplify next step";
 return "Send follow-up email";
 }
 
 function fallbackRebuttal(text, supplier) {
 const t = text.toLowerCase();
+const score = calcCloseProbability(text);
+const strategy = strategyType(text, score);
 
 if (t.includes("check") || t.includes("checks") || t.includes("cheques")) {
-return "I understand. The only issue with checks is the delay and risk of something getting held up in the mail. ACH gets the money straight into your account faster, and we can get that knocked out in just a couple minutes.";
+return "I hear you. The only issue with checks is the delay and risk that comes with mailing and depositing them. ACH gets the money straight into your account faster, and if it makes sense, we can get that handled in just a couple minutes.";
 }
 
 if (t.includes("fee") || t.includes("fees") || t.includes("tarifas")) {
-return "I get that. That’s exactly why ACH is usually the better fit, because it keeps things electronic without creating card fee concerns. The main win is getting paid faster without dealing with paper checks.";
+return "I get that. That’s exactly why ACH is usually the better fit, because it keeps things electronic without creating card fee concerns. The bigger win is getting paid faster and cutting out the check delay.";
+}
+
+if (t.includes("how much") || t.includes("500")) {
+return "That’s fair. Even on a smaller payment, the value is still in speed, security, and not having to deal with check handling. It keeps the process cleaner now and easier on future payments too.";
 }
 
 if (t.includes("busy") || t.includes("later")) {
-return "Understood. This is actually quick, and if we handle it now you do not have to keep dealing with check delays on future payments. We can keep it simple and get through it fast.";
+return "Understood. This is actually quick, and if we handle it now you do not have to keep dealing with paper checks later. We can keep it simple and get through the basic setup fast.";
 }
 
 if (t.includes("accountant") || t.includes("contable")) {
-return "That makes sense. I can absolutely send the details over to accounting, but the setup itself is straightforward and only takes a few minutes. If you want, we can get the basic part done now so nothing is delayed.";
+return "That makes sense. I can absolutely send the details over to accounting, but the setup itself is straightforward and only takes a few minutes. If you want, we can get the easy part done now so nothing gets delayed.";
 }
 
 if (t.includes("card") || t.includes("cards") || t.includes("tarjeta")) {
 return "That is completely fine. If card is not the right fit, ACH is usually the easiest option because it is secure, direct, and faster than waiting on checks.";
 }
 
-if (t.includes("500")) {
-return "If the payment is around $500, the bigger issue usually is not the amount, it is speed and reliability. Electronic payment still helps you avoid delays and manual handling, and it keeps the process cleaner going forward.";
+if (t.includes("not interested")) {
+return "I understand. A lot of suppliers say that at first until they realize this is really about getting paid faster and more securely. If we take two minutes now, you are set up and you do not have to think about it again.";
 }
 
-if (t.includes("not interested")) {
-return "I understand. A lot of suppliers say that at first until they realize this is really about getting paid faster and more securely. If we take two minutes now, you are set up and do not have to think about it again.";
+if (strategy === "Push Next Step") {
+return `This looks like a strong fit for ${supplier.company}. ACH would keep payments moving faster and reduce manual handling, so if you’re open to it, we can get the next step handled now.`;
 }
 
 return `Based on what ${supplier.company} shared, I would position ACH first because it simplifies payment delivery, reduces manual handling, and helps them get paid faster.`;
@@ -561,12 +605,19 @@ document.getElementById("confidence").textContent = "Confidence: —";
 document.getElementById("closeProbabilityValue").textContent = "—";
 document.getElementById("objectionTag").textContent = "Objection Tag: —";
 document.getElementById("nextBestAction").textContent = "Next Best Action: —";
+document.getElementById("strategyTag").textContent = "Strategy: —";
+document.getElementById("leadHeat").textContent = "Lead Status: —";
 document.getElementById("liveStatus").textContent = "Live Status: Thinking";
 
 let response = "";
 let confidence = 0;
 
-if (USE_REAL_AI && OPENAI_API_KEY && OPENAI_API_KEY !== "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") {
+const score = calcCloseProbability(text);
+const tag = objectionTag(text);
+const strategy = strategyType(text, score);
+const heat = leadHeat(score);
+
+if (USE_REAL_AI && OPENAI_API_KEY && OPENAI_API_KEY !== "YOUR_API_KEY_HERE") {
 try {
 const res = await fetch("https://api.openai.com/v1/chat/completions", {
 method: "POST",
@@ -581,15 +632,31 @@ messages: [
 role: "system",
 content: `You are a top 1% payment enrollment rep.
 
-Your goal is to get suppliers to accept ACH or virtual card.
+Your goal is to move suppliers toward ACH or virtual card using a hybrid sales style:
+- confident when needed
+- professional when needed
+- adjust tone based on resistance
 
 Rules:
-- Keep responses short: 2 to 4 sentences
-- Sound natural, confident, and persuasive
-- Do not sound robotic or like support
-- Focus on speed, convenience, security, and getting paid faster
-- Briefly acknowledge the objection, reframe it, then move toward a close
-- End with a soft close when possible
+- keep responses to 2 to 4 sentences
+- sound natural, persuasive, and businesslike
+- do not sound robotic or like customer support
+- briefly acknowledge the objection
+- reframe it based on value
+- close softly with a next step
+
+Available strategy types:
+- Reframe Value
+- Reduce Risk
+- Push Next Step
+- Keep Momentum
+- Lower Friction
+- Slow Nurture
+- Hybrid Close
+
+Current objection tag: ${tag}
+Current strategy: ${strategy}
+Lead heat: ${heat}
 
 If the message is in Spanish, answer in both English and Spanish.`
 },
@@ -616,15 +683,15 @@ confidence = 88;
 
 if (thisRequest !== requestCounter) return;
 
-const tag = objectionTag(text);
-const score = calcCloseProbability(text);
-const action = nextBestAction(text, document.getElementById("outcome").value);
+const action = nextBestAction(text, document.getElementById("outcome").value, score);
 
 document.getElementById("response").textContent = response;
 document.getElementById("confidence").textContent = "Confidence: " + confidence + "%";
 document.getElementById("closeProbabilityValue").textContent = score + "%";
 document.getElementById("objectionTag").textContent = "Objection Tag: " + tag;
 document.getElementById("nextBestAction").textContent = "Next Best Action: " + action;
+document.getElementById("strategyTag").textContent = "Strategy: " + strategy;
+document.getElementById("leadHeat").innerHTML = `Lead Status: <span class="tag ${heat.toLowerCase()}">${heat}</span>`;
 document.getElementById("liveStatus").textContent = "Live Status: Updated";
 
 updateTranslation();
@@ -655,7 +722,8 @@ const response = document.getElementById("response").textContent.trim();
 const outcome = document.getElementById("outcome").value;
 const enrollment = document.getElementById("enrollment").value;
 const payment = document.getElementById("paymentDisplay").textContent;
-const action = nextBestAction(objection, outcome);
+const score = calcCloseProbability(objection);
+const action = nextBestAction(objection, outcome, score);
 
 const history = getHistory();
 history.unshift({
@@ -669,6 +737,8 @@ enrollment,
 payment,
 action,
 tag: objectionTag(objection),
+strategy: strategyType(objection, score),
+heat: leadHeat(score),
 duration: document.getElementById("timerDisplay").textContent,
 createdAt: new Date().toLocaleString()
 });
@@ -702,7 +772,7 @@ el.innerHTML = history.map(item => `
 <p><strong>${item.supplier}</strong> — ${item.outcome}</p>
 <p class="small">${item.createdAt} • ${item.rep} • ${item.payment} • ${item.duration}</p>
 <p><strong>Objection:</strong> ${item.objection || "—"}</p>
-<p class="small">Tag: ${item.tag} • Next: ${item.action}</p>
+<p class="small">Tag: ${item.tag} • Strategy: ${item.strategy} • Heat: ${item.heat}</p>
 </div>
 `).join("");
 }
@@ -784,6 +854,8 @@ document.getElementById("confidence").textContent = "Confidence: —";
 document.getElementById("closeProbabilityValue").textContent = "—";
 document.getElementById("objectionTag").textContent = "Objection Tag: —";
 document.getElementById("nextBestAction").textContent = "Next Best Action: —";
+document.getElementById("strategyTag").textContent = "Strategy: —";
+document.getElementById("leadHeat").textContent = "Lead Status: —";
 document.getElementById("liveStatus").textContent = "Live Status: Waiting";
 return;
 }
@@ -801,6 +873,7 @@ updateGeneratedBlocks();
 </script>
 </body>
 </html>
+
 
 
 
