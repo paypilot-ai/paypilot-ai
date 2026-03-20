@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -308,6 +307,8 @@ margin-top:0;
 <div class="toolbar">
 <button onclick="generateResponse()">Generate AI Response</button>
 <button class="secondary" onclick="toggleTranslate()">Toggle Translation</button>
+<button onclick="startListening()">🎤 Start Mic</button>
+<button class="secondary" onclick="stopListening()">Stop Mic</button>
 </div>
 
 <div id="translationBox" class="panel-soft hidden" style="margin-top:14px;">
@@ -431,6 +432,8 @@ vccScore:22
 ];
 
 let translateOn = false;
+let recognition = null;
+let isListening = false;
 
 function getHistory(){
 return JSON.parse(localStorage.getItem("paypilot_enterprise_history") || "[]");
@@ -506,6 +509,7 @@ updateTranslation();
 function updateTranslation(){
 const text = document.getElementById("objection").value.trim();
 const lang = detectLanguage(text);
+
 document.getElementById("languageDisplay").textContent = lang;
 
 if(!translateOn) return;
@@ -515,16 +519,66 @@ let reply = "—";
 
 if(lang === "Spanish"){
 english = text
+.replace(/hola/gi, "hello")
 .replace(/solo aceptamos cheques/gi, "we only accept checks")
 .replace(/no aceptamos tarjetas/gi, "we do not accept cards")
 .replace(/no quiero pagar tarifas/gi, "i do not want to pay fees");
-reply = "Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos por cheque.";
+reply = "Entiendo. ACH le permite recibir pagos más rápido y evita retrasos de cheques.";
 } else {
-reply = "I understand. ACH helps you get paid faster and avoids check delays.";
+reply = "I understand. ACH helps you get paid faster and eliminates check delays.";
 }
 
-document.getElementById("translatedEnglish").textContent = english || "—";
+document.getElementById("translatedEnglish").textContent = english;
 document.getElementById("translatedReply").textContent = reply;
+}
+
+function startListening(){
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if(!SpeechRecognition){
+alert("Mic not supported on this device/browser");
+return;
+}
+
+recognition = new SpeechRecognition();
+recognition.continuous = true;
+recognition.interimResults = true;
+recognition.lang = "en-US";
+
+recognition.onstart = () => {
+isListening = true;
+document.getElementById("liveCoaching").textContent = "🎤 Listening...";
+};
+
+recognition.onerror = () => {
+document.getElementById("liveCoaching").textContent = "Mic error";
+};
+
+recognition.onend = () => {
+isListening = false;
+document.getElementById("liveCoaching").textContent = "Mic stopped";
+};
+
+recognition.onresult = (event) => {
+let transcript = "";
+
+for(let i = event.resultIndex; i < event.results.length; i++){
+transcript += event.results[i][0].transcript;
+}
+
+transcript = transcript.trim();
+document.getElementById("objection").value = transcript;
+updateTranslation();
+generateResponse();
+};
+
+recognition.start();
+}
+
+function stopListening(){
+if(recognition){
+recognition.stop();
+}
 }
 
 function calcProbability(text){
@@ -584,10 +638,10 @@ function getLiveCoaching(text, score){
 const strategy = getStrategy(text, score);
 
 if(strategy === "Push Next Step") return "They sound close. Stop explaining and move to setup.";
-if(strategy === "Reframe Value") return "Do not defend price. Shift to speed, cash flow, and less manual work.";
+if(strategy === "Reframe Value") return "Do not defend cost. Shift to speed, cash flow, and less manual work.";
 if(strategy === "Reduce Risk") return "Make checks sound slower and riskier. Make ACH sound safe and simple.";
 if(strategy === "Keep Momentum") return "Shorten your ask. Keep control of the call.";
-if(strategy === "Lower Friction") return "Reduce effort. Offer easy next step and help with accounting.";
+if(strategy === "Lower Friction") return "Reduce effort. Offer easy next step and include accounting.";
 if(strategy === "Slow Nurture") return "Pull back slightly. Rebuild interest instead of pushing too hard.";
 return "Acknowledge, reframe, and close softly.";
 }
@@ -775,58 +829,8 @@ generateExtras();
 </body>
 </html>
 
-let recognition;
-let isListening = false;
 
-function startListening(){
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-if(!SpeechRecognition){
-alert("Mic not supported on this device/browser");
-return;
-}
 
-recognition = new SpeechRecognition();
-recognition.continuous = true;
-recognition.interimResults = true;
-recognition.lang = "en-US";
-
-recognition.onstart = () => {
-isListening = true;
-document.getElementById("liveCoaching").textContent = "🎤 Listening...";
-};
-
-recognition.onerror = () => {
-document.getElementById("liveCoaching").textContent = "Mic error";
-};
-
-recognition.onend = () => {
-isListening = false;
-document.getElementById("liveCoaching").textContent = "Mic stopped";
-};
-
-recognition.onresult = (event) => {
-let transcript = "";
-
-for(let i = event.resultIndex; i < event.results.length; i++){
-transcript += event.results[i][0].transcript;
-}
-
-transcript = transcript.trim();
-
-document.getElementById("objection").value = transcript;
-
-updateTranslation();
-generateResponse(); // 🔥 auto respond live
-};
-
-recognition.start();
-}
-
-function stopListening(){
-if(recognition){
-recognition.stop();
-}
-}
 
 
