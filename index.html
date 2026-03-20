@@ -2,81 +2,79 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>PayPilot AI</title>
 
 <style>
 :root{
---bg:#0a0f1c;
---card:#111827;
---line:#1f2937;
---text:#f9fafb;
---muted:#9ca3af;
---blue:#3b82f6;
---green:#22c55e;
---red:#ef4444;
+--primary:#0066CC;
+--bg:#f4f7fb;
+--card:#ffffff;
+--text:#1f2937;
+--muted:#6b7280;
+--border:#e5e7eb;
 }
 
 body{
 margin:0;
-font-family:Arial;
-background:linear-gradient(180deg,#020617,#0f172a);
-color:var(--text);
+font-family:Arial, sans-serif;
+background:var(--bg);
 }
 
-.wrap{
-max-width:900px;
-margin:auto;
+.wrap{max-width:1100px;margin:auto;padding:20px}
+
+.header{
+background:var(--primary);
+color:white;
 padding:20px;
+border-radius:10px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+}
+
+.logo{
+font-size:20px;
+font-weight:bold;
 }
 
 .card{
 background:var(--card);
-border:1px solid var(--line);
-border-radius:14px;
+border:1px solid var(--border);
+border-radius:10px;
 padding:18px;
-margin-bottom:16px;
+margin-top:15px;
 }
 
-h1,h3{margin:0 0 10px}
+.grid{display:grid;gap:12px}
+.grid-3{grid-template-columns:1fr 1fr 1fr}
 
 input,textarea,select{
 width:100%;
 padding:12px;
-margin-top:8px;
-margin-bottom:12px;
-border-radius:10px;
-border:1px solid var(--line);
-background:#020617;
-color:white;
+border:1px solid var(--border);
+border-radius:8px;
+margin-bottom:10px;
 }
 
 button{
-background:var(--blue);
+background:var(--primary);
 color:white;
 border:none;
 padding:12px;
-border-radius:10px;
+border-radius:8px;
 cursor:pointer;
-}
-
-button.secondary{
-background:#1f2937;
 }
 
 .hidden{display:none}
 
 .stat{
 padding:12px;
-border:1px solid var(--line);
-border-radius:10px;
-margin-bottom:10px;
+border:1px solid var(--border);
+border-radius:8px;
 }
 
-.small{
-color:var(--muted);
-font-size:12px;
-}
+.small{font-size:12px;color:var(--muted)}
 </style>
 </head>
 
@@ -84,9 +82,9 @@ font-size:12px;
 
 <div class="wrap">
 
-<div class="card">
-<h1>PayPilot AI</h1>
-<p class="small">Real-time supplier call assistant</p>
+<div class="header">
+<div class="logo">⚡ PayPilot AI</div>
+<div id="userDisplay"></div>
 </div>
 
 <div id="loginCard" class="card">
@@ -94,15 +92,16 @@ font-size:12px;
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
-<p class="small">demo@paypilot.ai / demo123</p>
 </div>
 
 <div id="app" class="hidden">
 
-<div class="card">
-<h3>Command Center</h3>
-<p id="welcome"></p>
-<button class="secondary" onclick="logout()">Logout</button>
+<div class="grid grid-3">
+
+<div class="stat">Calls: <span id="calls">0</span></div>
+<div class="stat">Converted: <span id="converted">0</span></div>
+<div class="stat">Rate: <span id="rate">0%</span></div>
+
 </div>
 
 <div class="card">
@@ -112,16 +111,35 @@ font-size:12px;
 </div>
 
 <div class="card">
-<h3>Objection</h3>
-<textarea id="objection" placeholder="Type what supplier says..."></textarea>
-<button onclick="generateResponse()">Generate Response</button>
+<h3>Live Call</h3>
+<textarea id="objection"></textarea>
+<button onclick="generateResponse()">Generate AI Response</button>
 <p id="response">—</p>
 </div>
 
 <div class="card">
-<h3>Performance</h3>
-<div class="stat">Confidence: <span id="confidence">—</span></div>
-<div class="stat">Close Probability: <span id="probability">—</span></div>
+<h3>Outcome</h3>
+<select id="outcome">
+<option>Pending</option>
+<option>Converted</option>
+<option>Rejected</option>
+</select>
+<button onclick="logCall()">Log Call</button>
+</div>
+
+<div class="card">
+<h3>CRM Note</h3>
+<p id="crm"></p>
+</div>
+
+<div class="card">
+<h3>Follow-up Email</h3>
+<p id="emailText"></p>
+</div>
+
+<div class="card">
+<h3>Call History</h3>
+<div id="history"></div>
 </div>
 
 </div>
@@ -130,110 +148,99 @@ font-size:12px;
 
 <script>
 
-const OPENAI_API_KEY = "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";
+const API_KEY="
+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
+";
 
-const suppliers = [
-{company:"Novacore Electrical", contact:"Anthony King"},
-{company:"Atlas Industrial Supply", contact:"Jorge Ramirez"},
-{company:"Blue Ridge Property", contact:"Trista Jamieson"}
+let history=[];
+
+const suppliers=[
+{company:"Novacore Electrical",contact:"Anthony"},
+{company:"Atlas Industrial",contact:"Jorge"},
+{company:"Blue Ridge",contact:"Trista"}
 ];
 
 function login(){
-const email = document.getElementById("email").value.trim().toLowerCase();
-const password = document.getElementById("password").value.trim();
+let e=email.value;
+let p=password.value;
 
-if((email === "demo@paypilot.ai" || email === "manager@paypilot.ai") && password === "demo123"){
-document.getElementById("loginCard").classList.add("hidden");
-document.getElementById("app").classList.remove("hidden");
-document.getElementById("welcome").textContent = "Logged in as " + email;
-populateSuppliers();
+if((e==="demo@paypilot.ai"||e==="manager@paypilot.ai")&&p==="demo123"){
+loginCard.classList.add("hidden");
+app.classList.remove("hidden");
+userDisplay.innerText=e;
+loadSuppliers();
+}else alert("Wrong login");
+}
+
+function loadSuppliers(){
+supplierSelect.innerHTML=suppliers.map((s,i)=>`<option value=${i}>${s.company}</option>`);
 loadSupplier();
-} else {
-alert("Wrong login");
-}
-}
-
-function logout(){
-location.reload();
-}
-
-function populateSuppliers(){
-const select = document.getElementById("supplierSelect");
-select.innerHTML = suppliers.map((s,i)=>
-`<option value="${i}">${s.company}</option>`
-).join("");
 }
 
 function loadSupplier(){
-const s = suppliers[document.getElementById("supplierSelect").value || 0];
-document.getElementById("supplierInfo").innerHTML = `
-<p><strong>Contact:</strong> ${s.contact}</p>
-`;
-}
-
-function calcProbability(text){
-let score = 70;
-text = text.toLowerCase();
-
-if(text.includes("check")) score -= 10;
-if(text.includes("fee")) score -= 15;
-if(text.includes("busy")) score -= 5;
-if(text.includes("yes")) score += 20;
-
-return Math.max(5, Math.min(95, score));
+let s=suppliers[supplierSelect.value||0];
+supplierInfo.innerHTML=`Contact: ${s.contact}`;
 }
 
 async function generateResponse(){
-const text = document.getElementById("objection").value.trim();
-document.getElementById("response").textContent = "Thinking...";
+let text=objection.value;
 
-let response = "";
+response.innerText="Thinking...";
 
 try{
-const res = await fetch("https://api.openai.com/v1/chat/completions", {
+let r=await fetch("https://api.openai.com/v1/chat/completions",{
 method:"POST",
 headers:{
-"Authorization":"Bearer " + OPENAI_API_KEY,
+"Authorization":"Bearer "+API_KEY,
 "Content-Type":"application/json"
 },
-body: JSON.stringify({
+body:JSON.stringify({
 model:"gpt-4o-mini",
 messages:[
-{
-role:"system",
-content:"You are a high level sales closer. Keep responses short, confident, and persuasive."
-},
-{
-role:"user",
-content:text
-}
+{role:"system",content:"You are a high level closer. Short, confident, persuasive."},
+{role:"user",content:text}
 ]
 })
 });
 
-const data = await res.json();
-response = data.choices?.[0]?.message?.content || "No response";
+let d=await r.json();
+response.innerText=d.choices[0].message.content;
 
-} catch {
-response = "ACH helps you get paid faster and removes delays from checks.";
+}catch{
+response.innerText="ACH speeds up payment and removes delays.";
 }
 
-document.getElementById("response").textContent = response;
-document.getElementById("confidence").textContent = "90%";
-document.getElementById("probability").textContent = calcProbability(text) + "%";
+crm.innerText="Discussed ACH with supplier.";
+emailText.innerText="Following up on electronic payment setup.";
+}
+
+function logCall(){
+let outcomeVal=outcome.value;
+
+history.unshift({
+text:objection.value,
+outcome:outcomeVal
+});
+
+renderHistory();
+updateStats();
+}
+
+function renderHistory(){
+historyDiv.innerHTML=history.map(h=>`<p>${h.text} - ${h.outcome}</p>`).join("");
+}
+
+function updateStats(){
+let total=history.length;
+let conv=history.filter(h=>h.outcome==="Converted").length;
+
+calls.innerText=total;
+converted.innerText=conv;
+rate.innerText= total? Math.round(conv/total*100)+"%":"0%";
 }
 
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
 
