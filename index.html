@@ -1,246 +1,776 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PayPilot AI</title>
-
 <style>
 :root{
 --primary:#0066CC;
+--primary-dark:#004b99;
 --bg:#f4f7fb;
 --card:#ffffff;
 --text:#1f2937;
 --muted:#6b7280;
 --border:#e5e7eb;
+--green:#10b981;
+--amber:#f59e0b;
+--red:#ef4444;
+--navy:#0f172a;
+--light-blue:#e8f1fb;
 }
+
+*{box-sizing:border-box}
 
 body{
 margin:0;
-font-family:Arial, sans-serif;
+font-family:Arial, Helvetica, sans-serif;
 background:var(--bg);
+color:var(--text);
 }
 
-.wrap{max-width:1100px;margin:auto;padding:20px}
+.wrap{
+max-width:1150px;
+margin:auto;
+padding:20px;
+}
 
 .header{
-background:var(--primary);
-color:white;
+background:linear-gradient(135deg, var(--primary), #0b4fa3);
+color:#fff;
 padding:20px;
-border-radius:10px;
+border-radius:14px;
 display:flex;
 align-items:center;
 justify-content:space-between;
+gap:20px;
+box-shadow:0 10px 24px rgba(0,0,0,.08);
+}
+
+.brand{
+display:flex;
+align-items:center;
+gap:14px;
 }
 
 .logo{
-font-size:20px;
-font-weight:bold;
+width:46px;
+height:46px;
+border-radius:12px;
+background:#fff;
+color:var(--primary);
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:900;
+font-size:22px;
+box-shadow:0 6px 18px rgba(0,0,0,.15);
+}
+
+.brand h1{
+margin:0;
+font-size:28px;
+line-height:1;
+}
+
+.brand p{
+margin:6px 0 0;
+font-size:13px;
+opacity:.9;
 }
 
 .card{
 background:var(--card);
 border:1px solid var(--border);
-border-radius:10px;
+border-radius:14px;
 padding:18px;
-margin-top:15px;
+margin-top:16px;
+box-shadow:0 4px 14px rgba(15,23,42,.04);
 }
 
-.grid{display:grid;gap:12px}
-.grid-3{grid-template-columns:1fr 1fr 1fr}
+.grid{
+display:grid;
+gap:16px;
+}
 
-input,textarea,select{
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:1fr 1fr 1fr}
+.grid-main{grid-template-columns:1.2fr .8fr}
+
+@media (max-width:900px){
+.grid-2,.grid-3,.grid-main{grid-template-columns:1fr}
+}
+
+h2,h3{
+margin:0 0 12px;
+}
+
+.small{
+color:var(--muted);
+font-size:12px;
+}
+
+input, textarea, select{
 width:100%;
 padding:12px;
+margin-top:8px;
+margin-bottom:12px;
+border-radius:10px;
 border:1px solid var(--border);
-border-radius:8px;
-margin-bottom:10px;
+font-size:15px;
+background:#fff;
+}
+
+textarea{
+min-height:120px;
+resize:vertical;
 }
 
 button{
-background:var(--primary);
-color:white;
 border:none;
-padding:12px;
-border-radius:8px;
+border-radius:10px;
+padding:12px 14px;
 cursor:pointer;
+font-weight:700;
+background:var(--primary);
+color:#fff;
+}
+
+button.secondary{
+background:#e5e7eb;
+color:#111827;
+}
+
+button.green{background:var(--green)}
+button.red{background:var(--red)}
+button.amber{background:var(--amber)}
+
+.toolbar{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
 }
 
 .hidden{display:none}
 
 .stat{
-padding:12px;
 border:1px solid var(--border);
-border-radius:8px;
+border-radius:12px;
+padding:14px;
+background:#fff;
 }
 
-.small{font-size:12px;color:var(--muted)}
+.stat .label{
+font-size:12px;
+color:var(--muted);
+margin-bottom:8px;
+}
+
+.stat .value{
+font-size:26px;
+font-weight:800;
+}
+
+.panel-soft{
+background:var(--light-blue);
+border:1px solid #dbeafe;
+border-radius:12px;
+padding:14px;
+}
+
+.pill{
+display:inline-block;
+padding:6px 10px;
+border-radius:999px;
+font-size:12px;
+font-weight:700;
+margin-right:6px;
+margin-bottom:6px;
+background:#eef2ff;
+color:#3730a3;
+}
+
+.heat-hot{
+color:#065f46;
+background:#d1fae5;
+padding:4px 10px;
+border-radius:999px;
+font-weight:700;
+display:inline-block;
+}
+
+.heat-warm{
+color:#92400e;
+background:#fef3c7;
+padding:4px 10px;
+border-radius:999px;
+font-weight:700;
+display:inline-block;
+}
+
+.heat-cold{
+color:#991b1b;
+background:#fee2e2;
+padding:4px 10px;
+border-radius:999px;
+font-weight:700;
+display:inline-block;
+}
+
+.history-item{
+border-top:1px solid var(--border);
+padding-top:12px;
+margin-top:12px;
+}
+
+.history-item:first-child{
+border-top:none;
+padding-top:0;
+margin-top:0;
+}
 </style>
 </head>
-
 <body>
-
 <div class="wrap">
-
 <div class="header">
-<div class="logo">⚡ PayPilot AI</div>
-<div id="userDisplay"></div>
+<div class="brand">
+<div class="logo">P</div>
+<div>
+<h1>PayPilot AI</h1>
+<p>Enterprise supplier enrollment intelligence</p>
+</div>
+</div>
+<div id="userDisplay" class="small" style="color:#fff;"></div>
 </div>
 
 <div id="loginCard" class="card">
 <h3>Login</h3>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+<input id="email" placeholder="Email" />
+<input id="password" type="password" placeholder="Password" />
 <button onclick="login()">Login</button>
+<p class="small">Use: demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123</p>
 </div>
 
 <div id="app" class="hidden">
-
-<div class="grid grid-3">
-
-<div class="stat">Calls: <span id="calls">0</span></div>
-<div class="stat">Converted: <span id="converted">0</span></div>
-<div class="stat">Rate: <span id="rate">0%</span></div>
-
+<div class="card">
+<div class="toolbar">
+<button class="secondary" onclick="showRepView()">Rep View</button>
+<button class="secondary" onclick="showManagerView()">Manager View</button>
+<button class="red" onclick="logout()">Logout</button>
+</div>
 </div>
 
+<div id="repView">
+<div class="grid grid-3">
+<div class="stat">
+<div class="label">Calls Logged</div>
+<div class="value" id="callsLogged">0</div>
+</div>
+<div class="stat">
+<div class="label">Converted</div>
+<div class="value" id="callsConverted">0</div>
+</div>
+<div class="stat">
+<div class="label">Conversion Rate</div>
+<div class="value" id="conversionRate">0%</div>
+</div>
+</div>
+
+<div class="grid grid-main">
+<div>
 <div class="card">
-<h3>Supplier</h3>
+<h3>Supplier Queue</h3>
 <select id="supplierSelect" onchange="loadSupplier()"></select>
 <div id="supplierInfo"></div>
 </div>
 
 <div class="card">
-<h3>Live Call</h3>
-<textarea id="objection"></textarea>
+<h3>Live Call Workspace</h3>
+
+<div class="grid grid-3">
+<div class="stat">
+<div class="label">Detected Language</div>
+<div class="value" style="font-size:18px" id="languageDisplay">English</div>
+</div>
+<div class="stat">
+<div class="label">Lead Status</div>
+<div class="value" style="font-size:16px" id="leadHeat">—</div>
+</div>
+<div class="stat">
+<div class="label">Strategy</div>
+<div class="value" style="font-size:16px" id="strategyTag">—</div>
+</div>
+</div>
+
+<textarea id="objection" placeholder="Type what the supplier says..."></textarea>
+
+<div class="toolbar">
 <button onclick="generateResponse()">Generate AI Response</button>
-<p id="response">—</p>
+<button class="secondary" onclick="toggleTranslate()">Toggle Translation</button>
+</div>
+
+<div id="translationBox" class="panel-soft hidden" style="margin-top:14px;">
+<h3 style="margin-top:0;">Live Translation</h3>
+<p><strong>English:</strong> <span id="translatedEnglish">—</span></p>
+<p><strong>Reply in Supplier Language:</strong> <span id="translatedReply">—</span></p>
+</div>
 </div>
 
 <div class="card">
-<h3>Outcome</h3>
+<h3>Call Outcome</h3>
 <select id="outcome">
 <option>Pending</option>
+<option>Follow Up Needed</option>
 <option>Converted</option>
 <option>Rejected</option>
 </select>
-<button onclick="logCall()">Log Call</button>
-</div>
 
-<div class="card">
-<h3>CRM Note</h3>
-<p id="crm"></p>
-</div>
+<select id="enrollment">
+<option>Pending</option>
+<option>Enrollment Sent</option>
+<option>Completed</option>
+<option>Declined</option>
+</select>
 
-<div class="card">
-<h3>Follow-up Email</h3>
-<p id="emailText"></p>
+<div class="toolbar">
+<button class="green" onclick="logCall()">Log Call</button>
+<button class="amber" onclick="markEnrollmentComplete()">Mark Enrollment Complete</button>
+</div>
 </div>
 
 <div class="card">
 <h3>Call History</h3>
 <div id="history"></div>
 </div>
-
 </div>
 
+<div>
+<div class="card">
+<h3>AI Response</h3>
+<p id="response">—</p>
+<p class="small" id="confidence">Confidence: —</p>
+<p class="small" id="objectionTag">Objection Tag: —</p>
+<p class="small" id="nextBestAction">Next Best Action: —</p>
+<p class="small" id="closeProbability">Close Probability: —</p>
+</div>
+
+<div class="card">
+<h3>Live Coaching</h3>
+<p id="liveCoaching">—</p>
+</div>
+
+<div class="card">
+<h3>CRM Note</h3>
+<p id="crmNote">—</p>
+</div>
+
+<div class="card">
+<h3>Follow-Up Email</h3>
+<p id="emailText">—</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="managerView" class="hidden">
+<div class="card">
+<h3>Manager Dashboard</h3>
+<div class="grid grid-3">
+<div class="stat">
+<div class="label">Total Calls</div>
+<div class="value" id="mgrCalls">0</div>
+</div>
+<div class="stat">
+<div class="label">Total Converted</div>
+<div class="value" id="mgrConverted">0</div>
+</div>
+<div class="stat">
+<div class="label">Win Rate</div>
+<div class="value" id="mgrRate">0%</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h3>Objection Breakdown</h3>
+<div id="objectionBreakdown"></div>
+</div>
+</div>
+</div>
 </div>
 
 <script>
+const OPENAI_API_KEY = "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";
 
-const API_KEY="
-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
-";
-
-let history=[];
-
-const suppliers=[
-{company:"Novacore Electrical",contact:"Anthony"},
-{company:"Atlas Industrial",contact:"Jorge"},
-{company:"Blue Ridge",contact:"Trista"}
+const suppliers = [
+{
+company:"Novacore Electrical",
+contact:"Anthony King",
+industry:"Electrical",
+avgInvoice:"$9,200",
+achScore:58,
+vccScore:33
+},
+{
+company:"Atlas Industrial Supply",
+contact:"Jorge Ramirez",
+industry:"Industrial",
+avgInvoice:"$6,200",
+achScore:74,
+vccScore:18
+},
+{
+company:"Blue Ridge Property",
+contact:"Trista Jamieson",
+industry:"Property",
+avgInvoice:"$4,100",
+achScore:69,
+vccScore:22
+}
 ];
 
-function login(){
-let e=email.value;
-let p=password.value;
+let translateOn = false;
 
-if((e==="demo@paypilot.ai"||e==="manager@paypilot.ai")&&p==="demo123"){
-loginCard.classList.add("hidden");
-app.classList.remove("hidden");
-userDisplay.innerText=e;
-loadSuppliers();
-}else alert("Wrong login");
+function getHistory(){
+return JSON.parse(localStorage.getItem("paypilot_enterprise_history") || "[]");
 }
 
-function loadSuppliers(){
-supplierSelect.innerHTML=suppliers.map((s,i)=>`<option value=${i}>${s.company}</option>`);
+function saveHistory(history){
+localStorage.setItem("paypilot_enterprise_history", JSON.stringify(history));
+}
+
+function login(){
+const email = document.getElementById("email").value.trim().toLowerCase();
+const password = document.getElementById("password").value.trim();
+
+if((email === "demo@paypilot.ai" || email === "manager@paypilot.ai") && password === "demo123"){
+document.getElementById("loginCard").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+document.getElementById("userDisplay").innerText = email;
+populateSuppliers();
 loadSupplier();
+renderHistory();
+updateStats();
+renderManager();
+} else {
+alert("Wrong login");
+}
+}
+
+function logout(){
+location.reload();
+}
+
+function showRepView(){
+document.getElementById("repView").classList.remove("hidden");
+document.getElementById("managerView").classList.add("hidden");
+}
+
+function showManagerView(){
+document.getElementById("repView").classList.add("hidden");
+document.getElementById("managerView").classList.remove("hidden");
+renderManager();
+}
+
+function populateSuppliers(){
+const select = document.getElementById("supplierSelect");
+select.innerHTML = suppliers.map((s,i)=>`<option value="${i}">${s.company}</option>`).join("");
 }
 
 function loadSupplier(){
-let s=suppliers[supplierSelect.value||0];
-supplierInfo.innerHTML=`Contact: ${s.contact}`;
+const s = suppliers[document.getElementById("supplierSelect").value || 0];
+document.getElementById("supplierInfo").innerHTML = `
+<p><strong>Contact:</strong> ${s.contact}</p>
+<p><strong>Industry:</strong> ${s.industry}</p>
+<p><strong>Avg Invoice:</strong> ${s.avgInvoice}</p>
+<p>
+<span class="pill">ACH ${s.achScore}%</span>
+<span class="pill">VCC ${s.vccScore}%</span>
+</p>
+`;
+}
+
+function detectLanguage(text){
+const t = text.toLowerCase();
+if(t.includes("hola") || t.includes("solo aceptamos") || t.includes("cheques") || t.includes("tarjeta")) return "Spanish";
+return "English";
+}
+
+function toggleTranslate(){
+translateOn = !translateOn;
+document.getElementById("translationBox").classList.toggle("hidden", !translateOn);
+updateTranslation();
+}
+
+function updateTranslation(){
+const text = document.getElementById("objection").value.trim();
+const lang = detectLanguage(text);
+document.getElementById("languageDisplay").textContent = lang;
+
+if(!translateOn) return;
+
+let english = text || "—";
+let reply = "—";
+
+if(lang === "Spanish"){
+english = text
+.replace(/solo aceptamos cheques/gi, "we only accept checks")
+.replace(/no aceptamos tarjetas/gi, "we do not accept cards")
+.replace(/no quiero pagar tarifas/gi, "i do not want to pay fees");
+reply = "Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos por cheque.";
+} else {
+reply = "I understand. ACH helps you get paid faster and avoids check delays.";
+}
+
+document.getElementById("translatedEnglish").textContent = english || "—";
+document.getElementById("translatedReply").textContent = reply;
+}
+
+function calcProbability(text){
+let score = 70;
+const t = text.toLowerCase();
+
+if(t.includes("check") || t.includes("checks") || t.includes("cheques")) score -= 10;
+if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")) score -= 15;
+if(t.includes("busy") || t.includes("later")) score -= 8;
+if(t.includes("accountant")) score -= 10;
+if(t.includes("not interested")) score -= 18;
+if(t.includes("yes")) score += 20;
+if(t.includes("interested")) score += 15;
+
+return Math.max(5, Math.min(95, score));
+}
+
+function getObjectionTag(text){
+const t = text.toLowerCase();
+if(t.includes("check") || t.includes("checks") || t.includes("cheques")) return "Payment Method";
+if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")) return "Cost";
+if(t.includes("busy") || t.includes("later")) return "Timing";
+if(t.includes("accountant")) return "Accounting";
+if(t.includes("not interested")) return "Rejection";
+return "General";
+}
+
+function getStrategy(text, score){
+const tag = getObjectionTag(text);
+if(score >= 80) return "Push Next Step";
+if(tag === "Cost") return "Reframe Value";
+if(tag === "Payment Method") return "Reduce Risk";
+if(tag === "Timing") return "Keep Momentum";
+if(tag === "Accounting") return "Lower Friction";
+if(tag === "Rejection") return "Slow Nurture";
+return "Hybrid Close";
+}
+
+function getLeadHeat(score){
+if(score >= 80) return '<span class="heat-hot">Hot</span>';
+if(score >= 55) return '<span class="heat-warm">Warm</span>';
+return '<span class="heat-cold">Cold</span>';
+}
+
+function getNextBestAction(text, score){
+const tag = getObjectionTag(text);
+if(score >= 80) return "Ask for setup now";
+if(tag === "Payment Method") return "Position ACH as faster and safer";
+if(tag === "Cost") return "Reframe around no paper checks and faster cash flow";
+if(tag === "Timing") return "Keep it short and ask for next step now";
+if(tag === "Accounting") return "Offer to simplify and include accounting";
+if(tag === "Rejection") return "Nurture and lower resistance";
+return "Send follow-up";
+}
+
+function getLiveCoaching(text, score){
+const strategy = getStrategy(text, score);
+
+if(strategy === "Push Next Step") return "They sound close. Stop explaining and move to setup.";
+if(strategy === "Reframe Value") return "Do not defend price. Shift to speed, cash flow, and less manual work.";
+if(strategy === "Reduce Risk") return "Make checks sound slower and riskier. Make ACH sound safe and simple.";
+if(strategy === "Keep Momentum") return "Shorten your ask. Keep control of the call.";
+if(strategy === "Lower Friction") return "Reduce effort. Offer easy next step and help with accounting.";
+if(strategy === "Slow Nurture") return "Pull back slightly. Rebuild interest instead of pushing too hard.";
+return "Acknowledge, reframe, and close softly.";
+}
+
+function fallbackResponse(text){
+const t = text.toLowerCase();
+
+if(t.includes("check") || t.includes("checks") || t.includes("cheques")){
+return "I hear you. The issue with checks is they slow everything down and create unnecessary delays. ACH gets the money into your account faster, and we can get that handled in just a couple minutes.";
+}
+
+if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")){
+return "I get that. That’s exactly why ACH is usually the better fit, because it keeps things electronic without creating card fee concerns. The real win is faster payment and less manual work.";
+}
+
+if(t.includes("busy") || t.includes("later")){
+return "Understood. This is actually quick, and if we take care of it now you do not have to keep dealing with checks later. We can keep it simple and handle the next step fast.";
+}
+
+if(t.includes("accountant")){
+return "That makes sense. I can absolutely include accounting, but the setup itself is straightforward and only takes a few minutes. We can get the easy part handled now so nothing gets delayed.";
+}
+
+if(t.includes("not interested")){
+return "I understand. A lot of suppliers say that at first until they realize this is really about getting paid faster and more securely. If we take two minutes now, you are set up and do not have to think about it again.";
+}
+
+return "ACH helps simplify the payment process, gets funds delivered faster, and removes the delays that come with paper checks.";
 }
 
 async function generateResponse(){
-let text=objection.value;
+const text = document.getElementById("objection").value.trim();
+const score = calcProbability(text);
+const tag = getObjectionTag(text);
+const strategy = getStrategy(text, score);
+const action = getNextBestAction(text, score);
 
-response.innerText="Thinking...";
+document.getElementById("response").textContent = "Thinking...";
+updateTranslation();
+
+let response = "";
 
 try{
-let r=await fetch("https://api.openai.com/v1/chat/completions",{
+const res = await fetch("https://api.openai.com/v1/chat/completions", {
 method:"POST",
 headers:{
-"Authorization":"Bearer "+API_KEY,
+"Authorization":"Bearer " + OPENAI_API_KEY,
 "Content-Type":"application/json"
 },
-body:JSON.stringify({
+body: JSON.stringify({
 model:"gpt-4o-mini",
 messages:[
-{role:"system",content:"You are a high level closer. Short, confident, persuasive."},
-{role:"user",content:text}
+{
+role:"system",
+content:`You are a top payment enrollment sales rep.
+
+Your goal is to move suppliers toward ACH or virtual card.
+
+Rules:
+- Keep responses short: 2 to 4 sentences
+- Be confident and persuasive
+- Sound professional, not robotic
+- Acknowledge objection
+- Reframe value
+- Move toward a close
+
+Current objection tag: ${tag}
+Current strategy: ${strategy}`
+},
+{
+role:"user",
+content:text
+}
 ]
 })
 });
 
-let d=await r.json();
-response.innerText=d.choices[0].message.content;
-
-}catch{
-response.innerText="ACH speeds up payment and removes delays.";
+const data = await res.json();
+response = data.choices?.[0]?.message?.content || "";
+} catch {
+response = "";
 }
 
-crm.innerText="Discussed ACH with supplier.";
-emailText.innerText="Following up on electronic payment setup.";
+if(!response){
+response = fallbackResponse(text);
+}
+
+document.getElementById("response").textContent = response;
+document.getElementById("confidence").textContent = "Confidence: 90%";
+document.getElementById("objectionTag").textContent = "Objection Tag: " + tag;
+document.getElementById("nextBestAction").textContent = "Next Best Action: " + action;
+document.getElementById("closeProbability").textContent = "Close Probability: " + score + "%";
+document.getElementById("strategyTag").innerHTML = strategy;
+document.getElementById("leadHeat").innerHTML = getLeadHeat(score);
+document.getElementById("liveCoaching").textContent = getLiveCoaching(text, score);
+
+generateExtras();
+}
+
+function generateExtras(){
+const supplier = suppliers[document.getElementById("supplierSelect").value || 0];
+const outcome = document.getElementById("outcome").value;
+
+document.getElementById("crmNote").textContent =
+`${supplier.company}: Discussed electronic payment options. Contact: ${supplier.contact}. Current outcome: ${outcome}.`;
+
+document.getElementById("emailText").textContent =
+`Hi ${supplier.contact}, thank you for your time today. Based on our conversation, ACH may be a strong fit to help you receive payments faster and reduce delays.`;
 }
 
 function logCall(){
-let outcomeVal=outcome.value;
+const history = getHistory();
 
 history.unshift({
-text:objection.value,
-outcome:outcomeVal
+supplier: suppliers[document.getElementById("supplierSelect").value || 0].company,
+objection: document.getElementById("objection").value.trim(),
+outcome: document.getElementById("outcome").value,
+enrollment: document.getElementById("enrollment").value,
+createdAt: new Date().toLocaleString()
 });
 
+saveHistory(history);
 renderHistory();
 updateStats();
+renderManager();
 }
 
 function renderHistory(){
-historyDiv.innerHTML=history.map(h=>`<p>${h.text} - ${h.outcome}</p>`).join("");
+const history = getHistory();
+const el = document.getElementById("history");
+
+if(!history.length){
+el.innerHTML = '<p class="small">No calls logged yet.</p>';
+return;
+}
+
+el.innerHTML = history.map(item => `
+<div class="history-item">
+<p><strong>${item.supplier}</strong> — ${item.outcome}</p>
+<p class="small">${item.createdAt}</p>
+<p><strong>Objection:</strong> ${item.objection || "—"}</p>
+</div>
+`).join("");
 }
 
 function updateStats(){
-let total=history.length;
-let conv=history.filter(h=>h.outcome==="Converted").length;
+const history = getHistory();
+const total = history.length;
+const converted = history.filter(h => h.outcome === "Converted").length;
+const rate = total ? Math.round((converted / total) * 100) : 0;
 
-calls.innerText=total;
-converted.innerText=conv;
-rate.innerText= total? Math.round(conv/total*100)+"%":"0%";
+document.getElementById("callsLogged").textContent = total;
+document.getElementById("callsConverted").textContent = converted;
+document.getElementById("conversionRate").textContent = rate + "%";
 }
 
-</script>
+function renderManager(){
+const history = getHistory();
+const total = history.length;
+const converted = history.filter(h => h.outcome === "Converted").length;
+const rate = total ? Math.round((converted / total) * 100) : 0;
 
+document.getElementById("mgrCalls").textContent = total;
+document.getElementById("mgrConverted").textContent = converted;
+document.getElementById("mgrRate").textContent = rate + "%";
+
+const breakdown = {};
+history.forEach(h => {
+const tag = getObjectionTag(h.objection || "");
+breakdown[tag] = (breakdown[tag] || 0) + 1;
+});
+
+document.getElementById("objectionBreakdown").innerHTML =
+Object.keys(breakdown).length
+? Object.entries(breakdown).map(([k,v]) => `<p><strong>${k}:</strong> ${v}</p>`).join("")
+: '<p class="small">No data yet.</p>';
+}
+
+function markEnrollmentComplete(){
+document.getElementById("enrollment").value = "Completed";
+document.getElementById("outcome").value = "Converted";
+generateExtras();
+}
+</script>
 </body>
 </html>
-
