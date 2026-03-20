@@ -7,50 +7,47 @@
 <style>
 :root{
 --primary:#0066CC;
---primary-dark:#004b99;
---bg:#f4f7fb;
---card:#ffffff;
---text:#1f2937;
---muted:#6b7280;
---border:#e5e7eb;
---green:#10b981;
---amber:#f59e0b;
---red:#ef4444;
---navy:#0f172a;
---light-blue:#e8f1fb;
+--primary-dark:#004B99;
+--primary-soft:#EAF4FF;
+--bg:#F5F8FC;
+--panel:#FFFFFF;
+--panel-2:#F9FBFE;
+--text:#1F2937;
+--muted:#6B7280;
+--line:#E5E7EB;
+--success:#16A34A;
+--warning:#D97706;
+--danger:#DC2626;
+--navy:#0F2742;
+--shadow:0 8px 24px rgba(15, 39, 66, 0.08);
+--radius:16px;
 }
 
 *{box-sizing:border-box}
-
+html,body{margin:0;padding:0}
 body{
-margin:0;
 font-family:Arial, Helvetica, sans-serif;
 background:var(--bg);
 color:var(--text);
 }
 
-.wrap{
-max-width:1150px;
-margin:auto;
-padding:20px;
+.app-shell{
+display:grid;
+grid-template-columns:260px 1fr;
+min-height:100vh;
 }
 
-.header{
-background:linear-gradient(135deg, var(--primary), #0b4fa3);
+.sidebar{
+background:linear-gradient(180deg, var(--navy), #14385D);
 color:#fff;
-padding:20px;
-border-radius:14px;
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:20px;
-box-shadow:0 10px 24px rgba(0,0,0,.08);
+padding:22px 18px;
 }
 
 .brand{
 display:flex;
 align-items:center;
-gap:14px;
+gap:12px;
+margin-bottom:28px;
 }
 
 .logo{
@@ -62,30 +59,142 @@ color:var(--primary);
 display:flex;
 align-items:center;
 justify-content:center;
-font-weight:900;
 font-size:22px;
-box-shadow:0 6px 18px rgba(0,0,0,.15);
+font-weight:900;
+box-shadow:0 6px 18px rgba(0,0,0,.18);
+flex-shrink:0;
 }
 
-.brand h1{
+.brand-text h1{
 margin:0;
-font-size:28px;
+font-size:22px;
 line-height:1;
+letter-spacing:-.03em;
 }
 
-.brand p{
+.brand-text p{
 margin:6px 0 0;
-font-size:13px;
-opacity:.9;
+font-size:12px;
+color:rgba(255,255,255,.8);
 }
 
-.card{
-background:var(--card);
-border:1px solid var(--border);
+.nav-group{
+margin-top:20px;
+}
+
+.nav-label{
+font-size:11px;
+font-weight:700;
+letter-spacing:.08em;
+text-transform:uppercase;
+color:rgba(255,255,255,.55);
+margin-bottom:10px;
+}
+
+.nav-btn{
+width:100%;
+text-align:left;
+border:none;
+background:transparent;
+color:#fff;
+padding:12px 14px;
+border-radius:12px;
+cursor:pointer;
+font-weight:700;
+margin-bottom:8px;
+transition:.15s ease;
+}
+
+.nav-btn:hover,
+.nav-btn.active{
+background:rgba(255,255,255,.1);
+}
+
+.sidebar-card{
+margin-top:24px;
+background:rgba(255,255,255,.08);
+border:1px solid rgba(255,255,255,.1);
 border-radius:14px;
-padding:18px;
-margin-top:16px;
-box-shadow:0 4px 14px rgba(15,23,42,.04);
+padding:14px;
+}
+
+.sidebar-card h3{
+margin:0 0 8px;
+font-size:14px;
+}
+
+.sidebar-card p{
+margin:0;
+font-size:12px;
+line-height:1.5;
+color:rgba(255,255,255,.82);
+}
+
+.main{
+display:flex;
+flex-direction:column;
+min-width:0;
+}
+
+.topbar{
+background:#fff;
+border-bottom:1px solid var(--line);
+padding:16px 22px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:16px;
+position:sticky;
+top:0;
+z-index:10;
+}
+
+.topbar h2{
+margin:0;
+font-size:24px;
+letter-spacing:-.03em;
+}
+
+.topbar p{
+margin:4px 0 0;
+color:var(--muted);
+font-size:13px;
+}
+
+.topbar-right{
+display:flex;
+align-items:center;
+gap:10px;
+flex-wrap:wrap;
+}
+
+.user-pill{
+background:var(--primary-soft);
+color:var(--primary-dark);
+padding:10px 12px;
+border-radius:999px;
+font-weight:700;
+font-size:12px;
+border:1px solid #D7E9FB;
+}
+
+.btn{
+border:none;
+border-radius:12px;
+padding:12px 14px;
+font-size:14px;
+font-weight:700;
+cursor:pointer;
+}
+
+.btn-primary{background:var(--primary);color:#fff}
+.btn-secondary{background:#EEF2F7;color:var(--text);border:1px solid var(--line)}
+.btn-success{background:var(--success);color:#fff}
+.btn-warning{background:var(--warning);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+
+.page{
+padding:22px;
 }
 
 .grid{
@@ -95,223 +204,350 @@ gap:16px;
 
 .grid-2{grid-template-columns:1fr 1fr}
 .grid-3{grid-template-columns:1fr 1fr 1fr}
-.grid-main{grid-template-columns:1.2fr .8fr}
+.grid-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.main-grid{grid-template-columns:1.2fr .8fr}
 
-@media (max-width:900px){
-.grid-2,.grid-3,.grid-main{grid-template-columns:1fr}
+.card{
+background:var(--panel);
+border:1px solid var(--line);
+border-radius:var(--radius);
+box-shadow:var(--shadow);
+padding:18px;
 }
 
-h2,h3{
-margin:0 0 12px;
+.card.soft{
+background:var(--panel-2);
 }
 
-.small{
+.card-header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+margin-bottom:14px;
+}
+
+.card h3{
+margin:0;
+font-size:18px;
+letter-spacing:-.02em;
+}
+
+.subtle{
 color:var(--muted);
 font-size:12px;
+}
+
+.stat-card{
+background:#fff;
+border:1px solid var(--line);
+border-radius:14px;
+padding:16px;
+box-shadow:var(--shadow);
+}
+
+.stat-label{
+color:var(--muted);
+font-size:12px;
+margin-bottom:6px;
+}
+
+.stat-value{
+font-size:30px;
+font-weight:800;
+letter-spacing:-.03em;
+}
+
+.stat-foot{
+margin-top:8px;
+color:var(--muted);
+font-size:11px;
+}
+
+label{
+display:block;
+font-size:12px;
+color:var(--muted);
+margin-bottom:6px;
+font-weight:700;
 }
 
 input, textarea, select{
 width:100%;
-padding:12px;
-margin-top:8px;
-margin-bottom:12px;
-border-radius:10px;
-border:1px solid var(--border);
-font-size:15px;
+border:1px solid var(--line);
+border-radius:12px;
 background:#fff;
+color:var(--text);
+padding:13px 14px;
+font-size:15px;
+outline:none;
+}
+
+input:focus, textarea:focus, select:focus{
+border-color:var(--primary);
+box-shadow:0 0 0 3px rgba(0,102,204,.12);
 }
 
 textarea{
-min-height:120px;
+min-height:140px;
 resize:vertical;
 }
 
-button{
-border:none;
-border-radius:10px;
-padding:12px 14px;
-cursor:pointer;
-font-weight:700;
-background:var(--primary);
-color:#fff;
-}
-
-button.secondary{
-background:#e5e7eb;
-color:#111827;
-}
-
-button.green{background:var(--green)}
-button.red{background:var(--red)}
-button.amber{background:var(--amber)}
-
 .toolbar{
 display:flex;
-gap:10px;
 flex-wrap:wrap;
+gap:10px;
 }
 
-.hidden{display:none}
-
-.stat{
-border:1px solid var(--border);
-border-radius:12px;
-padding:14px;
-background:#fff;
-}
-
-.stat .label{
-font-size:12px;
-color:var(--muted);
-margin-bottom:8px;
-}
-
-.stat .value{
-font-size:26px;
-font-weight:800;
-}
-
-.panel-soft{
-background:var(--light-blue);
-border:1px solid #dbeafe;
-border-radius:12px;
-padding:14px;
+.pill-row{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+margin-top:10px;
 }
 
 .pill{
-display:inline-block;
-padding:6px 10px;
+display:inline-flex;
+align-items:center;
+padding:7px 10px;
 border-radius:999px;
 font-size:12px;
 font-weight:700;
-margin-right:6px;
+background:var(--primary-soft);
+color:var(--primary-dark);
+border:1px solid #D7E9FB;
+}
+
+.response-box{
+border:1px solid var(--line);
+background:#FBFDFF;
+border-radius:14px;
+padding:16px;
+}
+
+.response-main{
+white-space:pre-wrap;
+line-height:1.6;
+font-size:15px;
+margin-bottom:12px;
+}
+
+.meta-line{
+color:var(--muted);
+font-size:12px;
 margin-bottom:6px;
-background:#eef2ff;
-color:#3730a3;
+line-height:1.45;
 }
 
-.heat-hot{
-color:#065f46;
-background:#d1fae5;
-padding:4px 10px;
+.heat{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+padding:5px 10px;
 border-radius:999px;
-font-weight:700;
-display:inline-block;
+font-size:12px;
+font-weight:800;
 }
 
-.heat-warm{
-color:#92400e;
-background:#fef3c7;
-padding:4px 10px;
-border-radius:999px;
-font-weight:700;
-display:inline-block;
-}
+.heat.hot{background:#DCFCE7;color:#166534}
+.heat.warm{background:#FEF3C7;color:#92400E}
+.heat.cold{background:#FEE2E2;color:#991B1B}
 
-.heat-cold{
-color:#991b1b;
-background:#fee2e2;
-padding:4px 10px;
-border-radius:999px;
-font-weight:700;
-display:inline-block;
+.translation-box{
+background:var(--primary-soft);
+border:1px solid #D7E9FB;
+border-radius:14px;
+padding:14px;
 }
 
 .history-item{
-border-top:1px solid var(--border);
-padding-top:12px;
-margin-top:12px;
+padding:12px 0;
+border-top:1px solid var(--line);
 }
 
 .history-item:first-child{
 border-top:none;
 padding-top:0;
-margin-top:0;
+}
+
+.history-title{
+font-weight:700;
+margin-bottom:4px;
+}
+
+.history-meta{
+color:var(--muted);
+font-size:12px;
+margin-bottom:8px;
+}
+
+.login-screen{
+max-width:520px;
+margin:40px auto 0;
+}
+
+.hidden{display:none !important}
+
+@media (max-width: 1024px){
+.app-shell{
+grid-template-columns:1fr;
+}
+
+.sidebar{
+display:none;
+}
+
+.main-grid,
+.grid-4,
+.grid-3,
+.grid-2{
+grid-template-columns:1fr;
+}
+
+.page{
+padding:16px;
+}
+
+.topbar{
+padding:16px;
+}
 }
 </style>
 </head>
 <body>
-<div class="wrap">
-<div class="header">
+<div class="app-shell">
+<aside class="sidebar">
 <div class="brand">
 <div class="logo">P</div>
-<div>
+<div class="brand-text">
 <h1>PayPilot AI</h1>
 <p>Enterprise supplier enrollment intelligence</p>
 </div>
 </div>
-<div id="userDisplay" class="small" style="color:#fff;"></div>
+
+<div class="nav-group">
+<div class="nav-label">Workspace</div>
+<button class="nav-btn active" onclick="showRepView()">Rep View</button>
+<button class="nav-btn" onclick="showManagerView()">Manager View</button>
 </div>
 
-<div id="loginCard" class="card">
-<h3>Login</h3>
+<div class="nav-group">
+<div class="nav-label">Actions</div>
+<button class="nav-btn" onclick="toggleTranslate()">Toggle Translation</button>
+<button class="nav-btn" onclick="logout()">Logout</button>
+</div>
+
+<div class="sidebar-card">
+<h3>Why this layout</h3>
+<p>
+Cleaner rep workflow, stronger enterprise feel, and better separation between
+live call actions and management reporting.
+</p>
+</div>
+</aside>
+
+<main class="main">
+<div class="topbar">
+<div>
+<h2>PayPilot AI</h2>
+<p>AvidXchange-style supplier conversion workspace</p>
+</div>
+<div class="topbar-right">
+<div id="userDisplay" class="user-pill hidden"></div>
+<button class="btn btn-secondary" onclick="showRepView()">Rep View</button>
+<button class="btn btn-secondary" onclick="showManagerView()">Manager View</button>
+<button class="btn btn-danger hidden" id="logoutBtn" onclick="logout()">Logout</button>
+</div>
+</div>
+
+<div class="page">
+<div id="loginCard" class="login-screen">
+<div class="card">
+<div class="card-header">
+<h3>Secure Login</h3>
+</div>
+<label>Email</label>
 <input id="email" placeholder="Email" />
+<label>Password</label>
 <input id="password" type="password" placeholder="Password" />
-<button onclick="login()">Login</button>
-<p class="small">Use: demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123</p>
+<div class="toolbar">
+<button class="btn btn-primary" onclick="login()">Login</button>
+</div>
+<p class="subtle" style="margin-top:12px;">
+demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123
+</p>
+</div>
 </div>
 
 <div id="app" class="hidden">
-<div class="card">
-<div class="toolbar">
-<button class="secondary" onclick="showRepView()">Rep View</button>
-<button class="secondary" onclick="showManagerView()">Manager View</button>
-<button class="red" onclick="logout()">Logout</button>
-</div>
-</div>
-
 <div id="repView">
-<div class="grid grid-3">
-<div class="stat">
-<div class="label">Calls Logged</div>
-<div class="value" id="callsLogged">0</div>
+<div class="grid grid-4">
+<div class="stat-card">
+<div class="stat-label">Calls Logged</div>
+<div class="stat-value" id="callsLogged">0</div>
+<div class="stat-foot">Saved call activity</div>
 </div>
-<div class="stat">
-<div class="label">Converted</div>
-<div class="value" id="callsConverted">0</div>
+<div class="stat-card">
+<div class="stat-label">Converted</div>
+<div class="stat-value" id="callsConverted">0</div>
+<div class="stat-foot">Successful outcomes</div>
 </div>
-<div class="stat">
-<div class="label">Conversion Rate</div>
-<div class="value" id="conversionRate">0%</div>
+<div class="stat-card">
+<div class="stat-label">Conversion Rate</div>
+<div class="stat-value" id="conversionRate">0%</div>
+<div class="stat-foot">Based on logged calls</div>
+</div>
+<div class="stat-card">
+<div class="stat-label">Top Objection</div>
+<div class="stat-value" id="topObjection" style="font-size:20px;">None</div>
+<div class="stat-foot">Most frequent blocker</div>
 </div>
 </div>
 
-<div class="grid grid-main">
+<div class="grid main-grid" style="margin-top:16px;">
 <div>
 <div class="card">
+<div class="card-header">
 <h3>Supplier Queue</h3>
+<span class="subtle">Active supplier context</span>
+</div>
+<label>Supplier</label>
 <select id="supplierSelect" onchange="loadSupplier()"></select>
 <div id="supplierInfo"></div>
 </div>
 
 <div class="card">
+<div class="card-header">
 <h3>Live Call Workspace</h3>
+<span class="subtle">Manual call assist</span>
+</div>
 
 <div class="grid grid-3">
-<div class="stat">
-<div class="label">Detected Language</div>
-<div class="value" style="font-size:18px" id="languageDisplay">English</div>
+<div class="stat-card">
+<div class="stat-label">Detected Language</div>
+<div class="stat-value" style="font-size:18px;" id="languageDisplay">English</div>
 </div>
-<div class="stat">
-<div class="label">Lead Status</div>
-<div class="value" style="font-size:16px" id="leadHeat">—</div>
+<div class="stat-card">
+<div class="stat-label">Lead Status</div>
+<div class="stat-value" style="font-size:18px;" id="leadHeat">—</div>
 </div>
-<div class="stat">
-<div class="label">Strategy</div>
-<div class="value" style="font-size:16px" id="strategyTag">—</div>
+<div class="stat-card">
+<div class="stat-label">Strategy</div>
+<div class="stat-value" style="font-size:18px;" id="strategyTag">—</div>
 </div>
 </div>
 
+<div style="margin-top:14px;">
+<label>Supplier Objection / What they said</label>
 <textarea id="objection" placeholder="Type what the supplier says..."></textarea>
+</div>
 
 <div class="toolbar">
-<button onclick="generateResponse()">Generate AI Response</button>
-<button class="secondary" onclick="toggleTranslate()">Toggle Translation</button>
-<button onclick="startListening()">🎤 Start Mic</button>
-<button class="secondary" onclick="stopListening()">Stop Mic</button>
+<button class="btn btn-primary" onclick="generateResponse()">Generate AI Response</button>
+<button class="btn btn-secondary" onclick="toggleTranslate()">Toggle Translation</button>
 </div>
 
-<div id="translationBox" class="panel-soft hidden" style="margin-top:14px;">
+<div id="translationBox" class="translation-box hidden" style="margin-top:14px;">
 <h3 style="margin-top:0;">Live Translation</h3>
 <p><strong>English:</strong> <span id="translatedEnglish">—</span></p>
 <p><strong>Reply in Supplier Language:</strong> <span id="translatedReply">—</span></p>
@@ -319,7 +555,12 @@ margin-top:0;
 </div>
 
 <div class="card">
+<div class="card-header">
 <h3>Call Outcome</h3>
+<span class="subtle">Wrap-up actions</span>
+</div>
+
+<label>Outcome</label>
 <select id="outcome">
 <option>Pending</option>
 <option>Follow Up Needed</option>
@@ -327,6 +568,7 @@ margin-top:0;
 <option>Rejected</option>
 </select>
 
+<label>Enrollment Status</label>
 <select id="enrollment">
 <option>Pending</option>
 <option>Enrollment Sent</option>
@@ -335,39 +577,56 @@ margin-top:0;
 </select>
 
 <div class="toolbar">
-<button class="green" onclick="logCall()">Log Call</button>
-<button class="amber" onclick="markEnrollmentComplete()">Mark Enrollment Complete</button>
+<button class="btn btn-success" onclick="logCall()">Log Call</button>
+<button class="btn btn-warning" onclick="markEnrollmentComplete()">Mark Enrollment Complete</button>
 </div>
 </div>
 
 <div class="card">
+<div class="card-header">
 <h3>Call History</h3>
+<span class="subtle">Recent activity</span>
+</div>
 <div id="history"></div>
 </div>
 </div>
 
 <div>
-<div class="card">
+<div class="card soft">
+<div class="card-header">
 <h3>AI Response</h3>
-<p id="response">—</p>
-<p class="small" id="confidence">Confidence: —</p>
-<p class="small" id="objectionTag">Objection Tag: —</p>
-<p class="small" id="nextBestAction">Next Best Action: —</p>
-<p class="small" id="closeProbability">Close Probability: —</p>
+<span class="subtle">Rep guidance</span>
+</div>
+<div class="response-box">
+<div class="response-main" id="response">—</div>
+<div class="meta-line" id="confidence">Confidence: —</div>
+<div class="meta-line" id="objectionTag">Objection Tag: —</div>
+<div class="meta-line" id="nextBestAction">Next Best Action: —</div>
+<div class="meta-line" id="closeProbability">Close Probability: —</div>
+</div>
 </div>
 
 <div class="card">
+<div class="card-header">
 <h3>Live Coaching</h3>
+<span class="subtle">How to handle it</span>
+</div>
 <p id="liveCoaching">—</p>
 </div>
 
 <div class="card">
+<div class="card-header">
 <h3>CRM Note</h3>
+<span class="subtle">Copy into CRM</span>
+</div>
 <p id="crmNote">—</p>
 </div>
 
 <div class="card">
+<div class="card-header">
 <h3>Follow-Up Email</h3>
+<span class="subtle">Post-call message</span>
+</div>
 <p id="emailText">—</p>
 </div>
 </div>
@@ -375,72 +634,117 @@ margin-top:0;
 </div>
 
 <div id="managerView" class="hidden">
-<div class="card">
-<h3>Manager Dashboard</h3>
 <div class="grid grid-3">
-<div class="stat">
-<div class="label">Total Calls</div>
-<div class="value" id="mgrCalls">0</div>
+<div class="stat-card">
+<div class="stat-label">Total Calls</div>
+<div class="stat-value" id="mgrCalls">0</div>
+<div class="stat-foot">All logged activity</div>
 </div>
-<div class="stat">
-<div class="label">Total Converted</div>
-<div class="value" id="mgrConverted">0</div>
+<div class="stat-card">
+<div class="stat-label">Total Converted</div>
+<div class="stat-value" id="mgrConverted">0</div>
+<div class="stat-foot">Successful outcomes</div>
 </div>
-<div class="stat">
-<div class="label">Win Rate</div>
-<div class="value" id="mgrRate">0%</div>
-</div>
+<div class="stat-card">
+<div class="stat-label">Win Rate</div>
+<div class="stat-value" id="mgrRate">0%</div>
+<div class="stat-foot">Current close rate</div>
 </div>
 </div>
 
+<div class="grid grid-2" style="margin-top:16px;">
 <div class="card">
+<div class="card-header">
 <h3>Objection Breakdown</h3>
+</div>
 <div id="objectionBreakdown"></div>
 </div>
+
+<div class="card">
+<div class="card-header">
+<h3>Manager Notes</h3>
+</div>
+<p class="subtle">
+This area is ready for charts, rep leaderboard, top lost reasons,
+and team performance once the backend is connected.
+</p>
 </div>
 </div>
+</div>
+</div>
+</div>
+</main>
 </div>
 
 <script>
 const OPENAI_API_KEY = "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";
 
+const SYSTEM_PROMPT = `
+You are a top 1% payment enrollment closer.
+
+You help suppliers move from checks to ACH or card.
+
+Rules:
+- 1 to 3 sentences
+- sound natural, not scripted
+- acknowledge first
+- reframe fast
+- move toward a next step
+- never sound pushy or robotic
+- speak like a confident real rep
+
+Style examples:
+- "Yeah, I get that."
+- "Totally fair."
+- "Most suppliers say that at first."
+- "The main win is speed and less manual work."
+- "We can get the next step handled now."
+
+Always optimize for:
+1. speed
+2. simplicity
+3. getting paid faster
+4. reducing check delays
+`;
+
+let translateOn = false;
+
 const suppliers = [
 {
+id:1,
 company:"Novacore Electrical",
 contact:"Anthony King",
 industry:"Electrical",
-avgInvoice:"$9,200",
-achScore:58,
-vccScore:33
+avg_invoice:"$9,200",
+ach_score:58,
+vcc_score:33
 },
 {
+id:2,
 company:"Atlas Industrial Supply",
 contact:"Jorge Ramirez",
 industry:"Industrial",
-avgInvoice:"$6,200",
-achScore:74,
-vccScore:18
+avg_invoice:"$6,200",
+ach_score:74,
+vcc_score:18
 },
 {
+id:3,
 company:"Blue Ridge Property",
 contact:"Trista Jamieson",
 industry:"Property",
-avgInvoice:"$4,100",
-achScore:69,
-vccScore:22
+avg_invoice:"$4,100",
+ach_score:69,
+vcc_score:22
 }
 ];
 
-let translateOn = false;
-let recognition = null;
-let isListening = false;
-
 function getHistory(){
-return JSON.parse(localStorage.getItem("paypilot_enterprise_history") || "[]");
+return JSON.parse(localStorage.getItem("paypilot_polished_ui_history") || "[]");
 }
 
 function saveHistory(history){
-localStorage.setItem("paypilot_enterprise_history", JSON.stringify(history));
+localStorage.setItem("paypilot_polished_ui_history", JSON.stringify(history));
 }
 
 function login(){
@@ -450,6 +754,8 @@ const password = document.getElementById("password").value.trim();
 if((email === "demo@paypilot.ai" || email === "manager@paypilot.ai") && password === "demo123"){
 document.getElementById("loginCard").classList.add("hidden");
 document.getElementById("app").classList.remove("hidden");
+document.getElementById("userDisplay").classList.remove("hidden");
+document.getElementById("logoutBtn").classList.remove("hidden");
 document.getElementById("userDisplay").innerText = email;
 populateSuppliers();
 loadSupplier();
@@ -483,14 +789,16 @@ select.innerHTML = suppliers.map((s,i)=>`<option value="${i}">${s.company}</opti
 
 function loadSupplier(){
 const s = suppliers[document.getElementById("supplierSelect").value || 0];
+if(!s) return;
+
 document.getElementById("supplierInfo").innerHTML = `
 <p><strong>Contact:</strong> ${s.contact}</p>
 <p><strong>Industry:</strong> ${s.industry}</p>
-<p><strong>Avg Invoice:</strong> ${s.avgInvoice}</p>
-<p>
-<span class="pill">ACH ${s.achScore}%</span>
-<span class="pill">VCC ${s.vccScore}%</span>
-</p>
+<p><strong>Avg Invoice:</strong> ${s.avg_invoice}</p>
+<div class="pill-row">
+<span class="pill">ACH ${s.ach_score}%</span>
+<span class="pill">VCC ${s.vcc_score}%</span>
+</div>
 `;
 }
 
@@ -532,55 +840,6 @@ document.getElementById("translatedEnglish").textContent = english;
 document.getElementById("translatedReply").textContent = reply;
 }
 
-function startListening(){
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if(!SpeechRecognition){
-alert("Mic not supported on this device/browser");
-return;
-}
-
-recognition = new SpeechRecognition();
-recognition.continuous = true;
-recognition.interimResults = true;
-recognition.lang = "en-US";
-
-recognition.onstart = () => {
-isListening = true;
-document.getElementById("liveCoaching").textContent = "🎤 Listening...";
-};
-
-recognition.onerror = () => {
-document.getElementById("liveCoaching").textContent = "Mic error";
-};
-
-recognition.onend = () => {
-isListening = false;
-document.getElementById("liveCoaching").textContent = "Mic stopped";
-};
-
-recognition.onresult = (event) => {
-let transcript = "";
-
-for(let i = event.resultIndex; i < event.results.length; i++){
-transcript += event.results[i][0].transcript;
-}
-
-transcript = transcript.trim();
-document.getElementById("objection").value = transcript;
-updateTranslation();
-generateResponse();
-};
-
-recognition.start();
-}
-
-function stopListening(){
-if(recognition){
-recognition.stop();
-}
-}
-
 function calcProbability(text){
 let score = 70;
 const t = text.toLowerCase();
@@ -618,9 +877,9 @@ return "Hybrid Close";
 }
 
 function getLeadHeat(score){
-if(score >= 80) return '<span class="heat-hot">Hot</span>';
-if(score >= 55) return '<span class="heat-warm">Warm</span>';
-return '<span class="heat-cold">Cold</span>';
+if(score >= 80) return '<span class="heat hot">Hot</span>';
+if(score >= 55) return '<span class="heat warm">Warm</span>';
+return '<span class="heat cold">Cold</span>';
 }
 
 function getNextBestAction(text, score){
@@ -650,26 +909,26 @@ function fallbackResponse(text){
 const t = text.toLowerCase();
 
 if(t.includes("check") || t.includes("checks") || t.includes("cheques")){
-return "I hear you. The issue with checks is they slow everything down and create unnecessary delays. ACH gets the money into your account faster, and we can get that handled in just a couple minutes.";
+return "Yeah, I get that. Most suppliers are used to checks, but ACH cuts out the delay and gets funds into the account faster.";
 }
 
 if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")){
-return "I get that. That’s exactly why ACH is usually the better fit, because it keeps things electronic without creating card fee concerns. The real win is faster payment and less manual work.";
+return "Totally fair. That’s why ACH is usually the better fit — you keep it electronic without card fee concerns, and payments move faster.";
 }
 
 if(t.includes("busy") || t.includes("later")){
-return "Understood. This is actually quick, and if we take care of it now you do not have to keep dealing with checks later. We can keep it simple and handle the next step fast.";
+return "I hear you. I’ll keep it quick — if we handle the next step now, you don’t have to keep dealing with check delays later.";
 }
 
 if(t.includes("accountant")){
-return "That makes sense. I can absolutely include accounting, but the setup itself is straightforward and only takes a few minutes. We can get the easy part handled now so nothing gets delayed.";
+return "Makes sense. We can include accounting, but the setup itself is simple, so we can knock out the easy part now and keep things moving.";
 }
 
 if(t.includes("not interested")){
-return "I understand. A lot of suppliers say that at first until they realize this is really about getting paid faster and more securely. If we take two minutes now, you are set up and do not have to think about it again.";
+return "Understood. A lot of suppliers say that at first until they realize this is mostly about getting paid faster and avoiding check issues.";
 }
 
-return "ACH helps simplify the payment process, gets funds delivered faster, and removes the delays that come with paper checks.";
+return "Got you. The main value here is faster payment, less manual work, and fewer check delays.";
 }
 
 async function generateResponse(){
@@ -694,27 +953,8 @@ headers:{
 body: JSON.stringify({
 model:"gpt-4o-mini",
 messages:[
-{
-role:"system",
-content:`You are a top payment enrollment sales rep.
-
-Your goal is to move suppliers toward ACH or virtual card.
-
-Rules:
-- Keep responses short: 2 to 4 sentences
-- Be confident and persuasive
-- Sound professional, not robotic
-- Acknowledge objection
-- Reframe value
-- Move toward a close
-
-Current objection tag: ${tag}
-Current strategy: ${strategy}`
-},
-{
-role:"user",
-content:text
-}
+{ role:"system", content:SYSTEM_PROMPT },
+{ role:"user", content:text }
 ]
 })
 });
@@ -744,6 +984,7 @@ generateExtras();
 function generateExtras(){
 const supplier = suppliers[document.getElementById("supplierSelect").value || 0];
 const outcome = document.getElementById("outcome").value;
+if(!supplier) return;
 
 document.getElementById("crmNote").textContent =
 `${supplier.company}: Discussed electronic payment options. Contact: ${supplier.contact}. Current outcome: ${outcome}.`;
@@ -774,15 +1015,15 @@ const history = getHistory();
 const el = document.getElementById("history");
 
 if(!history.length){
-el.innerHTML = '<p class="small">No calls logged yet.</p>';
+el.innerHTML = '<p class="subtle">No calls logged yet.</p>';
 return;
 }
 
 el.innerHTML = history.map(item => `
 <div class="history-item">
-<p><strong>${item.supplier}</strong> — ${item.outcome}</p>
-<p class="small">${item.createdAt}</p>
-<p><strong>Objection:</strong> ${item.objection || "—"}</p>
+<div class="history-title">${item.supplier} — ${item.outcome}</div>
+<div class="history-meta">${item.createdAt}</div>
+<div><strong>Objection:</strong> ${item.objection || "—"}</div>
 </div>
 `).join("");
 }
@@ -793,9 +1034,25 @@ const total = history.length;
 const converted = history.filter(h => h.outcome === "Converted").length;
 const rate = total ? Math.round((converted / total) * 100) : 0;
 
+const tags = {};
+history.forEach(h => {
+const tag = getObjectionTag(h.objection || "");
+tags[tag] = (tags[tag] || 0) + 1;
+});
+
+let topTag = "None";
+let topCount = 0;
+for(const key in tags){
+if(tags[key] > topCount){
+topTag = key;
+topCount = tags[key];
+}
+}
+
 document.getElementById("callsLogged").textContent = total;
 document.getElementById("callsConverted").textContent = converted;
 document.getElementById("conversionRate").textContent = rate + "%";
+document.getElementById("topObjection").textContent = topTag;
 }
 
 function renderManager(){
@@ -817,7 +1074,7 @@ breakdown[tag] = (breakdown[tag] || 0) + 1;
 document.getElementById("objectionBreakdown").innerHTML =
 Object.keys(breakdown).length
 ? Object.entries(breakdown).map(([k,v]) => `<p><strong>${k}:</strong> ${v}</p>`).join("")
-: '<p class="small">No data yet.</p>';
+: '<p class="subtle">No data yet.</p>';
 }
 
 function markEnrollmentComplete(){
@@ -828,9 +1085,6 @@ generateExtras();
 </script>
 </body>
 </html>
-
-
-
 
 
 
