@@ -1,203 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PayPilot AI</title>
-
-<style>
-body{font-family:Arial;background:#f3f4f6;margin:0;padding:20px}
-.card{background:#fff;padding:16px;border-radius:10px;margin-bottom:12px}
-input,textarea,select{width:100%;padding:10px;margin:6px 0}
-button{padding:10px;background:#111;color:#fff;border:none;border-radius:6px}
-.hidden{display:none}
-.stat{display:inline-block;margin-right:20px}
-</style>
 </head>
-
 <body>
 
-<div class="card">
 <h2>PayPilot AI</h2>
-</div>
 
-<div class="card" id="loginCard">
-<input id="email" placeholder="Email">
-<input id="password" placeholder="Password" type="password">
-<button onclick="login()">Login</button>
-<p>demo@paypilot.ai / demo123</p>
-</div>
+<input id="input" placeholder="Type objection">
+<button onclick="runAI()">Generate</button>
 
-<div id="app" class="hidden">
-
-<div class="card">
-<h3 id="welcome"></h3>
-<button onclick="logout()">Logout</button>
-</div>
-
-<div class="card">
-<h3>Supplier</h3>
-<select id="supplierSelect" onchange="loadSupplier()"></select>
-<div id="supplierInfo"></div>
-</div>
-
-<div class="card">
-<h3>Call Workspace</h3>
-
-<div>
-<span class="stat">Timer: <span id="timer">00:00</span></span>
-<span class="stat">Language: <span id="lang">English</span></span>
-</div>
-
-<button onclick="startTimer()">Start</button>
-<button onclick="resetTimer()">Reset</button>
-
-<textarea id="objection" placeholder="What did they say..."></textarea>
-
-<button onclick="generateResponse()">Generate</button>
-
-<div class="card">
-<h4>Response</h4>
-<p id="response">—</p>
-<p id="confidence"></p>
-<p id="close"></p>
-</div>
-
-<select id="outcome">
-<option>Pending</option>
-<option>Converted</option>
-<option>Rejected</option>
-</select>
-
-<button onclick="logCall()">Log Call</button>
-
-</div>
-
-<div class="card">
-<h3>History</h3>
-<div id="history"></div>
-</div>
-
-</div>
+<p id="output">—</p>
 
 <script>
 
-const OPENAI_API_KEY = "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";
+const API_KEY = "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";
 
-let currentUser="";
-let seconds=0;
-let timer=null;
+async function runAI(){
 
-const suppliers=[
-{company:"Novacore Electrical",contact:"Anthony King",ach:60,vcc:30},
-{company:"Atlas Supply",contact:"Jorge Ramirez",ach:70,vcc:20}
-];
+let text = document.getElementById("input").value;
 
-function login(){
-const e=document.getElementById("email").value.toLowerCase();
-const p=document.getElementById("password").value;
-
-if((e==="demo@paypilot.ai"||e==="manager@paypilot.ai")&&p==="demo123"){
-currentUser=e;
-document.getElementById("loginCard").classList.add("hidden");
-document.getElementById("app").classList.remove("hidden");
-document.getElementById("welcome").innerText="Logged in as "+e;
-populateSuppliers();
-renderHistory();
-}else{alert("Wrong login")}
-}
-
-function logout(){location.reload()}
-
-function populateSuppliers(){
-const s=document.getElementById("supplierSelect");
-s.innerHTML=suppliers.map((x,i)=>`<option value="${i}">${x.company}</option>`).join("");
-loadSupplier();
-}
-
-function loadSupplier(){
-const s=suppliers[document.getElementById("supplierSelect").value];
-document.getElementById("supplierInfo").innerHTML=
-`Contact: ${s.contact}<br>ACH Score: ${s.ach}%`;
-}
-
-function startTimer(){
-if(timer)return;
-timer=setInterval(()=>{
-seconds++;
-const m=String(Math.floor(seconds/60)).padStart(2,"0");
-const s=String(seconds%60).padStart(2,"0");
-document.getElementById("timer").innerText=`${m}:${s}`;
-},1000);
-}
-
-function resetTimer(){clearInterval(timer);seconds=0;timer=null;document.getElementById("timer").innerText="00:00"}
-
-function detectLang(t){
-if(t.includes("hola"))return"Spanish";
-return"English";
-}
-
-async function generateResponse(){
-
-const text=document.getElementById("objection").value;
-document.getElementById("lang").innerText=detectLang(text);
-
-document.getElementById("response").innerText="Thinking...";
+document.getElementById("output").innerText = "Thinking...";
 
 try{
-const res=await fetch("https://api.openai.com/v1/chat/completions",{
+
+let res = await fetch("https://api.openai.com/v1/chat/completions",{
 method:"POST",
 headers:{
-"Authorization":"Bearer "+OPENAI_API_KEY,
+"Authorization":"Bearer " + API_KEY,
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
 model:"gpt-4o-mini",
 messages:[
-{role:"system",content:"You are a top sales rep closing payment enrollments. Be sharp, short, confident."},
-{role:"user",content:text}
+{
+role:"system",
+content:"You are a top sales rep. Close deals fast."
+},
+{
+role:"user",
+content:text
+}
 ]
 })
 });
 
-const data=await res.json();
-const r=data.choices[0].message.content;
+let data = await res.json();
 
-document.getElementById("response").innerText=r;
-document.getElementById("confidence").innerText="Confidence: 90%";
-document.getElementById("close").innerText="Close Probability: 75%";
+document.getElementById("output").innerText =
+data.choices[0].message.content;
 
 }catch{
-document.getElementById("response").innerText="Fallback: Push ACH for faster payment.";
+document.getElementById("output").innerText = "Error";
 }
 
-}
-
-function getHistory(){
-return JSON.parse(localStorage.getItem("history")||"[]");
-}
-
-function saveHistory(h){
-localStorage.setItem("history",JSON.stringify(h));
-}
-
-function logCall(){
-const h=getHistory();
-h.unshift({
-text:document.getElementById("objection").value,
-outcome:document.getElementById("outcome").value,
-date:new Date().toLocaleString()
-});
-saveHistory(h);
-renderHistory();
-}
-
-function renderHistory(){
-const h=getHistory();
-document.getElementById("history").innerHTML=h.map(x=>
-`<div>${x.text} - ${x.outcome}</div>`
-).join("");
 }
 
 </script>
