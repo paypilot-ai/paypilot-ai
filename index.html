@@ -8,8 +8,8 @@
 :root{
 --bg:#f4f8ff;
 --bg2:#edf4ff;
---panel:#ffffff;
---panelSoft:rgba(255,255,255,.82);
+--panel:rgba(255,255,255,.9);
+--white:#ffffff;
 --text:#0f172a;
 --muted:#64748b;
 --line:#dbe7f5;
@@ -19,9 +19,10 @@
 --nav:#0b1220;
 --nav2:#131c31;
 --green:#22c55e;
+--amber:#f59e0b;
 --shadow:0 20px 60px rgba(15,23,42,.10);
---shadow2:0 30px 80px rgba(37,99,235,.14);
---radius:22px;
+--shadow-strong:0 28px 80px rgba(37,99,235,.16);
+--radius:24px;
 }
 
 *{box-sizing:border-box}
@@ -30,20 +31,20 @@ body{
 font-family:Arial,Helvetica,sans-serif;
 color:var(--text);
 background:
-radial-gradient(circle at top right, rgba(96,165,250,.22), transparent 22%),
-radial-gradient(circle at left top, rgba(37,99,235,.10), transparent 18%),
+radial-gradient(circle at top right, rgba(96,165,250,.24), transparent 22%),
+radial-gradient(circle at top left, rgba(37,99,235,.10), transparent 18%),
 linear-gradient(180deg,var(--bg),var(--bg2));
 }
 
 .app{
 min-height:100vh;
 display:grid;
-grid-template-columns:260px 1fr;
+grid-template-columns:270px 1fr;
 }
 
 .sidebar{
 background:
-radial-gradient(circle at top left, rgba(96,165,250,.12), transparent 24%),
+radial-gradient(circle at top left, rgba(96,165,250,.14), transparent 28%),
 linear-gradient(180deg,var(--nav),var(--nav2));
 color:#fff;
 padding:24px 18px;
@@ -54,31 +55,42 @@ border-right:1px solid rgba(255,255,255,.06);
 display:flex;
 align-items:center;
 gap:14px;
-margin-bottom:28px;
+margin-bottom:30px;
 }
 
 .brand-badge{
-width:56px;
-height:56px;
+width:62px;
+height:62px;
 border-radius:18px;
+background:linear-gradient(135deg,#0f172a 0%, #2563eb 58%, #60a5fa 100%);
 display:flex;
 align-items:center;
 justify-content:center;
-background:linear-gradient(135deg,#ffffff,#dbeafe);
-color:#1d4ed8;
-font-weight:900;
-font-size:22px;
-box-shadow:0 18px 40px rgba(0,0,0,.28);
+box-shadow:0 18px 38px rgba(0,0,0,.30);
+position:relative;
+overflow:hidden;
+flex-shrink:0;
 }
 
-.brand h1{
+.brand-badge::after{
+content:"";
+position:absolute;
+width:88px;
+height:88px;
+right:-30px;
+top:-30px;
+background:radial-gradient(circle, rgba(255,255,255,.22), transparent 62%);
+}
+
+.brand-text h1{
 margin:0;
-font-size:22px;
-letter-spacing:-.04em;
+font-size:24px;
+letter-spacing:-.05em;
+line-height:1;
 }
 
-.brand p{
-margin:4px 0 0;
+.brand-text p{
+margin:5px 0 0;
 font-size:12px;
 color:rgba(255,255,255,.72);
 }
@@ -87,7 +99,7 @@ color:rgba(255,255,255,.72);
 font-size:11px;
 text-transform:uppercase;
 letter-spacing:.14em;
-color:rgba(255,255,255,.40);
+color:rgba(255,255,255,.42);
 font-weight:700;
 margin:18px 0 10px;
 }
@@ -123,15 +135,23 @@ font-size:12px;
 line-height:1.55;
 }
 
-.main{min-width:0}
+.main{
+min-width:0;
+}
+
 .page{
 max-width:1500px;
 margin:0 auto;
 padding:22px;
 }
 
+.login-wrap{
+max-width:560px;
+margin:80px auto 0;
+}
+
 .card{
-background:var(--panelSoft);
+background:var(--panel);
 backdrop-filter:blur(12px);
 border:1px solid rgba(255,255,255,.72);
 border-radius:var(--radius);
@@ -140,44 +160,39 @@ box-shadow:var(--shadow);
 margin-bottom:16px;
 }
 
-.login-wrap{
-max-width:540px;
-margin:80px auto 0;
-}
-
 .hero{
 position:relative;
 overflow:hidden;
 display:flex;
 justify-content:space-between;
 align-items:center;
-gap:20px;
-padding:32px;
-border-radius:28px;
-color:#fff;
+gap:24px;
+padding:34px;
+border-radius:30px;
 margin-bottom:18px;
+color:#fff;
 background:
 radial-gradient(circle at top right, rgba(255,255,255,.18), transparent 26%),
 linear-gradient(135deg,#1e3a8a,#2563eb,#60a5fa);
-box-shadow:var(--shadow2);
+box-shadow:var(--shadow-strong);
 }
 
 .hero::after{
 content:"";
 position:absolute;
-right:-70px;
-top:-70px;
-width:260px;
-height:260px;
+width:280px;
+height:280px;
+right:-90px;
+top:-80px;
+background:radial-gradient(circle, rgba(255,255,255,.20), transparent 64%);
 border-radius:50%;
-background:radial-gradient(circle, rgba(255,255,255,.18), transparent 65%);
 pointer-events:none;
 }
 
-.hero h1{
+.hero h2{
 margin:0;
-font-size:38px;
-letter-spacing:-1.2px;
+font-size:40px;
+letter-spacing:-1.3px;
 }
 
 .hero-sub{
@@ -186,34 +201,34 @@ font-size:14px;
 opacity:.92;
 }
 
-.hero-pitch{
+.hero-copy{
 margin-top:14px;
 max-width:760px;
 line-height:1.6;
 font-size:14px;
-color:rgba(255,255,255,.95);
+color:rgba(255,255,255,.94);
 }
 
 .hero-stats{
 display:flex;
-gap:28px;
+gap:30px;
 flex-wrap:wrap;
 margin-top:20px;
 }
 
-.hero-number{
-display:block;
+.hero-stat-number{
 font-size:24px;
-font-weight:800;
+font-weight:900;
+display:block;
 }
 
-.hero-label{
-display:block;
-margin-top:4px;
+.hero-stat-label{
 font-size:11px;
 text-transform:uppercase;
-letter-spacing:.1em;
+letter-spacing:.10em;
 opacity:.82;
+margin-top:4px;
+display:block;
 }
 
 .hero-right{
@@ -260,7 +275,7 @@ animation:pulse 1.5s infinite;
 .stat{
 background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
 border:1px solid #e7eef8;
-border-radius:20px;
+border-radius:22px;
 padding:18px;
 box-shadow:0 10px 24px rgba(15,23,42,.05);
 }
@@ -289,6 +304,14 @@ color:var(--muted);
 font-size:12px;
 }
 
+label{
+display:block;
+font-size:12px;
+color:var(--muted);
+margin-bottom:6px;
+font-weight:700;
+}
+
 input,textarea,select{
 width:100%;
 border:1px solid var(--line);
@@ -313,7 +336,6 @@ resize:vertical;
 #companySearch{
 font-size:16px;
 padding:16px;
-border-radius:18px;
 box-shadow:0 6px 18px rgba(0,0,0,.04);
 }
 
@@ -335,6 +357,7 @@ transition:.18s ease;
 }
 
 button:hover{transform:translateY(-1px)}
+
 .primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}
 .secondary{background:#eef2f7;color:#0f172a}
 .success{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
@@ -357,7 +380,7 @@ cursor:pointer;
 
 .result-item:first-child{border-top:none}
 .result-item:hover,
-.result-item.active{background:var(--soft)}
+.result-item.active{background:#eef6ff}
 
 .result-title{
 font-weight:800;
@@ -373,7 +396,7 @@ color:var(--muted);
 display:inline-block;
 padding:7px 10px;
 border-radius:999px;
-background:var(--soft);
+background:#eef6ff;
 color:#1d4ed8;
 font-size:12px;
 font-weight:800;
@@ -381,7 +404,7 @@ margin:8px 8px 0 0;
 }
 
 .ai-shell{
-border-radius:28px;
+border-radius:30px;
 padding:2px;
 background:linear-gradient(135deg, rgba(37,99,235,.30), rgba(96,165,250,.08));
 box-shadow:0 32px 90px rgba(37,99,235,.16);
@@ -390,8 +413,8 @@ box-shadow:0 32px 90px rgba(37,99,235,.16);
 .ai-box{
 position:relative;
 overflow:hidden;
-border-radius:26px;
-padding:36px;
+border-radius:28px;
+padding:38px;
 background:
 radial-gradient(circle at top center, rgba(96,165,250,.08), transparent 34%),
 linear-gradient(180deg,#fff,#f8fbff);
@@ -412,16 +435,16 @@ pointer-events:none;
 
 .ai-text{
 position:relative;
-font-size:42px;
+font-size:44px;
 font-weight:900;
 text-align:center;
-line-height:1.34;
+line-height:1.32;
 letter-spacing:-.05em;
 background:linear-gradient(135deg,#0f172a,#1e3a8a);
 -webkit-background-clip:text;
 -webkit-text-fill-color:transparent;
 white-space:pre-wrap;
-min-height:160px;
+min-height:170px;
 display:flex;
 align-items:center;
 justify-content:center;
@@ -481,10 +504,16 @@ margin-bottom:6px;
 <div class="app">
 <aside class="sidebar">
 <div class="brand">
-<div class="brand-badge">P</div>
-<div>
+<div class="brand-badge">
+<svg width="34" height="34" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 34V14H24.2C29.1 14 32.3 16.9 32.3 21.2C32.3 25.6 29.1 28.4 24.2 28.4H17.2V34H12Z" fill="white"/>
+<path d="M17.2 24.3H23.5C25.7 24.3 27.1 23.2 27.1 21.2C27.1 19.2 25.7 18.1 23.5 18.1H17.2V24.3Z" fill="#DBEAFE"/>
+<path d="M29.5 34V14H34.2L40 22.9V14H44V34H39.4L33.6 25.2V34H29.5Z" fill="white"/>
+</svg>
+</div>
+<div class="brand-text">
 <h1>PayPilot AI</h1>
-<p>Enterprise supplier enrollment intelligence</p>
+<p>Payment intelligence platform</p>
 </div>
 </div>
 
@@ -499,7 +528,7 @@ margin-bottom:6px;
 <button class="side-btn" onclick="logout()">Logout</button>
 
 <div class="side-note">
-This demo is styled to sell the vision fast: search the supplier, capture the objection, generate a sharp response, and track outcomes live.
+Premium demo surface for supplier enrollment calls. Search the supplier, capture the objection, generate the response, and log outcomes in one place.
 </div>
 </aside>
 
@@ -517,25 +546,25 @@ This demo is styled to sell the vision fast: search the supplier, capture the ob
 
 <div id="appContent" class="hidden">
 <div class="hero">
-<div class="hero-left">
-<h1>PayPilot AI</h1>
-<p class="hero-sub">High-visibility live call assistant for supplier enrollment</p>
-<div class="hero-pitch">
-Search the supplier, capture the objection, and let the demo show scoring, strategy, response guidance, CRM notes, and call outcomes in one place.
+<div>
+<h2>PayPilot AI</h2>
+<div class="hero-sub">Real-time supplier enrollment guidance</div>
+<div class="hero-copy">
+Search the supplier, capture the objection, and let the platform guide the next move with sharper rebuttals, call strategy, CRM notes, and follow-up output.
 </div>
 
 <div class="hero-stats">
 <div>
-<span class="hero-number" id="heroCalls">0</span>
-<span class="hero-label">Calls</span>
+<span class="hero-stat-number" id="heroCalls">0</span>
+<span class="hero-stat-label">Calls</span>
 </div>
 <div>
-<span class="hero-number" id="heroConverted">0</span>
-<span class="hero-label">Converted</span>
+<span class="hero-stat-number" id="heroConverted">0</span>
+<span class="hero-stat-label">Converted</span>
 </div>
 <div>
-<span class="hero-number" id="heroRate">0%</span>
-<span class="hero-label">Win Rate</span>
+<span class="hero-stat-number" id="heroRate">0%</span>
+<span class="hero-stat-label">Win Rate</span>
 </div>
 </div>
 </div>
@@ -543,7 +572,7 @@ Search the supplier, capture the objection, and let the demo show scoring, strat
 <div class="hero-right">
 <div class="hero-pill">
 <div class="live-dot"></div>
-<span>LIVE CALL MODE</span>
+LIVE CALL MODE
 </div>
 <div class="hero-pill">DEMO READY</div>
 </div>
@@ -714,7 +743,6 @@ let recognition = null;
 let selectedSupplier = null;
 let historyLog = [];
 let translateOn = false;
-let micActive = false;
 
 const suppliers = [
 { company:"Novacore Electrical", contact:"Anthony King", email:"aking@novacore.com", phone:"704-555-1122", industry:"Electrical", avgInvoice:"$9,200" },
@@ -734,9 +762,7 @@ alert("Wrong password");
 }
 }
 
-function logout(){
-location.reload();
-}
+function logout(){ location.reload(); }
 
 function showRepView(){
 document.getElementById("repView").classList.remove("hidden");
@@ -867,51 +893,23 @@ const t = text.toLowerCase();
 const mode = document.getElementById("responseMode").value;
 
 if(mode === "closer"){
-if(t.includes("check") || t.includes("checks")){
-return "Yeah, I figured. Let’s just get you off checks so you get paid faster.";
-}
-if(t.includes("fee") || t.includes("fees")){
-return "I hear you. That’s exactly why ACH makes more sense here.";
-}
-if(t.includes("busy") || t.includes("later")){
-return "No problem. This takes less time to handle now than later.";
-}
-if(t.includes("accountant") || t.includes("bookkeeper")){
-return "That’s fine. Send it to them, this usually gets approved pretty quickly.";
-}
-if(t.includes("not interested")){
-return "Understood, but this usually lands differently once people realize it’s just a faster way to get paid.";
-}
-if(t.includes("card") || t.includes("cards")){
-return "Got it. Then ACH is the clean answer here — simpler setup and less friction.";
-}
-if(detectLanguage(text) === "Spanish"){
-return "Entiendo. La idea es simple: que le paguen más rápido y sin tanta fricción.";
-}
+if(t.includes("check") || t.includes("checks")) return "Yeah, I figured. Let’s just get you off checks so you get paid faster.";
+if(t.includes("fee") || t.includes("fees")) return "I hear you. That’s exactly why ACH makes more sense here.";
+if(t.includes("busy") || t.includes("later")) return "No problem. This takes less time to handle now than later.";
+if(t.includes("accountant") || t.includes("bookkeeper")) return "That’s fine. Send it to them, this usually gets approved pretty quickly.";
+if(t.includes("not interested")) return "Understood, but this usually lands differently once people realize it’s just a faster way to get paid.";
+if(t.includes("card") || t.includes("cards")) return "Got it. Then ACH is the clean answer here — simpler setup and less friction.";
+if(detectLanguage(text) === "Spanish") return "Entiendo. La idea es simple: que le paguen más rápido y sin tanta fricción.";
 return "Let’s keep it simple — this is just a faster way for you to get paid.";
 }
 
-if(t.includes("check") || t.includes("checks")){
-return "Yeah I figured. Most people start there. The only reason I’m bringing this up is it gets you paid way faster without dealing with checks.";
-}
-if(t.includes("fee") || t.includes("fees")){
-return "I hear you. That’s exactly why most suppliers go ACH — it keeps everything clean without adding fees.";
-}
-if(t.includes("busy") || t.includes("later")){
-return "I get it. I’ll be quick. This is one of those things that actually saves you time once it’s set up.";
-}
-if(t.includes("accountant") || t.includes("bookkeeper")){
-return "Makes sense. Usually once they see how simple it is, it’s a pretty easy yes on their end.";
-}
-if(t.includes("not interested")){
-return "Yeah I get that. Usually that changes once people realize it’s just about getting paid faster, not changing everything.";
-}
-if(t.includes("card") || t.includes("cards")){
-return "Got it. In that case ACH is usually the better move — simpler, cleaner, no extra friction.";
-}
-if(detectLanguage(text) === "Spanish"){
-return "Entiendo. Esto solo ayuda a que le paguen más rápido sin complicaciones.";
-}
+if(t.includes("check") || t.includes("checks")) return "Yeah I figured. Most people start there. The only reason I’m bringing this up is it gets you paid way faster without dealing with checks.";
+if(t.includes("fee") || t.includes("fees")) return "I hear you. That’s exactly why most suppliers go ACH — it keeps everything clean without adding fees.";
+if(t.includes("busy") || t.includes("later")) return "I get it. I’ll be quick. This is one of those things that actually saves you time once it’s set up.";
+if(t.includes("accountant") || t.includes("bookkeeper")) return "Makes sense. Usually once they see how simple it is, it’s a pretty easy yes on their end.";
+if(t.includes("not interested")) return "Yeah I get that. Usually that changes once people realize it’s just about getting paid faster, not changing everything.";
+if(t.includes("card") || t.includes("cards")) return "Got it. In that case ACH is usually the better move — simpler, cleaner, no extra friction.";
+if(detectLanguage(text) === "Spanish") return "Entiendo. Esto solo ayuda a que le paguen más rápido sin complicaciones.";
 return "Yeah that makes sense. I’m just trying to make this easier and faster for you.";
 }
 
@@ -953,7 +951,6 @@ function typeResponse(text){
 const el = document.getElementById("response");
 el.innerText = "";
 let i = 0;
-
 const timer = setInterval(() => {
 el.innerText += text.charAt(i);
 i++;
@@ -1141,8 +1138,3 @@ results.classList.add("hidden");
 
 </body>
 </html>
-
-
-
-Sincerely,
-Sean Prewitt
