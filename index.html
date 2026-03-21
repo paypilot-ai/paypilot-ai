@@ -28,7 +28,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial,Helvetica,sans-serif;
 color:var(--text);
 background:
 radial-gradient(circle at top right, rgba(96,165,250,.18), transparent 22%),
@@ -39,7 +39,7 @@ linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
 .app{
 min-height:100vh;
 display:grid;
-grid-template-columns:270px 1fr;
+grid-template-columns:260px 1fr;
 }
 
 .sidebar{
@@ -59,17 +59,16 @@ margin-bottom:30px;
 }
 
 .logo{
-width:64px;
-height:64px;
+width:62px;
+height:62px;
 border-radius:18px;
 display:flex;
 align-items:center;
 justify-content:center;
 background:linear-gradient(135deg,#ffffff,#dbeafe);
 box-shadow:0 18px 36px rgba(0,0,0,.28);
-overflow:hidden;
-flex-shrink:0;
 border:1px solid rgba(255,255,255,.5);
+flex-shrink:0;
 }
 
 .brand h1{
@@ -182,10 +181,8 @@ gap:16px;
 }
 
 .grid-4{grid-template-columns:repeat(4,1fr)}
-.grid-3{grid-template-columns:repeat(3,1fr)}
 .grid-2{grid-template-columns:repeat(2,1fr)}
-.call-layout{grid-template-columns:1fr 1.25fr}
-
+.call-layout{grid-template-columns:1fr 1.2fr}
 .bottom-layout{
 display:grid;
 grid-template-columns:1fr 1fr 1fr;
@@ -202,7 +199,7 @@ padding:20px;
 transition:all .18s ease;
 }
 
-.card:hover{ transform:translateY(-2px); }
+.card:hover{transform:translateY(-2px)}
 
 .card.white{
 background:#fff;
@@ -263,7 +260,7 @@ margin-bottom:6px;
 font-weight:700;
 }
 
-input, textarea, select{
+input,textarea,select{
 width:100%;
 border:1px solid var(--line);
 border-radius:14px;
@@ -275,7 +272,7 @@ outline:none;
 transition:.15s ease;
 }
 
-input:focus, textarea:focus, select:focus{
+input:focus,textarea:focus,select:focus{
 border-color:#93c5fd;
 box-shadow:0 0 0 4px rgba(37,99,235,.12);
 }
@@ -303,13 +300,13 @@ box-shadow:var(--shadowSoft);
 letter-spacing:.02em;
 }
 
-.btn:hover{ transform:translateY(-1px); }
-.btn:active{ transform:scale(.97); }
-.btn-primary{ background:linear-gradient(135deg,var(--blue),var(--blue2)); color:#fff; }
-.btn-secondary{ background:#eef2f7; color:#0f172a; border:1px solid #dce5f1; }
-.btn-success{ background:linear-gradient(135deg,var(--green),#22c55e); color:#fff; }
-.btn-warning{ background:linear-gradient(135deg,var(--amber),#f59e0b); color:#fff; }
-.btn-danger{ background:linear-gradient(135deg,var(--red),#ef4444); color:#fff; }
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}
+.btn-secondary{background:#eef2f7;color:#0f172a;border:1px solid #dce5f1}
+.btn-success{background:linear-gradient(135deg,var(--green),#22c55e);color:#fff}
+.btn-warning{background:linear-gradient(135deg,var(--amber),#f59e0b);color:#fff}
+.btn-danger{background:linear-gradient(135deg,var(--red),#ef4444);color:#fff}
 
 .search-results{
 margin-top:10px;
@@ -441,7 +438,7 @@ margin:42px auto 0;
 @media (max-width:1024px){
 .app{grid-template-columns:1fr}
 .sidebar{display:none}
-.grid-4,.grid-3,.grid-2,.call-layout,.bottom-layout{grid-template-columns:1fr}
+.grid-4,.grid-2,.call-layout,.bottom-layout{grid-template-columns:1fr}
 .page{padding:16px}
 .topbar{padding:16px}
 .ai-text{font-size:22px}
@@ -482,7 +479,7 @@ margin:42px auto 0;
 <button class="side-btn" onclick="logout()">Logout</button>
 
 <div class="side-note">
-Full premium restore from the working base.
+Full copy-paste build. Search suppliers, talk through objections, get live responses, log calls, and view manager stats.
 </div>
 </aside>
 
@@ -521,10 +518,26 @@ Full premium restore from the working base.
 <div id="appContent" class="hidden">
 <div id="repView">
 <div class="grid grid-4">
-<div class="stat"><div class="stat-label">Calls Logged</div><div class="stat-value" id="callsLogged">0</div><div class="stat-foot">Saved call activity</div></div>
-<div class="stat"><div class="stat-label">Converted</div><div class="stat-value" id="callsConverted">0</div><div class="stat-foot">Successful outcomes</div></div>
-<div class="stat"><div class="stat-label">Conversion Rate</div><div class="stat-value" id="conversionRate">0%</div><div class="stat-foot">Based on logged calls</div></div>
-<div class="stat"><div class="stat-label">Top Objection</div><div class="stat-value" id="topObjection" style="font-size:20px;">None</div><div class="stat-foot">Most frequent blocker</div></div>
+<div class="stat">
+<div class="stat-label">Calls Logged</div>
+<div class="stat-value" id="callsLogged">0</div>
+<div class="stat-foot">Saved call activity</div>
+</div>
+<div class="stat">
+<div class="stat-label">Converted</div>
+<div class="stat-value" id="callsConverted">0</div>
+<div class="stat-foot">Successful outcomes</div>
+</div>
+<div class="stat">
+<div class="stat-label">Conversion Rate</div>
+<div class="stat-value" id="conversionRate">0%</div>
+<div class="stat-foot">Based on logged calls</div>
+</div>
+<div class="stat">
+<div class="stat-label">Top Objection</div>
+<div class="stat-value" id="topObjection" style="font-size:20px;">None</div>
+<div class="stat-foot">Most frequent blocker</div>
+</div>
 </div>
 
 <div class="grid call-layout" style="margin-top:18px;">
@@ -541,7 +554,7 @@ Full premium restore from the working base.
 
 <div style="margin-top:14px;">
 <div class="subtle" style="margin-bottom:8px;">Selected Supplier</div>
-<div id="supplierInfo"></div>
+<div id="supplierInfo">—</div>
 </div>
 </div>
 
@@ -552,10 +565,22 @@ Full premium restore from the working base.
 </div>
 
 <div class="grid grid-4">
-<div class="stat"><div class="stat-label">Detected Language</div><div class="stat-value" style="font-size:18px;" id="languageDisplay">English</div></div>
-<div class="stat"><div class="stat-label">Lead Status</div><div class="stat-value" style="font-size:18px;" id="leadHeat">—</div></div>
-<div class="stat"><div class="stat-label">Strategy</div><div class="stat-value" style="font-size:18px;" id="strategyTag">—</div></div>
-<div class="stat"><div class="stat-label">Mic Status</div><div class="stat-value" style="font-size:18px;" id="micStatus">Idle</div></div>
+<div class="stat">
+<div class="stat-label">Detected Language</div>
+<div class="stat-value" style="font-size:18px;" id="languageDisplay">English</div>
+</div>
+<div class="stat">
+<div class="stat-label">Lead Status</div>
+<div class="stat-value" style="font-size:18px;" id="leadHeat">—</div>
+</div>
+<div class="stat">
+<div class="stat-label">Strategy</div>
+<div class="stat-value" style="font-size:18px;" id="strategyTag">—</div>
+</div>
+<div class="stat">
+<div class="stat-label">Mic Status</div>
+<div class="stat-value" style="font-size:18px;" id="micStatus">Idle</div>
+</div>
 </div>
 
 <div style="margin-top:14px;">
@@ -598,9 +623,29 @@ Full premium restore from the working base.
 </div>
 
 <div class="bottom-layout">
-<div class="card"><div class="card-header"><h3>Live Coaching</h3><span class="subtle">How to handle it</span></div><p id="liveCoaching">—</p></div>
-<div class="card"><div class="card-header"><h3>CRM Note</h3><span class="subtle">Copy into CRM</span></div><p id="crmNote">—</p></div>
-<div class="card"><div class="card-header"><h3>Follow-Up Email</h3><span class="subtle">Post-call message</span></div><p id="emailText">—</p></div>
+<div class="card">
+<div class="card-header">
+<h3>Live Coaching</h3>
+<span class="subtle">How to handle it</span>
+</div>
+<p id="liveCoaching">—</p>
+</div>
+
+<div class="card">
+<div class="card-header">
+<h3>CRM Note</h3>
+<span class="subtle">Copy into CRM</span>
+</div>
+<p id="crmNote">—</p>
+</div>
+
+<div class="card">
+<div class="card-header">
+<h3>Follow-Up Email</h3>
+<span class="subtle">Post-call message</span>
+</div>
+<p id="emailText">—</p>
+</div>
 </div>
 
 <div class="grid grid-2" style="margin-top:16px;">
@@ -644,10 +689,26 @@ Full premium restore from the working base.
 
 <div id="managerView" class="hidden">
 <div class="grid grid-4">
-<div class="stat"><div class="stat-label">Total Calls</div><div class="stat-value" id="mgrCalls">0</div><div class="stat-foot">All logged activity</div></div>
-<div class="stat"><div class="stat-label">Total Converted</div><div class="stat-value" id="mgrConverted">0</div><div class="stat-foot">Successful outcomes</div></div>
-<div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value" id="mgrRate">0%</div><div class="stat-foot">Current close rate</div></div>
-<div class="stat"><div class="stat-label">Top Objection</div><div class="stat-value" id="mgrTopObjection" style="font-size:20px;">None</div><div class="stat-foot">Most frequent blocker</div></div>
+<div class="stat">
+<div class="stat-label">Total Calls</div>
+<div class="stat-value" id="mgrCalls">0</div>
+<div class="stat-foot">All logged activity</div>
+</div>
+<div class="stat">
+<div class="stat-label">Total Converted</div>
+<div class="stat-value" id="mgrConverted">0</div>
+<div class="stat-foot">Successful outcomes</div>
+</div>
+<div class="stat">
+<div class="stat-label">Win Rate</div>
+<div class="stat-value" id="mgrRate">0%</div>
+<div class="stat-foot">Current close rate</div>
+</div>
+<div class="stat">
+<div class="stat-label">Top Objection</div>
+<div class="stat-value" id="mgrTopObjection" style="font-size:20px;">None</div>
+<div class="stat-foot">Most frequent blocker</div>
+</div>
 </div>
 
 <div class="card" style="margin-top:16px;">
@@ -663,21 +724,11 @@ Full premium restore from the working base.
 </div>
 
 <script>
-const OPENAI_API_KEY = "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";
-const SYSTEM_PROMPT = `You are a top 1% payment enrollment closer.
-You help suppliers move from checks to ACH or card.
-Rules:
-- 1 to 3 sentences
-- sound natural, not scripted
-- acknowledge first
-- reframe fast
-- move toward a next step
-- never sound pushy or robotic
-- speak like a confident real rep`;
-
 let translateOn = false;
 let recognition = null;
 let selectedSupplierIndex = 0;
+let calls = 0;
+let converted = 0;
 
 const suppliers = [
 {company:"Novacore Electrical",contact:"Anthony King",industry:"Electrical",avg_invoice:"$9,200",ach_score:58,vcc_score:33},
@@ -688,8 +739,13 @@ const suppliers = [
 {company:"KLM Property Services",contact:"Derrick Cole",industry:"Property",avg_invoice:"$5,700",ach_score:61,vcc_score:31}
 ];
 
-function getHistory(){ return JSON.parse(localStorage.getItem("paypilot_restore_history") || "[]"); }
-function saveHistory(history){ localStorage.setItem("paypilot_restore_history", JSON.stringify(history)); }
+function getHistory(){
+return JSON.parse(localStorage.getItem("paypilot_full_history") || "[]");
+}
+
+function saveHistory(history){
+localStorage.setItem("paypilot_full_history", JSON.stringify(history));
+}
 
 function login(){
 const password = document.getElementById("password").value.trim();
@@ -698,8 +754,9 @@ document.getElementById("loginCard").classList.add("hidden");
 document.getElementById("appContent").classList.remove("hidden");
 document.getElementById("userDisplay").classList.remove("hidden");
 document.getElementById("logoutBtn").classList.remove("hidden");
-document.getElementById("userDisplay").innerText = "demo@paypilot.ai";
+document.getElementById("userDisplay").textContent = "demo@paypilot.ai";
 document.getElementById("supplierSearch").value = suppliers[0].company;
+selectedSupplierIndex = 0;
 loadSupplier();
 renderHistory();
 updateStats();
@@ -709,22 +766,49 @@ alert("Wrong password");
 }
 }
 
-function logout(){ location.reload(); }
-function showRepView(){ document.getElementById("repView").classList.remove("hidden"); document.getElementById("managerView").classList.add("hidden"); }
-function showManagerView(){ document.getElementById("repView").classList.add("hidden"); document.getElementById("managerView").classList.remove("hidden"); renderManager(); }
+function logout(){
+location.reload();
+}
+
+function showRepView(){
+document.getElementById("repView").classList.remove("hidden");
+document.getElementById("managerView").classList.add("hidden");
+}
+
+function showManagerView(){
+document.getElementById("repView").classList.add("hidden");
+document.getElementById("managerView").classList.remove("hidden");
+renderManager();
+}
 
 function searchSuppliers(){
 const query = document.getElementById("supplierSearch").value.trim().toLowerCase();
 const resultsEl = document.getElementById("searchResults");
-if(!query){ resultsEl.classList.add("hidden"); resultsEl.innerHTML = ""; return; }
-const matches = suppliers.map((supplier, index) => ({supplier, index})).filter(item => item.supplier.company.toLowerCase().includes(query)).slice(0, 8);
+
+if(!query){
+resultsEl.classList.add("hidden");
+resultsEl.innerHTML = "";
+return;
+}
+
+const matches = suppliers
+.map((supplier, index) => ({supplier, index}))
+.filter(item => item.supplier.company.toLowerCase().includes(query))
+.slice(0, 8);
+
 if(!matches.length){
 resultsEl.classList.remove("hidden");
 resultsEl.innerHTML = '<div class="search-item"><div class="search-name">No results found</div><div class="search-meta">Try a different company name</div></div>';
 return;
 }
+
 resultsEl.classList.remove("hidden");
-resultsEl.innerHTML = matches.map(item => `<div class="search-item" onclick="selectSupplier(${item.index})"><div class="search-name">${item.supplier.company}</div><div class="search-meta">${item.supplier.contact} • ${item.supplier.industry}</div></div>`).join("");
+resultsEl.innerHTML = matches.map(item => `
+<div class="search-item" onclick="selectSupplier(${item.index})">
+<div class="search-name">${item.supplier.company}</div>
+<div class="search-meta">${item.supplier.contact} • ${item.supplier.industry}</div>
+</div>
+`).join("");
 }
 
 function selectSupplier(index){
@@ -736,13 +820,31 @@ loadSupplier();
 }
 
 function loadSupplier(){
-const s = suppliers[selectedSupplierIndex] || suppliers[0];
-document.getElementById("supplierInfo").innerHTML = `<p><strong>Company:</strong> ${s.company}</p><p><strong>Contact:</strong> ${s.contact}</p><p><strong>Industry:</strong> ${s.industry}</p><p><strong>Avg Invoice:</strong> ${s.avg_invoice}</p><div class="pill-row"><span class="mini-pill">ACH ${s.ach_score}%</span><span class="mini-pill">VCC ${s.vcc_score}%</span></div>`;
+const s = suppliers[selectedSupplierIndex];
+document.getElementById("supplierInfo").innerHTML = `
+<p><strong>Company:</strong> ${s.company}</p>
+<p><strong>Contact:</strong> ${s.contact}</p>
+<p><strong>Industry:</strong> ${s.industry}</p>
+<p><strong>Avg Invoice:</strong> ${s.avg_invoice}</p>
+<div class="pill-row">
+<span class="mini-pill">ACH ${s.ach_score}%</span>
+<span class="mini-pill">VCC ${s.vcc_score}%</span>
+</div>
+`;
 }
 
 function detectLanguage(text){
 const t = text.toLowerCase();
-if(t.includes("hola") || t.includes("solo aceptamos") || t.includes("cheques") || t.includes("tarjeta") || t.includes("gracias") || t.includes("no quiero pagar tarifas")) return "Spanish";
+if(
+t.includes("hola") ||
+t.includes("solo aceptamos") ||
+t.includes("cheques") ||
+t.includes("tarjeta") ||
+t.includes("gracias") ||
+t.includes("no quiero pagar tarifas")
+){
+return "Spanish";
+}
 return "English";
 }
 
@@ -756,55 +858,85 @@ function updateTranslation(){
 const text = document.getElementById("objection").value.trim();
 const lang = detectLanguage(text);
 document.getElementById("languageDisplay").textContent = lang;
+
 if(!translateOn) return;
 
 let english = text || "—";
 let reply = "—";
+
 if(lang === "Spanish"){
-english = text.replace(/hola/gi, "hello").replace(/solo aceptamos cheques/gi, "we only accept checks").replace(/no aceptamos tarjetas/gi, "we do not accept cards").replace(/no quiero pagar tarifas/gi, "i do not want to pay fees").replace(/gracias/gi, "thank you");
-reply = "Entiendo. ACH le permite recibir pagos más rápido y evita retrasos de cheques.";
+english = text
+.replace(/hola/gi, "hello")
+.replace(/solo aceptamos cheques/gi, "we only accept checks")
+.replace(/no aceptamos tarjetas/gi, "we do not accept cards")
+.replace(/no quiero pagar tarifas/gi, "i do not want to pay fees")
+.replace(/gracias/gi, "thank you");
+
+reply = "Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos de cheques.";
 } else {
-reply = "I understand. ACH helps you get paid faster and eliminates check delays.";
+reply = "That makes sense. ACH just helps you get paid faster without the delays.";
 }
+
 document.getElementById("translatedEnglish").textContent = english || "—";
 document.getElementById("translatedReply").textContent = reply;
 }
 
 function startListening(){
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if(!SpeechRecognition){ alert("Mic not supported on this device/browser"); return; }
-if(recognition){ recognition.stop(); }
+
+if(!SpeechRecognition){
+alert("Mic not supported on this device/browser");
+return;
+}
+
+if(recognition){
+recognition.stop();
+}
 
 recognition = new SpeechRecognition();
 recognition.continuous = true;
 recognition.interimResults = true;
 recognition.lang = "en-US";
 
-recognition.onstart = () => { document.getElementById("micStatus").textContent = "Listening"; document.getElementById("liveCoaching").textContent = "🎤 Listening..."; };
-recognition.onerror = () => { document.getElementById("micStatus").textContent = "Error"; document.getElementById("liveCoaching").textContent = "Mic error"; };
-recognition.onend = () => { document.getElementById("micStatus").textContent = "Idle"; };
+recognition.onstart = () => {
+document.getElementById("micStatus").textContent = "Listening";
+document.getElementById("liveCoaching").textContent = "🎤 Listening...";
+};
+
+recognition.onerror = () => {
+document.getElementById("micStatus").textContent = "Error";
+document.getElementById("liveCoaching").textContent = "Mic error";
+};
+
+recognition.onend = () => {
+document.getElementById("micStatus").textContent = "Idle";
+};
 
 recognition.onresult = (event) => {
-let finalTranscript = "";
-let liveTranscript = "";
-for(let i = event.resultIndex; i < event.results.length; i++){
-const piece = event.results[i][0].transcript;
-if(event.results[i].isFinal){ finalTranscript += piece + " "; } else { liveTranscript += piece + " "; }
-}
-const fullText = (finalTranscript + liveTranscript).trim();
-document.getElementById("objection").value = fullText;
+const text = event.results[event.results.length - 1][0].transcript;
+document.getElementById("objection").value = text;
 updateTranslation();
-if(finalTranscript.trim()){ generateResponse(); }
+
+clearTimeout(window.voiceTimer);
+window.voiceTimer = setTimeout(() => {
+generateResponse();
+}, 300);
 };
 
 recognition.start();
 }
 
-function stopListening(){ if(recognition){ recognition.stop(); } document.getElementById("micStatus").textContent = "Stopped"; }
+function stopListening(){
+if(recognition){
+recognition.stop();
+}
+document.getElementById("micStatus").textContent = "Stopped";
+}
 
 function calcProbability(text){
 let score = 70;
 const t = text.toLowerCase();
+
 if(t.includes("check") || t.includes("checks") || t.includes("cheques")) score -= 10;
 if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")) score -= 15;
 if(t.includes("busy") || t.includes("later")) score -= 8;
@@ -812,6 +944,12 @@ if(t.includes("accountant")) score -= 10;
 if(t.includes("not interested")) score -= 18;
 if(t.includes("yes")) score += 20;
 if(t.includes("interested")) score += 15;
+
+const s = suppliers[selectedSupplierIndex];
+if(s){
+score += Math.round((s.ach_score - s.vcc_score) / 10);
+}
+
 return Math.max(5, Math.min(95, score));
 }
 
@@ -829,48 +967,77 @@ function getStrategy(text, score){
 const tag = getObjectionTag(text);
 if(score >= 80) return "Push Next Step";
 if(tag === "Cost") return "Reframe Value";
-if(tag === "Payment Method") return "Reduce Risk";
-if(tag === "Timing") return "Keep Momentum";
+if(tag === "Payment Method") return "Speed + Simplicity";
+if(tag === "Timing") return "Keep It Short";
 if(tag === "Accounting") return "Lower Friction";
-if(tag === "Rejection") return "Slow Nurture";
-return "Hybrid Close";
+if(tag === "Rejection") return "Soften + Re-engage";
+return "Guide Next Step";
 }
 
-function getLeadHeat(score){ if(score >= 80) return "Hot"; if(score >= 55) return "Warm"; return "Cold"; }
+function getLeadHeat(score){
+if(score >= 80) return "Hot";
+if(score >= 55) return "Warm";
+return "Cold";
+}
 
 function getNextBestAction(text, score){
 const tag = getObjectionTag(text);
 if(score >= 80) return "Ask for setup now";
-if(tag === "Payment Method") return "Position ACH as faster and safer";
-if(tag === "Cost") return "Reframe around speed and less manual work";
+if(tag === "Payment Method") return "Position ACH as faster and easier";
+if(tag === "Cost") return "Reframe around no fees and faster payment";
 if(tag === "Timing") return "Keep it short and move to next step";
-if(tag === "Accounting") return "Offer to simplify and include accounting";
-if(tag === "Rejection") return "Lower resistance and nurture";
-return "Send follow-up";
+if(tag === "Accounting") return "Offer simple follow-up with accounting";
+if(tag === "Rejection") return "Lower resistance and stay calm";
+return "Guide to next step";
 }
 
 function getLiveCoaching(text, score){
 const strategy = getStrategy(text, score);
+
 if(strategy === "Push Next Step") return "They sound close. Stop explaining and move to setup.";
-if(strategy === "Reframe Value") return "Do not defend cost. Shift to speed, cash flow, and less manual work.";
-if(strategy === "Reduce Risk") return "Make checks sound slower and riskier. Make ACH sound simple and safe.";
-if(strategy === "Keep Momentum") return "Shorten your ask. Keep control of the call.";
-if(strategy === "Lower Friction") return "Reduce effort. Offer an easy next step and include accounting.";
-if(strategy === "Slow Nurture") return "Pull back a little. Rebuild interest instead of pushing harder.";
-return "Acknowledge, reframe, and move toward the next step.";
+if(strategy === "Reframe Value") return "Do not defend cost too hard. Shift to simplicity and speed.";
+if(strategy === "Speed + Simplicity") return "Make checks sound slower. Make ACH sound easier.";
+if(strategy === "Keep It Short") return "Shorten your response and keep control of the call.";
+if(strategy === "Lower Friction") return "Reduce effort. Offer a simple next step.";
+if(strategy === "Soften + Re-engage") return "Do not push. Rebuild interest and keep it light.";
+return "Acknowledge, reframe, and guide.";
 }
 
 function fallbackResponse(text){
 const t = text.toLowerCase();
-if(t.includes("check") || t.includes("checks") || t.includes("cheques")) return "Yeah, I get that. Most suppliers are used to checks, but ACH cuts out the delay and gets funds into the account faster.";
-if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")) return "Totally fair. That’s why ACH is usually the better fit — you keep it electronic without card fee concerns, and payments move faster.";
-if(t.includes("busy") || t.includes("later")) return "I hear you. I’ll keep it quick — if we handle the next step now, you don’t have to keep dealing with this later.";
-if(t.includes("accountant")) return "Makes sense. We can include accounting, but the setup itself is simple, so we can knock out the easy part now and keep things moving.";
-if(t.includes("not interested")) return "Understood. A lot of suppliers say that at first until they realize this is really about getting paid faster and avoiding check delays.";
-return "Got you. The main value here is faster payment, less manual work, and fewer check delays.";
+
+if(t.includes("check") || t.includes("checks") || t.includes("cheques")){
+return "Yeah, I get that. Most people start there, but ACH usually ends up easier since you’re not waiting on checks anymore.";
 }
 
-async function generateResponse(){
+if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")){
+return "That’s fair. That’s why ACH is usually the better option since it keeps things simple without extra fees.";
+}
+
+if(t.includes("busy") || t.includes("later")){
+return "No worries, I’ll keep it quick so you don’t have to come back to this later.";
+}
+
+if(t.includes("accountant")){
+return "Makes sense. We can include accounting, but the setup itself is simple, so we can keep this moving.";
+}
+
+if(t.includes("not interested")){
+return "All good. Usually once people see it’s really about getting paid faster, it starts to make more sense.";
+}
+
+if(t.includes("card") || t.includes("cards")){
+return "That’s fine. In that case, ACH is probably the cleaner fit since it keeps things simple and gets funds over faster.";
+}
+
+if(detectLanguage(text) === "Spanish"){
+return "Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos de cheques.";
+}
+
+return "That makes sense. ACH just helps you get paid faster without the delays.";
+}
+
+function generateResponse(){
 const text = document.getElementById("objection").value.trim();
 const score = calcProbability(text);
 const tag = getObjectionTag(text);
@@ -883,18 +1050,7 @@ el.style.transform = "translateY(10px)";
 el.textContent = "Thinking...";
 updateTranslation();
 
-let response = "";
-try{
-const res = await fetch("https://api.openai.com/v1/chat/completions", {
-method:"POST",
-headers:{ "Authorization":"Bearer " + OPENAI_API_KEY, "Content-Type":"application/json" },
-body: JSON.stringify({ model:"gpt-4o-mini", messages:[{ role:"system", content:SYSTEM_PROMPT }, { role:"user", content:text }] })
-});
-const data = await res.json();
-response = data.choices?.[0]?.message?.content || "";
-} catch (e) { response = ""; }
-
-if(!response){ response = fallbackResponse(text); }
+const response = fallbackResponse(text);
 
 setTimeout(() => {
 el.textContent = response;
@@ -909,19 +1065,25 @@ document.getElementById("closeProbability").textContent = "Close Probability: " 
 document.getElementById("strategyTag").textContent = strategy;
 document.getElementById("leadHeat").textContent = getLeadHeat(score);
 document.getElementById("liveCoaching").textContent = getLiveCoaching(text, score);
+
 generateExtras();
 }
 
 function generateExtras(){
-const supplier = suppliers[selectedSupplierIndex] || suppliers[0];
+const supplier = suppliers[selectedSupplierIndex];
 const outcome = document.getElementById("outcome").value;
-document.getElementById("crmNote").textContent = `${supplier.company}: Discussed electronic payment options. Contact: ${supplier.contact}. Current outcome: ${outcome}.`;
-document.getElementById("emailText").textContent = `Hi ${supplier.contact}, thank you for your time today. Based on our conversation, ACH may be a strong fit to help you receive payments faster and reduce delays.`;
+
+document.getElementById("crmNote").textContent =
+`${supplier.company}: Discussed electronic payment options. Contact: ${supplier.contact}. Current outcome: ${outcome}.`;
+
+document.getElementById("emailText").textContent =
+`Hi ${supplier.contact}, thank you for your time today. Based on our conversation, ACH may be a strong fit to help you receive payments faster and reduce delays.`;
 }
 
 function logCall(){
 const history = getHistory();
-const supplier = suppliers[selectedSupplierIndex] || suppliers[0];
+const supplier = suppliers[selectedSupplierIndex];
+
 history.unshift({
 supplier: supplier.company,
 objection: document.getElementById("objection").value.trim(),
@@ -929,6 +1091,7 @@ outcome: document.getElementById("outcome").value,
 enrollment: document.getElementById("enrollment").value,
 createdAt: new Date().toLocaleString()
 });
+
 saveHistory(history);
 renderHistory();
 updateStats();
@@ -938,20 +1101,43 @@ renderManager();
 function renderHistory(){
 const history = getHistory();
 const el = document.getElementById("history");
-if(!history.length){ el.innerHTML = '<p class="subtle">No calls logged yet.</p>'; return; }
-el.innerHTML = history.map(item => `<div class="history-item"><div class="history-title">${item.supplier} — ${item.outcome}</div><div class="history-meta">${item.createdAt}</div><div><strong>Objection:</strong> ${item.objection || "—"}</div></div>`).join("");
+
+if(!history.length){
+el.innerHTML = '<p class="subtle">No calls logged yet.</p>';
+return;
+}
+
+el.innerHTML = history.map(item => `
+<div class="history-item">
+<div class="history-title">${item.supplier} — ${item.outcome}</div>
+<div class="history-meta">${item.createdAt}</div>
+<div><strong>Objection:</strong> ${item.objection || "—"}</div>
+</div>
+`).join("");
 }
 
 function updateStats(){
 const history = getHistory();
-const total = history.length;
-const converted = history.filter(h => h.outcome === "Converted").length;
-const rate = total ? Math.round((converted / total) * 100) : 0;
+calls = history.length;
+converted = history.filter(h => h.outcome === "Converted").length;
+const rate = calls ? Math.round((converted / calls) * 100) : 0;
+
 const tags = {};
-history.forEach(h => { const tag = getObjectionTag(h.objection || ""); tags[tag] = (tags[tag] || 0) + 1; });
-let topTag = "None"; let topCount = 0;
-for(const key in tags){ if(tags[key] > topCount){ topTag = key; topCount = tags[key]; } }
-document.getElementById("callsLogged").textContent = total;
+history.forEach(h => {
+const tag = getObjectionTag(h.objection || "");
+tags[tag] = (tags[tag] || 0) + 1;
+});
+
+let topTag = "None";
+let topCount = 0;
+for(const key in tags){
+if(tags[key] > topCount){
+topTag = key;
+topCount = tags[key];
+}
+}
+
+document.getElementById("callsLogged").textContent = calls;
 document.getElementById("callsConverted").textContent = converted;
 document.getElementById("conversionRate").textContent = rate + "%";
 document.getElementById("topObjection").textContent = topTag;
@@ -960,17 +1146,27 @@ document.getElementById("topObjection").textContent = topTag;
 function renderManager(){
 const history = getHistory();
 const total = history.length;
-const converted = history.filter(h => h.outcome === "Converted").length;
-const rate = total ? Math.round((converted / total) * 100) : 0;
+const won = history.filter(h => h.outcome === "Converted").length;
+const rate = total ? Math.round((won / total) * 100) : 0;
 
 document.getElementById("mgrCalls").textContent = total;
-document.getElementById("mgrConverted").textContent = converted;
+document.getElementById("mgrConverted").textContent = won;
 document.getElementById("mgrRate").textContent = rate + "%";
 
 const breakdown = {};
-history.forEach(h => { const tag = getObjectionTag(h.objection || ""); breakdown[tag] = (breakdown[tag] || 0) + 1; });
-let topTag = "None"; let topCount = 0;
-for(const key in breakdown){ if(breakdown[key] > topCount){ topTag = key; topCount = breakdown[key]; } }
+history.forEach(h => {
+const tag = getObjectionTag(h.objection || "");
+breakdown[tag] = (breakdown[tag] || 0) + 1;
+});
+
+let topTag = "None";
+let topCount = 0;
+for(const key in breakdown){
+if(breakdown[key] > topCount){
+topTag = key;
+topCount = breakdown[key];
+}
+}
 
 document.getElementById("mgrTopObjection").textContent = topTag;
 document.getElementById("objectionBreakdown").innerHTML =
@@ -995,6 +1191,7 @@ searchBox.classList.add("hidden");
 </script>
 </body>
 </html>
+
 
 
 
