@@ -1,1140 +1,575 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>PayPilot AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
 <style>
 :root{
---bg:#f4f8ff;
---bg2:#edf4ff;
---panel:rgba(255,255,255,.9);
---white:#ffffff;
+--bg:#f0f4fa;
+--surface:#ffffff;
+--surface2:#f7f9fd;
+--surface3:#eef2f8;
+--sidebar:#1a2540;
+--sidebar2:#212e4d;
+--border:#e2e8f4;
+--border2:#d0d9ec;
 --text:#0f172a;
---muted:#64748b;
---line:#dbe7f5;
+--text2:#4a5568;
+--text3:#94a3b8;
 --blue:#2563eb;
---blue2:#60a5fa;
---blue3:#1d4ed8;
---nav:#0b1220;
---nav2:#131c31;
---green:#22c55e;
---amber:#f59e0b;
---shadow:0 20px 60px rgba(15,23,42,.10);
---shadow-strong:0 28px 80px rgba(37,99,235,.16);
---radius:24px;
+--blue-light:#eff4ff;
+--blue-mid:#3b82f6;
+--cyan:#0891b2;
+--cyan-light:#ecfeff;
+--green:#059669;
+--green-light:#ecfdf5;
+--amber:#d97706;
+--amber-light:#fffbeb;
+--red:#e11d48;
+--shadow-sm:0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+--shadow:0 4px 16px rgba(15,23,42,.08), 0 1px 4px rgba(15,23,42,.04);
+--shadow-lg:0 12px 40px rgba(15,23,42,.1), 0 4px 12px rgba(15,23,42,.05);
 }
 
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0}
+
 body{
-font-family:Arial,Helvetica,sans-serif;
-color:var(--text);
-background:
-radial-gradient(circle at top right, rgba(96,165,250,.24), transparent 22%),
-radial-gradient(circle at top left, rgba(37,99,235,.10), transparent 18%),
-linear-gradient(180deg,var(--bg),var(--bg2));
-}
-
-.app{
+font-family:‘DM Sans’,sans-serif;
+background:var(–bg);
+color:var(–text);
 min-height:100vh;
-display:grid;
-grid-template-columns:270px 1fr;
 }
 
+body::before{
+content:’’;
+position:fixed;inset:0;
+background:
+radial-gradient(ellipse 50% 35% at 85% 5%, rgba(37,99,235,.07) 0%, transparent 60%),
+radial-gradient(ellipse 35% 25% at 5% 90%, rgba(8,145,178,.05) 0%, transparent 60%);
+pointer-events:none;z-index:0;
+}
+
+.app{display:grid;grid-template-columns:228px 1fr;min-height:100vh;position:relative;z-index:1}
+
+/* SIDEBAR */
 .sidebar{
-background:
-radial-gradient(circle at top left, rgba(96,165,250,.14), transparent 28%),
-linear-gradient(180deg,var(--nav),var(--nav2));
-color:#fff;
-padding:24px 18px;
-border-right:1px solid rgba(255,255,255,.06);
+background:linear-gradient(180deg,var(–sidebar) 0%,#1e2d50 100%);
+padding:24px 14px;display:flex;flex-direction:column;gap:3px;
+position:sticky;top:0;height:100vh;overflow-y:auto;
 }
 
-.brand{
-display:flex;
-align-items:center;
-gap:14px;
-margin-bottom:30px;
+.brand{padding:0 10px 24px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:10px}
+
+.brand-name{
+font-family:‘Syne’,sans-serif;font-size:17px;font-weight:800;
+letter-spacing:.02em;color:#fff;display:flex;align-items:center;gap:9px;
 }
 
-.brand-badge{
-width:62px;
-height:62px;
-border-radius:18px;
-background:linear-gradient(135deg,#0f172a 0%, #2563eb 58%, #60a5fa 100%);
-display:flex;
-align-items:center;
-justify-content:center;
-box-shadow:0 18px 38px rgba(0,0,0,.30);
-position:relative;
-overflow:hidden;
-flex-shrink:0;
+.brand-icon{
+width:28px;height:28px;border-radius:8px;
+background:linear-gradient(135deg,#3b82f6,#06b6d4);
+display:flex;align-items:center;justify-content:center;
+font-size:13px;flex-shrink:0;box-shadow:0 4px 12px rgba(59,130,246,.4);
 }
 
-.brand-badge::after{
-content:"";
-position:absolute;
-width:88px;
-height:88px;
-right:-30px;
-top:-30px;
-background:radial-gradient(circle, rgba(255,255,255,.22), transparent 62%);
+.brand-sub{
+font-size:10.5px;color:rgba(255,255,255,.35);letter-spacing:.08em;
+text-transform:uppercase;margin-top:5px;padding-left:37px;
+font-family:‘DM Mono’,monospace;
 }
 
-.brand-text h1{
-margin:0;
-font-size:24px;
-letter-spacing:-.05em;
-line-height:1;
+.nav-section{
+font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+color:rgba(255,255,255,.25);font-family:‘DM Mono’,monospace;
+padding:14px 10px 5px;
 }
 
-.brand-text p{
-margin:5px 0 0;
-font-size:12px;
-color:rgba(255,255,255,.72);
+.sidebtn{
+width:100%;padding:9px 10px;border:none;border-radius:8px;
+background:transparent;color:rgba(255,255,255,.55);text-align:left;
+cursor:pointer;font-size:13.5px;font-family:‘DM Sans’,sans-serif;
+font-weight:500;display:flex;align-items:center;gap:9px;transition:all .15s;
 }
+.sidebtn:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.sidebtn.active{background:rgba(59,130,246,.2);color:#93c5fd;border:1px solid rgba(59,130,246,.25)}
+.sidebtn .icon{font-size:14px;width:18px;text-align:center;opacity:.8}
+.sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.07)}
 
-.side-label{
-font-size:11px;
-text-transform:uppercase;
-letter-spacing:.14em;
-color:rgba(255,255,255,.42);
-font-weight:700;
-margin:18px 0 10px;
+/* TOPBAR */
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{
+position:sticky;top:0;z-index:10;padding:14px 28px;
+border-bottom:1px solid var(–border);background:rgba(255,255,255,.92);
+backdrop-filter:blur(16px);display:flex;justify-content:space-between;
+align-items:center;box-shadow:var(–shadow-sm);
 }
+.topbar-left h1{font-family:‘Syne’,sans-serif;font-size:19px;font-weight:700;letter-spacing:-.02em;color:var(–text)}
+.topbar-left p{font-size:11px;color:var(–text3);margin-top:1px;font-family:‘DM Mono’,monospace;letter-spacing:.05em}
+.topbar-right{display:flex;align-items:center;gap:10px}
 
-.side-btn{
-width:100%;
-border:none;
-background:transparent;
-color:#fff;
-text-align:left;
-padding:13px 14px;
-border-radius:14px;
-font-weight:700;
-cursor:pointer;
-margin-bottom:8px;
-transition:.18s ease;
+.live-badge{
+display:flex;align-items:center;gap:6px;background:var(–green-light);
+border:1px solid rgba(5,150,105,.2);border-radius:20px;padding:5px 12px;
+font-size:11px;font-weight:600;color:var(–green);font-family:‘DM Mono’,monospace;letter-spacing:.06em;
 }
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(–green);box-shadow:0 0 6px var(–green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-.side-btn:hover,
-.side-btn.active{
-background:rgba(255,255,255,.08);
-transform:translateX(2px);
-}
+#userChip{font-size:12px;color:var(–text2);font-family:‘DM Mono’,monospace;background:var(–surface2);padding:6px 12px;border-radius:6px;border:1px solid var(–border)}
 
-.side-note{
-margin-top:20px;
-padding:14px;
-border-radius:16px;
-background:rgba(255,255,255,.05);
-border:1px solid rgba(255,255,255,.08);
-color:rgba(255,255,255,.74);
-font-size:12px;
-line-height:1.55;
-}
+/* PAGE */
+.page{max-width:1440px;margin:0 auto;padding:22px 28px;width:100%}
 
-.main{
-min-width:0;
-}
-
-.page{
-max-width:1500px;
-margin:0 auto;
-padding:22px;
-}
-
-.login-wrap{
-max-width:560px;
-margin:80px auto 0;
-}
-
+/* CARDS */
 .card{
-background:var(--panel);
-backdrop-filter:blur(12px);
-border:1px solid rgba(255,255,255,.72);
-border-radius:var(--radius);
-padding:20px;
-box-shadow:var(--shadow);
-margin-bottom:16px;
+background:var(–surface);border:1px solid var(–border);border-radius:14px;
+padding:20px;box-shadow:var(–shadow-sm);position:relative;overflow:hidden;
 }
-
-.hero{
-position:relative;
-overflow:hidden;
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:24px;
-padding:34px;
-border-radius:30px;
-margin-bottom:18px;
-color:#fff;
-background:
-radial-gradient(circle at top right, rgba(255,255,255,.18), transparent 26%),
-linear-gradient(135deg,#1e3a8a,#2563eb,#60a5fa);
-box-shadow:var(--shadow-strong);
+.card h3{
+font-family:‘Syne’,sans-serif;font-size:11.5px;font-weight:700;
+letter-spacing:.08em;text-transform:uppercase;color:var(–text3);
+margin-bottom:16px;display:flex;align-items:center;gap:8px;
 }
+.card h3 .dot{width:6px;height:6px;border-radius:50%;background:var(–blue-mid);flex-shrink:0}
 
-.hero::after{
-content:"";
-position:absolute;
-width:280px;
-height:280px;
-right:-90px;
-top:-80px;
-background:radial-gradient(circle, rgba(255,255,255,.20), transparent 64%);
-border-radius:50%;
-pointer-events:none;
-}
+/* GRIDS */
+.grid{display:grid;gap:14px}
+.stats{grid-template-columns:repeat(4,1fr)}
+.split{grid-template-columns:1fr 1.3fr}
+.lower{grid-template-columns:1fr 1fr 1fr}
+.twocol{grid-template-columns:1fr 1fr}
 
-.hero h2{
-margin:0;
-font-size:40px;
-letter-spacing:-1.3px;
-}
+/* STAT CARDS */
+.stat{background:var(–surface);border:1px solid var(–border);border-radius:12px;padding:18px 20px;box-shadow:var(–shadow-sm);position:relative;overflow:hidden}
+.stat-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
+.stat-blue .stat-accent{background:linear-gradient(90deg,#2563eb,#60a5fa)}
+.stat-green .stat-accent{background:linear-gradient(90deg,#059669,#34d399)}
+.stat-amber .stat-accent{background:linear-gradient(90deg,#d97706,#fbbf24)}
+.stat-cyan .stat-accent{background:linear-gradient(90deg,#0891b2,#22d3ee)}
+.stat .label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(–text3);font-family:‘DM Mono’,monospace;margin-bottom:10px}
+.stat .value{font-family:‘Syne’,sans-serif;font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(–text)}
 
-.hero-sub{
-margin-top:8px;
-font-size:14px;
-opacity:.92;
-}
-
-.hero-copy{
-margin-top:14px;
-max-width:760px;
-line-height:1.6;
-font-size:14px;
-color:rgba(255,255,255,.94);
-}
-
-.hero-stats{
-display:flex;
-gap:30px;
-flex-wrap:wrap;
-margin-top:20px;
-}
-
-.hero-stat-number{
-font-size:24px;
-font-weight:900;
-display:block;
-}
-
-.hero-stat-label{
-font-size:11px;
-text-transform:uppercase;
-letter-spacing:.10em;
-opacity:.82;
-margin-top:4px;
-display:block;
-}
-
-.hero-right{
-display:flex;
-flex-direction:column;
-align-items:flex-end;
-gap:10px;
-}
-
-.hero-pill{
-display:flex;
-align-items:center;
-gap:10px;
-padding:12px 16px;
-border-radius:999px;
-font-size:13px;
-font-weight:800;
-background:rgba(255,255,255,.14);
-border:1px solid rgba(255,255,255,.18);
-white-space:nowrap;
-}
-
-.live-dot{
-width:10px;
-height:10px;
-border-radius:50%;
-background:var(--green);
-box-shadow:0 0 12px var(--green);
-animation:pulse 1.5s infinite;
-}
-
-@keyframes pulse{
-0%{opacity:1;transform:scale(1)}
-50%{opacity:.35;transform:scale(1.15)}
-100%{opacity:1;transform:scale(1)}
-}
-
-.grid{display:grid;gap:16px}
-.stats-grid{grid-template-columns:repeat(4,1fr)}
-.main-grid{grid-template-columns:1fr 1.15fr;align-items:start}
-.bottom-grid{grid-template-columns:1fr 1fr 1fr}
-.two-grid{grid-template-columns:1fr 1fr}
-
-.stat{
-background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
-border:1px solid #e7eef8;
-border-radius:22px;
-padding:18px;
-box-shadow:0 10px 24px rgba(15,23,42,.05);
-}
-
-.stat-label{
-color:var(--muted);
-font-size:12px;
-font-weight:700;
-margin-bottom:8px;
-}
-
-.stat-value{
-font-size:30px;
-font-weight:900;
-letter-spacing:-.05em;
-}
-
-h3{
-margin:0 0 12px;
-font-size:18px;
-letter-spacing:-.02em;
-}
-
-.muted{
-color:var(--muted);
-font-size:12px;
-}
-
-label{
-display:block;
-font-size:12px;
-color:var(--muted);
-margin-bottom:6px;
-font-weight:700;
-}
-
+/* INPUTS */
 input,textarea,select{
-width:100%;
-border:1px solid var(--line);
-border-radius:16px;
-padding:14px 15px;
-font-size:15px;
-background:#fff;
-outline:none;
-transition:.18s ease;
+width:100%;padding:10px 13px;border:1px solid var(–border2);border-radius:8px;
+font-size:13.5px;font-family:‘DM Sans’,sans-serif;outline:none;
+background:var(–surface2);color:var(–text);transition:all .15s;
 }
+input::placeholder,textarea::placeholder{color:var(–text3)}
+input:focus,textarea:focus,select:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.1);background:#fff}
+select option{background:#fff;color:var(–text)}
+textarea{min-height:108px;resize:vertical;line-height:1.6}
+label.lbl{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(–text3);margin-bottom:6px;font-family:‘DM Mono’,monospace}
+.form-group{margin-bottom:14px}
 
-input:focus,textarea:focus,select:focus{
-border-color:#93c5fd;
-box-shadow:0 0 0 4px rgba(37,99,235,.12);
-}
+/* BUTTONS */
+button{border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;font-family:‘DM Sans’,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s;letter-spacing:.01em}
+.primary{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;box-shadow:0 2px 12px rgba(37,99,235,.3)}
+.primary:hover{box-shadow:0 4px 20px rgba(37,99,235,.4);transform:translateY(-1px)}
+.secondary{background:var(–surface);color:var(–text2);border:1px solid var(–border2)}
+.secondary:hover{background:var(–surface2);color:var(–text)}
+.success{background:linear-gradient(135deg,#047857,#059669);color:#fff;box-shadow:0 2px 12px rgba(5,150,105,.25)}
+.success:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(5,150,105,.35)}
+.warning{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;box-shadow:0 2px 12px rgba(217,119,6,.25)}
+.warning:hover{transform:translateY(-1px)}
+.mic-btn{background:var(–cyan-light);color:var(–cyan);border:1px solid rgba(8,145,178,.25)}
+.mic-btn:hover{background:#cffafe;border-color:rgba(8,145,178,.4)}
+.mic-btn.active-mic{background:#cffafe;border-color:var(–cyan);animation:mic-ring 1.5s ease-in-out infinite}
+@keyframes mic-ring{0%,100%{box-shadow:0 0 0 0 rgba(8,145,178,.3)}50%{box-shadow:0 0 0 7px rgba(8,145,178,0)}}
 
-textarea{
-min-height:150px;
-resize:vertical;
-}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 
-#companySearch{
-font-size:16px;
-padding:16px;
-box-shadow:0 6px 18px rgba(0,0,0,.04);
-}
+/* SEARCH */
+.search-results{margin-top:6px;border:1px solid var(–border2);border-radius:8px;overflow:hidden;max-height:200px;overflow-y:auto;background:#fff;box-shadow:var(–shadow)}
+.search-item{padding:10px 14px;border-top:1px solid var(–border);cursor:pointer;transition:background .1s}
+.search-item:first-child{border-top:none}
+.search-item:hover,.search-item.active{background:var(–blue-light)}
+.search-name{font-size:13.5px;font-weight:500;color:var(–text)}
+.search-meta{font-size:11px;color:var(–text3);margin-top:2px;font-family:‘DM Mono’,monospace}
 
-.toolbar{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-margin-top:12px;
-}
+/* SUPPLIER INFO */
+.supplier-detail{background:var(–surface2);border:1px solid var(–border);border-radius:10px;overflow:hidden}
+.supplier-row{display:flex;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(–border)}
+.supplier-row:last-child{border-bottom:none}
+.supplier-row .sk{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(–text3);font-family:‘DM Mono’,monospace}
+.supplier-row .sv{font-size:13px;font-weight:500;color:var(–text)}
+.badge-row{display:flex;gap:8px;margin-top:12px}
+.badge{flex:1;text-align:center;padding:8px;border-radius:8px;font-family:‘DM Mono’,monospace;font-size:11.5px;font-weight:500;border:1px solid}
+.badge-blue{background:var(–blue-light);color:var(–blue);border-color:rgba(37,99,235,.2)}
+.badge-cyan{background:var(–cyan-light);color:var(–cyan);border-color:rgba(8,145,178,.2)}
 
-button{
-border:none;
-border-radius:14px;
-padding:12px 15px;
-font-size:14px;
-font-weight:800;
-cursor:pointer;
-transition:.18s ease;
-}
+/* MINI STATS */
+.mini-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.mini-stat{background:var(–surface2);border:1px solid var(–border);border-radius:8px;padding:10px 12px;text-align:center}
+.mini-stat .ml{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(–text3);font-family:‘DM Mono’,monospace;margin-bottom:4px}
+.mini-stat .mv{font-size:14px;font-weight:700;color:var(–text);font-family:‘Syne’,sans-serif}
 
-button:hover{transform:translateY(-1px)}
+/* AI RESPONSE */
+.ai-container{background:linear-gradient(160deg,var(–blue-light),#f0f9ff);border:1px solid rgba(37,99,235,.15);border-radius:12px;padding:22px;position:relative}
+.ai-badge{position:absolute;top:14px;right:14px;font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:.1em;color:var(–blue);background:rgba(37,99,235,.1);padding:3px 9px;border-radius:4px;border:1px solid rgba(37,99,235,.15);font-weight:500}
+.ai-text{font-family:‘Syne’,sans-serif;font-size:18px;font-weight:700;line-height:1.55;color:var(–text);letter-spacing:-.02em;min-height:56px}
+.ai-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(37,99,235,.12)}
+.meta-chip{font-size:11px;font-family:‘DM Mono’,monospace;color:var(–text2);background:#fff;padding:5px 10px;border-radius:6px;border:1px solid var(–border);display:flex;align-items:center;gap:5px;box-shadow:var(–shadow-sm)}
+.meta-chip .key{color:var(–text3)}
+.meta-chip .val{color:var(–blue);font-weight:500}
 
-.primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}
-.secondary{background:#eef2f7;color:#0f172a}
-.success{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+/* TRANSLATION */
+.translation-box{background:var(–cyan-light);border:1px solid rgba(8,145,178,.2);border-radius:10px;padding:16px;margin-top:12px}
+.translation-box h4{font-family:‘DM Mono’,monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(–cyan);margin-bottom:12px}
+.trans-row{display:flex;gap:10px;font-size:13px;margin-bottom:8px}
+.trans-row:last-child{margin-bottom:0}
+.trans-key{color:var(–cyan);font-family:‘DM Mono’,monospace;font-size:10.5px;white-space:nowrap;padding-top:2px;font-weight:500}
+.trans-val{color:var(–text);line-height:1.5}
 
-.results{
-margin-top:10px;
-border:1px solid var(--line);
-border-radius:16px;
-overflow:hidden;
-background:#fff;
-max-height:260px;
-overflow-y:auto;
-}
+.info-text{font-size:13px;line-height:1.65;color:var(–text2)}
 
-.result-item{
-padding:13px 14px;
-border-top:1px solid #edf2f8;
-cursor:pointer;
-}
+/* HISTORY */
+.history-item{padding:12px 0;border-bottom:1px solid var(–border)}
+.history-item:last-child{border-bottom:none}
+.history-title{font-size:13.5px;font-weight:600;color:var(–text);display:flex;align-items:center;justify-content:space-between}
+.history-date{font-size:11px;font-family:‘DM Mono’,monospace;color:var(–text3);margin-top:3px}
+.history-obj{font-size:12.5px;color:var(–text3);margin-top:4px}
+.outcome-tag{font-size:10.5px;font-family:‘DM Mono’,monospace;padding:3px 9px;border-radius:20px;font-weight:600;border:1px solid}
+.tag-converted{background:var(–green-light);color:var(–green);border-color:rgba(5,150,105,.2)}
+.tag-rejected{background:#fff1f2;color:var(–red);border-color:rgba(225,29,72,.15)}
+.tag-pending{background:var(–surface3);color:var(–text3);border-color:var(–border)}
+.tag-followup{background:var(–amber-light);color:var(–amber);border-color:rgba(217,119,6,.2)}
 
-.result-item:first-child{border-top:none}
-.result-item:hover,
-.result-item.active{background:#eef6ff}
+/* LOGIN */
+#loginCard{max-width:420px;margin:80px auto;box-shadow:var(–shadow-lg)}
+.login-logo{font-family:‘Syne’,sans-serif;font-size:28px;font-weight:800;color:var(–text);margin-bottom:4px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px}
+.login-logo .li{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#06b6d4);font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(37,99,235,.35)}
+.login-sub{text-align:center;font-size:11.5px;color:var(–text3);font-family:‘DM Mono’,monospace;letter-spacing:.07em;margin-bottom:28px}
+.login-hint{text-align:center;font-size:11.5px;color:var(–text3);margin-top:14px;font-family:‘DM Mono’,monospace}
+.login-hint span{color:var(–blue);font-weight:500}
 
-.result-title{
-font-weight:800;
-margin-bottom:4px;
-}
+/* OBJECTION BARS */
+.objection-bar-wrap{display:flex;flex-direction:column;gap:11px}
+.objection-bar-item{display:flex;align-items:center;gap:12px}
+.objection-bar-label{font-size:12px;font-family:‘DM Mono’,monospace;color:var(–text2);width:130px;flex-shrink:0}
+.objection-bar-track{flex:1;height:7px;background:var(–surface3);border-radius:4px;overflow:hidden}
+.objection-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(–blue),#60a5fa);transition:width .6s cubic-bezier(.4,0,.2,1)}
+.objection-bar-count{font-size:12px;font-family:‘DM Mono’,monospace;color:var(–text3);width:24px;text-align:right}
 
-.result-sub{
-font-size:12px;
-color:var(--muted);
-}
+select{appearance:none;background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ fill=‘none’ viewBox=‘0 0 24 24’ stroke=’%2394a3b8’ stroke-width=‘2’%3E%3Cpath stroke-linecap=‘round’ stroke-linejoin=‘round’ d=‘M19 9l-7 7-7-7’/%3E%3C/svg%3E”);background-repeat:no-repeat;background-position:right 11px center;background-size:15px;padding-right:34px}
 
-.pill{
-display:inline-block;
-padding:7px 10px;
-border-radius:999px;
-background:#eef6ff;
-color:#1d4ed8;
-font-size:12px;
-font-weight:800;
-margin:8px 8px 0 0;
-}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(–surface2)}
+::-webkit-scrollbar-thumb{background:var(–border2);border-radius:3px}
 
-.ai-shell{
-border-radius:30px;
-padding:2px;
-background:linear-gradient(135deg, rgba(37,99,235,.30), rgba(96,165,250,.08));
-box-shadow:0 32px 90px rgba(37,99,235,.16);
-}
+.ai-cursor{display:inline-block;width:2px;height:18px;background:var(–blue);border-radius:1px;animation:blink .7s step-end infinite;vertical-align:middle;margin-left:3px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
-.ai-box{
-position:relative;
-overflow:hidden;
-border-radius:28px;
-padding:38px;
-background:
-radial-gradient(circle at top center, rgba(96,165,250,.08), transparent 34%),
-linear-gradient(180deg,#fff,#f8fbff);
-}
-
-.ai-box::before{
-content:"";
-position:absolute;
-top:-40px;
-left:50%;
-transform:translateX(-50%);
-width:220px;
-height:220px;
-background:radial-gradient(circle, rgba(37,99,235,.20), transparent);
-filter:blur(40px);
-pointer-events:none;
-}
-
-.ai-text{
-position:relative;
-font-size:44px;
-font-weight:900;
-text-align:center;
-line-height:1.32;
-letter-spacing:-.05em;
-background:linear-gradient(135deg,#0f172a,#1e3a8a);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-white-space:pre-wrap;
-min-height:170px;
-display:flex;
-align-items:center;
-justify-content:center;
-text-align:center;
-padding:10px;
-}
-
-.meta{
-text-align:center;
-color:var(--muted);
-font-size:13px;
-margin-top:6px;
-}
-
-.translation{
-margin-top:14px;
-border-radius:18px;
-padding:16px;
-background:linear-gradient(180deg,#eef5ff 0%, #e8f2ff 100%);
-border:1px solid #d7e7ff;
-}
-
-.history-item{
-padding:12px 0;
-border-top:1px solid #edf2f8;
-}
-
-.history-item:first-child{
-border-top:none;
-padding-top:0;
-}
-
-.history-title{
-font-weight:800;
-margin-bottom:4px;
-}
-
-.history-meta{
-font-size:12px;
-color:var(--muted);
-margin-bottom:6px;
-}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .3s ease both}
+.anim-d1{animation-delay:.06s}
+.anim-d2{animation-delay:.12s}
 
 .hidden{display:none!important}
+.muted{color:var(–text3);font-size:12px}
 
-@media (max-width:1100px){
-.app{grid-template-columns:1fr}
-.sidebar{display:none}
-.stats-grid,.main-grid,.bottom-grid,.two-grid{grid-template-columns:1fr}
-.hero{flex-direction:column;align-items:flex-start}
+@media(max-width:1100px){
+.app{grid-template-columns:1fr}.sidebar{display:none}
+.stats,.split,.lower,.twocol,.mini-stats{grid-template-columns:1fr 1fr}
 .page{padding:16px}
-.ai-text{font-size:30px;min-height:120px}
+}
+@media(max-width:640px){
+.stats,.mini-stats{grid-template-columns:1fr 1fr}
+.split,.lower,.twocol{grid-template-columns:1fr}
 }
 </style>
+
 </head>
 <body>
 <div class="app">
+
 <aside class="sidebar">
 <div class="brand">
-<div class="brand-badge">
-<svg width="34" height="34" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12 34V14H24.2C29.1 14 32.3 16.9 32.3 21.2C32.3 25.6 29.1 28.4 24.2 28.4H17.2V34H12Z" fill="white"/>
-<path d="M17.2 24.3H23.5C25.7 24.3 27.1 23.2 27.1 21.2C27.1 19.2 25.7 18.1 23.5 18.1H17.2V24.3Z" fill="#DBEAFE"/>
-<path d="M29.5 34V14H34.2L40 22.9V14H44V34H39.4L33.6 25.2V34H29.5Z" fill="white"/>
-</svg>
+<div class="brand-name"><div class="brand-icon">✦</div>PayPilot AI</div>
+<div class="brand-sub">Enrollment Intelligence</div>
 </div>
-<div class="brand-text">
-<h1>PayPilot AI</h1>
-<p>Payment intelligence platform</p>
-</div>
-</div>
-
-<div class="side-label">Workspace</div>
-<button class="side-btn active" onclick="showRepView()">Rep View</button>
-<button class="side-btn" onclick="showManagerView()">Manager View</button>
-
-<div class="side-label">Actions</div>
-<button class="side-btn" onclick="toggleTranslate()">Toggle Translation</button>
-<button class="side-btn" onclick="startMic()">Start Mic</button>
-<button class="side-btn" onclick="stopMic()">Stop Mic</button>
-<button class="side-btn" onclick="logout()">Logout</button>
-
-<div class="side-note">
-Premium demo surface for supplier enrollment calls. Search the supplier, capture the objection, generate the response, and log outcomes in one place.
+<div class="nav-section">Workspace</div>
+<button class="sidebtn active" id="btnRep" onclick="showRepView()"><span class="icon">◈</span> Rep View</button>
+<button class="sidebtn" id="btnMgr" onclick="showManagerView()"><span class="icon">◉</span> Manager View</button>
+<div class="nav-section">Tools</div>
+<button class="sidebtn" onclick="toggleTranslate()"><span class="icon">⇄</span> Toggle Translation</button>
+<button class="sidebtn" id="sideStartMic" onclick="startListening()"><span class="icon">◎</span> Start Mic</button>
+<button class="sidebtn" onclick="stopListening()"><span class="icon">□</span> Stop Mic</button>
+<div class="sidebar-footer">
+<button class="sidebtn" onclick="logout()"><span class="icon">⎋</span> Logout</button>
 </div>
 </aside>
 
 <main class="main">
+<div class="topbar">
+<div class="topbar-left">
+<h1>PayPilot AI</h1>
+<p>REAL-TIME ENROLLMENT INTELLIGENCE</p>
+</div>
+<div class="topbar-right">
+<div id="liveBadge" class="live-badge hidden"><div class="live-dot"></div>LIVE</div>
+<div id="userChip" class="hidden">demo@paypilot.ai</div>
+</div>
+</div>
+
 <div class="page">
-<div id="loginCard" class="login-wrap card">
-<h3>Secure Login</h3>
-<label>Password</label>
-<input id="pass" type="password" placeholder="Password">
-<div class="toolbar">
-<button class="primary" onclick="login()">Login</button>
+<div id="loginCard" class="card">
+<div class="login-logo"><div class="li">✦</div> PayPilot AI</div>
+<div class="login-sub">SECURE WORKSPACE ACCESS</div>
+<div class="form-group">
+<label class="lbl">Password</label>
+<input id="password" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()">
 </div>
-<p class="muted">Use password: demo123</p>
+<button class="primary" style="width:100%;justify-content:center;padding:12px" onclick="login()">Access Workspace →</button>
+<div class="login-hint">Demo password: <span>demo123</span></div>
 </div>
 
+```
 <div id="appContent" class="hidden">
-<div class="hero">
-<div>
-<h2>PayPilot AI</h2>
-<div class="hero-sub">Real-time supplier enrollment guidance</div>
-<div class="hero-copy">
-Search the supplier, capture the objection, and let the platform guide the next move with sharper rebuttals, call strategy, CRM notes, and follow-up output.
-</div>
-
-<div class="hero-stats">
-<div>
-<span class="hero-stat-number" id="heroCalls">0</span>
-<span class="hero-stat-label">Calls</span>
-</div>
-<div>
-<span class="hero-stat-number" id="heroConverted">0</span>
-<span class="hero-stat-label">Converted</span>
-</div>
-<div>
-<span class="hero-stat-number" id="heroRate">0%</span>
-<span class="hero-stat-label">Win Rate</span>
-</div>
-</div>
-</div>
-
-<div class="hero-right">
-<div class="hero-pill">
-<div class="live-dot"></div>
-LIVE CALL MODE
-</div>
-<div class="hero-pill">DEMO READY</div>
-</div>
-</div>
-
 <div id="repView">
-<div class="grid stats-grid">
-<div class="stat">
-<div class="stat-label">Calls Logged</div>
-<div class="stat-value" id="calls">0</div>
-</div>
-<div class="stat">
-<div class="stat-label">Converted</div>
-<div class="stat-value" id="converted">0</div>
-</div>
-<div class="stat">
-<div class="stat-label">Rate</div>
-<div class="stat-value" id="rate">0%</div>
-</div>
-<div class="stat">
-<div class="stat-label">Top Objection</div>
-<div class="stat-value" id="topObjection" style="font-size:20px;">None</div>
-</div>
+<div class="grid stats anim">
+<div class="stat stat-blue"><div class="stat-accent"></div><div class="label">Calls Logged</div><div class="value" id="callsLogged">0</div></div>
+<div class="stat stat-green"><div class="stat-accent"></div><div class="label">Converted</div><div class="value" id="callsConverted">0</div></div>
+<div class="stat stat-amber"><div class="stat-accent"></div><div class="label">Conversion Rate</div><div class="value" id="conversionRate">0%</div></div>
+<div class="stat stat-cyan"><div class="stat-accent"></div><div class="label">Top Objection</div><div class="value" id="topObjection" style="font-size:16px;margin-top:6px">None</div></div>
 </div>
 
-<div class="grid main-grid" style="margin-top:16px;">
-<div>
+<div class="grid split anim anim-d1" style="margin-top:14px">
+<div style="display:flex;flex-direction:column;gap:14px">
 <div class="card">
-<h3>Company Search</h3>
-<div class="muted">Search by company, contact, email, or phone</div>
-<input id="companySearch" placeholder="Type one letter or more..." oninput="searchCompanies()">
-<div id="results" class="results hidden"></div>
-
-<div style="margin-top:14px;">
-<div class="muted">Selected Supplier</div>
-<div id="supplierInfo">—</div>
+<h3><span class="dot"></span>Supplier Search</h3>
+<div class="form-group">
+<label class="lbl">Search by company, contact, email, or phone</label>
+<input id="supplierSearch" placeholder="Type to search…" oninput="searchSuppliers()" autocomplete="off">
+<div id="searchResults" class="search-results hidden"></div>
 </div>
+<div id="supplierInfo"></div>
 </div>
 
 <div class="card">
-<h3>Supplier Objection</h3>
-
-<label>Response Style</label>
-<select id="responseMode">
-<option value="smooth">Smooth</option>
-<option value="closer" selected>Closer</option>
-</select>
-
-<textarea id="input" placeholder="Type what the supplier says or use the mic..."></textarea>
-
+<h3><span class="dot" style="background:var(--cyan)"></span>Live Call Workspace</h3>
+<div class="mini-stats">
+<div class="mini-stat"><div class="ml">Language</div><div class="mv" id="languageDisplay">EN</div></div>
+<div class="mini-stat"><div class="ml">Lead Heat</div><div class="mv" id="leadHeat">—</div></div>
+<div class="mini-stat"><div class="ml">Strategy</div><div class="mv" id="strategyTag" style="font-size:11px;line-height:1.3;padding-top:2px">—</div></div>
+<div class="mini-stat"><div class="ml">Mic</div><div class="mv" id="micStatus">Idle</div></div>
+</div>
+<div class="form-group">
+<label class="lbl">Supplier objection / what they said</label>
+<textarea id="objection" placeholder="Type what the supplier says, or use the mic to capture live…"></textarea>
+</div>
 <div class="toolbar">
-<button class="primary" onclick="generate()">Generate Response</button>
-<button class="secondary" onclick="toggleTranslate()">Toggle Translation</button>
-<button class="primary" onclick="startMic()">🎤 Start Mic</button>
-<button class="secondary" onclick="stopMic()">Stop Mic</button>
+<button class="primary" onclick="generateResponse()">⚡ Generate Response</button>
+<button class="mic-btn" id="micBtn" onclick="startListening()">🎤 Start Mic</button>
+<button class="secondary" onclick="stopListening()">⏹ Stop</button>
+<button class="secondary" onclick="toggleTranslate()">⇄ Translate</button>
 </div>
-
-<div class="grid stats-grid" style="grid-template-columns:repeat(4,1fr);margin-top:14px;">
-<div class="stat">
-<div class="stat-label">Language</div>
-<div class="stat-value" id="languageDisplay" style="font-size:18px;">English</div>
-</div>
-<div class="stat">
-<div class="stat-label">Heat</div>
-<div class="stat-value" id="leadHeat" style="font-size:18px;">—</div>
-</div>
-<div class="stat">
-<div class="stat-label">Strategy</div>
-<div class="stat-value" id="strategy" style="font-size:18px;">—</div>
-</div>
-<div class="stat">
-<div class="stat-label">Mic</div>
-<div class="stat-value" id="mic">Idle</div>
-</div>
-</div>
-
-<div id="translationBox" class="translation hidden">
-<h3 style="margin-top:0;">Live Translation</h3>
-<p><strong>English:</strong> <span id="translatedEnglish">—</span></p>
-<p><strong>Reply in Supplier Language:</strong> <span id="translatedReply">—</span></p>
+<div id="translationBox" class="translation-box hidden">
+<h4>◈ Live Translation</h4>
+<div class="trans-row"><span class="trans-key">EN</span><span class="trans-val" id="translatedEnglish">—</span></div>
+<div class="trans-row"><span class="trans-key">REPLY</span><span class="trans-val" id="translatedReply">—</span></div>
 </div>
 </div>
 </div>
 
-<div>
+<div style="display:flex;flex-direction:column;gap:14px">
 <div class="card">
-<h3>AI Response</h3>
-<div class="ai-shell">
-<div class="ai-box">
-<div class="ai-text" id="response">—</div>
-<div class="meta" id="score">Close Probability: —</div>
-<div class="meta" id="action">Next Best Action: —</div>
-<div class="meta" id="coach">Coaching: —</div>
+<h3><span class="dot" style="background:var(--blue-mid)"></span>AI Response</h3>
+<div class="ai-container">
+<div class="ai-badge">AI ENGINE</div>
+<div id="response" class="ai-text">—</div>
+<div class="ai-meta">
+<div class="meta-chip"><span class="key">CONFIDENCE</span><span class="val" id="confidence">—</span></div>
+<div class="meta-chip"><span class="key">OBJECTION</span><span class="val" id="objectionTag">—</span></div>
+<div class="meta-chip"><span class="key">NEXT ACTION</span><span class="val" id="nextBestAction">—</span></div>
+<div class="meta-chip"><span class="key">CLOSE %</span><span class="val" id="closeProbability">—</span></div>
 </div>
 </div>
+</div>
+<div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+<div class="card"><h3><span class="dot" style="background:var(--green)"></span>Coaching</h3><p class="info-text" id="liveCoaching">—</p></div>
+<div class="card"><h3><span class="dot" style="background:var(--amber)"></span>CRM Note</h3><p class="info-text" id="crmNote">—</p></div>
+<div class="card"><h3><span class="dot" style="background:var(--cyan)"></span>Follow-Up</h3><p class="info-text" id="emailText">—</p></div>
 </div>
 </div>
 </div>
 
-<div class="grid bottom-grid">
+<div class="grid twocol anim anim-d2" style="margin-top:14px">
 <div class="card">
-<h3>CRM Note</h3>
-<p id="crmNote">—</p>
+<h3><span class="dot"></span>Call Outcome</h3>
+<div class="form-group"><label class="lbl">Outcome</label>
+<select id="outcome"><option>Pending</option><option>Follow Up Needed</option><option>Converted</option><option>Rejected</option></select>
 </div>
-<div class="card">
-<h3>Follow-Up Email</h3>
-<p id="emailText">—</p>
+<div class="form-group"><label class="lbl">Enrollment Status</label>
+<select id="enrollment"><option>Pending</option><option>Enrollment Sent</option><option>Completed</option><option>Declined</option></select>
 </div>
-<div class="card">
-<h3>Selected Company</h3>
-<p id="selectedCompanyStat">None</p>
-</div>
-</div>
-
-<div class="grid two-grid" style="margin-top:16px;">
-<div class="card">
-<h3>Call Outcome</h3>
-<label>Outcome</label>
-<select id="outcome">
-<option>Pending</option>
-<option>Converted</option>
-<option>Rejected</option>
-</select>
 <div class="toolbar">
-<button class="success" onclick="logCall()">Log Call</button>
+<button class="success" onclick="logCall()">✓ Log Call</button>
+<button class="warning" onclick="markEnrollmentComplete()">★ Mark Complete</button>
 </div>
 </div>
-
 <div class="card">
-<h3>History</h3>
+<h3><span class="dot"></span>Call History</h3>
 <div id="history"></div>
 </div>
 </div>
 </div>
 
 <div id="managerView" class="hidden">
-<div class="grid stats-grid">
-<div class="stat">
-<div class="stat-label">Total Calls</div>
-<div class="stat-value" id="mgrCalls">0</div>
+<div class="grid stats anim">
+<div class="stat stat-blue"><div class="stat-accent"></div><div class="label">Total Calls</div><div class="value" id="mgrCalls">0</div></div>
+<div class="stat stat-green"><div class="stat-accent"></div><div class="label">Total Converted</div><div class="value" id="mgrConverted">0</div></div>
+<div class="stat stat-amber"><div class="stat-accent"></div><div class="label">Win Rate</div><div class="value" id="mgrRate">0%</div></div>
+<div class="stat stat-cyan"><div class="stat-accent"></div><div class="label">Top Objection</div><div class="value" id="mgrTopObjection" style="font-size:16px;margin-top:6px">None</div></div>
 </div>
-<div class="stat">
-<div class="stat-label">Converted</div>
-<div class="stat-value" id="mgrConverted">0</div>
-</div>
-<div class="stat">
-<div class="stat-label">Win Rate</div>
-<div class="stat-value" id="mgrRate">0%</div>
-</div>
-<div class="stat">
-<div class="stat-label">Top Objection</div>
-<div class="stat-value" id="mgrTop">None</div>
+<div class="card anim anim-d1" style="margin-top:14px">
+<h3><span class="dot"></span>Objection Breakdown</h3>
+<div id="objectionBreakdown" class="objection-bar-wrap" style="margin-top:8px"></div>
 </div>
 </div>
+</div>
+```
 
-<div class="card" style="margin-top:16px;">
-<h3>Objection Breakdown</h3>
-<div id="mgrBreakdown"></div>
-</div>
-</div>
-</div>
 </div>
 </main>
 </div>
 
 <script>
-let recognition = null;
-let selectedSupplier = null;
-let historyLog = [];
-let translateOn = false;
-
-const suppliers = [
-{ company:"Novacore Electrical", contact:"Anthony King", email:"aking@novacore.com", phone:"704-555-1122", industry:"Electrical", avgInvoice:"$9,200" },
-{ company:"Atlas Industrial Supply", contact:"Jorge Ramirez", email:"jramirez@atlasind.com", phone:"980-555-8877", industry:"Industrial", avgInvoice:"$6,200" },
-{ company:"Blue Ridge Property", contact:"Trista Jamieson", email:"tjamieson@blueridge.com", phone:"828-555-2211", industry:"Property", avgInvoice:"$4,100" },
-{ company:"Keystone Facility Group", contact:"Mark Ellis", email:"mellis@keystonefg.com", phone:"704-555-9981", industry:"Facilities", avgInvoice:"$7,300" },
-{ company:"Kingstone Mechanical", contact:"Lisa Warren", email:"lwarren@kingstone.com", phone:"919-555-4403", industry:"Mechanical", avgInvoice:"$8,100" },
-{ company:"KLM Property Services", contact:"Derrick Cole", email:"dcole@klmproperty.com", phone:"980-555-6310", industry:"Property", avgInvoice:"$5,700" }
+let translateOn=false,recognition=null,selectedSupplierIndex=0;
+const suppliers=[
+{company:"Novacore Electrical",contact:"Anthony King",email:"aking@novacore.com",phone:"704-555-1122",industry:"Electrical",avg_invoice:"$9,200",ach_score:58,vcc_score:33},
+{company:"Atlas Industrial Supply",contact:"Jorge Ramirez",email:"jramirez@atlasind.com",phone:"980-555-8877",industry:"Industrial",avg_invoice:"$6,200",ach_score:74,vcc_score:18},
+{company:"Blue Ridge Property",contact:"Trista Jamieson",email:"tjamieson@blueridge.com",phone:"828-555-2211",industry:"Property",avg_invoice:"$4,100",ach_score:69,vcc_score:22},
+{company:"Keystone Facility Group",contact:"Mark Ellis",email:"mellis@keystonefg.com",phone:"704-555-9981",industry:"Facilities",avg_invoice:"$7,300",ach_score:66,vcc_score:25},
+{company:"Kingstone Mechanical",contact:"Lisa Warren",email:"lwarren@kingstone.com",phone:"919-555-4403",industry:"Mechanical",avg_invoice:"$8,100",ach_score:63,vcc_score:29},
+{company:"KLM Property Services",contact:"Derrick Cole",email:"dcole@klmproperty.com",phone:"980-555-6310",industry:"Property",avg_invoice:"$5,700",ach_score:61,vcc_score:31}
 ];
-
+function getHistory(){return JSON.parse(localStorage.getItem("paypilot_premium_demo_history")||"[]")}
+function saveHistory(h){localStorage.setItem("paypilot_premium_demo_history",JSON.stringify(h))}
 function login(){
-if(document.getElementById("pass").value.trim() === "demo123"){
+const pw=document.getElementById("password").value.trim();
+if(pw==="demo123"){
 document.getElementById("loginCard").classList.add("hidden");
 document.getElementById("appContent").classList.remove("hidden");
+document.getElementById("userChip").classList.remove("hidden");
+document.getElementById("liveBadge").classList.remove("hidden");
+document.getElementById("supplierSearch").value=suppliers[0].company;
+selectedSupplierIndex=0;loadSupplier();renderHistory();updateStats();renderManager();
 } else {
-alert("Wrong password");
+const inp=document.getElementById("password");
+inp.style.borderColor="var(--red)";inp.style.boxShadow="0 0 0 3px rgba(225,29,72,.1)";
+setTimeout(()=>{inp.style.borderColor="";inp.style.boxShadow=""},1500);
 }
 }
-
-function logout(){ location.reload(); }
-
+function logout(){location.reload()}
 function showRepView(){
 document.getElementById("repView").classList.remove("hidden");
 document.getElementById("managerView").classList.add("hidden");
+document.getElementById("btnRep").classList.add("active");
+document.getElementById("btnMgr").classList.remove("active");
 }
-
 function showManagerView(){
 document.getElementById("repView").classList.add("hidden");
 document.getElementById("managerView").classList.remove("hidden");
+document.getElementById("btnMgr").classList.add("active");
+document.getElementById("btnRep").classList.remove("active");
 renderManager();
 }
-
-function searchCompanies(){
-const query = document.getElementById("companySearch").value.trim().toLowerCase();
-const results = document.getElementById("results");
-
-if(query.length < 1){
-results.classList.add("hidden");
-results.innerHTML = "";
-return;
+function searchSuppliers(){
+const q=document.getElementById("supplierSearch").value.trim().toLowerCase();
+const el=document.getElementById("searchResults");
+if(q.length<1){el.classList.add("hidden");el.innerHTML="";return}
+const matches=suppliers.map((s,i)=>({s,i})).filter(x=>x.s.company.toLowerCase().includes(q)||x.s.contact.toLowerCase().includes(q)||x.s.email.toLowerCase().includes(q)||x.s.phone.includes(q));
+if(!matches.length){el.classList.remove("hidden");el.innerHTML=`<div class="search-item"><div class="search-name" style="color:var(--text3)">No results</div></div>`;return}
+el.classList.remove("hidden");
+el.innerHTML=matches.map((item,idx)=>`<div class="search-item ${idx===0?"active":""}" onclick="selectSupplier(${item.i})"><div class="search-name">${item.s.company}</div><div class="search-meta">${item.s.contact} · ${item.s.email} · ${item.s.phone}</div></div>`).join("");
+selectedSupplierIndex=matches[0].i;loadSupplier();
 }
-
-const matches = suppliers.filter(s =>
-s.company.toLowerCase().includes(query) ||
-s.contact.toLowerCase().includes(query) ||
-s.email.toLowerCase().includes(query) ||
-s.phone.includes(query)
-);
-
-if(matches.length === 0){
-results.classList.remove("hidden");
-results.innerHTML = `<div class="result-item"><div class="result-title">No results found</div><div class="result-sub">Try company, contact, email, or phone</div></div>`;
-return;
+function selectSupplier(i){
+selectedSupplierIndex=i;
+document.getElementById("supplierSearch").value=suppliers[i].company;
+document.getElementById("searchResults").classList.add("hidden");
+document.getElementById("searchResults").innerHTML="";
+loadSupplier();
 }
-
-results.classList.remove("hidden");
-results.innerHTML = matches.map((s, i) => `
-<div class="result-item ${i === 0 ? "active" : ""}" onclick="selectSupplierByName('${s.company.replace(/'/g, "\\'")}')">
-<div class="result-title">${s.company}</div>
-<div class="result-sub">${s.contact} • ${s.email} • ${s.phone}</div>
-</div>
-`).join("");
-
-selectedSupplier = matches[0];
-renderSelectedSupplier();
+function loadSupplier(){
+const s=suppliers[selectedSupplierIndex];
+document.getElementById("supplierInfo").innerHTML=`<div class="supplier-detail"><div class="supplier-row"><span class="sk">Company</span><span class="sv">${s.company}</span></div><div class="supplier-row"><span class="sk">Contact</span><span class="sv">${s.contact}</span></div><div class="supplier-row"><span class="sk">Email</span><span class="sv">${s.email}</span></div><div class="supplier-row"><span class="sk">Phone</span><span class="sv">${s.phone}</span></div><div class="supplier-row"><span class="sk">Industry</span><span class="sv">${s.industry}</span></div><div class="supplier-row"><span class="sk">Avg Invoice</span><span class="sv">${s.avg_invoice}</span></div></div><div class="badge-row"><div class="badge badge-blue">ACH SCORE · ${s.ach_score}%</div><div class="badge badge-cyan">VCC SCORE · ${s.vcc_score}%</div></div>`;
 }
-
-function selectSupplierByName(companyName){
-selectedSupplier = suppliers.find(s => s.company === companyName) || null;
-renderSelectedSupplier();
-document.getElementById("companySearch").value = selectedSupplier ? selectedSupplier.company : "";
-document.getElementById("results").classList.add("hidden");
-document.getElementById("results").innerHTML = "";
-}
-
-function renderSelectedSupplier(){
-const el = document.getElementById("supplierInfo");
-const stat = document.getElementById("selectedCompanyStat");
-
-if(!selectedSupplier){
-el.innerHTML = "—";
-stat.innerText = "None";
-return;
-}
-
-el.innerHTML = `
-<p><strong>Company:</strong> ${selectedSupplier.company}</p>
-<p><strong>Contact:</strong> ${selectedSupplier.contact}</p>
-<p><strong>Email:</strong> ${selectedSupplier.email}</p>
-<p><strong>Phone:</strong> ${selectedSupplier.phone}</p>
-<p><strong>Industry:</strong> ${selectedSupplier.industry}</p>
-<p><strong>Avg Invoice:</strong> ${selectedSupplier.avgInvoice}</p>
-<span class="pill">${selectedSupplier.industry}</span>
-<span class="pill">${selectedSupplier.avgInvoice}</span>
-`;
-
-stat.innerText = selectedSupplier.company;
-}
-
-function detectLanguage(text){
-const t = text.toLowerCase();
-if(
-t.includes("hola") ||
-t.includes("gracias") ||
-t.includes("cheques") ||
-t.includes("tarjeta") ||
-t.includes("solo aceptamos")
-){
-return "Spanish";
-}
-return "English";
-}
-
-function toggleTranslate(){
-translateOn = !translateOn;
-document.getElementById("translationBox").classList.toggle("hidden", !translateOn);
-updateTranslation();
-}
-
+function detectLanguage(text){const t=text.toLowerCase();if(t.includes("hola")||t.includes("solo aceptamos")||t.includes("cheques")||t.includes("tarjeta")||t.includes("gracias")||t.includes("no quiero pagar tarifas")) return "Spanish";return "English"}
+function toggleTranslate(){translateOn=!translateOn;document.getElementById("translationBox").classList.toggle("hidden",!translateOn);updateTranslation()}
 function updateTranslation(){
-const text = document.getElementById("input").value.trim();
-const lang = detectLanguage(text);
-document.getElementById("languageDisplay").innerText = lang;
-
+const text=document.getElementById("objection").value.trim();
+const lang=detectLanguage(text);
+document.getElementById("languageDisplay").textContent=lang==="Spanish"?"ES":"EN";
 if(!translateOn) return;
-
-let english = text || "—";
-let reply = "—";
-
-if(lang === "Spanish"){
-english = text
-.replace(/hola/gi, "hello")
-.replace(/gracias/gi, "thank you")
-.replace(/solo aceptamos cheques/gi, "we only accept checks")
-.replace(/tarjeta/gi, "card");
-
-reply = "Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos.";
-} else {
-reply = "That makes sense. ACH just helps you get paid faster without the delays.";
+let english=text||"—",reply="—";
+if(lang==="Spanish"){english=text.replace(/hola/gi,"hello").replace(/solo aceptamos cheques/gi,"we only accept checks").replace(/no aceptamos tarjetas/gi,"we do not accept cards").replace(/no quiero pagar tarifas/gi,"i do not want to pay fees").replace(/gracias/gi,"thank you");reply="Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos de cheques."} else {reply="That makes sense. ACH just helps you get paid faster without the delays."}
+document.getElementById("translatedEnglish").textContent=english||"—";
+document.getElementById("translatedReply").textContent=reply;
 }
-
-document.getElementById("translatedEnglish").innerText = english || "—";
-document.getElementById("translatedReply").innerText = reply;
+function startListening(){
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){alert("Mic not supported on this browser");return}
+if(recognition) recognition.stop();
+recognition=new SR();recognition.continuous=true;recognition.interimResults=true;recognition.lang="en-US";
+recognition.onstart=()=>{document.getElementById("micStatus").textContent="Live";document.getElementById("micBtn").classList.add("active-mic");document.getElementById("micBtn").innerHTML="🔴 Listening"};
+recognition.onerror=()=>document.getElementById("micStatus").textContent="Error";
+recognition.onend=()=>{document.getElementById("micStatus").textContent="Idle";document.getElementById("micBtn").classList.remove("active-mic");document.getElementById("micBtn").innerHTML="🎤 Start Mic"};
+recognition.onresult=(event)=>{const text=event.results[event.results.length-1][0].transcript;document.getElementById("objection").value=text;updateTranslation();clearTimeout(window.voiceTimer);window.voiceTimer=setTimeout(()=>generateResponse(),300)};
+recognition.start();
 }
-
-function buildDemoResponse(text){
-const t = text.toLowerCase();
-const mode = document.getElementById("responseMode").value;
-
-if(mode === "closer"){
-if(t.includes("check") || t.includes("checks")) return "Yeah, I figured. Let’s just get you off checks so you get paid faster.";
-if(t.includes("fee") || t.includes("fees")) return "I hear you. That’s exactly why ACH makes more sense here.";
-if(t.includes("busy") || t.includes("later")) return "No problem. This takes less time to handle now than later.";
-if(t.includes("accountant") || t.includes("bookkeeper")) return "That’s fine. Send it to them, this usually gets approved pretty quickly.";
-if(t.includes("not interested")) return "Understood, but this usually lands differently once people realize it’s just a faster way to get paid.";
-if(t.includes("card") || t.includes("cards")) return "Got it. Then ACH is the clean answer here — simpler setup and less friction.";
-if(detectLanguage(text) === "Spanish") return "Entiendo. La idea es simple: que le paguen más rápido y sin tanta fricción.";
-return "Let’s keep it simple — this is just a faster way for you to get paid.";
+function stopListening(){if(recognition) recognition.stop()}
+function calcProbability(text){
+let score=70;const t=text.toLowerCase();
+if(t.includes("check")||t.includes("checks")||t.includes("cheques")) score-=10;
+if(t.includes("fee")||t.includes("fees")||t.includes("tarifas")) score-=15;
+if(t.includes("busy")||t.includes("later")) score-=8;
+if(t.includes("accountant")) score-=10;
+if(t.includes("not interested")) score-=18;
+if(t.includes("yes")) score+=20;
+if(t.includes("interested")) score+=15;
+const s=suppliers[selectedSupplierIndex];score+=Math.round((s.ach_score-s.vcc_score)/10);
+return Math.max(5,Math.min(95,score));
 }
-
-if(t.includes("check") || t.includes("checks")) return "Yeah I figured. Most people start there. The only reason I’m bringing this up is it gets you paid way faster without dealing with checks.";
-if(t.includes("fee") || t.includes("fees")) return "I hear you. That’s exactly why most suppliers go ACH — it keeps everything clean without adding fees.";
-if(t.includes("busy") || t.includes("later")) return "I get it. I’ll be quick. This is one of those things that actually saves you time once it’s set up.";
-if(t.includes("accountant") || t.includes("bookkeeper")) return "Makes sense. Usually once they see how simple it is, it’s a pretty easy yes on their end.";
-if(t.includes("not interested")) return "Yeah I get that. Usually that changes once people realize it’s just about getting paid faster, not changing everything.";
-if(t.includes("card") || t.includes("cards")) return "Got it. In that case ACH is usually the better move — simpler, cleaner, no extra friction.";
-if(detectLanguage(text) === "Spanish") return "Entiendo. Esto solo ayuda a que le paguen más rápido sin complicaciones.";
-return "Yeah that makes sense. I’m just trying to make this easier and faster for you.";
-}
-
-function scoreCall(text){
-let score = 70;
-const t = text.toLowerCase();
-
-if(t.includes("check")) score -= 5;
-if(t.includes("fee")) score -= 10;
-if(t.includes("not interested")) score -= 20;
-if(t.includes("busy")) score -= 8;
-if(t.includes("yes")) score += 15;
-if(t.includes("sounds good")) score += 15;
-if(t.includes("send it")) score += 18;
-
-score = Math.max(10, Math.min(95, score));
-
-let strategy = "Guide forward";
-if(score > 80) strategy = "Close now";
-else if(score < 50) strategy = "Reframe";
-
-let action = "Move to next step";
-if(t.includes("check")) action = "Position ACH as faster";
-if(t.includes("fee")) action = "Reframe around simplicity";
-if(t.includes("busy")) action = "Keep it short";
-
-let coach = "Stay calm and move it forward.";
-if(score > 80) coach = "They sound close. Ask for the next step.";
-else if(score < 50) coach = "Lower resistance and simplify.";
-
-let heat = "Warm";
-if(score > 80) heat = "Hot";
-else if(score < 50) heat = "Cold";
-
-return { score, strategy, action, coach, heat };
-}
-
-function typeResponse(text){
-const el = document.getElementById("response");
-el.innerText = "";
-let i = 0;
-const timer = setInterval(() => {
-el.innerText += text.charAt(i);
-i++;
-if(i >= text.length) clearInterval(timer);
-}, 18);
-}
-
-function generate(){
-const text = document.getElementById("input").value.trim();
-const response = buildDemoResponse(text);
-const scored = scoreCall(text);
-
-document.getElementById("response").innerText = "Thinking...";
+function getObjectionTag(text){const t=text.toLowerCase();if(t.includes("check")||t.includes("checks")||t.includes("cheques")) return "Payment Method";if(t.includes("fee")||t.includes("fees")||t.includes("tarifas")) return "Cost";if(t.includes("busy")||t.includes("later")) return "Timing";if(t.includes("accountant")) return "Accounting";if(t.includes("not interested")) return "Rejection";return "General"}
+function getStrategy(text,score){const tag=getObjectionTag(text);if(score>=80) return "Push Next Step";if(tag==="Cost") return "Reframe Value";if(tag==="Payment Method") return "Speed + Simplicity";if(tag==="Timing") return "Keep It Short";if(tag==="Accounting") return "Lower Friction";if(tag==="Rejection") return "Soften + Re-engage";return "Guide Next Step"}
+function getLeadHeat(score){if(score>=80) return "🔥 Hot";if(score>=55) return "◑ Warm";return "● Cold"}
+function getNextBestAction(text,score){const tag=getObjectionTag(text);if(score>=80) return "Ask for setup now";if(tag==="Payment Method") return "Position ACH as faster";if(tag==="Cost") return "Reframe: no fees";if(tag==="Timing") return "Keep short, push step";if(tag==="Accounting") return "Simple follow-up";if(tag==="Rejection") return "Lower resistance";return "Guide to next step"}
+function getLiveCoaching(text,score){const s=getStrategy(text,score);if(s==="Push Next Step") return "They sound close. Stop explaining and move to setup.";if(s==="Reframe Value") return "Don't defend cost. Shift to simplicity and speed.";if(s==="Speed + Simplicity") return "Make checks sound slower. Make ACH sound easier.";if(s==="Keep It Short") return "Shorten your response and keep control of the call.";if(s==="Lower Friction") return "Reduce effort. Offer a simple next step.";if(s==="Soften + Re-engage") return "Don't push. Rebuild interest and keep it light.";return "Acknowledge, reframe, and guide."}
+function fallbackResponse(text){const t=text.toLowerCase();if(t.includes("check")||t.includes("checks")||t.includes("cheques")) return "Yeah, I get that. Most people start there, but ACH usually ends up easier since you're not waiting on checks anymore.";if(t.includes("fee")||t.includes("fees")||t.includes("tarifas")) return "That's fair. That's why ACH is usually the better option — it keeps things simple without extra fees.";if(t.includes("busy")||t.includes("later")) return "No worries, I'll keep it quick so you don't have to come back to this later.";if(t.includes("accountant")) return "Makes sense. We can include accounting, but the setup itself is simple so we can keep this moving.";if(t.includes("not interested")) return "All good. Usually once people see it's really about getting paid faster, it starts to make more sense.";if(t.includes("card")||t.includes("cards")) return "That's fine. In that case ACH is probably the cleaner fit — keeps things simple and gets funds over faster.";if(detectLanguage(text)==="Spanish") return "Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos de cheques.";return "That makes sense. ACH just helps you get paid faster without the delays."}
+function generateResponse(){
+const text=document.getElementById("objection").value.trim();
+const score=calcProbability(text);const tag=getObjectionTag(text);const action=getNextBestAction(text,score);
+const el=document.getElementById("response");
+el.innerHTML='<span style="color:var(--text3);font-size:14px;font-weight:400">Generating</span><span class="ai-cursor"></span>';
 updateTranslation();
-
-setTimeout(() => {
-typeResponse(response);
-}, 220);
-
-document.getElementById("score").innerText = "Close Probability: " + scored.score + "%";
-document.getElementById("action").innerText = "Next Best Action: " + scored.action;
-document.getElementById("coach").innerText = "Coaching: " + scored.coach;
-document.getElementById("strategy").innerText = scored.strategy;
-document.getElementById("leadHeat").innerText = scored.heat;
-
-if(selectedSupplier){
-document.getElementById("crmNote").innerText =
-`${selectedSupplier.company}: Discussed payment options with ${selectedSupplier.contact}. Strategy: ${scored.strategy}.`;
-
-document.getElementById("emailText").innerText =
-`Hi ${selectedSupplier.contact}, following up on our conversation. ACH may be a faster option for your payments.`;
-} else {
-document.getElementById("crmNote").innerText = "Select a supplier to generate a CRM note.";
-document.getElementById("emailText").innerText = "Select a supplier to generate a follow-up email.";
+const response=fallbackResponse(text);
+setTimeout(()=>{el.textContent="";let i=0;const chars=response.split("");const ti=setInterval(()=>{el.textContent+=chars[i];i++;if(i>=chars.length) clearInterval(ti)},16)},650);
+document.getElementById("confidence").textContent="90%";
+document.getElementById("objectionTag").textContent=tag;
+document.getElementById("nextBestAction").textContent=action;
+document.getElementById("closeProbability").textContent=score+"%";
+document.getElementById("strategyTag").textContent=getStrategy(text,score);
+document.getElementById("leadHeat").textContent=getLeadHeat(score);
+document.getElementById("liveCoaching").textContent=getLiveCoaching(text,score);
+generateExtras();
 }
-}
-
-function logCall(){
-const text = document.getElementById("input").value.trim();
-const outcome = document.getElementById("outcome").value;
-const company = selectedSupplier ? selectedSupplier.company : "Unknown Company";
-
-historyLog.unshift({
-company,
-outcome,
-text,
-createdAt:new Date().toLocaleString()
-});
-
-renderHistory();
-updateStats();
-renderManager();
-}
-
-function updateStats(){
-const calls = historyLog.length;
-const converted = historyLog.filter(x => x.outcome === "Converted").length;
-const rate = Math.round((converted / calls) * 100) || 0;
-
-document.getElementById("calls").innerText = calls;
-document.getElementById("converted").innerText = converted;
-document.getElementById("rate").innerText = rate + "%";
-document.getElementById("heroCalls").innerText = calls;
-document.getElementById("heroConverted").innerText = converted;
-document.getElementById("heroRate").innerText = rate + "%";
-
-const map = {};
-historyLog.forEach(h => {
-const t = h.text.toLowerCase();
-let key = "General";
-if(t.includes("check")) key = "Check";
-else if(t.includes("fee")) key = "Fee";
-else if(t.includes("busy")) key = "Timing";
-else if(t.includes("accountant")) key = "Accounting";
-map[key] = (map[key] || 0) + 1;
-});
-
-let top = "None";
-let topCount = 0;
-for(let k in map){
-if(map[k] > topCount){
-top = k;
-topCount = map[k];
-}
-}
-document.getElementById("topObjection").innerText = top;
-}
-
-function renderHistory(){
-const el = document.getElementById("history");
-el.innerHTML = historyLog.map(h => `
-<div class="history-item">
-<div class="history-title">${h.company} — ${h.outcome}</div>
-<div class="history-meta">${h.createdAt}</div>
-<div>${h.text}</div>
-</div>
-`).join("");
-}
-
-function renderManager(){
-const calls = historyLog.length;
-const converted = historyLog.filter(x => x.outcome === "Converted").length;
-const rate = Math.round((converted / calls) * 100) || 0;
-
-document.getElementById("mgrCalls").innerText = calls;
-document.getElementById("mgrConverted").innerText = converted;
-document.getElementById("mgrRate").innerText = rate + "%";
-
-const map = {};
-historyLog.forEach(h => {
-const t = h.text.toLowerCase();
-let key = "General";
-if(t.includes("check")) key = "Check";
-else if(t.includes("fee")) key = "Fee";
-else if(t.includes("busy")) key = "Timing";
-else if(t.includes("accountant")) key = "Accounting";
-map[key] = (map[key] || 0) + 1;
-});
-
-let top = "None";
-let topCount = 0;
-for(let k in map){
-if(map[k] > topCount){
-top = k;
-topCount = map[k];
-}
-}
-
-document.getElementById("mgrTop").innerText = top;
-document.getElementById("mgrBreakdown").innerHTML =
-Object.keys(map).length
-? Object.entries(map).map(([k,v]) => `<p><strong>${k}:</strong> ${v}</p>`).join("")
-: `<p class="muted">No data yet.</p>`;
-}
-
-function startMic(){
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-if(!SR){
-alert("Mic not supported");
-return;
-}
-
-let rec = new SR();
-rec.continuous = false;
-rec.interimResults = false;
-rec.lang = "en-US";
-
-document.getElementById("mic").innerText = "Listening";
-
-rec.onresult = (e) => {
-let text = e.results[0][0].transcript;
-document.getElementById("input").value = text;
-document.getElementById("mic").innerText = "Captured";
-};
-
-rec.onerror = () => {
-document.getElementById("mic").innerText = "Error";
-};
-
-rec.onend = () => {
-if(document.getElementById("mic").innerText === "Listening"){
-document.getElementById("mic").innerText = "Idle";
-}
-};
-
-rec.start();
-recognition = rec;
-}
-
-function stopMic(){
-if(recognition){
-try{ recognition.stop(); }catch(e){}
-}
-document.getElementById("mic").innerText = "Stopped";
-}
-
-document.addEventListener("click", function(e){
-const results = document.getElementById("results");
-const input = document.getElementById("companySearch");
-if(results && !results.contains(e.target) && e.target !== input){
-results.classList.add("hidden");
-}
-});
+function generateExtras(){const s=suppliers[selectedSupplierIndex];const outcome=document.getElementById("outcome").value;document.getElementById("crmNote").textContent=`${s.company}: Discussed electronic payment options. Contact: ${s.contact}. Outcome: ${outcome}.`;document.getElementById("emailText").textContent=`Hi ${s.contact}, thank you for your time today. ACH may be a strong fit to help you receive payments faster and reduce delays.`}
+function logCall(){const h=getHistory();const s=suppliers[selectedSupplierIndex];h.unshift({supplier:s.company,objection:document.getElementById("objection").value.trim(),outcome:document.getElementById("outcome").value,enrollment:document.getElementById("enrollment").value,createdAt:new Date().toLocaleString()});saveHistory(h);renderHistory();updateStats();renderManager()}
+function outcomeTagHTML(o){if(o==="Converted") return`<span class="outcome-tag tag-converted">Converted</span>`;if(o==="Rejected") return`<span class="outcome-tag tag-rejected">Rejected</span>`;if(o==="Follow Up Needed") return`<span class="outcome-tag tag-followup">Follow Up</span>`;return`<span class="outcome-tag tag-pending">Pending</span>`}
+function renderHistory(){const h=getHistory();const el=document.getElementById("history");if(!h.length){el.innerHTML='<p class="muted">No calls logged yet.</p>';return}el.innerHTML=h.map(item=>`<div class="history-item"><div class="history-title">${item.supplier} ${outcomeTagHTML(item.outcome)}</div><div class="history-date">${item.createdAt}</div><div class="history-obj">${item.objection||"—"}</div></div>`).join("")}
+function updateStats(){const h=getHistory();const calls=h.length;const converted=h.filter(x=>x.outcome==="Converted").length;const rate=calls?Math.round((converted/calls)*100):0;const tags={};h.forEach(x=>{const t=getObjectionTag(x.objection||"");tags[t]=(tags[t]||0)+1});let topTag="None",topCount=0;for(const k in tags){if(tags[k]>topCount){topTag=k;topCount=tags[k]}}document.getElementById("callsLogged").textContent=calls;document.getElementById("callsConverted").textContent=converted;document.getElementById("conversionRate").textContent=rate+"%";document.getElementById("topObjection").textContent=topTag}
+function renderManager(){const h=getHistory();const total=h.length;const won=h.filter(x=>x.outcome==="Converted").length;const rate=total?Math.round((won/total)*100):0;document.getElementById("mgrCalls").textContent=total;document.getElementById("mgrConverted").textContent=won;document.getElementById("mgrRate").textContent=rate+"%";const bd={};h.forEach(x=>{const t=getObjectionTag(x.objection||"");bd[t]=(bd[t]||0)+1});let topTag="None",topCount=0;for(const k in bd){if(bd[k]>topCount){topTag=k;topCount=bd[k]}}document.getElementById("mgrTopObjection").textContent=topTag;const maxVal=Math.max(...Object.values(bd),1);document.getElementById("objectionBreakdown").innerHTML=Object.keys(bd).length?Object.entries(bd).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="objection-bar-item"><div class="objection-bar-label">${k}</div><div class="objection-bar-track"><div class="objection-bar-fill" style="width:${Math.round((v/maxVal)*100)}%"></div></div><div class="objection-bar-count">${v}</div></div>`).join(""):'<p class="muted">No data yet.</p>'}
+function markEnrollmentComplete(){document.getElementById("enrollment").value="Completed";document.getElementById("outcome").value="Converted";generateExtras()}
+document.addEventListener("click",e=>{const sr=document.getElementById("searchResults");const inp=document.getElementById("supplierSearch");if(sr&&!sr.contains(e.target)&&e.target!==inp) sr.classList.add("hidden")});
 </script>
 
 </body>
 </html>
+
+
+
