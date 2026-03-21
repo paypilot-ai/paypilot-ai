@@ -6,144 +6,91 @@
 <title>PayPilot AI</title>
 <style>
 :root{
---bg:#f4f8ff;
---bg2:#edf4ff;
+--bg:#eef4ff;
+--bg2:#f8fbff;
 --nav:#0b1220;
---nav2:#111b31;
 --card:#ffffff;
 --text:#0f172a;
 --muted:#64748b;
 --line:#dbe5f0;
 --blue:#2563eb;
 --blue2:#60a5fa;
---blueSoft:#eaf2ff;
+--soft:#eaf2ff;
 --green:#16a34a;
 --amber:#d97706;
 --red:#dc2626;
---shadow:0 20px 50px rgba(2,8,23,.10);
---shadowSoft:0 10px 24px rgba(2,8,23,.07);
---radius:20px;
+--shadow:0 14px 40px rgba(2,8,23,.08);
+--radius:18px;
 }
 
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
 body{
+margin:0;
 font-family:Arial,Helvetica,sans-serif;
 color:var(--text);
 background:
-radial-gradient(circle at top right, rgba(96,165,250,.18), transparent 22%),
-radial-gradient(circle at top left, rgba(37,99,235,.10), transparent 18%),
-linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+radial-gradient(circle at top right, rgba(96,165,250,.16), transparent 22%),
+linear-gradient(180deg,var(--bg),var(--bg2));
 }
 
 .app{
 min-height:100vh;
 display:grid;
-grid-template-columns:260px 1fr;
+grid-template-columns:240px 1fr;
 }
 
 .sidebar{
-background:
-radial-gradient(circle at top left, rgba(96,165,250,.14), transparent 25%),
-linear-gradient(180deg, var(--nav) 0%, var(--nav2) 100%);
+background:linear-gradient(180deg,#0b1220,#111b31);
 color:#fff;
-padding:24px 18px;
-border-right:1px solid rgba(255,255,255,.06);
-}
-
-.brand{
-display:flex;
-gap:14px;
-align-items:center;
-margin-bottom:30px;
+padding:22px 18px;
 }
 
 .logo{
-width:62px;
-height:62px;
-border-radius:18px;
-display:flex;
-align-items:center;
-justify-content:center;
-background:linear-gradient(135deg,#ffffff,#dbeafe);
-box-shadow:0 18px 36px rgba(0,0,0,.28);
-border:1px solid rgba(255,255,255,.5);
-flex-shrink:0;
+font-size:24px;
+font-weight:800;
+margin-bottom:8px;
 }
 
-.brand h1{
-margin:0;
-font-size:22px;
-letter-spacing:-.04em;
-line-height:1;
-}
-
-.brand p{
-margin:6px 0 0;
-color:rgba(255,255,255,.72);
+.sublogo{
 font-size:12px;
+color:rgba(255,255,255,.7);
+margin-bottom:28px;
 }
 
-.side-label{
-font-size:11px;
-letter-spacing:.12em;
-text-transform:uppercase;
-color:rgba(255,255,255,.42);
-font-weight:700;
-margin:20px 0 10px;
-}
-
-.side-btn{
+.sidebtn{
 width:100%;
+padding:12px 14px;
+margin-bottom:8px;
 border:none;
+border-radius:12px;
 background:transparent;
 color:#fff;
 text-align:left;
-padding:13px 14px;
-border-radius:14px;
-font-weight:700;
 cursor:pointer;
-margin-bottom:8px;
-transition:.15s ease;
+font-weight:700;
 }
 
-.side-btn:hover,
-.side-btn.active{
-background:rgba(255,255,255,.08);
-transform:translateX(2px);
-}
-
-.side-note{
-margin-top:26px;
-border:1px solid rgba(255,255,255,.08);
-background:rgba(255,255,255,.05);
-border-radius:16px;
-padding:14px;
-font-size:12px;
-line-height:1.5;
-color:rgba(255,255,255,.74);
-}
+.sidebtn:hover,.sidebtn.active{background:rgba(255,255,255,.08)}
 
 .main{min-width:0}
-
 .topbar{
 position:sticky;
 top:0;
-z-index:10;
-padding:18px 24px;
-border-bottom:1px solid #e5edf8;
-background:rgba(255,255,255,.84);
-backdrop-filter:blur(10px);
+z-index:5;
 display:flex;
 justify-content:space-between;
 align-items:center;
 gap:16px;
+padding:18px 24px;
+border-bottom:1px solid #e5edf8;
+background:rgba(255,255,255,.86);
+backdrop-filter:blur(10px);
 }
 
-.topbar h2{
+.topbar h1{
 margin:0;
 font-size:28px;
-letter-spacing:-.04em;
+letter-spacing:-.03em;
 }
 
 .topbar p{
@@ -152,124 +99,61 @@ color:var(--muted);
 font-size:13px;
 }
 
-.top-actions{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-align-items:center;
-}
-
-.user-pill{
-background:var(--blueSoft);
-color:#1d4ed8;
-border:1px solid #cfe0ff;
-padding:10px 14px;
-border-radius:999px;
-font-size:12px;
-font-weight:700;
-}
-
 .page{
-padding:24px;
-max-width:1450px;
+max-width:1400px;
 margin:0 auto;
+padding:24px;
 }
 
-.grid{
-display:grid;
-gap:16px;
-}
-
-.grid-4{grid-template-columns:repeat(4,1fr)}
-.grid-2{grid-template-columns:repeat(2,1fr)}
-.call-layout{grid-template-columns:1fr 1.2fr}
-.bottom-layout{
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
-gap:16px;
-margin-top:16px;
-}
+.grid{display:grid;gap:16px}
+.stats{grid-template-columns:repeat(4,1fr)}
+.split{grid-template-columns:1fr 1.15fr}
+.lower{grid-template-columns:1fr 1fr 1fr}
+.twocol{grid-template-columns:1fr 1fr}
 
 .card{
-background:rgba(255,255,255,.92);
-border:1px solid #e7eef8;
+background:rgba(255,255,255,.96);
+border:1px solid rgba(255,255,255,.7);
 border-radius:var(--radius);
-box-shadow:var(--shadowSoft);
 padding:20px;
-transition:all .18s ease;
-}
-
-.card:hover{transform:translateY(-2px)}
-
-.card.white{
-background:#fff;
 box-shadow:var(--shadow);
 }
 
-.card-header{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:12px;
-margin-bottom:14px;
-}
-
 .card h3{
-margin:0;
+margin:0 0 12px;
 font-size:18px;
-letter-spacing:-.02em;
 }
 
-.subtle{
-color:var(--muted);
-font-size:12px;
-}
+.muted{color:var(--muted);font-size:12px}
 
 .stat{
-background:linear-gradient(180deg,#ffffff 0%, #f9fbff 100%);
+background:linear-gradient(180deg,#fff,#f9fbff);
 border:1px solid #e7eef8;
-border-radius:18px;
+border-radius:16px;
 padding:18px;
-box-shadow:var(--shadowSoft);
 }
 
-.stat-label{
+.stat .label{
 color:var(--muted);
 font-size:12px;
-margin-bottom:8px;
 font-weight:700;
+margin-bottom:8px;
 }
 
-.stat-value{
+.stat .value{
 font-size:30px;
 font-weight:800;
-letter-spacing:-.05em;
-}
-
-.stat-foot{
-margin-top:8px;
-color:var(--muted);
-font-size:11px;
-}
-
-label{
-display:block;
-font-size:12px;
-color:var(--muted);
-margin-bottom:6px;
-font-weight:700;
+letter-spacing:-.04em;
 }
 
 input,textarea,select{
 width:100%;
+padding:14px 15px;
 border:1px solid var(--line);
 border-radius:14px;
-background:#fff;
-color:var(--text);
-padding:14px 15px;
 font-size:15px;
 outline:none;
-transition:.15s ease;
+background:#fff;
 }
 
 input:focus,textarea:focus,select:focus{
@@ -277,325 +161,189 @@ border-color:#93c5fd;
 box-shadow:0 0 0 4px rgba(37,99,235,.12);
 }
 
-textarea{
-min-height:150px;
-resize:vertical;
-}
+textarea{min-height:150px;resize:vertical}
 
 .toolbar{
 display:flex;
 gap:10px;
 flex-wrap:wrap;
+margin-top:12px;
 }
 
-.btn{
+button{
 border:none;
 border-radius:14px;
 padding:12px 15px;
 font-size:14px;
 font-weight:700;
 cursor:pointer;
-transition:.15s ease;
-box-shadow:var(--shadowSoft);
-letter-spacing:.02em;
 }
 
-.btn:hover{transform:translateY(-1px)}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}
-.btn-secondary{background:#eef2f7;color:#0f172a;border:1px solid #dce5f1}
-.btn-success{background:linear-gradient(135deg,var(--green),#22c55e);color:#fff}
-.btn-warning{background:linear-gradient(135deg,var(--amber),#f59e0b);color:#fff}
-.btn-danger{background:linear-gradient(135deg,var(--red),#ef4444);color:#fff}
+.primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}
+.secondary{background:#eef2f7;color:#0f172a}
+.success{background:linear-gradient(135deg,var(--green),#22c55e);color:#fff}
+.warning{background:linear-gradient(135deg,var(--amber),#f59e0b);color:#fff}
 
 .search-results{
 margin-top:10px;
-background:#fff;
 border:1px solid var(--line);
 border-radius:14px;
 overflow:hidden;
+max-height:240px;
+overflow-y:auto;
+background:#fff;
 }
 
 .search-item{
-padding:13px 14px;
+padding:12px 14px;
 border-top:1px solid #edf2f8;
 cursor:pointer;
-transition:.12s ease;
 }
 
 .search-item:first-child{border-top:none}
-.search-item:hover{background:var(--blueSoft)}
-.search-name{font-weight:700;margin-bottom:4px}
-.search-meta{color:var(--muted);font-size:12px}
+.search-item:hover,.search-item.active{background:var(--soft)}
 
-.pill-row{
-display:flex;
-gap:8px;
-flex-wrap:wrap;
-margin-top:10px;
-}
-
-.mini-pill{
-display:inline-flex;
-align-items:center;
+.pill{
+display:inline-block;
 padding:7px 10px;
 border-radius:999px;
+background:var(--soft);
+color:#1d4ed8;
 font-size:12px;
 font-weight:700;
-background:var(--blueSoft);
-color:#1d4ed8;
-border:1px solid #d7e7ff;
+margin:8px 8px 0 0;
 }
 
-.ai-shell{
+.ai-wrap{
 border-radius:24px;
 padding:2px;
-background:linear-gradient(135deg, rgba(37,99,235,.28), rgba(96,165,250,.10));
-box-shadow:0 26px 70px rgba(37,99,235,.10);
+background:linear-gradient(135deg, rgba(37,99,235,.26), rgba(96,165,250,.08));
 }
 
 .ai-box{
 position:relative;
-overflow:hidden;
 border-radius:22px;
-padding:28px;
-background:
-radial-gradient(circle at top center, rgba(96,165,250,.08), transparent 34%),
-linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
-border:1px solid rgba(37,99,235,.08);
-}
-
-.ai-box::before{
-content:"";
-position:absolute;
-top:-60px;
-left:50%;
-transform:translateX(-50%);
-width:220px;
-height:220px;
-background:radial-gradient(circle, rgba(37,99,235,.25), transparent);
-filter:blur(60px);
-pointer-events:none;
+padding:30px;
+background:linear-gradient(180deg,#fff,#f8fbff);
+overflow:hidden;
 }
 
 .ai-text{
-position:relative;
-font-size:30px;
+font-size:34px;
 font-weight:800;
-line-height:1.5;
+line-height:1.35;
 text-align:center;
 letter-spacing:-.04em;
-margin-bottom:18px;
+background:linear-gradient(135deg,#0f172a,#1e3a8a);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
 white-space:pre-wrap;
-text-shadow:0 6px 20px rgba(37,99,235,.15);
-transition:all .25s ease;
+margin-bottom:18px;
 }
 
 .meta{
-position:relative;
 text-align:center;
-color:var(--muted);
 font-size:13px;
-margin-bottom:7px;
-}
-
-.translation{
-margin-top:14px;
-border-radius:16px;
-padding:16px;
-background:linear-gradient(180deg,#eef5ff 0%, #e8f2ff 100%);
-border:1px solid #d7e7ff;
+color:var(--muted);
+margin-bottom:6px;
 }
 
 .history-item{
-padding:12px 0;
 border-top:1px solid #edf2f8;
+padding:12px 0;
 }
 
-.history-item:first-child{
-border-top:none;
-padding-top:0;
-}
+.history-item:first-child{border-top:none;padding-top:0}
 
-.history-title{
-font-weight:700;
-margin-bottom:4px;
-}
+.hidden{display:none!important}
 
-.history-meta{
-color:var(--muted);
-font-size:12px;
-margin-bottom:8px;
-}
-
-.login-wrap{
-max-width:560px;
-margin:42px auto 0;
-}
-
-.hidden{display:none !important}
-
-@media (max-width:1024px){
+@media (max-width:1100px){
 .app{grid-template-columns:1fr}
 .sidebar{display:none}
-.grid-4,.grid-2,.call-layout,.bottom-layout{grid-template-columns:1fr}
+.stats,.split,.lower,.twocol{grid-template-columns:1fr}
 .page{padding:16px}
-.topbar{padding:16px}
-.ai-text{font-size:22px}
+.ai-text{font-size:24px}
 }
 </style>
 </head>
 <body>
 <div class="app">
 <aside class="sidebar">
-<div class="brand">
-<div class="logo">
-<svg width="42" height="42" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<linearGradient id="ppGrad" x1="6" y1="6" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-<stop stop-color="#0066CC"/>
-<stop offset="1" stop-color="#1FA2FF"/>
-</linearGradient>
-</defs>
-<rect x="3" y="3" width="34" height="34" rx="11" fill="url(#ppGrad)"/>
-<path d="M12 27V13H20.2C23.6 13 25.8 15 25.8 18C25.8 21 23.6 23 20.2 23H15.6V27H12ZM15.6 20.1H19.7C21.2 20.1 22.2 19.3 22.2 18C22.2 16.7 21.2 15.9 19.7 15.9H15.6V20.1Z" fill="white"/>
-<path d="M22.8 27V13H26.1L30.1 19.1V13H33V27H29.8L25.7 20.8V27H22.8Z" fill="#DFF1FF"/>
-</svg>
-</div>
-<div>
-<h1>PayPilot AI</h1>
-<p>Enterprise supplier enrollment intelligence</p>
-</div>
-</div>
+<div class="logo">PayPilot AI</div>
+<div class="sublogo">Real-time enrollment intelligence</div>
 
-<div class="side-label">Workspace</div>
-<button class="side-btn active" onclick="showRepView()">Rep View</button>
-<button class="side-btn" onclick="showManagerView()">Manager View</button>
-
-<div class="side-label">Actions</div>
-<button class="side-btn" onclick="toggleTranslate()">Toggle Translation</button>
-<button class="side-btn" onclick="startListening()">Start Mic</button>
-<button class="side-btn" onclick="stopListening()">Stop Mic</button>
-<button class="side-btn" onclick="logout()">Logout</button>
-
-<div class="side-note">
-Full copy-paste build. Search suppliers, talk through objections, get live responses, log calls, and view manager stats.
-</div>
+<button class="sidebtn active" onclick="showRepView()">Rep View</button>
+<button class="sidebtn" onclick="showManagerView()">Manager View</button>
+<button class="sidebtn" onclick="toggleTranslate()">Toggle Translation</button>
+<button class="sidebtn" onclick="startListening()">Start Mic</button>
+<button class="sidebtn" onclick="stopListening()">Stop Mic</button>
+<button class="sidebtn" onclick="logout()">Logout</button>
 </aside>
 
 <main class="main">
 <div class="topbar">
 <div>
-<h2>PayPilot AI</h2>
-<p>High-visibility live call assistant</p>
+<h1>PayPilot AI</h1>
+<p>Real-time AI enrollment intelligence</p>
 </div>
-<div class="top-actions">
-<div id="userDisplay" class="user-pill hidden"></div>
-<button class="btn btn-secondary" onclick="showRepView()">Rep View</button>
-<button class="btn btn-secondary" onclick="showManagerView()">Manager View</button>
-<button class="btn btn-secondary" onclick="toggleTranslate()">Translation</button>
-<button class="btn btn-primary" onclick="startListening()">🎤 Start Mic</button>
-<button class="btn btn-secondary" onclick="stopListening()">Stop Mic</button>
-<button class="btn btn-danger hidden" id="logoutBtn" onclick="logout()">Logout</button>
-</div>
+<div id="userChip" class="muted hidden">demo@paypilot.ai</div>
 </div>
 
 <div class="page">
-<div id="loginCard" class="login-wrap">
-<div class="card white">
-<div class="card-header">
+<div id="loginCard" class="card" style="max-width:520px;margin:0 auto;">
 <h3>Secure Login</h3>
-</div>
-<label>Password</label>
-<input id="password" type="password" placeholder="Password" />
+<label class="muted">Password</label>
+<input id="password" type="password" placeholder="Password">
 <div class="toolbar">
-<button class="btn btn-primary" onclick="login()">Login</button>
+<button class="primary" onclick="login()">Login</button>
 </div>
-<p class="subtle" style="margin-top:12px;">Use password: demo123</p>
-</div>
+<p class="muted">Use password: demo123</p>
 </div>
 
 <div id="appContent" class="hidden">
 <div id="repView">
-<div class="grid grid-4">
-<div class="stat">
-<div class="stat-label">Calls Logged</div>
-<div class="stat-value" id="callsLogged">0</div>
-<div class="stat-foot">Saved call activity</div>
-</div>
-<div class="stat">
-<div class="stat-label">Converted</div>
-<div class="stat-value" id="callsConverted">0</div>
-<div class="stat-foot">Successful outcomes</div>
-</div>
-<div class="stat">
-<div class="stat-label">Conversion Rate</div>
-<div class="stat-value" id="conversionRate">0%</div>
-<div class="stat-foot">Based on logged calls</div>
-</div>
-<div class="stat">
-<div class="stat-label">Top Objection</div>
-<div class="stat-value" id="topObjection" style="font-size:20px;">None</div>
-<div class="stat-foot">Most frequent blocker</div>
-</div>
+<div class="grid stats">
+<div class="stat"><div class="label">Calls Logged</div><div class="value" id="callsLogged">0</div></div>
+<div class="stat"><div class="label">Converted</div><div class="value" id="callsConverted">0</div></div>
+<div class="stat"><div class="label">Conversion Rate</div><div class="value" id="conversionRate">0%</div></div>
+<div class="stat"><div class="label">Top Objection</div><div class="value" id="topObjection" style="font-size:20px;">None</div></div>
 </div>
 
-<div class="grid call-layout" style="margin-top:18px;">
+<div class="grid split" style="margin-top:16px;">
 <div>
 <div class="card">
-<div class="card-header">
 <h3>Supplier Search</h3>
-<span class="subtle">Search by company name</span>
-</div>
-
-<label>Company Name</label>
-<input id="supplierSearch" placeholder="Type company name..." oninput="searchSuppliers()" autocomplete="off" />
+<div class="muted">Type one letter to auto-fill</div>
+<input id="supplierSearch" placeholder="Company, contact, email, or phone" oninput="searchSuppliers()" autocomplete="off">
 <div id="searchResults" class="search-results hidden"></div>
-
 <div style="margin-top:14px;">
-<div class="subtle" style="margin-bottom:8px;">Selected Supplier</div>
+<div class="muted">Selected Supplier</div>
 <div id="supplierInfo">—</div>
 </div>
 </div>
 
 <div class="card" style="margin-top:16px;">
-<div class="card-header">
 <h3>Live Call Workspace</h3>
-<span class="subtle">Manual + mic assist</span>
-</div>
-
-<div class="grid grid-4">
-<div class="stat">
-<div class="stat-label">Detected Language</div>
-<div class="stat-value" style="font-size:18px;" id="languageDisplay">English</div>
-</div>
-<div class="stat">
-<div class="stat-label">Lead Status</div>
-<div class="stat-value" style="font-size:18px;" id="leadHeat">—</div>
-</div>
-<div class="stat">
-<div class="stat-label">Strategy</div>
-<div class="stat-value" style="font-size:18px;" id="strategyTag">—</div>
-</div>
-<div class="stat">
-<div class="stat-label">Mic Status</div>
-<div class="stat-value" style="font-size:18px;" id="micStatus">Idle</div>
-</div>
+<div class="grid stats" style="grid-template-columns:repeat(4,1fr);">
+<div class="stat"><div class="label">Language</div><div class="value" id="languageDisplay" style="font-size:18px;">English</div></div>
+<div class="stat"><div class="label">Lead Heat</div><div class="value" id="leadHeat" style="font-size:18px;">—</div></div>
+<div class="stat"><div class="label">Strategy</div><div class="value" id="strategyTag" style="font-size:18px;">—</div></div>
+<div class="stat"><div class="label">Mic</div><div class="value" id="micStatus" style="font-size:18px;">Idle</div></div>
 </div>
 
 <div style="margin-top:14px;">
-<label>Supplier Objection / What they said</label>
+<label class="muted">Supplier objection / what they said</label>
 <textarea id="objection" placeholder="Type what the supplier says or use the mic..."></textarea>
 </div>
 
 <div class="toolbar">
-<button class="btn btn-primary" onclick="generateResponse()">Generate AI Response</button>
-<button class="btn btn-secondary" onclick="toggleTranslate()">Toggle Translation</button>
-<button class="btn btn-primary" onclick="startListening()">🎤 Start Mic</button>
-<button class="btn btn-secondary" onclick="stopListening()">Stop Mic</button>
+<button class="primary" onclick="generateResponse()">Generate AI Response</button>
+<button class="secondary" onclick="toggleTranslate()">Toggle Translation</button>
+<button class="primary" onclick="startListening()">🎤 Start Mic</button>
+<button class="secondary" onclick="stopListening()">Stop Mic</button>
 </div>
 
-<div id="translationBox" class="translation hidden">
+<div id="translationBox" class="card hidden" style="margin-top:14px;background:#eef5ff;">
 <h3 style="margin-top:0;">Live Translation</h3>
 <p><strong>English:</strong> <span id="translatedEnglish">—</span></p>
 <p><strong>Reply in Supplier Language:</strong> <span id="translatedReply">—</span></p>
@@ -604,14 +352,11 @@ Full copy-paste build. Search suppliers, talk through objections, get live respo
 </div>
 
 <div>
-<div class="card white">
-<div class="card-header">
+<div class="card">
 <h3>AI Response</h3>
-<span class="subtle">Centered for call visibility</span>
-</div>
-<div class="ai-shell">
+<div class="ai-wrap">
 <div class="ai-box">
-<div class="ai-text" id="response">—</div>
+<div id="response" class="ai-text">—</div>
 <div class="meta" id="confidence">Confidence: —</div>
 <div class="meta" id="objectionTag">Objection Tag: —</div>
 <div class="meta" id="nextBestAction">Next Best Action: —</div>
@@ -622,40 +367,25 @@ Full copy-paste build. Search suppliers, talk through objections, get live respo
 </div>
 </div>
 
-<div class="bottom-layout">
+<div class="grid lower">
 <div class="card">
-<div class="card-header">
 <h3>Live Coaching</h3>
-<span class="subtle">How to handle it</span>
-</div>
 <p id="liveCoaching">—</p>
 </div>
-
 <div class="card">
-<div class="card-header">
 <h3>CRM Note</h3>
-<span class="subtle">Copy into CRM</span>
-</div>
 <p id="crmNote">—</p>
 </div>
-
 <div class="card">
-<div class="card-header">
 <h3>Follow-Up Email</h3>
-<span class="subtle">Post-call message</span>
-</div>
 <p id="emailText">—</p>
 </div>
 </div>
 
-<div class="grid grid-2" style="margin-top:16px;">
+<div class="grid twocol" style="margin-top:16px;">
 <div class="card">
-<div class="card-header">
 <h3>Call Outcome</h3>
-<span class="subtle">Wrap-up actions</span>
-</div>
-
-<label>Outcome</label>
+<label class="muted">Outcome</label>
 <select id="outcome">
 <option>Pending</option>
 <option>Follow Up Needed</option>
@@ -663,7 +393,7 @@ Full copy-paste build. Search suppliers, talk through objections, get live respo
 <option>Rejected</option>
 </select>
 
-<label>Enrollment Status</label>
+<label class="muted" style="margin-top:12px;">Enrollment Status</label>
 <select id="enrollment">
 <option>Pending</option>
 <option>Enrollment Sent</option>
@@ -672,49 +402,28 @@ Full copy-paste build. Search suppliers, talk through objections, get live respo
 </select>
 
 <div class="toolbar">
-<button class="btn btn-success" onclick="logCall()">Log Call</button>
-<button class="btn btn-warning" onclick="markEnrollmentComplete()">Mark Enrollment Complete</button>
+<button class="success" onclick="logCall()">Log Call</button>
+<button class="warning" onclick="markEnrollmentComplete()">Mark Enrollment Complete</button>
 </div>
 </div>
 
 <div class="card">
-<div class="card-header">
 <h3>Call History</h3>
-<span class="subtle">Recent activity</span>
-</div>
 <div id="history"></div>
 </div>
 </div>
 </div>
 
 <div id="managerView" class="hidden">
-<div class="grid grid-4">
-<div class="stat">
-<div class="stat-label">Total Calls</div>
-<div class="stat-value" id="mgrCalls">0</div>
-<div class="stat-foot">All logged activity</div>
-</div>
-<div class="stat">
-<div class="stat-label">Total Converted</div>
-<div class="stat-value" id="mgrConverted">0</div>
-<div class="stat-foot">Successful outcomes</div>
-</div>
-<div class="stat">
-<div class="stat-label">Win Rate</div>
-<div class="stat-value" id="mgrRate">0%</div>
-<div class="stat-foot">Current close rate</div>
-</div>
-<div class="stat">
-<div class="stat-label">Top Objection</div>
-<div class="stat-value" id="mgrTopObjection" style="font-size:20px;">None</div>
-<div class="stat-foot">Most frequent blocker</div>
-</div>
+<div class="grid stats">
+<div class="stat"><div class="label">Total Calls</div><div class="value" id="mgrCalls">0</div></div>
+<div class="stat"><div class="label">Total Converted</div><div class="value" id="mgrConverted">0</div></div>
+<div class="stat"><div class="label">Win Rate</div><div class="value" id="mgrRate">0%</div></div>
+<div class="stat"><div class="label">Top Objection</div><div class="value" id="mgrTopObjection" style="font-size:20px;">None</div></div>
 </div>
 
 <div class="card" style="margin-top:16px;">
-<div class="card-header">
 <h3>Objection Breakdown</h3>
-</div>
 <div id="objectionBreakdown"></div>
 </div>
 </div>
@@ -727,24 +436,21 @@ Full copy-paste build. Search suppliers, talk through objections, get live respo
 let translateOn = false;
 let recognition = null;
 let selectedSupplierIndex = 0;
-let calls = 0;
-let converted = 0;
 
 const suppliers = [
-{company:"Novacore Electrical",contact:"Anthony King",industry:"Electrical",avg_invoice:"$9,200",ach_score:58,vcc_score:33},
-{company:"Atlas Industrial Supply",contact:"Jorge Ramirez",industry:"Industrial",avg_invoice:"$6,200",ach_score:74,vcc_score:18},
-{company:"Blue Ridge Property",contact:"Trista Jamieson",industry:"Property",avg_invoice:"$4,100",ach_score:69,vcc_score:22},
-{company:"Keystone Facility Group",contact:"Mark Ellis",industry:"Facilities",avg_invoice:"$7,300",ach_score:66,vcc_score:25},
-{company:"Kingstone Mechanical",contact:"Lisa Warren",industry:"Mechanical",avg_invoice:"$8,100",ach_score:63,vcc_score:29},
-{company:"KLM Property Services",contact:"Derrick Cole",industry:"Property",avg_invoice:"$5,700",ach_score:61,vcc_score:31}
+{company:"Novacore Electrical",contact:"Anthony King",email:"aking@novacore.com",phone:"704-555-1122",industry:"Electrical",avg_invoice:"$9,200",ach_score:58,vcc_score:33},
+{company:"Atlas Industrial Supply",contact:"Jorge Ramirez",email:"jramirez@atlasind.com",phone:"980-555-8877",industry:"Industrial",avg_invoice:"$6,200",ach_score:74,vcc_score:18},
+{company:"Blue Ridge Property",contact:"Trista Jamieson",email:"tjamieson@blueridge.com",phone:"828-555-2211",industry:"Property",avg_invoice:"$4,100",ach_score:69,vcc_score:22},
+{company:"Keystone Facility Group",contact:"Mark Ellis",email:"mellis@keystonefg.com",phone:"704-555-9981",industry:"Facilities",avg_invoice:"$7,300",ach_score:66,vcc_score:25},
+{company:"Kingstone Mechanical",contact:"Lisa Warren",email:"lwarren@kingstone.com",phone:"919-555-4403",industry:"Mechanical",avg_invoice:"$8,100",ach_score:63,vcc_score:29},
+{company:"KLM Property Services",contact:"Derrick Cole",email:"dcole@klmproperty.com",phone:"980-555-6310",industry:"Property",avg_invoice:"$5,700",ach_score:61,vcc_score:31}
 ];
 
 function getHistory(){
-return JSON.parse(localStorage.getItem("paypilot_full_history") || "[]");
+return JSON.parse(localStorage.getItem("paypilot_premium_demo_history") || "[]");
 }
-
 function saveHistory(history){
-localStorage.setItem("paypilot_full_history", JSON.stringify(history));
+localStorage.setItem("paypilot_premium_demo_history", JSON.stringify(history));
 }
 
 function login(){
@@ -752,9 +458,7 @@ const password = document.getElementById("password").value.trim();
 if(password === "demo123"){
 document.getElementById("loginCard").classList.add("hidden");
 document.getElementById("appContent").classList.remove("hidden");
-document.getElementById("userDisplay").classList.remove("hidden");
-document.getElementById("logoutBtn").classList.remove("hidden");
-document.getElementById("userDisplay").textContent = "demo@paypilot.ai";
+document.getElementById("userChip").classList.remove("hidden");
 document.getElementById("supplierSearch").value = suppliers[0].company;
 selectedSupplierIndex = 0;
 loadSupplier();
@@ -766,15 +470,11 @@ alert("Wrong password");
 }
 }
 
-function logout(){
-location.reload();
-}
-
+function logout(){ location.reload(); }
 function showRepView(){
 document.getElementById("repView").classList.remove("hidden");
 document.getElementById("managerView").classList.add("hidden");
 }
-
 function showManagerView(){
 document.getElementById("repView").classList.add("hidden");
 document.getElementById("managerView").classList.remove("hidden");
@@ -785,30 +485,37 @@ function searchSuppliers(){
 const query = document.getElementById("supplierSearch").value.trim().toLowerCase();
 const resultsEl = document.getElementById("searchResults");
 
-if(!query){
+if(query.length < 1){
 resultsEl.classList.add("hidden");
 resultsEl.innerHTML = "";
 return;
 }
 
 const matches = suppliers
-.map((supplier, index) => ({supplier, index}))
-.filter(item => item.supplier.company.toLowerCase().includes(query))
-.slice(0, 8);
+.map((s, i) => ({ s, i }))
+.filter(item =>
+item.s.company.toLowerCase().includes(query) ||
+item.s.contact.toLowerCase().includes(query) ||
+item.s.email.toLowerCase().includes(query) ||
+item.s.phone.includes(query)
+);
 
 if(!matches.length){
 resultsEl.classList.remove("hidden");
-resultsEl.innerHTML = '<div class="search-item"><div class="search-name">No results found</div><div class="search-meta">Try a different company name</div></div>';
+resultsEl.innerHTML = `<div class="search-item"><div class="search-name">No results found</div><div class="search-meta">Try company, contact, email, or phone</div></div>`;
 return;
 }
 
 resultsEl.classList.remove("hidden");
-resultsEl.innerHTML = matches.map(item => `
-<div class="search-item" onclick="selectSupplier(${item.index})">
-<div class="search-name">${item.supplier.company}</div>
-<div class="search-meta">${item.supplier.contact} • ${item.supplier.industry}</div>
+resultsEl.innerHTML = matches.map((item, idx) => `
+<div class="search-item ${idx === 0 ? "active" : ""}" onclick="selectSupplier(${item.i})">
+<div class="search-name">${item.s.company}</div>
+<div class="search-meta">${item.s.contact} • ${item.s.email} • ${item.s.phone}</div>
 </div>
 `).join("");
+
+selectedSupplierIndex = matches[0].i;
+loadSupplier();
 }
 
 function selectSupplier(index){
@@ -824,25 +531,18 @@ const s = suppliers[selectedSupplierIndex];
 document.getElementById("supplierInfo").innerHTML = `
 <p><strong>Company:</strong> ${s.company}</p>
 <p><strong>Contact:</strong> ${s.contact}</p>
+<p><strong>Email:</strong> ${s.email}</p>
+<p><strong>Phone:</strong> ${s.phone}</p>
 <p><strong>Industry:</strong> ${s.industry}</p>
 <p><strong>Avg Invoice:</strong> ${s.avg_invoice}</p>
-<div class="pill-row">
-<span class="mini-pill">ACH ${s.ach_score}%</span>
-<span class="mini-pill">VCC ${s.vcc_score}%</span>
-</div>
+<span class="pill">ACH ${s.ach_score}%</span>
+<span class="pill">VCC ${s.vcc_score}%</span>
 `;
 }
 
 function detectLanguage(text){
 const t = text.toLowerCase();
-if(
-t.includes("hola") ||
-t.includes("solo aceptamos") ||
-t.includes("cheques") ||
-t.includes("tarjeta") ||
-t.includes("gracias") ||
-t.includes("no quiero pagar tarifas")
-){
+if(t.includes("hola") || t.includes("solo aceptamos") || t.includes("cheques") || t.includes("tarjeta") || t.includes("gracias") || t.includes("no quiero pagar tarifas")){
 return "Spanish";
 }
 return "English";
@@ -871,7 +571,6 @@ english = text
 .replace(/no aceptamos tarjetas/gi, "we do not accept cards")
 .replace(/no quiero pagar tarifas/gi, "i do not want to pay fees")
 .replace(/gracias/gi, "thank you");
-
 reply = "Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos de cheques.";
 } else {
 reply = "That makes sense. ACH just helps you get paid faster without the delays.";
@@ -882,18 +581,15 @@ document.getElementById("translatedReply").textContent = reply;
 }
 
 function startListening(){
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if(!SpeechRecognition){
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SR){
 alert("Mic not supported on this device/browser");
 return;
 }
 
-if(recognition){
-recognition.stop();
-}
+if(recognition) recognition.stop();
 
-recognition = new SpeechRecognition();
+recognition = new SR();
 recognition.continuous = true;
 recognition.interimResults = true;
 recognition.lang = "en-US";
@@ -918,18 +614,14 @@ document.getElementById("objection").value = text;
 updateTranslation();
 
 clearTimeout(window.voiceTimer);
-window.voiceTimer = setTimeout(() => {
-generateResponse();
-}, 300);
+window.voiceTimer = setTimeout(() => generateResponse(), 300);
 };
 
 recognition.start();
 }
 
 function stopListening(){
-if(recognition){
-recognition.stop();
-}
+if(recognition) recognition.stop();
 document.getElementById("micStatus").textContent = "Stopped";
 }
 
@@ -946,9 +638,7 @@ if(t.includes("yes")) score += 20;
 if(t.includes("interested")) score += 15;
 
 const s = suppliers[selectedSupplierIndex];
-if(s){
 score += Math.round((s.ach_score - s.vcc_score) / 10);
-}
 
 return Math.max(5, Math.min(95, score));
 }
@@ -993,7 +683,6 @@ return "Guide to next step";
 
 function getLiveCoaching(text, score){
 const strategy = getStrategy(text, score);
-
 if(strategy === "Push Next Step") return "They sound close. Stop explaining and move to setup.";
 if(strategy === "Reframe Value") return "Do not defend cost too hard. Shift to simplicity and speed.";
 if(strategy === "Speed + Simplicity") return "Make checks sound slower. Make ACH sound easier.";
@@ -1006,34 +695,13 @@ return "Acknowledge, reframe, and guide.";
 function fallbackResponse(text){
 const t = text.toLowerCase();
 
-if(t.includes("check") || t.includes("checks") || t.includes("cheques")){
-return "Yeah, I get that. Most people start there, but ACH usually ends up easier since you’re not waiting on checks anymore.";
-}
-
-if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")){
-return "That’s fair. That’s why ACH is usually the better option since it keeps things simple without extra fees.";
-}
-
-if(t.includes("busy") || t.includes("later")){
-return "No worries, I’ll keep it quick so you don’t have to come back to this later.";
-}
-
-if(t.includes("accountant")){
-return "Makes sense. We can include accounting, but the setup itself is simple, so we can keep this moving.";
-}
-
-if(t.includes("not interested")){
-return "All good. Usually once people see it’s really about getting paid faster, it starts to make more sense.";
-}
-
-if(t.includes("card") || t.includes("cards")){
-return "That’s fine. In that case, ACH is probably the cleaner fit since it keeps things simple and gets funds over faster.";
-}
-
-if(detectLanguage(text) === "Spanish"){
-return "Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos de cheques.";
-}
-
+if(t.includes("check") || t.includes("checks") || t.includes("cheques")) return "Yeah, I get that. Most people start there, but ACH usually ends up easier since you’re not waiting on checks anymore.";
+if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")) return "That’s fair. That’s why ACH is usually the better option since it keeps things simple without extra fees.";
+if(t.includes("busy") || t.includes("later")) return "No worries, I’ll keep it quick so you don’t have to come back to this later.";
+if(t.includes("accountant")) return "Makes sense. We can include accounting, but the setup itself is simple, so we can keep this moving.";
+if(t.includes("not interested")) return "All good. Usually once people see it’s really about getting paid faster, it starts to make more sense.";
+if(t.includes("card") || t.includes("cards")) return "That’s fine. In that case, ACH is probably the cleaner fit since it keeps things simple and gets funds over faster.";
+if(detectLanguage(text) === "Spanish") return "Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos de cheques.";
 return "That makes sense. ACH just helps you get paid faster without the delays.";
 }
 
@@ -1047,16 +715,24 @@ const action = getNextBestAction(text, score);
 const el = document.getElementById("response");
 el.style.opacity = 0;
 el.style.transform = "translateY(10px)";
-el.textContent = "Thinking...";
+el.innerHTML = "Thinking<span id='dots'>.</span>";
 updateTranslation();
+
+let dots = 1;
+const interval = setInterval(() => {
+dots = dots === 3 ? 1 : dots + 1;
+const dotsEl = document.getElementById("dots");
+if(dotsEl) dotsEl.innerText = ".".repeat(dots);
+}, 300);
 
 const response = fallbackResponse(text);
 
 setTimeout(() => {
+clearInterval(interval);
 el.textContent = response;
 el.style.opacity = 1;
 el.style.transform = "translateY(0)";
-}, 120);
+}, 900);
 
 document.getElementById("confidence").textContent = "Confidence: 90%";
 document.getElementById("objectionTag").textContent = "Objection Tag: " + tag;
@@ -1073,11 +749,8 @@ function generateExtras(){
 const supplier = suppliers[selectedSupplierIndex];
 const outcome = document.getElementById("outcome").value;
 
-document.getElementById("crmNote").textContent =
-`${supplier.company}: Discussed electronic payment options. Contact: ${supplier.contact}. Current outcome: ${outcome}.`;
-
-document.getElementById("emailText").textContent =
-`Hi ${supplier.contact}, thank you for your time today. Based on our conversation, ACH may be a strong fit to help you receive payments faster and reduce delays.`;
+document.getElementById("crmNote").textContent = `${supplier.company}: Discussed electronic payment options. Contact: ${supplier.contact}. Current outcome: ${outcome}.`;
+document.getElementById("emailText").textContent = `Hi ${supplier.contact}, thank you for your time today. Based on our conversation, ACH may be a strong fit to help you receive payments faster and reduce delays.`;
 }
 
 function logCall(){
@@ -1103,7 +776,7 @@ const history = getHistory();
 const el = document.getElementById("history");
 
 if(!history.length){
-el.innerHTML = '<p class="subtle">No calls logged yet.</p>';
+el.innerHTML = '<p class="muted">No calls logged yet.</p>';
 return;
 }
 
@@ -1118,8 +791,8 @@ el.innerHTML = history.map(item => `
 
 function updateStats(){
 const history = getHistory();
-calls = history.length;
-converted = history.filter(h => h.outcome === "Converted").length;
+const calls = history.length;
+const converted = history.filter(h => h.outcome === "Converted").length;
 const rate = calls ? Math.round((converted / calls) * 100) : 0;
 
 const tags = {};
@@ -1172,7 +845,7 @@ document.getElementById("mgrTopObjection").textContent = topTag;
 document.getElementById("objectionBreakdown").innerHTML =
 Object.keys(breakdown).length
 ? Object.entries(breakdown).map(([k,v]) => `<p><strong>${k}:</strong> ${v}</p>`).join("")
-: '<p class="subtle">No data yet.</p>';
+: '<p class="muted">No data yet.</p>';
 }
 
 function markEnrollmentComplete(){
