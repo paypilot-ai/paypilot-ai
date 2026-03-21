@@ -6,33 +6,34 @@
 <title>PayPilot AI</title>
 <style>
 :root{
---bg:#0b1020;
---panel:#111831;
---panel-2:#151d3a;
+--bg:#f4f8ff;
+--bg2:#edf4ff;
+--nav:#0b1220;
+--nav2:#111b31;
 --card:#ffffff;
 --text:#0f172a;
 --muted:#64748b;
---line:#dbe3f0;
+--line:#dbe5f0;
 --blue:#2563eb;
---blue-2:#60a5fa;
---blue-soft:#eaf2ff;
+--blue2:#60a5fa;
+--blueSoft:#eaf2ff;
 --green:#16a34a;
---red:#dc2626;
 --amber:#d97706;
---shadow:0 20px 50px rgba(2,8,23,.18);
---shadow-soft:0 10px 24px rgba(2,8,23,.10);
---radius:18px;
+--red:#dc2626;
+--shadow:0 20px 50px rgba(2,8,23,.10);
+--shadowSoft:0 10px 24px rgba(2,8,23,.07);
+--radius:20px;
 }
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
 font-family:Arial, Helvetica, sans-serif;
-background:
-radial-gradient(circle at top right, rgba(96,165,250,.18), transparent 20%),
-radial-gradient(circle at top left, rgba(37,99,235,.14), transparent 18%),
-linear-gradient(180deg, #eef4ff 0%, #f7faff 100%);
 color:var(--text);
+background:
+radial-gradient(circle at top right, rgba(96,165,250,.18), transparent 22%),
+radial-gradient(circle at top left, rgba(37,99,235,.10), transparent 18%),
+linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
 }
 
 .app{
@@ -43,8 +44,8 @@ grid-template-columns:270px 1fr;
 
 .sidebar{
 background:
-radial-gradient(circle at top left, rgba(96,165,250,.18), transparent 24%),
-linear-gradient(180deg, var(--bg) 0%, #101936 100%);
+radial-gradient(circle at top left, rgba(96,165,250,.14), transparent 25%),
+linear-gradient(180deg, var(--nav) 0%, var(--nav2) 100%);
 color:#fff;
 padding:24px 18px;
 border-right:1px solid rgba(255,255,255,.06);
@@ -58,8 +59,8 @@ margin-bottom:30px;
 }
 
 .logo{
-width:62px;
-height:62px;
+width:64px;
+height:64px;
 border-radius:18px;
 display:flex;
 align-items:center;
@@ -124,9 +125,7 @@ line-height:1.5;
 color:rgba(255,255,255,.74);
 }
 
-.main{
-min-width:0;
-}
+.main{min-width:0}
 
 .topbar{
 position:sticky;
@@ -134,7 +133,7 @@ top:0;
 z-index:10;
 padding:18px 24px;
 border-bottom:1px solid #e5edf8;
-background:rgba(255,255,255,.82);
+background:rgba(255,255,255,.84);
 backdrop-filter:blur(10px);
 display:flex;
 justify-content:space-between;
@@ -161,8 +160,8 @@ flex-wrap:wrap;
 align-items:center;
 }
 
-.pill-user{
-background:var(--blue-soft);
+.user-pill{
+background:var(--blueSoft);
 color:#1d4ed8;
 border:1px solid #cfe0ff;
 padding:10px 14px;
@@ -173,7 +172,7 @@ font-weight:700;
 
 .page{
 padding:24px;
-max-width:1400px;
+max-width:1450px;
 margin:0 auto;
 }
 
@@ -187,14 +186,23 @@ gap:16px;
 .grid-2{grid-template-columns:repeat(2,1fr)}
 .call-layout{grid-template-columns:1fr 1.25fr}
 
+.bottom-layout{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:16px;
+margin-top:16px;
+}
+
 .card{
-background:rgba(255,255,255,.86);
-backdrop-filter:blur(8px);
+background:rgba(255,255,255,.92);
 border:1px solid #e7eef8;
 border-radius:var(--radius);
-box-shadow:var(--shadow-soft);
+box-shadow:var(--shadowSoft);
 padding:20px;
+transition:all .18s ease;
 }
+
+.card:hover{ transform:translateY(-2px); }
 
 .card.white{
 background:#fff;
@@ -225,7 +233,7 @@ background:linear-gradient(180deg,#ffffff 0%, #f9fbff 100%);
 border:1px solid #e7eef8;
 border-radius:18px;
 padding:18px;
-box-shadow:var(--shadow-soft);
+box-shadow:var(--shadowSoft);
 }
 
 .stat-label{
@@ -291,15 +299,17 @@ font-size:14px;
 font-weight:700;
 cursor:pointer;
 transition:.15s ease;
-box-shadow:var(--shadow-soft);
+box-shadow:var(--shadowSoft);
+letter-spacing:.02em;
 }
 
-.btn:hover{transform:translateY(-1px)}
-.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-2));color:#fff}
-.btn-secondary{background:#eef2f7;color:#0f172a;border:1px solid #dce5f1}
-.btn-success{background:linear-gradient(135deg,var(--green),#22c55e);color:#fff}
-.btn-danger{background:linear-gradient(135deg,var(--red),#ef4444);color:#fff}
-.btn-warning{background:linear-gradient(135deg,var(--amber),#f59e0b);color:#fff}
+.btn:hover{ transform:translateY(-1px); }
+.btn:active{ transform:scale(.97); }
+.btn-primary{ background:linear-gradient(135deg,var(--blue),var(--blue2)); color:#fff; }
+.btn-secondary{ background:#eef2f7; color:#0f172a; border:1px solid #dce5f1; }
+.btn-success{ background:linear-gradient(135deg,var(--green),#22c55e); color:#fff; }
+.btn-warning{ background:linear-gradient(135deg,var(--amber),#f59e0b); color:#fff; }
+.btn-danger{ background:linear-gradient(135deg,var(--red),#ef4444); color:#fff; }
 
 .search-results{
 margin-top:10px;
@@ -317,7 +327,7 @@ transition:.12s ease;
 }
 
 .search-item:first-child{border-top:none}
-.search-item:hover{background:var(--blue-soft)}
+.search-item:hover{background:var(--blueSoft)}
 .search-name{font-weight:700;margin-bottom:4px}
 .search-meta{color:var(--muted);font-size:12px}
 
@@ -335,7 +345,7 @@ padding:7px 10px;
 border-radius:999px;
 font-size:12px;
 font-weight:700;
-background:var(--blue-soft);
+background:var(--blueSoft);
 color:#1d4ed8;
 border:1px solid #d7e7ff;
 }
@@ -348,6 +358,8 @@ box-shadow:0 26px 70px rgba(37,99,235,.10);
 }
 
 .ai-box{
+position:relative;
+overflow:hidden;
 border-radius:22px;
 padding:28px;
 background:
@@ -356,7 +368,21 @@ linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
 border:1px solid rgba(37,99,235,.08);
 }
 
+.ai-box::before{
+content:"";
+position:absolute;
+top:-60px;
+left:50%;
+transform:translateX(-50%);
+width:220px;
+height:220px;
+background:radial-gradient(circle, rgba(37,99,235,.25), transparent);
+filter:blur(60px);
+pointer-events:none;
+}
+
 .ai-text{
+position:relative;
 font-size:30px;
 font-weight:800;
 line-height:1.5;
@@ -364,9 +390,12 @@ text-align:center;
 letter-spacing:-.04em;
 margin-bottom:18px;
 white-space:pre-wrap;
+text-shadow:0 6px 20px rgba(37,99,235,.15);
+transition:all .25s ease;
 }
 
 .meta{
+position:relative;
 text-align:center;
 color:var(--muted);
 font-size:13px;
@@ -423,7 +452,7 @@ margin:42px auto 0;
 <div class="app">
 <aside class="sidebar">
 <div class="brand">
-<div class="logo-shell">
+<div class="logo">
 <svg width="42" height="42" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <linearGradient id="ppGrad" x1="6" y1="6" x2="34" y2="34" gradientUnits="userSpaceOnUse">
@@ -453,7 +482,7 @@ margin:42px auto 0;
 <button class="side-btn" onclick="logout()">Logout</button>
 
 <div class="side-note">
-Hybrid premium layout: clean corporate structure with a little futuristic energy.
+Full premium restore from the working base.
 </div>
 </aside>
 
@@ -464,7 +493,7 @@ Hybrid premium layout: clean corporate structure with a little futuristic energy
 <p>High-visibility live call assistant</p>
 </div>
 <div class="top-actions">
-<div id="userDisplay" class="pill-user hidden"></div>
+<div id="userDisplay" class="user-pill hidden"></div>
 <button class="btn btn-secondary" onclick="showRepView()">Rep View</button>
 <button class="btn btn-secondary" onclick="showManagerView()">Manager View</button>
 <button class="btn btn-secondary" onclick="toggleTranslate()">Translation</button>
@@ -480,40 +509,22 @@ Hybrid premium layout: clean corporate structure with a little futuristic energy
 <div class="card-header">
 <h3>Secure Login</h3>
 </div>
-<label>Email</label>
-<input id="email" placeholder="Email" />
 <label>Password</label>
 <input id="password" type="password" placeholder="Password" />
 <div class="toolbar">
 <button class="btn btn-primary" onclick="login()">Login</button>
 </div>
-<p class="subtle" style="margin-top:12px;">demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123</p>
+<p class="subtle" style="margin-top:12px;">Use password: demo123</p>
 </div>
 </div>
 
 <div id="appContent" class="hidden">
 <div id="repView">
 <div class="grid grid-4">
-<div class="stat">
-<div class="stat-label">Calls Logged</div>
-<div class="stat-value" id="callsLogged">0</div>
-<div class="stat-foot">Saved call activity</div>
-</div>
-<div class="stat">
-<div class="stat-label">Converted</div>
-<div class="stat-value" id="callsConverted">0</div>
-<div class="stat-foot">Successful outcomes</div>
-</div>
-<div class="stat">
-<div class="stat-label">Conversion Rate</div>
-<div class="stat-value" id="conversionRate">0%</div>
-<div class="stat-foot">Based on logged calls</div>
-</div>
-<div class="stat">
-<div class="stat-label">Top Objection</div>
-<div class="stat-value" id="topObjection" style="font-size:20px;">None</div>
-<div class="stat-foot">Most frequent blocker</div>
-</div>
+<div class="stat"><div class="stat-label">Calls Logged</div><div class="stat-value" id="callsLogged">0</div><div class="stat-foot">Saved call activity</div></div>
+<div class="stat"><div class="stat-label">Converted</div><div class="stat-value" id="callsConverted">0</div><div class="stat-foot">Successful outcomes</div></div>
+<div class="stat"><div class="stat-label">Conversion Rate</div><div class="stat-value" id="conversionRate">0%</div><div class="stat-foot">Based on logged calls</div></div>
+<div class="stat"><div class="stat-label">Top Objection</div><div class="stat-value" id="topObjection" style="font-size:20px;">None</div><div class="stat-foot">Most frequent blocker</div></div>
 </div>
 
 <div class="grid call-layout" style="margin-top:18px;">
@@ -541,22 +552,10 @@ Hybrid premium layout: clean corporate structure with a little futuristic energy
 </div>
 
 <div class="grid grid-4">
-<div class="stat">
-<div class="stat-label">Detected Language</div>
-<div class="stat-value" style="font-size:18px;" id="languageDisplay">English</div>
-</div>
-<div class="stat">
-<div class="stat-label">Lead Status</div>
-<div class="stat-value" style="font-size:18px;" id="leadHeat">—</div>
-</div>
-<div class="stat">
-<div class="stat-label">Strategy</div>
-<div class="stat-value" style="font-size:18px;" id="strategyTag">—</div>
-</div>
-<div class="stat">
-<div class="stat-label">Mic Status</div>
-<div class="stat-value" style="font-size:18px;" id="micStatus">Idle</div>
-</div>
+<div class="stat"><div class="stat-label">Detected Language</div><div class="stat-value" style="font-size:18px;" id="languageDisplay">English</div></div>
+<div class="stat"><div class="stat-label">Lead Status</div><div class="stat-value" style="font-size:18px;" id="leadHeat">—</div></div>
+<div class="stat"><div class="stat-label">Strategy</div><div class="stat-value" style="font-size:18px;" id="strategyTag">—</div></div>
+<div class="stat"><div class="stat-label">Mic Status</div><div class="stat-value" style="font-size:18px;" id="micStatus">Idle</div></div>
 </div>
 
 <div style="margin-top:14px;">
@@ -599,29 +598,9 @@ Hybrid premium layout: clean corporate structure with a little futuristic energy
 </div>
 
 <div class="bottom-layout">
-<div class="card">
-<div class="card-header">
-<h3>Live Coaching</h3>
-<span class="subtle">How to handle it</span>
-</div>
-<p id="liveCoaching">—</p>
-</div>
-
-<div class="card">
-<div class="card-header">
-<h3>CRM Note</h3>
-<span class="subtle">Copy into CRM</span>
-</div>
-<p id="crmNote">—</p>
-</div>
-
-<div class="card">
-<div class="card-header">
-<h3>Follow-Up Email</h3>
-<span class="subtle">Post-call message</span>
-</div>
-<p id="emailText">—</p>
-</div>
+<div class="card"><div class="card-header"><h3>Live Coaching</h3><span class="subtle">How to handle it</span></div><p id="liveCoaching">—</p></div>
+<div class="card"><div class="card-header"><h3>CRM Note</h3><span class="subtle">Copy into CRM</span></div><p id="crmNote">—</p></div>
+<div class="card"><div class="card-header"><h3>Follow-Up Email</h3><span class="subtle">Post-call message</span></div><p id="emailText">—</p></div>
 </div>
 
 <div class="grid grid-2" style="margin-top:16px;">
@@ -665,26 +644,10 @@ Hybrid premium layout: clean corporate structure with a little futuristic energy
 
 <div id="managerView" class="hidden">
 <div class="grid grid-4">
-<div class="stat">
-<div class="stat-label">Total Calls</div>
-<div class="stat-value" id="mgrCalls">0</div>
-<div class="stat-foot">All logged activity</div>
-</div>
-<div class="stat">
-<div class="stat-label">Total Converted</div>
-<div class="stat-value" id="mgrConverted">0</div>
-<div class="stat-foot">Successful outcomes</div>
-</div>
-<div class="stat">
-<div class="stat-label">Win Rate</div>
-<div class="stat-value" id="mgrRate">0%</div>
-<div class="stat-foot">Current close rate</div>
-</div>
-<div class="stat">
-<div class="stat-label">Top Objection</div>
-<div class="stat-value" id="mgrTopObjection" style="font-size:20px;">None</div>
-<div class="stat-foot">Most frequent blocker</div>
-</div>
+<div class="stat"><div class="stat-label">Total Calls</div><div class="stat-value" id="mgrCalls">0</div><div class="stat-foot">All logged activity</div></div>
+<div class="stat"><div class="stat-label">Total Converted</div><div class="stat-value" id="mgrConverted">0</div><div class="stat-foot">Successful outcomes</div></div>
+<div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value" id="mgrRate">0%</div><div class="stat-foot">Current close rate</div></div>
+<div class="stat"><div class="stat-label">Top Objection</div><div class="stat-value" id="mgrTopObjection" style="font-size:20px;">None</div><div class="stat-foot">Most frequent blocker</div></div>
 </div>
 
 <div class="card" style="margin-top:16px;">
@@ -701,9 +664,7 @@ Hybrid premium layout: clean corporate structure with a little futuristic energy
 
 <script>
 const OPENAI_API_KEY = "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";
-
-const SYSTEM_PROMPT = `
-You are a top 1% payment enrollment closer.
+const SYSTEM_PROMPT = `You are a top 1% payment enrollment closer.
 You help suppliers move from checks to ACH or card.
 Rules:
 - 1 to 3 sentences
@@ -712,8 +673,7 @@ Rules:
 - reframe fast
 - move toward a next step
 - never sound pushy or robotic
-- speak like a confident real rep
-`;
+- speak like a confident real rep`;
 
 let translateOn = false;
 let recognition = null;
@@ -728,77 +688,43 @@ const suppliers = [
 {company:"KLM Property Services",contact:"Derrick Cole",industry:"Property",avg_invoice:"$5,700",ach_score:61,vcc_score:31}
 ];
 
-function getHistory(){
-return JSON.parse(localStorage.getItem("paypilot_hybrid_history") || "[]");
-}
-
-function saveHistory(history){
-localStorage.setItem("paypilot_hybrid_history", JSON.stringify(history));
-}
+function getHistory(){ return JSON.parse(localStorage.getItem("paypilot_restore_history") || "[]"); }
+function saveHistory(history){ localStorage.setItem("paypilot_restore_history", JSON.stringify(history)); }
 
 function login(){
-const email = document.getElementById("email").value.trim().toLowerCase();
 const password = document.getElementById("password").value.trim();
-
-if((email === "demo@paypilot.ai" || email === "manager@paypilot.ai") && password === "demo123"){
+if(password === "demo123"){
 document.getElementById("loginCard").classList.add("hidden");
 document.getElementById("appContent").classList.remove("hidden");
 document.getElementById("userDisplay").classList.remove("hidden");
 document.getElementById("logoutBtn").classList.remove("hidden");
-document.getElementById("userDisplay").innerText = email;
+document.getElementById("userDisplay").innerText = "demo@paypilot.ai";
 document.getElementById("supplierSearch").value = suppliers[0].company;
 loadSupplier();
 renderHistory();
 updateStats();
 renderManager();
 } else {
-alert("Wrong login");
+alert("Wrong password");
 }
 }
 
-function logout(){
-location.reload();
-}
-
-function showRepView(){
-document.getElementById("repView").classList.remove("hidden");
-document.getElementById("managerView").classList.add("hidden");
-}
-
-function showManagerView(){
-document.getElementById("repView").classList.add("hidden");
-document.getElementById("managerView").classList.remove("hidden");
-renderManager();
-}
+function logout(){ location.reload(); }
+function showRepView(){ document.getElementById("repView").classList.remove("hidden"); document.getElementById("managerView").classList.add("hidden"); }
+function showManagerView(){ document.getElementById("repView").classList.add("hidden"); document.getElementById("managerView").classList.remove("hidden"); renderManager(); }
 
 function searchSuppliers(){
 const query = document.getElementById("supplierSearch").value.trim().toLowerCase();
 const resultsEl = document.getElementById("searchResults");
-
-if(!query){
-resultsEl.classList.add("hidden");
-resultsEl.innerHTML = "";
-return;
-}
-
-const matches = suppliers
-.map((supplier, index) => ({supplier, index}))
-.filter(item => item.supplier.company.toLowerCase().includes(query))
-.slice(0, 8);
-
+if(!query){ resultsEl.classList.add("hidden"); resultsEl.innerHTML = ""; return; }
+const matches = suppliers.map((supplier, index) => ({supplier, index})).filter(item => item.supplier.company.toLowerCase().includes(query)).slice(0, 8);
 if(!matches.length){
 resultsEl.classList.remove("hidden");
 resultsEl.innerHTML = '<div class="search-item"><div class="search-name">No results found</div><div class="search-meta">Try a different company name</div></div>';
 return;
 }
-
 resultsEl.classList.remove("hidden");
-resultsEl.innerHTML = matches.map(item => `
-<div class="search-item" onclick="selectSupplier(${item.index})">
-<div class="search-name">${item.supplier.company}</div>
-<div class="search-meta">${item.supplier.contact} • ${item.supplier.industry}</div>
-</div>
-`).join("");
+resultsEl.innerHTML = matches.map(item => `<div class="search-item" onclick="selectSupplier(${item.index})"><div class="search-name">${item.supplier.company}</div><div class="search-meta">${item.supplier.contact} • ${item.supplier.industry}</div></div>`).join("");
 }
 
 function selectSupplier(index){
@@ -811,30 +737,12 @@ loadSupplier();
 
 function loadSupplier(){
 const s = suppliers[selectedSupplierIndex] || suppliers[0];
-document.getElementById("supplierInfo").innerHTML = `
-<p><strong>Company:</strong> ${s.company}</p>
-<p><strong>Contact:</strong> ${s.contact}</p>
-<p><strong>Industry:</strong> ${s.industry}</p>
-<p><strong>Avg Invoice:</strong> ${s.avg_invoice}</p>
-<div class="pill-row">
-<span class="mini-pill">ACH ${s.ach_score}%</span>
-<span class="mini-pill">VCC ${s.vcc_score}%</span>
-</div>
-`;
+document.getElementById("supplierInfo").innerHTML = `<p><strong>Company:</strong> ${s.company}</p><p><strong>Contact:</strong> ${s.contact}</p><p><strong>Industry:</strong> ${s.industry}</p><p><strong>Avg Invoice:</strong> ${s.avg_invoice}</p><div class="pill-row"><span class="mini-pill">ACH ${s.ach_score}%</span><span class="mini-pill">VCC ${s.vcc_score}%</span></div>`;
 }
 
 function detectLanguage(text){
 const t = text.toLowerCase();
-if(
-t.includes("hola") ||
-t.includes("solo aceptamos") ||
-t.includes("cheques") ||
-t.includes("tarjeta") ||
-t.includes("gracias") ||
-t.includes("no quiero pagar tarifas")
-){
-return "Spanish";
-}
+if(t.includes("hola") || t.includes("solo aceptamos") || t.includes("cheques") || t.includes("tarjeta") || t.includes("gracias") || t.includes("no quiero pagar tarifas")) return "Spanish";
 return "English";
 }
 
@@ -848,96 +756,55 @@ function updateTranslation(){
 const text = document.getElementById("objection").value.trim();
 const lang = detectLanguage(text);
 document.getElementById("languageDisplay").textContent = lang;
-
 if(!translateOn) return;
 
 let english = text || "—";
 let reply = "—";
-
 if(lang === "Spanish"){
-english = text
-.replace(/hola/gi, "hello")
-.replace(/solo aceptamos cheques/gi, "we only accept checks")
-.replace(/no aceptamos tarjetas/gi, "we do not accept cards")
-.replace(/no quiero pagar tarifas/gi, "i do not want to pay fees")
-.replace(/gracias/gi, "thank you");
-
+english = text.replace(/hola/gi, "hello").replace(/solo aceptamos cheques/gi, "we only accept checks").replace(/no aceptamos tarjetas/gi, "we do not accept cards").replace(/no quiero pagar tarifas/gi, "i do not want to pay fees").replace(/gracias/gi, "thank you");
 reply = "Entiendo. ACH le permite recibir pagos más rápido y evita retrasos de cheques.";
 } else {
 reply = "I understand. ACH helps you get paid faster and eliminates check delays.";
 }
-
 document.getElementById("translatedEnglish").textContent = english || "—";
 document.getElementById("translatedReply").textContent = reply;
 }
 
 function startListening(){
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if(!SpeechRecognition){
-alert("Mic not supported on this device/browser");
-return;
-}
-
-if(recognition){
-recognition.stop();
-}
+if(!SpeechRecognition){ alert("Mic not supported on this device/browser"); return; }
+if(recognition){ recognition.stop(); }
 
 recognition = new SpeechRecognition();
 recognition.continuous = true;
 recognition.interimResults = true;
 recognition.lang = "en-US";
 
-recognition.onstart = () => {
-document.getElementById("micStatus").textContent = "Listening";
-document.getElementById("liveCoaching").textContent = "🎤 Listening...";
-};
-
-recognition.onerror = () => {
-document.getElementById("micStatus").textContent = "Error";
-document.getElementById("liveCoaching").textContent = "Mic error";
-};
-
-recognition.onend = () => {
-document.getElementById("micStatus").textContent = "Idle";
-};
+recognition.onstart = () => { document.getElementById("micStatus").textContent = "Listening"; document.getElementById("liveCoaching").textContent = "🎤 Listening..."; };
+recognition.onerror = () => { document.getElementById("micStatus").textContent = "Error"; document.getElementById("liveCoaching").textContent = "Mic error"; };
+recognition.onend = () => { document.getElementById("micStatus").textContent = "Idle"; };
 
 recognition.onresult = (event) => {
 let finalTranscript = "";
 let liveTranscript = "";
-
 for(let i = event.resultIndex; i < event.results.length; i++){
 const piece = event.results[i][0].transcript;
-if(event.results[i].isFinal){
-finalTranscript += piece + " ";
-} else {
-liveTranscript += piece + " ";
+if(event.results[i].isFinal){ finalTranscript += piece + " "; } else { liveTranscript += piece + " "; }
 }
-}
-
 const fullText = (finalTranscript + liveTranscript).trim();
 document.getElementById("objection").value = fullText;
 updateTranslation();
-
-if(finalTranscript.trim()){
-generateResponse();
-}
+if(finalTranscript.trim()){ generateResponse(); }
 };
 
 recognition.start();
 }
 
-function stopListening(){
-if(recognition){
-recognition.stop();
-}
-document.getElementById("micStatus").textContent = "Stopped";
-}
+function stopListening(){ if(recognition){ recognition.stop(); } document.getElementById("micStatus").textContent = "Stopped"; }
 
 function calcProbability(text){
 let score = 70;
 const t = text.toLowerCase();
-
 if(t.includes("check") || t.includes("checks") || t.includes("cheques")) score -= 10;
 if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")) score -= 15;
 if(t.includes("busy") || t.includes("later")) score -= 8;
@@ -945,7 +812,6 @@ if(t.includes("accountant")) score -= 10;
 if(t.includes("not interested")) score -= 18;
 if(t.includes("yes")) score += 20;
 if(t.includes("interested")) score += 15;
-
 return Math.max(5, Math.min(95, score));
 }
 
@@ -970,11 +836,7 @@ if(tag === "Rejection") return "Slow Nurture";
 return "Hybrid Close";
 }
 
-function getLeadHeat(score){
-if(score >= 80) return "Hot";
-if(score >= 55) return "Warm";
-return "Cold";
-}
+function getLeadHeat(score){ if(score >= 80) return "Hot"; if(score >= 55) return "Warm"; return "Cold"; }
 
 function getNextBestAction(text, score){
 const tag = getObjectionTag(text);
@@ -989,7 +851,6 @@ return "Send follow-up";
 
 function getLiveCoaching(text, score){
 const strategy = getStrategy(text, score);
-
 if(strategy === "Push Next Step") return "They sound close. Stop explaining and move to setup.";
 if(strategy === "Reframe Value") return "Do not defend cost. Shift to speed, cash flow, and less manual work.";
 if(strategy === "Reduce Risk") return "Make checks sound slower and riskier. Make ACH sound simple and safe.";
@@ -1001,27 +862,11 @@ return "Acknowledge, reframe, and move toward the next step.";
 
 function fallbackResponse(text){
 const t = text.toLowerCase();
-
-if(t.includes("check") || t.includes("checks") || t.includes("cheques")){
-return "Yeah, I get that. Most suppliers are used to checks, but ACH cuts out the delay and gets funds into the account faster.";
-}
-
-if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")){
-return "Totally fair. That’s why ACH is usually the better fit — you keep it electronic without card fee concerns, and payments move faster.";
-}
-
-if(t.includes("busy") || t.includes("later")){
-return "I hear you. I’ll keep it quick — if we handle the next step now, you don’t have to keep dealing with this later.";
-}
-
-if(t.includes("accountant")){
-return "Makes sense. We can include accounting, but the setup itself is simple, so we can knock out the easy part now and keep things moving.";
-}
-
-if(t.includes("not interested")){
-return "Understood. A lot of suppliers say that at first until they realize this is really about getting paid faster and avoiding check delays.";
-}
-
+if(t.includes("check") || t.includes("checks") || t.includes("cheques")) return "Yeah, I get that. Most suppliers are used to checks, but ACH cuts out the delay and gets funds into the account faster.";
+if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")) return "Totally fair. That’s why ACH is usually the better fit — you keep it electronic without card fee concerns, and payments move faster.";
+if(t.includes("busy") || t.includes("later")) return "I hear you. I’ll keep it quick — if we handle the next step now, you don’t have to keep dealing with this later.";
+if(t.includes("accountant")) return "Makes sense. We can include accounting, but the setup itself is simple, so we can knock out the easy part now and keep things moving.";
+if(t.includes("not interested")) return "Understood. A lot of suppliers say that at first until they realize this is really about getting paid faster and avoiding check delays.";
 return "Got you. The main value here is faster payment, less manual work, and fewer check delays.";
 }
 
@@ -1032,38 +877,31 @@ const tag = getObjectionTag(text);
 const strategy = getStrategy(text, score);
 const action = getNextBestAction(text, score);
 
-document.getElementById("response").textContent = "Thinking...";
+const el = document.getElementById("response");
+el.style.opacity = 0;
+el.style.transform = "translateY(10px)";
+el.textContent = "Thinking...";
 updateTranslation();
 
 let response = "";
-
 try{
 const res = await fetch("https://api.openai.com/v1/chat/completions", {
 method:"POST",
-headers:{
-"Authorization":"Bearer " + OPENAI_API_KEY,
-"Content-Type":"application/json"
-},
-body: JSON.stringify({
-model:"gpt-4o-mini",
-messages:[
-{ role:"system", content:SYSTEM_PROMPT },
-{ role:"user", content:text }
-]
-})
+headers:{ "Authorization":"Bearer " + OPENAI_API_KEY, "Content-Type":"application/json" },
+body: JSON.stringify({ model:"gpt-4o-mini", messages:[{ role:"system", content:SYSTEM_PROMPT }, { role:"user", content:text }] })
 });
-
 const data = await res.json();
 response = data.choices?.[0]?.message?.content || "";
-} catch (e) {
-response = "";
-}
+} catch (e) { response = ""; }
 
-if(!response){
-response = fallbackResponse(text);
-}
+if(!response){ response = fallbackResponse(text); }
 
-document.getElementById("response").textContent = response;
+setTimeout(() => {
+el.textContent = response;
+el.style.opacity = 1;
+el.style.transform = "translateY(0)";
+}, 120);
+
 document.getElementById("confidence").textContent = "Confidence: 90%";
 document.getElementById("objectionTag").textContent = "Objection Tag: " + tag;
 document.getElementById("nextBestAction").textContent = "Next Best Action: " + action;
@@ -1071,25 +909,19 @@ document.getElementById("closeProbability").textContent = "Close Probability: " 
 document.getElementById("strategyTag").textContent = strategy;
 document.getElementById("leadHeat").textContent = getLeadHeat(score);
 document.getElementById("liveCoaching").textContent = getLiveCoaching(text, score);
-
 generateExtras();
 }
 
 function generateExtras(){
 const supplier = suppliers[selectedSupplierIndex] || suppliers[0];
 const outcome = document.getElementById("outcome").value;
-
-document.getElementById("crmNote").textContent =
-`${supplier.company}: Discussed electronic payment options. Contact: ${supplier.contact}. Current outcome: ${outcome}.`;
-
-document.getElementById("emailText").textContent =
-`Hi ${supplier.contact}, thank you for your time today. Based on our conversation, ACH may be a strong fit to help you receive payments faster and reduce delays.`;
+document.getElementById("crmNote").textContent = `${supplier.company}: Discussed electronic payment options. Contact: ${supplier.contact}. Current outcome: ${outcome}.`;
+document.getElementById("emailText").textContent = `Hi ${supplier.contact}, thank you for your time today. Based on our conversation, ACH may be a strong fit to help you receive payments faster and reduce delays.`;
 }
 
 function logCall(){
 const history = getHistory();
 const supplier = suppliers[selectedSupplierIndex] || suppliers[0];
-
 history.unshift({
 supplier: supplier.company,
 objection: document.getElementById("objection").value.trim(),
@@ -1097,7 +929,6 @@ outcome: document.getElementById("outcome").value,
 enrollment: document.getElementById("enrollment").value,
 createdAt: new Date().toLocaleString()
 });
-
 saveHistory(history);
 renderHistory();
 updateStats();
@@ -1107,19 +938,8 @@ renderManager();
 function renderHistory(){
 const history = getHistory();
 const el = document.getElementById("history");
-
-if(!history.length){
-el.innerHTML = '<p class="subtle">No calls logged yet.</p>';
-return;
-}
-
-el.innerHTML = history.map(item => `
-<div class="history-item">
-<div class="history-title">${item.supplier} — ${item.outcome}</div>
-<div class="history-meta">${item.createdAt}</div>
-<div><strong>Objection:</strong> ${item.objection || "—"}</div>
-</div>
-`).join("");
+if(!history.length){ el.innerHTML = '<p class="subtle">No calls logged yet.</p>'; return; }
+el.innerHTML = history.map(item => `<div class="history-item"><div class="history-title">${item.supplier} — ${item.outcome}</div><div class="history-meta">${item.createdAt}</div><div><strong>Objection:</strong> ${item.objection || "—"}</div></div>`).join("");
 }
 
 function updateStats(){
@@ -1127,22 +947,10 @@ const history = getHistory();
 const total = history.length;
 const converted = history.filter(h => h.outcome === "Converted").length;
 const rate = total ? Math.round((converted / total) * 100) : 0;
-
 const tags = {};
-history.forEach(h => {
-const tag = getObjectionTag(h.objection || "");
-tags[tag] = (tags[tag] || 0) + 1;
-});
-
-let topTag = "None";
-let topCount = 0;
-for(const key in tags){
-if(tags[key] > topCount){
-topTag = key;
-topCount = tags[key];
-}
-}
-
+history.forEach(h => { const tag = getObjectionTag(h.objection || ""); tags[tag] = (tags[tag] || 0) + 1; });
+let topTag = "None"; let topCount = 0;
+for(const key in tags){ if(tags[key] > topCount){ topTag = key; topCount = tags[key]; } }
 document.getElementById("callsLogged").textContent = total;
 document.getElementById("callsConverted").textContent = converted;
 document.getElementById("conversionRate").textContent = rate + "%";
@@ -1160,19 +968,9 @@ document.getElementById("mgrConverted").textContent = converted;
 document.getElementById("mgrRate").textContent = rate + "%";
 
 const breakdown = {};
-history.forEach(h => {
-const tag = getObjectionTag(h.objection || "");
-breakdown[tag] = (breakdown[tag] || 0) + 1;
-});
-
-let topTag = "None";
-let topCount = 0;
-for(const key in breakdown){
-if(breakdown[key] > topCount){
-topTag = key;
-topCount = breakdown[key];
-}
-}
+history.forEach(h => { const tag = getObjectionTag(h.objection || ""); breakdown[tag] = (breakdown[tag] || 0) + 1; });
+let topTag = "None"; let topCount = 0;
+for(const key in breakdown){ if(breakdown[key] > topCount){ topTag = key; topCount = breakdown[key]; } }
 
 document.getElementById("mgrTopObjection").textContent = topTag;
 document.getElementById("objectionBreakdown").innerHTML =
@@ -1197,5 +995,8 @@ searchBox.classList.add("hidden");
 </script>
 </body>
 </html>
+
+
+
 
 
