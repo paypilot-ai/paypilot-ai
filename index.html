@@ -11,7 +11,6 @@
 --primary-soft:#EAF4FF;
 --bg:#F5F8FC;
 --panel:#FFFFFF;
---panel-2:#F9FBFE;
 --text:#1F2937;
 --muted:#6B7280;
 --line:#E5E7EB;
@@ -19,7 +18,7 @@
 --warning:#D97706;
 --danger:#DC2626;
 --navy:#0F2742;
---shadow:0 8px 24px rgba(15, 39, 66, 0.08);
+--shadow:0 8px 24px rgba(15,39,66,.08);
 --radius:16px;
 }
 
@@ -31,14 +30,14 @@ background:var(--bg);
 color:var(--text);
 }
 
-.app-shell{
+.app{
 display:grid;
-grid-template-columns:280px 1fr;
+grid-template-columns:260px 1fr;
 min-height:100vh;
 }
 
 .sidebar{
-background:linear-gradient(180deg, var(--navy), #14385D);
+background:linear-gradient(180deg,var(--navy),#14385D);
 color:#fff;
 padding:22px 18px;
 }
@@ -59,25 +58,21 @@ display:flex;
 align-items:center;
 justify-content:center;
 box-shadow:0 8px 24px rgba(0,0,0,.18);
-flex-shrink:0;
 overflow:hidden;
+flex-shrink:0;
 }
 
-.brand-text h1{
+.brand h1{
 margin:0;
 font-size:22px;
 line-height:1;
 letter-spacing:-.03em;
 }
 
-.brand-text p{
+.brand p{
 margin:6px 0 0;
 font-size:12px;
 color:rgba(255,255,255,.8);
-}
-
-.nav-group{
-margin-top:20px;
 }
 
 .nav-label{
@@ -86,7 +81,7 @@ font-weight:700;
 letter-spacing:.08em;
 text-transform:uppercase;
 color:rgba(255,255,255,.55);
-margin-bottom:10px;
+margin:18px 0 10px;
 }
 
 .nav-btn{
@@ -100,7 +95,6 @@ border-radius:12px;
 cursor:pointer;
 font-weight:700;
 margin-bottom:8px;
-transition:.15s ease;
 }
 
 .nav-btn:hover,
@@ -109,8 +103,6 @@ background:rgba(255,255,255,.1);
 }
 
 .main{
-display:flex;
-flex-direction:column;
 min-width:0;
 }
 
@@ -119,8 +111,8 @@ background:#fff;
 border-bottom:1px solid var(--line);
 padding:16px 22px;
 display:flex;
-align-items:center;
 justify-content:space-between;
+align-items:center;
 gap:16px;
 position:sticky;
 top:0;
@@ -141,9 +133,9 @@ font-size:13px;
 
 .topbar-right{
 display:flex;
-align-items:center;
 gap:10px;
 flex-wrap:wrap;
+align-items:center;
 }
 
 .user-pill{
@@ -155,21 +147,6 @@ font-weight:700;
 font-size:12px;
 border:1px solid #D7E9FB;
 }
-
-.btn{
-border:none;
-border-radius:12px;
-padding:12px 14px;
-font-size:14px;
-font-weight:700;
-cursor:pointer;
-}
-
-.btn-primary{background:var(--primary);color:#fff}
-.btn-secondary{background:#EEF2F7;color:var(--text);border:1px solid var(--line)}
-.btn-success{background:var(--success);color:#fff}
-.btn-warning{background:var(--warning);color:#fff}
-.btn-danger{background:var(--danger);color:#fff}
 
 .page{
 padding:22px;
@@ -183,7 +160,20 @@ gap:16px;
 .grid-2{grid-template-columns:1fr 1fr}
 .grid-3{grid-template-columns:1fr 1fr 1fr}
 .grid-4{grid-template-columns:1fr 1fr 1fr 1fr}
-.main-grid{grid-template-columns:1.2fr .8fr}
+
+.call-layout{
+display:grid;
+grid-template-columns:1fr 1.25fr;
+gap:16px;
+align-items:start;
+}
+
+.bottom-layout{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:16px;
+margin-top:16px;
+}
 
 .card{
 background:var(--panel);
@@ -191,10 +181,6 @@ border:1px solid var(--line);
 border-radius:var(--radius);
 box-shadow:var(--shadow);
 padding:18px;
-}
-
-.card.soft{
-background:var(--panel-2);
 }
 
 .card-header{
@@ -208,7 +194,6 @@ margin-bottom:14px;
 .card h3{
 margin:0;
 font-size:18px;
-letter-spacing:-.02em;
 }
 
 .subtle{
@@ -231,9 +216,8 @@ margin-bottom:6px;
 }
 
 .stat-value{
-font-size:30px;
+font-size:28px;
 font-weight:800;
-letter-spacing:-.03em;
 }
 
 .stat-foot{
@@ -277,6 +261,21 @@ flex-wrap:wrap;
 gap:10px;
 }
 
+.btn{
+border:none;
+border-radius:12px;
+padding:12px 14px;
+font-size:14px;
+font-weight:700;
+cursor:pointer;
+}
+
+.btn-primary{background:var(--primary);color:#fff}
+.btn-secondary{background:#EEF2F7;color:var(--text);border:1px solid var(--line)}
+.btn-success{background:var(--success);color:#fff}
+.btn-warning{background:var(--warning);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+
 .pill-row{
 display:flex;
 flex-wrap:wrap;
@@ -296,25 +295,39 @@ color:var(--primary-dark);
 border:1px solid #D7E9FB;
 }
 
+.center-response{
+min-height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
 .response-box{
 border:1px solid var(--line);
 background:#FBFDFF;
-border-radius:14px;
-padding:16px;
+border-radius:18px;
+padding:22px;
 }
 
 .response-main{
 white-space:pre-wrap;
 line-height:1.6;
-font-size:15px;
-margin-bottom:12px;
+font-size:24px;
+font-weight:700;
+margin-bottom:18px;
+text-align:center;
+}
+
+.response-meta{
+max-width:700px;
+margin:0 auto;
 }
 
 .meta-line{
 color:var(--muted);
-font-size:12px;
+font-size:13px;
 margin-bottom:6px;
-line-height:1.45;
+text-align:center;
 }
 
 .heat{
@@ -336,6 +349,7 @@ background:var(--primary-soft);
 border:1px solid #D7E9FB;
 border-radius:14px;
 padding:14px;
+margin-top:14px;
 }
 
 .history-item{
@@ -364,40 +378,58 @@ max-width:520px;
 margin:40px auto 0;
 }
 
-.hidden{display:none !important}
-
-@media (max-width: 1024px){
-.app-shell{
-grid-template-columns:1fr;
+.search-results{
+margin-top:10px;
+border:1px solid var(--line);
+border-radius:12px;
+background:#fff;
+overflow:hidden;
 }
 
-.sidebar{
-display:none;
+.search-item{
+padding:12px 14px;
+cursor:pointer;
+border-top:1px solid var(--line);
 }
 
-.main-grid,
-.grid-4,
-.grid-3,
-.grid-2{
-grid-template-columns:1fr;
+.search-item:first-child{
+border-top:none;
 }
 
-.page{
-padding:16px;
+.search-item:hover{
+background:var(--primary-soft);
 }
 
-.topbar{
-padding:16px;
+.search-name{
+font-weight:700;
+margin-bottom:4px;
 }
+
+.search-meta{
+color:var(--muted);
+font-size:12px;
+}
+
+.hidden{
+display:none !important;
+}
+
+@media (max-width:1024px){
+.app{grid-template-columns:1fr}
+.sidebar{display:none}
+.grid-4,.grid-3,.grid-2,.call-layout,.bottom-layout{grid-template-columns:1fr}
+.page{padding:16px}
+.topbar{padding:16px}
+.response-main{font-size:20px}
 }
 </style>
 </head>
 <body>
-<div class="app-shell">
+<div class="app">
 <aside class="sidebar">
 <div class="brand">
 <div class="logo">
-<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <linearGradient id="ppGrad" x1="6" y1="6" x2="34" y2="34" gradientUnits="userSpaceOnUse">
 <stop stop-color="#0066CC"/>
@@ -409,25 +441,21 @@ padding:16px;
 <path d="M22.8 27V13H26.1L30.1 19.1V13H33V27H29.8L25.7 20.8V27H22.8Z" fill="#DFF1FF"/>
 </svg>
 </div>
-<div class="brand-text">
+<div>
 <h1>PayPilot AI</h1>
 <p>Enterprise supplier enrollment intelligence</p>
 </div>
 </div>
 
-<div class="nav-group">
 <div class="nav-label">Workspace</div>
 <button class="nav-btn active" onclick="showRepView()">Rep View</button>
 <button class="nav-btn" onclick="showManagerView()">Manager View</button>
-</div>
 
-<div class="nav-group">
 <div class="nav-label">Actions</div>
 <button class="nav-btn" onclick="toggleTranslate()">Toggle Translation</button>
 <button class="nav-btn" onclick="startListening()">Start Mic</button>
 <button class="nav-btn" onclick="stopListening()">Stop Mic</button>
 <button class="nav-btn" onclick="logout()">Logout</button>
-</div>
 </aside>
 
 <main class="main">
@@ -460,13 +488,11 @@ padding:16px;
 <div class="toolbar">
 <button class="btn btn-primary" onclick="login()">Login</button>
 </div>
-<p class="subtle" style="margin-top:12px;">
-demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123
-</p>
+<p class="subtle" style="margin-top:12px;">demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123</p>
 </div>
 </div>
 
-<div id="app" class="hidden">
+<div id="appContent" class="hidden">
 <div id="repView">
 <div class="grid grid-4">
 <div class="stat-card">
@@ -491,19 +517,25 @@ demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123
 </div>
 </div>
 
-<div class="grid main-grid" style="margin-top:16px;">
+<div class="call-layout" style="margin-top:16px;">
 <div>
 <div class="card">
 <div class="card-header">
-<h3>Supplier Queue</h3>
-<span class="subtle">Active supplier context</span>
-</div>
-<label>Supplier</label>
-<select id="supplierSelect" onchange="loadSupplier()"></select>
-<div id="supplierInfo"></div>
+<h3>Supplier Search</h3>
+<span class="subtle">Search by company name</span>
 </div>
 
-<div class="card">
+<label>Company Name</label>
+<input id="supplierSearch" placeholder="Type company name..." oninput="searchSuppliers()" autocomplete="off" />
+<div id="searchResults" class="search-results hidden"></div>
+
+<div style="margin-top:14px;">
+<div class="subtle" style="margin-bottom:8px;">Selected Supplier</div>
+<div id="supplierInfo"></div>
+</div>
+</div>
+
+<div class="card" style="margin-top:16px;">
 <div class="card-header">
 <h3>Live Call Workspace</h3>
 <span class="subtle">Manual + mic assist</span>
@@ -540,13 +572,60 @@ demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123
 <button class="btn btn-secondary" onclick="stopListening()">Stop Mic</button>
 </div>
 
-<div id="translationBox" class="translation-box hidden" style="margin-top:14px;">
+<div id="translationBox" class="translation-box hidden">
 <h3 style="margin-top:0;">Live Translation</h3>
 <p><strong>English:</strong> <span id="translatedEnglish">—</span></p>
 <p><strong>Reply in Supplier Language:</strong> <span id="translatedReply">—</span></p>
 </div>
 </div>
+</div>
 
+<div>
+<div class="card center-response">
+<div class="card-header">
+<h3>AI Response</h3>
+<span class="subtle">Centered for call visibility</span>
+</div>
+<div class="response-box">
+<div class="response-main" id="response">—</div>
+<div class="response-meta">
+<div class="meta-line" id="confidence">Confidence: —</div>
+<div class="meta-line" id="objectionTag">Objection Tag: —</div>
+<div class="meta-line" id="nextBestAction">Next Best Action: —</div>
+<div class="meta-line" id="closeProbability">Close Probability: —</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="bottom-layout">
+<div class="card">
+<div class="card-header">
+<h3>Live Coaching</h3>
+<span class="subtle">How to handle it</span>
+</div>
+<p id="liveCoaching">—</p>
+</div>
+
+<div class="card">
+<div class="card-header">
+<h3>CRM Note</h3>
+<span class="subtle">Copy into CRM</span>
+</div>
+<p id="crmNote">—</p>
+</div>
+
+<div class="card">
+<div class="card-header">
+<h3>Follow-Up Email</h3>
+<span class="subtle">Post-call message</span>
+</div>
+<p id="emailText">—</p>
+</div>
+</div>
+
+<div class="grid grid-2" style="margin-top:16px;">
 <div class="card">
 <div class="card-header">
 <h3>Call Outcome</h3>
@@ -583,51 +662,10 @@ demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123
 <div id="history"></div>
 </div>
 </div>
-
-<div>
-<div class="card soft">
-<div class="card-header">
-<h3>AI Response</h3>
-<span class="subtle">Rep guidance</span>
-</div>
-<div class="response-box">
-<div class="response-main" id="response">—</div>
-<div class="meta-line" id="confidence">Confidence: —</div>
-<div class="meta-line" id="objectionTag">Objection Tag: —</div>
-<div class="meta-line" id="nextBestAction">Next Best Action: —</div>
-<div class="meta-line" id="closeProbability">Close Probability: —</div>
-</div>
-</div>
-
-<div class="card">
-<div class="card-header">
-<h3>Live Coaching</h3>
-<span class="subtle">How to handle it</span>
-</div>
-<p id="liveCoaching">—</p>
-</div>
-
-<div class="card">
-<div class="card-header">
-<h3>CRM Note</h3>
-<span class="subtle">Copy into CRM</span>
-</div>
-<p id="crmNote">—</p>
-</div>
-
-<div class="card">
-<div class="card-header">
-<h3>Follow-Up Email</h3>
-<span class="subtle">Post-call message</span>
-</div>
-<p id="emailText">—</p>
-</div>
-</div>
-</div>
 </div>
 
 <div id="managerView" class="hidden">
-<div class="grid grid-3">
+<div class="grid grid-4">
 <div class="stat-card">
 <div class="stat-label">Total Calls</div>
 <div class="stat-value" id="mgrCalls">0</div>
@@ -643,25 +681,18 @@ demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123
 <div class="stat-value" id="mgrRate">0%</div>
 <div class="stat-foot">Current close rate</div>
 </div>
+<div class="stat-card">
+<div class="stat-label">Top Objection</div>
+<div class="stat-value" id="mgrTopObjection" style="font-size:20px;">None</div>
+<div class="stat-foot">Most frequent blocker</div>
+</div>
 </div>
 
-<div class="grid grid-2" style="margin-top:16px;">
-<div class="card">
+<div class="card" style="margin-top:16px;">
 <div class="card-header">
 <h3>Objection Breakdown</h3>
 </div>
 <div id="objectionBreakdown"></div>
-</div>
-
-<div class="card">
-<div class="card-header">
-<h3>Manager Notes</h3>
-</div>
-<p class="subtle">
-This area is ready for charts, rep leaderboard, top lost reasons,
-and team performance once the backend is connected.
-</p>
-</div>
 </div>
 </div>
 </div>
@@ -670,13 +701,16 @@ and team performance once the backend is connected.
 </div>
 
 <script>
-const OPENAI_API_KEY = "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";
+const OPENAI_API_KEY = "
+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
+
+
+
+";
 
 const SYSTEM_PROMPT = `
 You are a top 1% payment enrollment closer.
-
 You help suppliers move from checks to ACH or card.
-
 Rules:
 - 1 to 3 sentences
 - sound natural, not scripted
@@ -685,60 +719,27 @@ Rules:
 - move toward a next step
 - never sound pushy or robotic
 - speak like a confident real rep
-
-Style examples:
-- "Yeah, I get that."
-- "Totally fair."
-- "Most suppliers say that at first."
-- "The main win is speed and less manual work."
-- "We can get the next step handled now."
-
-Always optimize for:
-1. speed
-2. simplicity
-3. getting paid faster
-4. reducing check delays
 `;
 
 let translateOn = false;
 let recognition = null;
+let selectedSupplierIndex = 0;
 
 const suppliers = [
-{
-id:1,
-company:"Novacore Electrical",
-contact:"Anthony King",
-industry:"Electrical",
-avg_invoice:"$9,200",
-ach_score:58,
-vcc_score:33
-},
-{
-id:2,
-company:"Atlas Industrial Supply",
-contact:"Jorge Ramirez",
-industry:"Industrial",
-avg_invoice:"$6,200",
-ach_score:74,
-vcc_score:18
-},
-{
-id:3,
-company:"Blue Ridge Property",
-contact:"Trista Jamieson",
-industry:"Property",
-avg_invoice:"$4,100",
-ach_score:69,
-vcc_score:22
-}
+{company:"Novacore Electrical",contact:"Anthony King",industry:"Electrical",avg_invoice:"$9,200",ach_score:58,vcc_score:33},
+{company:"Atlas Industrial Supply",contact:"Jorge Ramirez",industry:"Industrial",avg_invoice:"$6,200",ach_score:74,vcc_score:18},
+{company:"Blue Ridge Property",contact:"Trista Jamieson",industry:"Property",avg_invoice:"$4,100",ach_score:69,vcc_score:22},
+{company:"Keystone Facility Group",contact:"Mark Ellis",industry:"Facilities",avg_invoice:"$7,300",ach_score:66,vcc_score:25},
+{company:"Kingstone Mechanical",contact:"Lisa Warren",industry:"Mechanical",avg_invoice:"$8,100",ach_score:63,vcc_score:29},
+{company:"KLM Property Services",contact:"Derrick Cole",industry:"Property",avg_invoice:"$5,700",ach_score:61,vcc_score:31}
 ];
 
 function getHistory(){
-return JSON.parse(localStorage.getItem("paypilot_polished_ui_history") || "[]");
+return JSON.parse(localStorage.getItem("paypilot_history_v3") || "[]");
 }
 
 function saveHistory(history){
-localStorage.setItem("paypilot_polished_ui_history", JSON.stringify(history));
+localStorage.setItem("paypilot_history_v3", JSON.stringify(history));
 }
 
 function login(){
@@ -747,11 +748,11 @@ const password = document.getElementById("password").value.trim();
 
 if((email === "demo@paypilot.ai" || email === "manager@paypilot.ai") && password === "demo123"){
 document.getElementById("loginCard").classList.add("hidden");
-document.getElementById("app").classList.remove("hidden");
+document.getElementById("appContent").classList.remove("hidden");
 document.getElementById("userDisplay").classList.remove("hidden");
 document.getElementById("logoutBtn").classList.remove("hidden");
 document.getElementById("userDisplay").innerText = email;
-populateSuppliers();
+document.getElementById("supplierSearch").value = suppliers[0].company;
 loadSupplier();
 renderHistory();
 updateStats();
@@ -776,16 +777,48 @@ document.getElementById("managerView").classList.remove("hidden");
 renderManager();
 }
 
-function populateSuppliers(){
-const select = document.getElementById("supplierSelect");
-select.innerHTML = suppliers.map((s,i)=>`<option value="${i}">${s.company}</option>`).join("");
+function searchSuppliers(){
+const query = document.getElementById("supplierSearch").value.trim().toLowerCase();
+const resultsEl = document.getElementById("searchResults");
+
+if(!query){
+resultsEl.classList.add("hidden");
+resultsEl.innerHTML = "";
+return;
+}
+
+const matches = suppliers
+.map((supplier, index) => ({supplier, index}))
+.filter(item => item.supplier.company.toLowerCase().includes(query))
+.slice(0, 8);
+
+if(!matches.length){
+resultsEl.classList.remove("hidden");
+resultsEl.innerHTML = '<div class="search-item"><div class="search-name">No results found</div><div class="search-meta">Try a different company name</div></div>';
+return;
+}
+
+resultsEl.classList.remove("hidden");
+resultsEl.innerHTML = matches.map(item => `
+<div class="search-item" onclick="selectSupplier(${item.index})">
+<div class="search-name">${item.supplier.company}</div>
+<div class="search-meta">${item.supplier.contact} • ${item.supplier.industry}</div>
+</div>
+`).join("");
+}
+
+function selectSupplier(index){
+selectedSupplierIndex = index;
+document.getElementById("supplierSearch").value = suppliers[index].company;
+document.getElementById("searchResults").classList.add("hidden");
+document.getElementById("searchResults").innerHTML = "";
+loadSupplier();
 }
 
 function loadSupplier(){
-const s = suppliers[document.getElementById("supplierSelect").value || 0];
-if(!s) return;
-
+const s = suppliers[selectedSupplierIndex] || suppliers[0];
 document.getElementById("supplierInfo").innerHTML = `
+<p><strong>Company:</strong> ${s.company}</p>
 <p><strong>Contact:</strong> ${s.contact}</p>
 <p><strong>Industry:</strong> ${s.industry}</p>
 <p><strong>Avg Invoice:</strong> ${s.avg_invoice}</p>
@@ -798,14 +831,9 @@ document.getElementById("supplierInfo").innerHTML = `
 
 function detectLanguage(text){
 const t = text.toLowerCase();
-if(
-t.includes("hola") ||
-t.includes("solo aceptamos") ||
-t.includes("cheques") ||
-t.includes("tarjeta") ||
-t.includes("gracias") ||
-t.includes("no quiero pagar tarifas")
-) return "Spanish";
+if(t.includes("hola") || t.includes("solo aceptamos") || t.includes("cheques") || t.includes("tarjeta") || t.includes("gracias") || t.includes("no quiero pagar tarifas")){
+return "Spanish";
+}
 return "English";
 }
 
@@ -818,7 +846,6 @@ updateTranslation();
 function updateTranslation(){
 const text = document.getElementById("objection").value.trim();
 const lang = detectLanguage(text);
-
 document.getElementById("languageDisplay").textContent = lang;
 
 if(!translateOn) return;
@@ -833,7 +860,6 @@ english = text
 .replace(/no aceptamos tarjetas/gi, "we do not accept cards")
 .replace(/no quiero pagar tarifas/gi, "i do not want to pay fees")
 .replace(/gracias/gi, "thank you");
-
 reply = "Entiendo. ACH le permite recibir pagos más rápido y evita retrasos de cheques.";
 } else {
 reply = "I understand. ACH helps you get paid faster and eliminates check delays.";
@@ -875,15 +901,25 @@ document.getElementById("micStatus").textContent = "Idle";
 };
 
 recognition.onresult = (event) => {
-let transcript = "";
+let finalTranscript = "";
+let liveTranscript = "";
 
 for(let i = event.resultIndex; i < event.results.length; i++){
-transcript += event.results[i][0].transcript + " ";
+const piece = event.results[i][0].transcript;
+if(event.results[i].isFinal){
+finalTranscript += piece + " ";
+} else {
+liveTranscript += piece + " ";
+}
 }
 
-transcript = transcript.trim();
-document.getElementById("objection").value = transcript;
+const fullText = (finalTranscript + liveTranscript).trim();
+document.getElementById("objection").value = fullText;
 updateTranslation();
+
+if(finalTranscript.trim()){
+generateResponse();
+}
 };
 
 recognition.start();
@@ -899,7 +935,6 @@ document.getElementById("micStatus").textContent = "Stopped";
 function calcProbability(text){
 let score = 70;
 const t = text.toLowerCase();
-
 if(t.includes("check") || t.includes("checks") || t.includes("cheques")) score -= 10;
 if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")) score -= 15;
 if(t.includes("busy") || t.includes("later")) score -= 8;
@@ -907,7 +942,6 @@ if(t.includes("accountant")) score -= 10;
 if(t.includes("not interested")) score -= 18;
 if(t.includes("yes")) score += 20;
 if(t.includes("interested")) score += 15;
-
 return Math.max(5, Math.min(95, score));
 }
 
@@ -951,7 +985,6 @@ return "Send follow-up";
 
 function getLiveCoaching(text, score){
 const strategy = getStrategy(text, score);
-
 if(strategy === "Push Next Step") return "They sound close. Stop explaining and move to setup.";
 if(strategy === "Reframe Value") return "Do not defend cost. Shift to speed, cash flow, and less manual work.";
 if(strategy === "Reduce Risk") return "Make checks sound slower and riskier. Make ACH sound safe and simple.";
@@ -967,23 +1000,18 @@ const t = text.toLowerCase();
 if(t.includes("check") || t.includes("checks") || t.includes("cheques")){
 return "Yeah, I get that. Most suppliers are used to checks, but ACH cuts out the delay and gets funds into the account faster.";
 }
-
 if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")){
 return "Totally fair. That’s why ACH is usually the better fit — you keep it electronic without card fee concerns, and payments move faster.";
 }
-
 if(t.includes("busy") || t.includes("later")){
 return "I hear you. I’ll keep it quick — if we handle the next step now, you don’t have to keep dealing with check delays later.";
 }
-
 if(t.includes("accountant")){
 return "Makes sense. We can include accounting, but the setup itself is simple, so we can knock out the easy part now and keep things moving.";
 }
-
 if(t.includes("not interested")){
 return "Understood. A lot of suppliers say that at first until they realize this is mostly about getting paid faster and avoiding check issues.";
 }
-
 return "Got you. The main value here is faster payment, less manual work, and fewer check delays.";
 }
 
@@ -1017,7 +1045,7 @@ messages:[
 
 const data = await res.json();
 response = data.choices?.[0]?.message?.content || "";
-} catch {
+} catch (e) {
 response = "";
 }
 
@@ -1038,9 +1066,8 @@ generateExtras();
 }
 
 function generateExtras(){
-const supplier = suppliers[document.getElementById("supplierSelect").value || 0];
+const supplier = suppliers[selectedSupplierIndex] || suppliers[0];
 const outcome = document.getElementById("outcome").value;
-if(!supplier) return;
 
 document.getElementById("crmNote").textContent =
 `${supplier.company}: Discussed electronic payment options. Contact: ${supplier.contact}. Current outcome: ${outcome}.`;
@@ -1051,9 +1078,10 @@ document.getElementById("emailText").textContent =
 
 function logCall(){
 const history = getHistory();
+const supplier = suppliers[selectedSupplierIndex] || suppliers[0];
 
 history.unshift({
-supplier: suppliers[document.getElementById("supplierSelect").value || 0].company,
+supplier: supplier.company,
 objection: document.getElementById("objection").value.trim(),
 outcome: document.getElementById("outcome").value,
 enrollment: document.getElementById("enrollment").value,
@@ -1127,6 +1155,16 @@ const tag = getObjectionTag(h.objection || "");
 breakdown[tag] = (breakdown[tag] || 0) + 1;
 });
 
+let topTag = "None";
+let topCount = 0;
+for(const key in breakdown){
+if(breakdown[key] > topCount){
+topTag = key;
+topCount = breakdown[key];
+}
+}
+
+document.getElementById("mgrTopObjection").textContent = topTag;
 document.getElementById("objectionBreakdown").innerHTML =
 Object.keys(breakdown).length
 ? Object.entries(breakdown).map(([k,v]) => `<p><strong>${k}:</strong> ${v}</p>`).join("")
@@ -1138,9 +1176,19 @@ document.getElementById("enrollment").value = "Completed";
 document.getElementById("outcome").value = "Converted";
 generateExtras();
 }
+
+document.addEventListener("click", function(e){
+const searchBox = document.getElementById("searchResults");
+const input = document.getElementById("supplierSearch");
+if(searchBox && !searchBox.contains(e.target) && e.target !== input){
+searchBox.classList.add("hidden");
+}
+});
 </script>
 </body>
 </html>
+
+
 
 
 
