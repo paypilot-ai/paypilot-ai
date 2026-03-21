@@ -14,9 +14,9 @@
 --navy2:#141e34;
 --surface:#1c2e48;
 --surface2:#223454;
---glass:rgba(22,36,62,.92);
---border:rgba(255,255,255,.09);
---border2:rgba(255,255,255,.17);
+--glass:rgba(26,40,68,.94);
+--border:rgba(255,255,255,.11);
+--border2:rgba(255,255,255,.2);
 --border3:rgba(255,255,255,.28);
 --white:#ffffff;
 --text:#edf1fc;
@@ -51,8 +51,8 @@ background:var(–void);
 color:var(–text);
 min-height:100vh;
 overflow-x:hidden;
-font-size:15px;
-line-height:1.6;
+font-size:16px;
+line-height:1.65;
 }
 
 /* Ambient glow field */
@@ -109,7 +109,7 @@ border:1px solid transparent;border-radius:10px;
 background:transparent;color:var(–text2);
 text-align:left;cursor:pointer;
 font-family:‘Plus Jakarta Sans’,sans-serif;
-font-size:15px;font-weight:500;
+font-size:16px;font-weight:500;
 display:flex;align-items:center;gap:11px;
 transition:all .18s;
 }
@@ -136,7 +136,7 @@ content:’’;position:absolute;bottom:0;left:0;right:0;height:1px;
 background:linear-gradient(90deg,transparent,rgba(61,139,255,.45),transparent);
 opacity:.7;
 }
-.tb-title{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(–white);}
+.tb-title{font-size:19px;font-weight:700;letter-spacing:-.02em;color:#ffffff;}
 .tb-sep{width:1px;height:20px;background:var(–border2);flex-shrink:0;}
 .tb-sub{font-family:‘JetBrains Mono’,monospace;font-size:10.5px;color:var(–text3);letter-spacing:.1em;text-transform:uppercase;}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
@@ -179,8 +179,8 @@ transition:border-color .2s,transform .2s,box-shadow .2s;cursor:default;
 .sg-gold{background:var(–gold);}
 .sg-cyan{background:var(–cyan);}
 
-.stat-kicker{font-family:‘JetBrains Mono’,monospace;font-size:10px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(–text3);margin-bottom:10px;}
-.stat-num{font-family:‘Instrument Serif’,serif;font-size:52px;font-weight:400;line-height:1;letter-spacing:-.03em;color:var(–white);}
+.stat-kicker{font-family:‘JetBrains Mono’,monospace;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8aabdd;margin-bottom:12px;}
+.stat-num{font-family:‘Instrument Serif’,serif;font-size:58px;font-weight:400;line-height:1;letter-spacing:-.03em;color:#ffffff;}
 .stat-num.sm{font-family:‘Plus Jakarta Sans’,sans-serif;font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:8px;color:var(–text);}
 .stat-bar{position:absolute;bottom:0;left:0;right:0;height:2px;border-radius:0 0 16px 16px;}
 .sb-blue{background:linear-gradient(90deg,var(–blue3),var(–blue2));}
@@ -219,7 +219,7 @@ background:rgba(255,255,255,.025);
 .pip-cyan{background:var(–cyan);}
 .pip-muted{background:rgba(255,255,255,.28);}
 
-.panel-title{font-family:‘JetBrains Mono’,monospace;font-size:10.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(–text2);}
+.panel-title{font-family:‘JetBrains Mono’,monospace;font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#d0dcf4;}
 .panel-body{padding:24px;}
 
 /* ═══════════════════════════
@@ -237,7 +237,7 @@ color:var(–text);transition:all .18s;appearance:none;
 }
 input::placeholder,textarea::placeholder{color:var(–text3);}
 input:focus,textarea:focus,select:focus{border-color:rgba(61,139,255,.65);background:rgba(61,139,255,.07);box-shadow:0 0 0 3px rgba(61,139,255,.13);}
-textarea{min-height:120px;resize:vertical;line-height:1.65;font-size:15px;}
+textarea{min-height:120px;resize:vertical;line-height:1.7;font-size:16px;}
 select{
 background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ fill=‘none’ viewBox=‘0 0 20 20’%3E%3Cpath stroke=’%236e88b0’ stroke-width=‘1.5’ d=‘M6 8l4 4 4-4’/%3E%3C/svg%3E”);
 background-repeat:no-repeat;background-position:right 13px center;background-size:18px;padding-right:38px;cursor:pointer;
@@ -295,9 +295,9 @@ SUPPLIER TABLE
 .sup-table{width:100%;border-collapse:collapse;}
 .sup-table tr{border-bottom:1px solid var(–border);}
 .sup-table tr:last-child{border-bottom:none;}
-.sup-table td{padding:10px 0;font-size:14.5px;vertical-align:top;}
-.sup-table td:first-child{font-family:‘JetBrains Mono’,monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(–text3);width:110px;padding-right:12px;padding-top:12px;}
-.sup-table td:last-child{color:var(–text);font-weight:500;}
+.sup-table td{padding:10px 0;font-size:15.5px;vertical-align:top;}
+.sup-table td:first-child{font-family:‘JetBrains Mono’,monospace;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8aabdd;width:115px;padding-right:12px;padding-top:12px;}
+.sup-table td:last-child{color:#edf1fc;font-weight:600;}
 
 .score-row{display:flex;gap:11px;margin-top:18px;}
 .score-chip{flex:1;padding:14px;border-radius:12px;border:1px solid;text-align:center;position:relative;overflow:hidden;}
@@ -314,8 +314,8 @@ METRIC ROW
 ═══════════════════════════ */
 .metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:20px;}
 .metric-cell{background:rgba(0,0,0,.25);border:1px solid var(–border2);border-radius:10px;padding:13px 16px;text-align:center;}
-.metric-label{font-family:‘JetBrains Mono’,monospace;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(–text3);margin-bottom:6px;}
-.metric-val{font-size:15px;font-weight:700;color:var(–text);letter-spacing:-.01em;}
+.metric-label{font-family:‘JetBrains Mono’,monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#7090b8;margin-bottom:7px;}
+.metric-val{font-size:16px;font-weight:700;color:#edf1fc;letter-spacing:-.01em;}
 
 /* ═══════════════════════════
 AI RESPONSE — FULL LIGHT HERO
@@ -378,7 +378,7 @@ border:1px solid rgba(61,139,255,.2);border-radius:5px;padding:4px 11px;
 .ai-response{
 position:relative;z-index:1;
 font-family:‘Instrument Serif’,serif;
-font-size:26px;font-weight:400;font-style:italic;
+font-size:28px;font-weight:400;font-style:italic;
 line-height:1.55;
 color:#ffffff; /* pure white on the blue bg */
 letter-spacing:-.01em;
@@ -405,7 +405,7 @@ background:rgba(255,255,255,.1);
 border:1px solid rgba(255,255,255,.2);
 border-radius:8px;padding:8px 14px;
 font-family:‘JetBrains Mono’,monospace;
-font-size:11px;letter-spacing:.06em;
+font-size:12px;letter-spacing:.05em;
 color:rgba(220,238,255,.95); /* readable on blue bg */
 display:flex;align-items:center;gap:7px;white-space:nowrap;
 }
@@ -414,7 +414,7 @@ display:flex;align-items:center;gap:7px;white-space:nowrap;
 /* ═══════════════════════════
 INFO PANELS
 ═══════════════════════════ */
-.info-text{font-size:15px;line-height:1.72;color:var(–text2);}
+.info-text{font-size:16px;line-height:1.75;color:#c0d0e8;font-weight:400;}
 
 /* ═══════════════════════════
 TRANSLATION
@@ -432,9 +432,9 @@ HISTORY
 .history-entry{padding:14px 0;border-bottom:1px solid var(–border);}
 .history-entry:last-child{border-bottom:none;}
 .he-top{display:flex;justify-content:space-between;align-items:flex-start;gap:9px;}
-.he-name{font-size:15.5px;font-weight:700;color:var(–text);}
+.he-name{font-size:16.5px;font-weight:700;color:#edf1fc;}
 .he-date{font-family:‘JetBrains Mono’,monospace;font-size:10.5px;color:var(–text3);margin-top:3px;}
-.he-obj{font-size:14px;color:var(–text3);margin-top:5px;font-style:italic;}
+.he-obj{font-size:15px;color:#7090b8;margin-top:5px;font-style:italic;}
 .stag{font-family:‘JetBrains Mono’,monospace;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:4px 11px;border-radius:5px;border:1px solid;white-space:nowrap;flex-shrink:0;}
 .st-conv{background:var(–green-dim);color:var(–green);border-color:rgba(31,217,138,.25);}
 .st-rej{background:var(–red-dim);color:var(–red);border-color:rgba(255,90,114,.25);}
@@ -499,12 +499,12 @@ margin-bottom:12px;position:relative;z-index:1;
 .login-mark{width:56px;height:56px;}
 
 .login-title{
-font-size:44px;font-weight:800;
+font-size:72px;font-weight:800;
 letter-spacing:-.04em;color:#ffffff;
-line-height:1;position:relative;z-index:1;
-text-shadow:0 0 40px rgba(255,255,255,.4), 0 2px 12px rgba(0,0,80,.5);
+line-height:.95;position:relative;z-index:1;
+text-shadow:0 0 50px rgba(180,220,255,.5), 0 2px 16px rgba(0,0,80,.6);
 }
-.login-title .acc{color:#c0e0ff;}
+.login-title .acc{color:#a8daff;display:block;}
 
 .login-tagline{
 font-family:‘Plus Jakarta Sans’,sans-serif;
@@ -648,7 +648,7 @@ UTILS
 
 ```
 <!-- ── LOGIN ── -->
-<div id="loginCard">
+<div id="loginCard" style="position:fixed;inset:0;z-index:100;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;">
 <div class="login-hero">
 <div class="login-hero-dots"></div>
 <div class="login-logo-wrap">
@@ -678,15 +678,23 @@ UTILS
 <div class="login-title">Pay<span class="acc">Pilot</span></div>
 </div>
 </div>
-<div class="login-tagline">Real-time AI enrollment intelligence</div>
+<div class="login-tagline">Real-time AI enrollment intelligence — built for payment reps.</div>
 <div class="login-sub">Powered by PayPilot Engine v2</div>
+<div class="login-features">
+<div class="login-feat"><div class="login-feat-icon">⚡</div><div class="login-feat-text">Live AI objection responses</div></div>
+<div class="login-feat"><div class="login-feat-icon">🔍</div><div class="login-feat-text">Web-powered supplier lookup</div></div>
+<div class="login-feat"><div class="login-feat-icon">🎤</div><div class="login-feat-text">Real-time mic transcription</div></div>
+<div class="login-feat"><div class="login-feat-icon">📈</div><div class="login-feat-text">Conversion tracking & coaching</div></div>
+</div>
 </div>
 <div class="login-body">
+<div class="login-form-title">Welcome back.</div>
+<div class="login-form-sub">Sign in to your PayPilot workspace.</div>
 <div class="field">
 <label class="field-label">Password</label>
 <input id="password" type="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')login()"/>
 </div>
-<button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:15.5px;" onclick="login()">
+<button class="btn btn-primary" style="width:100%;justify-content:center;padding:16px;font-size:17px;border-radius:12px;" onclick="login()">
 Access Workspace →
 </button>
 <div class="login-hint">Demo password: <span>demo123</span></div>
@@ -867,7 +875,10 @@ const sh=h=>localStorage.setItem("pp_v5",JSON.stringify(h));
 function login(){
 const pw=document.getElementById("password").value.trim();
 if(pw==="demo123"){
-document.getElementById("loginCard").classList.add("hidden");
+const lc=document.getElementById("loginCard");
+lc.style.opacity="0";lc.style.transform="scale(1.02)";
+lc.style.transition="all .3s ease";
+setTimeout(()=>{lc.classList.add("hidden");lc.style.cssText="";},300);
 document.getElementById("appContent").classList.remove("hidden");
 document.getElementById("userChip").classList.remove("hidden");
 document.getElementById("liveBadge").classList.remove("hidden");
@@ -946,7 +957,7 @@ document.getElementById("supplierInfo").innerHTML=`
 
 async function runWebLookup(){
 const query = document.getElementById("webLookupInput").value.trim();
-if(!query){ 
+if(!query){
 document.getElementById("webLookupInput").style.borderColor="var(--red)";
 setTimeout(()=>document.getElementById("webLookupInput").style.borderColor="",1500);
 return;
@@ -962,7 +973,7 @@ msgEl.textContent = "Searching the web for contact info…";
 spinEl.style.display = "block";
 infoEl.innerHTML = "";
 
-const systemPrompt = `You are a business contact research agent. When given a company name and optional location, search the web and return the best available contact information for their Accounts Payable or primary business contact. 
+const systemPrompt = `You are a business contact research agent. When given a company name and optional location, search the web and return the best available contact information for their Accounts Payable or primary business contact.
 
 Return ONLY a JSON object — no markdown, no explanation, no extra text. Use this exact structure:
 {
@@ -1045,7 +1056,7 @@ ${parsed.website && parsed.website!=="Not found" ? `<a href="${parsed.website}" 
 <div class="score-chip chip-blue"><span class="sc-label">ACH Score</span><span class="sc-val">${ach}%</span></div>
 <div class="score-chip chip-cyan"><span class="sc-label">VCC Score</span><span class="sc-val">${vcc}%</span></div>
 </div>
-<button class="btn btn-ghost" onclick="addWebResultToLocal()" style="margin-top:14px;width:100%;justify-content:center;font-size:13px;" 
+<button class="btn btn-ghost" onclick="addWebResultToLocal()" style="margin-top:14px;width:100%;justify-content:center;font-size:13px;"
 data-company="${(parsed.company||"").replace(/"/g,"")}"
 data-contact="${(parsed.contact||"").replace(/"/g,"")}"
 data-email="${(parsed.email||"").replace(/"/g,"")}"
@@ -1357,6 +1368,4 @@ if(sr&&!sr.contains(e.target)&&e.target!==inp) sr.classList.add("hidden");
 
 </body>
 </html>
-
-
 
