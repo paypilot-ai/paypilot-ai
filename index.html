@@ -6,100 +6,122 @@
 <title>PayPilot AI</title>
 <style>
 :root{
---primary:#0066CC;
---primary-dark:#004B99;
---primary-soft:#EAF4FF;
---bg:#F5F8FC;
---panel:#FFFFFF;
---text:#1F2937;
---muted:#6B7280;
---line:#E5E7EB;
---success:#16A34A;
---warning:#D97706;
---danger:#DC2626;
---navy:#0F2742;
---shadow:0 8px 24px rgba(15,39,66,.08);
---radius:16px;
+--bg:#0b1020;
+--panel:#111831;
+--panel-2:#151d3a;
+--card:#ffffff;
+--text:#0f172a;
+--muted:#64748b;
+--line:#dbe3f0;
+--blue:#2563eb;
+--blue-2:#60a5fa;
+--blue-soft:#eaf2ff;
+--green:#16a34a;
+--red:#dc2626;
+--amber:#d97706;
+--shadow:0 20px 50px rgba(2,8,23,.18);
+--shadow-soft:0 10px 24px rgba(2,8,23,.10);
+--radius:18px;
 }
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
 font-family:Arial, Helvetica, sans-serif;
-background:var(--bg);
+background:
+radial-gradient(circle at top right, rgba(96,165,250,.18), transparent 20%),
+radial-gradient(circle at top left, rgba(37,99,235,.14), transparent 18%),
+linear-gradient(180deg, #eef4ff 0%, #f7faff 100%);
 color:var(--text);
 }
 
 .app{
-display:grid;
-grid-template-columns:260px 1fr;
 min-height:100vh;
+display:grid;
+grid-template-columns:270px 1fr;
 }
 
 .sidebar{
-background:linear-gradient(180deg,var(--navy),#14385D);
+background:
+radial-gradient(circle at top left, rgba(96,165,250,.18), transparent 24%),
+linear-gradient(180deg, var(--bg) 0%, #101936 100%);
 color:#fff;
-padding:22px 18px;
+padding:24px 18px;
+border-right:1px solid rgba(255,255,255,.06);
 }
 
 .brand{
 display:flex;
-align-items:center;
 gap:14px;
-margin-bottom:28px;
+align-items:center;
+margin-bottom:30px;
 }
 
 .logo{
-width:58px;
-height:58px;
-border-radius:16px;
-background:linear-gradient(135deg,#ffffff,#dcecff);
+width:62px;
+height:62px;
+border-radius:18px;
 display:flex;
 align-items:center;
 justify-content:center;
-box-shadow:0 8px 24px rgba(0,0,0,.18);
+background:linear-gradient(135deg,#ffffff,#dbeafe);
+box-shadow:0 18px 36px rgba(0,0,0,.28);
 overflow:hidden;
 flex-shrink:0;
+border:1px solid rgba(255,255,255,.5);
 }
 
 .brand h1{
 margin:0;
 font-size:22px;
+letter-spacing:-.04em;
 line-height:1;
-letter-spacing:-.03em;
 }
 
 .brand p{
 margin:6px 0 0;
+color:rgba(255,255,255,.72);
 font-size:12px;
-color:rgba(255,255,255,.8);
 }
 
-.nav-label{
+.side-label{
 font-size:11px;
-font-weight:700;
-letter-spacing:.08em;
+letter-spacing:.12em;
 text-transform:uppercase;
-color:rgba(255,255,255,.55);
-margin:18px 0 10px;
+color:rgba(255,255,255,.42);
+font-weight:700;
+margin:20px 0 10px;
 }
 
-.nav-btn{
+.side-btn{
 width:100%;
-text-align:left;
 border:none;
 background:transparent;
 color:#fff;
-padding:12px 14px;
-border-radius:12px;
-cursor:pointer;
+text-align:left;
+padding:13px 14px;
+border-radius:14px;
 font-weight:700;
+cursor:pointer;
 margin-bottom:8px;
+transition:.15s ease;
 }
 
-.nav-btn:hover,
-.nav-btn.active{
-background:rgba(255,255,255,.1);
+.side-btn:hover,
+.side-btn.active{
+background:rgba(255,255,255,.08);
+transform:translateX(2px);
+}
+
+.side-note{
+margin-top:26px;
+border:1px solid rgba(255,255,255,.08);
+background:rgba(255,255,255,.05);
+border-radius:16px;
+padding:14px;
+font-size:12px;
+line-height:1.5;
+color:rgba(255,255,255,.74);
 }
 
 .main{
@@ -107,22 +129,23 @@ min-width:0;
 }
 
 .topbar{
-background:#fff;
-border-bottom:1px solid var(--line);
-padding:16px 22px;
+position:sticky;
+top:0;
+z-index:10;
+padding:18px 24px;
+border-bottom:1px solid #e5edf8;
+background:rgba(255,255,255,.82);
+backdrop-filter:blur(10px);
 display:flex;
 justify-content:space-between;
 align-items:center;
 gap:16px;
-position:sticky;
-top:0;
-z-index:10;
 }
 
 .topbar h2{
 margin:0;
-font-size:24px;
-letter-spacing:-.03em;
+font-size:28px;
+letter-spacing:-.04em;
 }
 
 .topbar p{
@@ -131,25 +154,27 @@ color:var(--muted);
 font-size:13px;
 }
 
-.topbar-right{
+.top-actions{
 display:flex;
 gap:10px;
 flex-wrap:wrap;
 align-items:center;
 }
 
-.user-pill{
-background:var(--primary-soft);
-color:var(--primary-dark);
-padding:10px 12px;
+.pill-user{
+background:var(--blue-soft);
+color:#1d4ed8;
+border:1px solid #cfe0ff;
+padding:10px 14px;
 border-radius:999px;
-font-weight:700;
 font-size:12px;
-border:1px solid #D7E9FB;
+font-weight:700;
 }
 
 .page{
-padding:22px;
+padding:24px;
+max-width:1400px;
+margin:0 auto;
 }
 
 .grid{
@@ -157,30 +182,23 @@ display:grid;
 gap:16px;
 }
 
-.grid-2{grid-template-columns:1fr 1fr}
-.grid-3{grid-template-columns:1fr 1fr 1fr}
-.grid-4{grid-template-columns:1fr 1fr 1fr 1fr}
-
-.call-layout{
-display:grid;
-grid-template-columns:1fr 1.25fr;
-gap:16px;
-align-items:start;
-}
-
-.bottom-layout{
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
-gap:16px;
-margin-top:16px;
-}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.call-layout{grid-template-columns:1fr 1.25fr}
 
 .card{
-background:var(--panel);
-border:1px solid var(--line);
+background:rgba(255,255,255,.86);
+backdrop-filter:blur(8px);
+border:1px solid #e7eef8;
 border-radius:var(--radius);
+box-shadow:var(--shadow-soft);
+padding:20px;
+}
+
+.card.white{
+background:#fff;
 box-shadow:var(--shadow);
-padding:18px;
 }
 
 .card-header{
@@ -194,6 +212,7 @@ margin-bottom:14px;
 .card h3{
 margin:0;
 font-size:18px;
+letter-spacing:-.02em;
 }
 
 .subtle{
@@ -201,23 +220,25 @@ color:var(--muted);
 font-size:12px;
 }
 
-.stat-card{
-background:#fff;
-border:1px solid var(--line);
-border-radius:14px;
-padding:16px;
-box-shadow:var(--shadow);
+.stat{
+background:linear-gradient(180deg,#ffffff 0%, #f9fbff 100%);
+border:1px solid #e7eef8;
+border-radius:18px;
+padding:18px;
+box-shadow:var(--shadow-soft);
 }
 
 .stat-label{
 color:var(--muted);
 font-size:12px;
-margin-bottom:6px;
+margin-bottom:8px;
+font-weight:700;
 }
 
 .stat-value{
-font-size:28px;
+font-size:30px;
 font-weight:800;
+letter-spacing:-.05em;
 }
 
 .stat-foot{
@@ -237,124 +258,132 @@ font-weight:700;
 input, textarea, select{
 width:100%;
 border:1px solid var(--line);
-border-radius:12px;
+border-radius:14px;
 background:#fff;
 color:var(--text);
-padding:13px 14px;
+padding:14px 15px;
 font-size:15px;
 outline:none;
+transition:.15s ease;
 }
 
 input:focus, textarea:focus, select:focus{
-border-color:var(--primary);
-box-shadow:0 0 0 3px rgba(0,102,204,.12);
+border-color:#93c5fd;
+box-shadow:0 0 0 4px rgba(37,99,235,.12);
 }
 
 textarea{
-min-height:140px;
+min-height:150px;
 resize:vertical;
 }
 
 .toolbar{
 display:flex;
-flex-wrap:wrap;
 gap:10px;
+flex-wrap:wrap;
 }
 
 .btn{
 border:none;
-border-radius:12px;
-padding:12px 14px;
+border-radius:14px;
+padding:12px 15px;
 font-size:14px;
 font-weight:700;
 cursor:pointer;
+transition:.15s ease;
+box-shadow:var(--shadow-soft);
 }
 
-.btn-primary{background:var(--primary);color:#fff}
-.btn-secondary{background:#EEF2F7;color:var(--text);border:1px solid var(--line)}
-.btn-success{background:var(--success);color:#fff}
-.btn-warning{background:var(--warning);color:#fff}
-.btn-danger{background:var(--danger);color:#fff}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-2));color:#fff}
+.btn-secondary{background:#eef2f7;color:#0f172a;border:1px solid #dce5f1}
+.btn-success{background:linear-gradient(135deg,var(--green),#22c55e);color:#fff}
+.btn-danger{background:linear-gradient(135deg,var(--red),#ef4444);color:#fff}
+.btn-warning{background:linear-gradient(135deg,var(--amber),#f59e0b);color:#fff}
+
+.search-results{
+margin-top:10px;
+background:#fff;
+border:1px solid var(--line);
+border-radius:14px;
+overflow:hidden;
+}
+
+.search-item{
+padding:13px 14px;
+border-top:1px solid #edf2f8;
+cursor:pointer;
+transition:.12s ease;
+}
+
+.search-item:first-child{border-top:none}
+.search-item:hover{background:var(--blue-soft)}
+.search-name{font-weight:700;margin-bottom:4px}
+.search-meta{color:var(--muted);font-size:12px}
 
 .pill-row{
 display:flex;
-flex-wrap:wrap;
 gap:8px;
+flex-wrap:wrap;
 margin-top:10px;
 }
 
-.pill{
+.mini-pill{
 display:inline-flex;
 align-items:center;
 padding:7px 10px;
 border-radius:999px;
 font-size:12px;
 font-weight:700;
-background:var(--primary-soft);
-color:var(--primary-dark);
-border:1px solid #D7E9FB;
+background:var(--blue-soft);
+color:#1d4ed8;
+border:1px solid #d7e7ff;
 }
 
-.center-response{
-min-height:100%;
-display:flex;
-flex-direction:column;
-justify-content:center;
+.ai-shell{
+border-radius:24px;
+padding:2px;
+background:linear-gradient(135deg, rgba(37,99,235,.28), rgba(96,165,250,.10));
+box-shadow:0 26px 70px rgba(37,99,235,.10);
 }
 
-.response-box{
-border:1px solid var(--line);
-background:#FBFDFF;
-border-radius:18px;
-padding:22px;
+.ai-box{
+border-radius:22px;
+padding:28px;
+background:
+radial-gradient(circle at top center, rgba(96,165,250,.08), transparent 34%),
+linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+border:1px solid rgba(37,99,235,.08);
 }
 
-.response-main{
-white-space:pre-wrap;
-line-height:1.6;
-font-size:24px;
-font-weight:700;
-margin-bottom:18px;
+.ai-text{
+font-size:30px;
+font-weight:800;
+line-height:1.5;
 text-align:center;
+letter-spacing:-.04em;
+margin-bottom:18px;
+white-space:pre-wrap;
 }
 
-.response-meta{
-max-width:700px;
-margin:0 auto;
-}
-
-.meta-line{
+.meta{
+text-align:center;
 color:var(--muted);
 font-size:13px;
-margin-bottom:6px;
-text-align:center;
+margin-bottom:7px;
 }
 
-.heat{
-display:inline-flex;
-align-items:center;
-justify-content:center;
-padding:5px 10px;
-border-radius:999px;
-font-size:12px;
-font-weight:800;
-}
-
-.heat.hot{background:#DCFCE7;color:#166534}
-.heat.warm{background:#FEF3C7;color:#92400E}
-.heat.cold{background:#FEE2E2;color:#991B1B}
-
-.translation-box{
-background:var(--primary-soft);
-border:1px solid #D7E9FB;
-border-radius:14px;
-padding:14px;
+.translation{
 margin-top:14px;
+border-radius:16px;
+padding:16px;
+background:linear-gradient(180deg,#eef5ff 0%, #e8f2ff 100%);
+border:1px solid #d7e7ff;
 }
 
 .history-item{
 padding:12px 0;
-border-top:1px solid var(--line);
+border-top:1px solid #edf2f8;
 }
 
 .history-item:first-child{
@@ -373,46 +402,12 @@ font-size:12px;
 margin-bottom:8px;
 }
 
-.login-screen{
-max-width:520px;
-margin:40px auto 0;
+.login-wrap{
+max-width:560px;
+margin:42px auto 0;
 }
 
-.search-results{
-margin-top:10px;
-border:1px solid var(--line);
-border-radius:12px;
-background:#fff;
-overflow:hidden;
-}
-
-.search-item{
-padding:12px 14px;
-cursor:pointer;
-border-top:1px solid var(--line);
-}
-
-.search-item:first-child{
-border-top:none;
-}
-
-.search-item:hover{
-background:var(--primary-soft);
-}
-
-.search-name{
-font-weight:700;
-margin-bottom:4px;
-}
-
-.search-meta{
-color:var(--muted);
-font-size:12px;
-}
-
-.hidden{
-display:none !important;
-}
+.hidden{display:none !important}
 
 @media (max-width:1024px){
 .app{grid-template-columns:1fr}
@@ -420,7 +415,7 @@ display:none !important;
 .grid-4,.grid-3,.grid-2,.call-layout,.bottom-layout{grid-template-columns:1fr}
 .page{padding:16px}
 .topbar{padding:16px}
-.response-main{font-size:20px}
+.ai-text{font-size:22px}
 }
 </style>
 </head>
@@ -428,8 +423,8 @@ display:none !important;
 <div class="app">
 <aside class="sidebar">
 <div class="brand">
-<div class="logo">
-<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<div class="logo-shell">
+<svg width="42" height="42" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <linearGradient id="ppGrad" x1="6" y1="6" x2="34" y2="34" gradientUnits="userSpaceOnUse">
 <stop stop-color="#0066CC"/>
@@ -447,25 +442,29 @@ display:none !important;
 </div>
 </div>
 
-<div class="nav-label">Workspace</div>
-<button class="nav-btn active" onclick="showRepView()">Rep View</button>
-<button class="nav-btn" onclick="showManagerView()">Manager View</button>
+<div class="side-label">Workspace</div>
+<button class="side-btn active" onclick="showRepView()">Rep View</button>
+<button class="side-btn" onclick="showManagerView()">Manager View</button>
 
-<div class="nav-label">Actions</div>
-<button class="nav-btn" onclick="toggleTranslate()">Toggle Translation</button>
-<button class="nav-btn" onclick="startListening()">Start Mic</button>
-<button class="nav-btn" onclick="stopListening()">Stop Mic</button>
-<button class="nav-btn" onclick="logout()">Logout</button>
+<div class="side-label">Actions</div>
+<button class="side-btn" onclick="toggleTranslate()">Toggle Translation</button>
+<button class="side-btn" onclick="startListening()">Start Mic</button>
+<button class="side-btn" onclick="stopListening()">Stop Mic</button>
+<button class="side-btn" onclick="logout()">Logout</button>
+
+<div class="side-note">
+Hybrid premium layout: clean corporate structure with a little futuristic energy.
+</div>
 </aside>
 
 <main class="main">
 <div class="topbar">
 <div>
 <h2>PayPilot AI</h2>
-<p>AvidXchange-style supplier conversion workspace</p>
+<p>High-visibility live call assistant</p>
 </div>
-<div class="topbar-right">
-<div id="userDisplay" class="user-pill hidden"></div>
+<div class="top-actions">
+<div id="userDisplay" class="pill-user hidden"></div>
 <button class="btn btn-secondary" onclick="showRepView()">Rep View</button>
 <button class="btn btn-secondary" onclick="showManagerView()">Manager View</button>
 <button class="btn btn-secondary" onclick="toggleTranslate()">Translation</button>
@@ -476,8 +475,8 @@ display:none !important;
 </div>
 
 <div class="page">
-<div id="loginCard" class="login-screen">
-<div class="card">
+<div id="loginCard" class="login-wrap">
+<div class="card white">
 <div class="card-header">
 <h3>Secure Login</h3>
 </div>
@@ -495,29 +494,29 @@ display:none !important;
 <div id="appContent" class="hidden">
 <div id="repView">
 <div class="grid grid-4">
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Calls Logged</div>
 <div class="stat-value" id="callsLogged">0</div>
 <div class="stat-foot">Saved call activity</div>
 </div>
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Converted</div>
 <div class="stat-value" id="callsConverted">0</div>
 <div class="stat-foot">Successful outcomes</div>
 </div>
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Conversion Rate</div>
 <div class="stat-value" id="conversionRate">0%</div>
 <div class="stat-foot">Based on logged calls</div>
 </div>
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Top Objection</div>
 <div class="stat-value" id="topObjection" style="font-size:20px;">None</div>
 <div class="stat-foot">Most frequent blocker</div>
 </div>
 </div>
 
-<div class="call-layout" style="margin-top:16px;">
+<div class="grid call-layout" style="margin-top:18px;">
 <div>
 <div class="card">
 <div class="card-header">
@@ -542,19 +541,19 @@ display:none !important;
 </div>
 
 <div class="grid grid-4">
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Detected Language</div>
 <div class="stat-value" style="font-size:18px;" id="languageDisplay">English</div>
 </div>
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Lead Status</div>
 <div class="stat-value" style="font-size:18px;" id="leadHeat">—</div>
 </div>
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Strategy</div>
 <div class="stat-value" style="font-size:18px;" id="strategyTag">—</div>
 </div>
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Mic Status</div>
 <div class="stat-value" style="font-size:18px;" id="micStatus">Idle</div>
 </div>
@@ -572,7 +571,7 @@ display:none !important;
 <button class="btn btn-secondary" onclick="stopListening()">Stop Mic</button>
 </div>
 
-<div id="translationBox" class="translation-box hidden">
+<div id="translationBox" class="translation hidden">
 <h3 style="margin-top:0;">Live Translation</h3>
 <p><strong>English:</strong> <span id="translatedEnglish">—</span></p>
 <p><strong>Reply in Supplier Language:</strong> <span id="translatedReply">—</span></p>
@@ -581,18 +580,18 @@ display:none !important;
 </div>
 
 <div>
-<div class="card center-response">
+<div class="card white">
 <div class="card-header">
 <h3>AI Response</h3>
 <span class="subtle">Centered for call visibility</span>
 </div>
-<div class="response-box">
-<div class="response-main" id="response">—</div>
-<div class="response-meta">
-<div class="meta-line" id="confidence">Confidence: —</div>
-<div class="meta-line" id="objectionTag">Objection Tag: —</div>
-<div class="meta-line" id="nextBestAction">Next Best Action: —</div>
-<div class="meta-line" id="closeProbability">Close Probability: —</div>
+<div class="ai-shell">
+<div class="ai-box">
+<div class="ai-text" id="response">—</div>
+<div class="meta" id="confidence">Confidence: —</div>
+<div class="meta" id="objectionTag">Objection Tag: —</div>
+<div class="meta" id="nextBestAction">Next Best Action: —</div>
+<div class="meta" id="closeProbability">Close Probability: —</div>
 </div>
 </div>
 </div>
@@ -666,22 +665,22 @@ display:none !important;
 
 <div id="managerView" class="hidden">
 <div class="grid grid-4">
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Total Calls</div>
 <div class="stat-value" id="mgrCalls">0</div>
 <div class="stat-foot">All logged activity</div>
 </div>
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Total Converted</div>
 <div class="stat-value" id="mgrConverted">0</div>
 <div class="stat-foot">Successful outcomes</div>
 </div>
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Win Rate</div>
 <div class="stat-value" id="mgrRate">0%</div>
 <div class="stat-foot">Current close rate</div>
 </div>
-<div class="stat-card">
+<div class="stat">
 <div class="stat-label">Top Objection</div>
 <div class="stat-value" id="mgrTopObjection" style="font-size:20px;">None</div>
 <div class="stat-foot">Most frequent blocker</div>
@@ -701,12 +700,7 @@ display:none !important;
 </div>
 
 <script>
-const OPENAI_API_KEY = "
-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
-
-
-
-";
+const OPENAI_API_KEY = "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";
 
 const SYSTEM_PROMPT = `
 You are a top 1% payment enrollment closer.
@@ -735,11 +729,11 @@ const suppliers = [
 ];
 
 function getHistory(){
-return JSON.parse(localStorage.getItem("paypilot_history_v3") || "[]");
+return JSON.parse(localStorage.getItem("paypilot_hybrid_history") || "[]");
 }
 
 function saveHistory(history){
-localStorage.setItem("paypilot_history_v3", JSON.stringify(history));
+localStorage.setItem("paypilot_hybrid_history", JSON.stringify(history));
 }
 
 function login(){
@@ -823,15 +817,22 @@ document.getElementById("supplierInfo").innerHTML = `
 <p><strong>Industry:</strong> ${s.industry}</p>
 <p><strong>Avg Invoice:</strong> ${s.avg_invoice}</p>
 <div class="pill-row">
-<span class="pill">ACH ${s.ach_score}%</span>
-<span class="pill">VCC ${s.vcc_score}%</span>
+<span class="mini-pill">ACH ${s.ach_score}%</span>
+<span class="mini-pill">VCC ${s.vcc_score}%</span>
 </div>
 `;
 }
 
 function detectLanguage(text){
 const t = text.toLowerCase();
-if(t.includes("hola") || t.includes("solo aceptamos") || t.includes("cheques") || t.includes("tarjeta") || t.includes("gracias") || t.includes("no quiero pagar tarifas")){
+if(
+t.includes("hola") ||
+t.includes("solo aceptamos") ||
+t.includes("cheques") ||
+t.includes("tarjeta") ||
+t.includes("gracias") ||
+t.includes("no quiero pagar tarifas")
+){
 return "Spanish";
 }
 return "English";
@@ -860,6 +861,7 @@ english = text
 .replace(/no aceptamos tarjetas/gi, "we do not accept cards")
 .replace(/no quiero pagar tarifas/gi, "i do not want to pay fees")
 .replace(/gracias/gi, "thank you");
+
 reply = "Entiendo. ACH le permite recibir pagos más rápido y evita retrasos de cheques.";
 } else {
 reply = "I understand. ACH helps you get paid faster and eliminates check delays.";
@@ -935,6 +937,7 @@ document.getElementById("micStatus").textContent = "Stopped";
 function calcProbability(text){
 let score = 70;
 const t = text.toLowerCase();
+
 if(t.includes("check") || t.includes("checks") || t.includes("cheques")) score -= 10;
 if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")) score -= 15;
 if(t.includes("busy") || t.includes("later")) score -= 8;
@@ -942,6 +945,7 @@ if(t.includes("accountant")) score -= 10;
 if(t.includes("not interested")) score -= 18;
 if(t.includes("yes")) score += 20;
 if(t.includes("interested")) score += 15;
+
 return Math.max(5, Math.min(95, score));
 }
 
@@ -967,31 +971,32 @@ return "Hybrid Close";
 }
 
 function getLeadHeat(score){
-if(score >= 80) return '<span class="heat hot">Hot</span>';
-if(score >= 55) return '<span class="heat warm">Warm</span>';
-return '<span class="heat cold">Cold</span>';
+if(score >= 80) return "Hot";
+if(score >= 55) return "Warm";
+return "Cold";
 }
 
 function getNextBestAction(text, score){
 const tag = getObjectionTag(text);
 if(score >= 80) return "Ask for setup now";
 if(tag === "Payment Method") return "Position ACH as faster and safer";
-if(tag === "Cost") return "Reframe around no paper checks and faster cash flow";
-if(tag === "Timing") return "Keep it short and ask for next step now";
+if(tag === "Cost") return "Reframe around speed and less manual work";
+if(tag === "Timing") return "Keep it short and move to next step";
 if(tag === "Accounting") return "Offer to simplify and include accounting";
-if(tag === "Rejection") return "Nurture and lower resistance";
+if(tag === "Rejection") return "Lower resistance and nurture";
 return "Send follow-up";
 }
 
 function getLiveCoaching(text, score){
 const strategy = getStrategy(text, score);
+
 if(strategy === "Push Next Step") return "They sound close. Stop explaining and move to setup.";
 if(strategy === "Reframe Value") return "Do not defend cost. Shift to speed, cash flow, and less manual work.";
-if(strategy === "Reduce Risk") return "Make checks sound slower and riskier. Make ACH sound safe and simple.";
+if(strategy === "Reduce Risk") return "Make checks sound slower and riskier. Make ACH sound simple and safe.";
 if(strategy === "Keep Momentum") return "Shorten your ask. Keep control of the call.";
-if(strategy === "Lower Friction") return "Reduce effort. Offer easy next step and include accounting.";
-if(strategy === "Slow Nurture") return "Pull back slightly. Rebuild interest instead of pushing too hard.";
-return "Acknowledge, reframe, and close softly.";
+if(strategy === "Lower Friction") return "Reduce effort. Offer an easy next step and include accounting.";
+if(strategy === "Slow Nurture") return "Pull back a little. Rebuild interest instead of pushing harder.";
+return "Acknowledge, reframe, and move toward the next step.";
 }
 
 function fallbackResponse(text){
@@ -1000,18 +1005,23 @@ const t = text.toLowerCase();
 if(t.includes("check") || t.includes("checks") || t.includes("cheques")){
 return "Yeah, I get that. Most suppliers are used to checks, but ACH cuts out the delay and gets funds into the account faster.";
 }
+
 if(t.includes("fee") || t.includes("fees") || t.includes("tarifas")){
 return "Totally fair. That’s why ACH is usually the better fit — you keep it electronic without card fee concerns, and payments move faster.";
 }
+
 if(t.includes("busy") || t.includes("later")){
-return "I hear you. I’ll keep it quick — if we handle the next step now, you don’t have to keep dealing with check delays later.";
+return "I hear you. I’ll keep it quick — if we handle the next step now, you don’t have to keep dealing with this later.";
 }
+
 if(t.includes("accountant")){
 return "Makes sense. We can include accounting, but the setup itself is simple, so we can knock out the easy part now and keep things moving.";
 }
+
 if(t.includes("not interested")){
-return "Understood. A lot of suppliers say that at first until they realize this is mostly about getting paid faster and avoiding check issues.";
+return "Understood. A lot of suppliers say that at first until they realize this is really about getting paid faster and avoiding check delays.";
 }
+
 return "Got you. The main value here is faster payment, less manual work, and fewer check delays.";
 }
 
@@ -1058,8 +1068,8 @@ document.getElementById("confidence").textContent = "Confidence: 90%";
 document.getElementById("objectionTag").textContent = "Objection Tag: " + tag;
 document.getElementById("nextBestAction").textContent = "Next Best Action: " + action;
 document.getElementById("closeProbability").textContent = "Close Probability: " + score + "%";
-document.getElementById("strategyTag").innerHTML = strategy;
-document.getElementById("leadHeat").innerHTML = getLeadHeat(score);
+document.getElementById("strategyTag").textContent = strategy;
+document.getElementById("leadHeat").textContent = getLeadHeat(score);
 document.getElementById("liveCoaching").textContent = getLiveCoaching(text, score);
 
 generateExtras();
@@ -1187,10 +1197,5 @@ searchBox.classList.add("hidden");
 </script>
 </body>
 </html>
-
-
-
-
-
 
 
