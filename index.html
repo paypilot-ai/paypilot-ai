@@ -33,7 +33,7 @@ color:var(--text);
 
 .app-shell{
 display:grid;
-grid-template-columns:260px 1fr;
+grid-template-columns:280px 1fr;
 min-height:100vh;
 }
 
@@ -46,23 +46,21 @@ padding:22px 18px;
 .brand{
 display:flex;
 align-items:center;
-gap:12px;
+gap:14px;
 margin-bottom:28px;
 }
 
 .logo{
-width:46px;
-height:46px;
-border-radius:12px;
-background:#fff;
-color:var(--primary);
+width:58px;
+height:58px;
+border-radius:16px;
+background:linear-gradient(135deg,#ffffff,#dcecff);
 display:flex;
 align-items:center;
 justify-content:center;
-font-size:22px;
-font-weight:900;
-box-shadow:0 6px 18px rgba(0,0,0,.18);
+box-shadow:0 8px 24px rgba(0,0,0,.18);
 flex-shrink:0;
+overflow:hidden;
 }
 
 .brand-text h1{
@@ -108,26 +106,6 @@ transition:.15s ease;
 .nav-btn:hover,
 .nav-btn.active{
 background:rgba(255,255,255,.1);
-}
-
-.sidebar-card{
-margin-top:24px;
-background:rgba(255,255,255,.08);
-border:1px solid rgba(255,255,255,.1);
-border-radius:14px;
-padding:14px;
-}
-
-.sidebar-card h3{
-margin:0 0 8px;
-font-size:14px;
-}
-
-.sidebar-card p{
-margin:0;
-font-size:12px;
-line-height:1.5;
-color:rgba(255,255,255,.82);
 }
 
 .main{
@@ -418,7 +396,19 @@ padding:16px;
 <div class="app-shell">
 <aside class="sidebar">
 <div class="brand">
-<div class="logo">P</div>
+<div class="logo">
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<defs>
+<linearGradient id="ppGrad" x1="6" y1="6" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0066CC"/>
+<stop offset="1" stop-color="#1FA2FF"/>
+</linearGradient>
+</defs>
+<rect x="3" y="3" width="34" height="34" rx="11" fill="url(#ppGrad)"/>
+<path d="M12 27V13H20.2C23.6 13 25.8 15 25.8 18C25.8 21 23.6 23 20.2 23H15.6V27H12ZM15.6 20.1H19.7C21.2 20.1 22.2 19.3 22.2 18C22.2 16.7 21.2 15.9 19.7 15.9H15.6V20.1Z" fill="white"/>
+<path d="M22.8 27V13H26.1L30.1 19.1V13H33V27H29.8L25.7 20.8V27H22.8Z" fill="#DFF1FF"/>
+</svg>
+</div>
 <div class="brand-text">
 <h1>PayPilot AI</h1>
 <p>Enterprise supplier enrollment intelligence</p>
@@ -434,15 +424,9 @@ padding:16px;
 <div class="nav-group">
 <div class="nav-label">Actions</div>
 <button class="nav-btn" onclick="toggleTranslate()">Toggle Translation</button>
+<button class="nav-btn" onclick="startListening()">Start Mic</button>
+<button class="nav-btn" onclick="stopListening()">Stop Mic</button>
 <button class="nav-btn" onclick="logout()">Logout</button>
-</div>
-
-<div class="sidebar-card">
-<h3>Why this layout</h3>
-<p>
-Cleaner rep workflow, stronger enterprise feel, and better separation between
-live call actions and management reporting.
-</p>
 </div>
 </aside>
 
@@ -456,6 +440,9 @@ live call actions and management reporting.
 <div id="userDisplay" class="user-pill hidden"></div>
 <button class="btn btn-secondary" onclick="showRepView()">Rep View</button>
 <button class="btn btn-secondary" onclick="showManagerView()">Manager View</button>
+<button class="btn btn-secondary" onclick="toggleTranslate()">Translation</button>
+<button class="btn btn-primary" onclick="startListening()">🎤 Start Mic</button>
+<button class="btn btn-secondary" onclick="stopListening()">Stop Mic</button>
 <button class="btn btn-danger hidden" id="logoutBtn" onclick="logout()">Logout</button>
 </div>
 </div>
@@ -519,10 +506,10 @@ demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123
 <div class="card">
 <div class="card-header">
 <h3>Live Call Workspace</h3>
-<span class="subtle">Manual call assist</span>
+<span class="subtle">Manual + mic assist</span>
 </div>
 
-<div class="grid grid-3">
+<div class="grid grid-4">
 <div class="stat-card">
 <div class="stat-label">Detected Language</div>
 <div class="stat-value" style="font-size:18px;" id="languageDisplay">English</div>
@@ -535,16 +522,22 @@ demo@paypilot.ai / demo123 or manager@paypilot.ai / demo123
 <div class="stat-label">Strategy</div>
 <div class="stat-value" style="font-size:18px;" id="strategyTag">—</div>
 </div>
+<div class="stat-card">
+<div class="stat-label">Mic Status</div>
+<div class="stat-value" style="font-size:18px;" id="micStatus">Idle</div>
+</div>
 </div>
 
 <div style="margin-top:14px;">
 <label>Supplier Objection / What they said</label>
-<textarea id="objection" placeholder="Type what the supplier says..."></textarea>
+<textarea id="objection" placeholder="Type what the supplier says or use the mic..."></textarea>
 </div>
 
 <div class="toolbar">
 <button class="btn btn-primary" onclick="generateResponse()">Generate AI Response</button>
 <button class="btn btn-secondary" onclick="toggleTranslate()">Toggle Translation</button>
+<button class="btn btn-primary" onclick="startListening()">🎤 Start Mic</button>
+<button class="btn btn-secondary" onclick="stopListening()">Stop Mic</button>
 </div>
 
 <div id="translationBox" class="translation-box hidden" style="margin-top:14px;">
@@ -708,6 +701,7 @@ Always optimize for:
 `;
 
 let translateOn = false;
+let recognition = null;
 
 const suppliers = [
 {
@@ -804,7 +798,14 @@ document.getElementById("supplierInfo").innerHTML = `
 
 function detectLanguage(text){
 const t = text.toLowerCase();
-if(t.includes("hola") || t.includes("solo aceptamos") || t.includes("cheques") || t.includes("tarjeta")) return "Spanish";
+if(
+t.includes("hola") ||
+t.includes("solo aceptamos") ||
+t.includes("cheques") ||
+t.includes("tarjeta") ||
+t.includes("gracias") ||
+t.includes("no quiero pagar tarifas")
+) return "Spanish";
 return "English";
 }
 
@@ -830,14 +831,69 @@ english = text
 .replace(/hola/gi, "hello")
 .replace(/solo aceptamos cheques/gi, "we only accept checks")
 .replace(/no aceptamos tarjetas/gi, "we do not accept cards")
-.replace(/no quiero pagar tarifas/gi, "i do not want to pay fees");
+.replace(/no quiero pagar tarifas/gi, "i do not want to pay fees")
+.replace(/gracias/gi, "thank you");
+
 reply = "Entiendo. ACH le permite recibir pagos más rápido y evita retrasos de cheques.";
 } else {
 reply = "I understand. ACH helps you get paid faster and eliminates check delays.";
 }
 
-document.getElementById("translatedEnglish").textContent = english;
+document.getElementById("translatedEnglish").textContent = english || "—";
 document.getElementById("translatedReply").textContent = reply;
+}
+
+function startListening(){
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if(!SpeechRecognition){
+alert("Mic not supported on this device/browser");
+return;
+}
+
+if(recognition){
+recognition.stop();
+}
+
+recognition = new SpeechRecognition();
+recognition.continuous = true;
+recognition.interimResults = true;
+recognition.lang = "en-US";
+
+recognition.onstart = () => {
+document.getElementById("micStatus").textContent = "Listening";
+document.getElementById("liveCoaching").textContent = "🎤 Listening...";
+};
+
+recognition.onerror = () => {
+document.getElementById("micStatus").textContent = "Error";
+document.getElementById("liveCoaching").textContent = "Mic error";
+};
+
+recognition.onend = () => {
+document.getElementById("micStatus").textContent = "Idle";
+};
+
+recognition.onresult = (event) => {
+let transcript = "";
+
+for(let i = event.resultIndex; i < event.results.length; i++){
+transcript += event.results[i][0].transcript + " ";
+}
+
+transcript = transcript.trim();
+document.getElementById("objection").value = transcript;
+updateTranslation();
+};
+
+recognition.start();
+}
+
+function stopListening(){
+if(recognition){
+recognition.stop();
+}
+document.getElementById("micStatus").textContent = "Stopped";
 }
 
 function calcProbability(text){
@@ -1085,6 +1141,8 @@ generateExtras();
 </script>
 </body>
 </html>
+
+
 
 
 
