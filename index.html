@@ -2,1669 +2,1065 @@
 
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="email-protection" content="off">
 <title>PayPilot AI</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;background:#eef2ff;color:#0f172a}
 
-:root{
-–bg:#f1f4f9;
-–bg2:#e8ecf5;
-–white:#ffffff;
-–sidebar:#0f1c2e;
-–sidebar-hover:rgba(255,255,255,.08);
-–sidebar-active:rgba(59,130,246,.25);
-–blue:#2563eb;
-–blue-light:#eff6ff;
-–blue-mid:#3b82f6;
-–blue-dark:#1d4ed8;
-–gold:#f59e0b;
-–gold-light:#fffbeb;
-–green:#059669;
-–green-light:#ecfdf5;
-–red:#dc2626;
-–red-light:#fef2f2;
-–amber:#d97706;
-–cyan:#0891b2;
-–text:#0f172a;
-–text2:#374151;
-–text3:#6b7280;
-–text4:#9ca3af;
-–border:#d1d5db;
-–border2:#e5e7eb;
-–shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
-–shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
-–shadow-lg:0 10px 25px rgba(0,0,0,.1),0 4px 10px rgba(0,0,0,.06);
-–shadow-xl:0 25px 50px rgba(0,0,0,.12);
-–r:14px;
-–r-sm:10px;
+/* ── HIDDEN ── */
+.h{display:none!important}
+
+/* ── LOGIN ── */
+#LP{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.LP-L{
+background:linear-gradient(145deg,#1e40af,#2563eb);
+padding:60px 56px;
+display:flex;flex-direction:column;justify-content:center;
+position:relative;overflow:hidden;
 }
-
-body{
-font-family:‘Inter’,sans-serif;
-background:var(–bg);
-color:var(–text);
-min-height:100vh;
-font-size:15px;
-line-height:1.6;
--webkit-font-smoothing:antialiased;
+.LP-L::before{
+content:’’;position:absolute;inset:0;
+background:radial-gradient(ellipse 80% 60% at 20% 20%,rgba(255,255,255,.12),transparent 60%);
 }
-
-/* ═══════════ LOGIN PAGE ═══════════ */
-#loginPage{
-min-height:100vh;
-display:grid;
-grid-template-columns:1fr 1fr;
-}
-
-/* LEFT — bold blue brand panel */
-.lp-left{
-background:linear-gradient(145deg,#1e40af 0%,#2563eb 50%,#1d4ed8 100%);
-padding:60px 64px;
-display:flex;
-flex-direction:column;
-justify-content:center;
-position:relative;
-overflow:hidden;
-}
-
-.lp-left::before{
-content:’’;
-position:absolute;inset:0;
-background:
-radial-gradient(ellipse 80% 60% at 20% 20%,rgba(255,255,255,.12) 0%,transparent 60%),
-radial-gradient(ellipse 60% 50% at 80% 80%,rgba(0,0,0,.2) 0%,transparent 60%);
-pointer-events:none;
-}
-
-/* Decorative circles */
-.lp-left::after{
-content:’’;
-position:absolute;
-width:500px;height:500px;
-border-radius:50%;
+.LP-L::after{
+content:’’;position:absolute;
+width:500px;height:500px;border-radius:50%;
 border:1px solid rgba(255,255,255,.1);
 top:-150px;right:-150px;
-pointer-events:none;
 }
-
-.lp-deco-ring{
-position:absolute;
-width:300px;height:300px;
-border-radius:50%;
-border:1px solid rgba(255,255,255,.08);
+.LP-ring{
+position:absolute;width:300px;height:300px;border-radius:50%;
+border:1px solid rgba(255,255,255,.07);
 bottom:-80px;left:-80px;
 }
-
-.lp-logo{
+.LP-logo{display:flex;align-items:center;gap:14px;margin-bottom:52px;position:relative;z-index:1}
+.LP-icon{
+width:50px;height:50px;border-radius:14px;
+background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;
+}
+.LP-brand{font-size:21px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.LP-brand b{color:#bfdbfe}
+.LP-h{font-size:58px;font-weight:900;color:#fff;line-height:1;letter-spacing:-.04em;margin-bottom:18px;position:relative;z-index:1}
+.LP-h span{color:#bfdbfe;display:block}
+.LP-tag{font-family:‘Instrument Serif’,serif;font-size:19px;font-style:italic;color:rgba(219,234,254,.9);margin-bottom:44px;position:relative;z-index:1;max-width:380px;line-height:1.5}
+.LP-feats{display:flex;flex-direction:column;gap:12px;position:relative;z-index:1}
+.LP-feat{
 display:flex;align-items:center;gap:14px;
-margin-bottom:56px;
-position:relative;z-index:1;
+background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+border-radius:14px;padding:13px 16px;
 }
+.LP-feat-ico{font-size:20px;width:36px;text-align:center;flex-shrink:0}
+.LP-feat-txt{font-size:15px;font-weight:600;color:#fff}
+.LP-feat-sub{font-size:12px;color:rgba(191,219,254,.8);margin-top:1px}
 
-.lp-logo-icon{
-width:52px;height:52px;
-background:rgba(255,255,255,.15);
-backdrop-filter:blur(10px);
-border:1px solid rgba(255,255,255,.3);
-border-radius:14px;
-display:flex;align-items:center;justify-content:center;
-flex-shrink:0;
+.LP-R{background:#fff;padding:60px 64px;display:flex;flex-direction:column;justify-content:center}
+.LP-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#2563eb;margin-bottom:14px}
+.LP-title{font-size:40px;font-weight:900;color:#0f172a;letter-spacing:-.04em;line-height:1.1;margin-bottom:8px}
+.LP-sub{font-size:16px;color:#6b7280;margin-bottom:36px;line-height:1.5}
+.LP-label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.LP-input{
+width:100%;padding:15px 17px;font-size:16px;font-family:‘Inter’,sans-serif;
+border:2px solid #e5e7eb;border-radius:12px;outline:none;
+color:#0f172a;background:#f9fafb;transition:border-color .15s,box-shadow .15s;
+margin-bottom:18px;-webkit-appearance:none;appearance:none;
 }
-
-.lp-logo-svg{width:30px;height:30px;}
-
-.lp-logo-name{
-font-size:22px;font-weight:800;
-color:#ffffff;letter-spacing:-.02em;
-}
-
-.lp-logo-name span{color:rgba(186,230,253,1);}
-
-.lp-headline{
-font-size:60px;font-weight:900;
-color:#ffffff;
-line-height:1.0;
-letter-spacing:-.04em;
-margin-bottom:22px;
-position:relative;z-index:1;
-}
-
-.lp-headline span{
-color:#bfdbfe;
-display:block;
-}
-
-.lp-tagline{
-font-family:‘Instrument Serif’,serif;
-font-size:20px;font-style:italic;
-color:rgba(219,234,254,.9);
-margin-bottom:48px;
-position:relative;z-index:1;
-line-height:1.55;
-max-width:400px;
-}
-
-.lp-features{
-display:flex;flex-direction:column;gap:14px;
-position:relative;z-index:1;
-}
-
-.lp-feat{
-display:flex;align-items:center;gap:14px;
-background:rgba(255,255,255,.1);
-border:1px solid rgba(255,255,255,.18);
-border-radius:12px;
-padding:14px 18px;
-backdrop-filter:blur(8px);
-}
-
-.lp-feat-icon{
-font-size:22px;flex-shrink:0;
-width:40px;text-align:center;
-}
-
-.lp-feat-text{
-font-size:16px;font-weight:600;
-color:#ffffff;
-}
-
-.lp-feat-sub{
-font-size:13px;color:rgba(191,219,254,.8);
-margin-top:1px;
-}
-
-/* RIGHT — clean white form panel */
-.lp-right{
-background:#ffffff;
-padding:60px 72px;
-display:flex;
-flex-direction:column;
-justify-content:center;
-}
-
-.lp-form-eyebrow{
-font-size:12px;font-weight:700;
-letter-spacing:.12em;text-transform:uppercase;
-color:var(–blue);margin-bottom:16px;
-}
-
-.lp-form-title{
-font-size:42px;font-weight:900;
-color:#0f172a;letter-spacing:-.04em;
-line-height:1.1;margin-bottom:10px;
-}
-
-.lp-form-sub{
-font-size:17px;color:#6b7280;
-margin-bottom:40px;line-height:1.5;
-}
-
-.lp-field-label{
-display:block;
-font-size:14px;font-weight:700;
-color:#374151;margin-bottom:8px;
-letter-spacing:.01em;
-}
-
-.lp-input{
-width:100%;
-padding:16px 18px;
-font-size:17px;font-family:‘Inter’,sans-serif;
-border:2px solid #e5e7eb;
-border-radius:12px;
-outline:none;
-color:#0f172a;
-background:#f9fafb;
-transition:all .18s;
-margin-bottom:20px;
-}
-
-.lp-input:focus{
-border-color:var(–blue);
-background:#fff;
-box-shadow:0 0 0 4px rgba(37,99,235,.1);
-}
-
-.lp-input::placeholder{color:#9ca3af;}
-
-.lp-btn{
-width:100%;
-padding:18px;
-font-size:18px;font-weight:800;
-font-family:‘Inter’,sans-serif;
-border:none;border-radius:12px;
-background:linear-gradient(135deg,#1d4ed8,#3b82f6);
-color:#fff;cursor:pointer;
-box-shadow:0 4px 20px rgba(37,99,235,.4);
-transition:all .18s;
-letter-spacing:-.01em;
+.LP-input:focus{border-color:#2563eb;background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.1)}
+.LP-btn{
+width:100%;padding:17px;font-size:17px;font-weight:800;font-family:‘Inter’,sans-serif;
+border:none;border-radius:12px;cursor:pointer;
+background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;
+box-shadow:0 4px 18px rgba(37,99,235,.4);transition:transform .15s,box-shadow .15s;
 display:flex;align-items:center;justify-content:center;gap:10px;
 }
+.LP-btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(37,99,235,.5)}
+.LP-hint{text-align:center;font-size:13px;color:#9ca3af;margin-top:16px;font-weight:500}
+.LP-hint b{color:#2563eb}
+.LP-err{color:#dc2626;font-size:13px;text-align:center;margin-top:10px;min-height:18px}
 
-.lp-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(37,99,235,.5);}
-.lp-btn:active{transform:translateY(0);}
+/* ── APP ── */
+#APP{display:grid;grid-template-columns:258px 1fr;min-height:100vh}
 
-.lp-hint{
-text-align:center;
-font-size:14px;color:#9ca3af;
-margin-top:18px;font-weight:500;
-}
-
-.lp-hint strong{color:var(–blue);}
-
-/* ═══════════ APP LAYOUT ═══════════ */
-.app{
-display:grid;
-grid-template-columns:260px 1fr;
-min-height:100vh;
-}
-
-/* ═══════════ SIDEBAR ═══════════ */
-.sidebar{
-background:var(–sidebar);
+/* SIDEBAR */
+.SB{
+background:linear-gradient(180deg,#0d1a2d,#0a1520);
 display:flex;flex-direction:column;
-position:sticky;top:0;height:100vh;
-overflow-y:auto;
+position:sticky;top:0;height:100vh;overflow-y:auto;
 }
-
-.sb-top{
-padding:24px 20px 20px;
-border-bottom:1px solid rgba(255,255,255,.08);
-}
-
-.sb-logo{
-display:flex;align-items:center;gap:12px;
-margin-bottom:0;
-}
-
-.sb-logo-icon{
-width:40px;height:40px;
-background:var(–blue);
-border-radius:10px;
+.SB-top{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.SB-logo{display:flex;align-items:center;gap:11px}
+.SB-ico{
+width:38px;height:38px;border-radius:11px;flex-shrink:0;
+background:linear-gradient(135deg,#1d4ed8,#3b82f6);
 display:flex;align-items:center;justify-content:center;
-box-shadow:0 4px 14px rgba(37,99,235,.5);
-flex-shrink:0;
+box-shadow:0 4px 12px rgba(37,99,235,.5);font-size:17px;
 }
-
-.sb-wordmark{
-font-size:18px;font-weight:800;
-letter-spacing:-.02em;color:#fff;
-line-height:1;
-}
-
-.sb-wordmark span{color:#93c5fd;}
-
-.sb-tagline{
-font-size:10px;font-weight:500;
-letter-spacing:.12em;text-transform:uppercase;
-color:rgba(255,255,255,.35);
-margin-top:4px;
-}
-
-.sb-section{
-padding:20px 20px 6px;
-font-size:10px;font-weight:700;
-letter-spacing:.1em;text-transform:uppercase;
-color:rgba(255,255,255,.3);
-}
-
-.navbtn{
-display:flex;align-items:center;gap:11px;
-width:calc(100% - 24px);
-margin:2px 12px;
-padding:12px 14px;
-border:none;border-radius:10px;
-background:transparent;
-color:rgba(255,255,255,.6);
-text-align:left;cursor:pointer;
-font-family:‘Inter’,sans-serif;
-font-size:15px;font-weight:600;
-transition:all .15s;
-}
-
-.navbtn:hover{
-background:var(–sidebar-hover);
-color:rgba(255,255,255,.95);
-}
-
-.navbtn.active{
-background:var(–sidebar-active);
-color:#93c5fd;
-border:1px solid rgba(59,130,246,.3);
-}
-
-.nav-ic{font-size:17px;width:22px;text-align:center;flex-shrink:0;}
-
-.sb-footer{
-margin-top:auto;
-padding:16px 12px;
-border-top:1px solid rgba(255,255,255,.08);
-}
-
-/* ═══════════ TOPBAR ═══════════ */
-.main{min-width:0;display:flex;flex-direction:column;}
-
-.topbar{
-position:sticky;top:0;z-index:20;
-height:66px;
-background:rgba(255,255,255,.95);
-backdrop-filter:blur(20px);
-border-bottom:1px solid var(–border2);
-display:flex;align-items:center;
-padding:0 32px;gap:16px;
-box-shadow:0 1px 0 rgba(0,0,0,.06);
-}
-
-.tb-logo{
+.SB-name{font-size:17px;font-weight:800;letter-spacing:-.02em;color:#fff;line-height:1}
+.SB-name b{color:#93c5fd}
+.SB-tag{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:4px}
+.SB-sec{padding:18px 20px 5px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.28)}
+.NB{
 display:flex;align-items:center;gap:10px;
+width:calc(100% - 22px);margin:2px 11px;
+padding:11px 13px;border:1px solid transparent;border-radius:11px;
+background:transparent;color:rgba(255,255,255,.55);
+text-align:left;cursor:pointer;font-family:‘Inter’,sans-serif;
+font-size:14.5px;font-weight:600;transition:all .15s;
 }
+.NB:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9)}
+.NB.on{background:rgba(59,130,246,.18);color:#93c5fd;border-color:rgba(59,130,246,.3)}
+.NB-ic{font-size:15px;width:20px;text-align:center;flex-shrink:0;opacity:.8}
+.SB-foot{margin-top:auto;padding:14px 11px;border-top:1px solid rgba(255,255,255,.07)}
 
-.tb-logo-icon{
-width:32px;height:32px;
-background:var(–blue);
-border-radius:8px;
-display:flex;align-items:center;justify-content:center;
+/* TOPBAR */
+.main{min-width:0;display:flex;flex-direction:column}
+.TB{
+position:sticky;top:0;z-index:20;height:64px;
+background:rgba(255,255,255,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+border-bottom:1px solid #e8edf5;
+display:flex;align-items:center;padding:0 30px;gap:15px;
+box-shadow:0 2px 12px rgba(37,99,235,.06);
+}
+.TB-logo{display:flex;align-items:center;gap:9px}
+.TB-ico{
+width:30px;height:30px;border-radius:8px;
+background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+display:flex;align-items:center;justify-content:center;font-size:14px;
 box-shadow:0 2px 8px rgba(37,99,235,.4);
 }
-
-.tb-title{
-font-size:18px;font-weight:800;
-letter-spacing:-.02em;color:#0f172a;
-}
-
-.tb-title span{color:var(–blue);}
-
-.tb-sep{width:1px;height:22px;background:#e5e7eb;margin:0 4px;}
-
-.tb-sub{
-font-size:13px;font-weight:600;
-color:#6b7280;letter-spacing:.01em;
-}
-
-.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
-
-.live-badge{
+.TB-name{font-size:17px;font-weight:800;letter-spacing:-.02em;color:#0f172a}
+.TB-name b{color:#2563eb}
+.TB-sep{width:1px;height:20px;background:#e5e7eb}
+.TB-sub{font-size:12px;font-weight:600;color:#6b7280;letter-spacing:.01em}
+.TB-R{margin-left:auto;display:flex;align-items:center;gap:10px}
+.LIVE{
 display:flex;align-items:center;gap:7px;
-background:var(–green-light);
-border:1.5px solid #6ee7b7;
-border-radius:8px;
-padding:7px 14px;
-font-size:12px;font-weight:700;
-letter-spacing:.05em;text-transform:uppercase;
-color:var(–green);
+background:#ecfdf5;border:1.5px solid #6ee7b7;border-radius:50px;
+padding:6px 14px;font-size:11px;font-weight:700;
+letter-spacing:.06em;text-transform:uppercase;color:#059669;
 }
+.LIVE-dot{width:6px;height:6px;border-radius:50%;background:#059669;-webkit-animation:pulse 2s ease-in-out infinite;animation:pulse 2s ease-in-out infinite}
+@-webkit-keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.CHIP{font-size:12px;font-weight:600;color:#374151;background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:50px;padding:6px 14px}
 
-.live-dot{
-width:7px;height:7px;border-radius:50%;
-background:var(–green);
-animation:pulse 2s ease-in-out infinite;
+/* PAGE */
+.PG{padding:26px 30px;max-width:1560px;margin:0 auto;width:100%}
+
+/* STATS */
+.STATS{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.SC{
+background:#fff;border:1.5px solid #e8edf5;border-radius:20px;
+padding:22px 24px;position:relative;overflow:hidden;
+box-shadow:0 2px 8px rgba(37,99,235,.05);transition:transform .2s,box-shadow .2s;cursor:default;
 }
+.SC:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,.1)}
+.SC-bar{position:absolute;top:0;left:0;right:0;height:4px;border-radius:20px 20px 0 0}
+.SC-lbl{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8897b5;margin-bottom:10px}
+.SC-val{font-family:‘Instrument Serif’,serif;font-size:52px;font-weight:400;line-height:1;letter-spacing:-.03em;color:#0f172a}
+.SC-val.sm{font-family:‘Inter’,sans-serif;font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:6px}
 
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(5,150,105,.4)}50%{opacity:.7;box-shadow:0 0 0 5px rgba(5,150,105,0)}}
+/* LAYOUT */
+.SPLIT{display:grid;grid-template-columns:1fr 1.5fr;gap:18px}
+.THIRDS{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.HALVES{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.STACK{display:flex;flex-direction:column;gap:14px}
 
-#userChip{
-font-size:13px;font-weight:600;color:#374151;
-background:#f3f4f6;border:1.5px solid #e5e7eb;
-border-radius:8px;padding:7px 14px;
-}
-
-/* ═══════════ PAGE ═══════════ */
-.page{
-padding:28px 32px;
-max-width:1600px;margin:0 auto;width:100%;
-}
-
-/* ═══════════ STAT STRIP ═══════════ */
-.stat-strip{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:16px;
-margin-bottom:24px;
-}
-
-.stat-card{
-background:#fff;
-border:1.5px solid var(–border2);
-border-radius:var(–r);
-padding:24px 26px;
-position:relative;overflow:hidden;
-box-shadow:var(–shadow);
-transition:transform .2s,box-shadow .2s;
-cursor:default;
-}
-
-.stat-card:hover{
-transform:translateY(-3px);
-box-shadow:var(–shadow-lg);
-}
-
-.stat-accent{
-position:absolute;
-top:0;left:0;right:0;height:4px;
-border-radius:var(–r) var(–r) 0 0;
-}
-
-.sa-blue{background:linear-gradient(90deg,#1d4ed8,#60a5fa);}
-.sa-green{background:linear-gradient(90deg,#047857,#34d399);}
-.sa-gold{background:linear-gradient(90deg,#b45309,#fbbf24);}
-.sa-cyan{background:linear-gradient(90deg,#0e7490,#22d3ee);}
-
-.stat-label{
-font-size:12px;font-weight:700;
-letter-spacing:.08em;text-transform:uppercase;
-color:var(–text3);margin-bottom:10px;
-}
-
-.stat-val{
-font-family:‘Instrument Serif’,serif;
-font-size:52px;font-weight:400;
-line-height:1;letter-spacing:-.03em;
-color:#0f172a;
-}
-
-.stat-val.sm{
-font-family:‘Inter’,sans-serif;
-font-size:24px;font-weight:800;
-letter-spacing:-.02em;
-margin-top:6px;
-}
-
-/* ═══════════ LAYOUT ═══════════ */
-.split{display:grid;grid-template-columns:1fr 1.5fr;gap:20px;}
-.thirds{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
-.halves{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-.stack{display:flex;flex-direction:column;gap:16px;}
-
-/* ═══════════ CARDS ═══════════ */
-.card{
-background:#fff;
-border:1.5px solid var(–border2);
-border-radius:var(–r);
-overflow:hidden;
-box-shadow:var(–shadow);
-}
-
-.card-head{
-padding:16px 22px;
-border-bottom:1.5px solid var(–border2);
+/* CARDS */
+.CD{background:#fff;border:1.5px solid #e8edf5;border-radius:20px;overflow:hidden;box-shadow:0 2px 8px rgba(37,99,235,.04);transition:box-shadow .2s}
+.CD:hover{box-shadow:0 6px 20px rgba(37,99,235,.08)}
+.CD-head{
+padding:15px 22px;border-bottom:1.5px solid #f0f3f9;
 display:flex;align-items:center;gap:10px;
-background:#fafafa;
+background:linear-gradient(to bottom,#fafbff,#f5f7fc);
 }
-
-.card-pip{
-width:4px;height:18px;
-border-radius:3px;flex-shrink:0;
+.CD-pip{width:4px;height:17px;border-radius:3px;flex-shrink:0}
+.CD-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#374151}
+.CD-badge{
+margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:50px;padding:3px 11px;
 }
+.CD-body{padding:22px}
 
-.cp-blue{background:var(–blue);}
-.cp-green{background:var(–green);}
-.cp-gold{background:var(–gold);}
-.cp-cyan{background:var(–cyan);}
-.cp-amber{background:var(–amber);}
-.cp-gray{background:#9ca3af;}
-
-.card-title{
-font-size:12px;font-weight:800;
-letter-spacing:.1em;text-transform:uppercase;
-color:#374151;
-}
-
-.card-badge{
-margin-left:auto;
-font-size:10px;font-weight:700;
-letter-spacing:.08em;text-transform:uppercase;
-color:var(–blue);
-background:var(–blue-light);
-border:1px solid #bfdbfe;
-border-radius:6px;padding:3px 9px;
-}
-
-.card-body{padding:22px;}
-
-/* ═══════════ FORMS ═══════════ */
-.field{margin-bottom:16px;}
-
-.field-label{
-display:block;
-font-size:12px;font-weight:700;
-letter-spacing:.06em;text-transform:uppercase;
-color:#374151;margin-bottom:7px;
-}
-
+/* FORMS */
+.FLD{margin-bottom:15px}
+.FL{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4b5e7e;margin-bottom:7px}
 input,textarea,select{
-width:100%;
-padding:12px 14px;
-font-size:15px;font-family:‘Inter’,sans-serif;font-weight:500;
-border:2px solid #e5e7eb;
-border-radius:var(–r-sm);
-outline:none;
-background:#fff;
-color:#0f172a;
-transition:all .15s;
-appearance:none;
+width:100%;padding:11px 13px;font-size:14.5px;font-family:‘Inter’,sans-serif;font-weight:500;
+border:2px solid #e5e7eb;border-radius:11px;outline:none;
+background:#f8fafc;color:#0f172a;transition:border-color .15s,box-shadow .15s;
+-webkit-appearance:none;appearance:none;
 }
-
-input::placeholder,textarea::placeholder{color:#9ca3af;font-weight:400;}
-
-input:focus,textarea:focus,select:focus{
-border-color:var(–blue);
-box-shadow:0 0 0 4px rgba(37,99,235,.1);
-background:#fff;
-}
-
-textarea{min-height:120px;resize:vertical;line-height:1.65;font-size:15px;}
-
+input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:#9ca3af;font-weight:400}
+input:focus,textarea:focus,select:focus{border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.1);background:#fff}
+textarea{min-height:115px;resize:vertical;line-height:1.65}
 select{
 background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ fill=‘none’ viewBox=‘0 0 20 20’%3E%3Cpath stroke=’%236b7280’ stroke-width=‘1.5’ d=‘M6 8l4 4 4-4’/%3E%3C/svg%3E”);
-background-repeat:no-repeat;background-position:right 12px center;background-size:18px;
-padding-right:38px;cursor:pointer;
+background-repeat:no-repeat;background-position:right 11px center;background-size:17px;padding-right:36px;cursor:pointer;
 }
+select option{background:#fff;color:#0f172a}
 
-select option{background:#fff;color:#0f172a;}
-
-/* ═══════════ BUTTONS ═══════════ */
-.btn{
-border:none;cursor:pointer;
-font-family:‘Inter’,sans-serif;
-font-weight:700;font-size:14px;
-display:inline-flex;align-items:center;gap:8px;
-padding:11px 20px;border-radius:var(–r-sm);
-transition:all .15s;
+/* BUTTONS */
+.BT{
+border:none;cursor:pointer;font-family:‘Inter’,sans-serif;
+font-weight:700;font-size:13.5px;
+display:inline-flex;align-items:center;gap:7px;
+padding:11px 20px;border-radius:50px;transition:all .15s;
 }
-
-.btn-blue{
-background:linear-gradient(135deg,#1d4ed8,#3b82f6);
-color:#fff;
-box-shadow:0 2px 10px rgba(37,99,235,.35);
-}
-.btn-blue:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(37,99,235,.45);}
-
-.btn-green{
-background:linear-gradient(135deg,#047857,#10b981);
-color:#fff;font-size:15px;font-weight:800;
-box-shadow:0 2px 10px rgba(5,150,105,.3);
-}
-.btn-green:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(5,150,105,.4);}
-
-.btn-gold{
-background:linear-gradient(135deg,#b45309,#f59e0b);
-color:#fff;font-size:15px;font-weight:800;
-box-shadow:0 2px 10px rgba(245,158,11,.3);
-}
-.btn-gold:hover{transform:translateY(-1px);}
-
-.btn-outline{
-background:#fff;color:#374151;
-border:2px solid #e5e7eb;
-}
-.btn-outline:hover{background:#f9fafb;border-color:#d1d5db;}
-
-.btn-cyan{
-background:#eff6ff;color:var(–cyan);
-border:1.5px solid #bae6fd;font-weight:700;
-}
-.btn-cyan:hover{background:#dbeafe;border-color:#93c5fd;}
-.btn-cyan.recording{
-background:#fef2f2;color:var(–red);
-border-color:#fca5a5;
-animation:recpulse 1.4s ease-in-out infinite;
-}
+.BT-blue{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;box-shadow:0 2px 10px rgba(37,99,235,.32)}
+.BT-blue:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,99,235,.44)}
+.BT-green{background:linear-gradient(135deg,#047857,#10b981);color:#fff;font-weight:800;font-size:14px;box-shadow:0 2px 10px rgba(5,150,105,.28)}
+.BT-green:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(5,150,105,.4)}
+.BT-gold{background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;font-weight:800;font-size:14px;box-shadow:0 2px 10px rgba(245,158,11,.28)}
+.BT-gold:hover{transform:translateY(-1px)}
+.BT-out{background:#fff;color:#374151;border:2px solid #e5e7eb}
+.BT-out:hover{background:#f9fafb;border-color:#d1d5db}
+.BT-cyan{background:#ecfeff;color:#0891b2;border:1.5px solid #a5f3fc;font-size:13.5px}
+.BT-cyan:hover{background:#cffafe}
+.BT-cyan.rec{background:#fef2f2;color:#dc2626;border-color:#fca5a5;-webkit-animation:recpulse 1.5s infinite;animation:recpulse 1.5s infinite}
+@-webkit-keyframes recpulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.3)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
 @keyframes recpulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.3)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
+.TBAR{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+/* SEARCH */
+.SR-list{border:2px solid #e5e7eb;border-top:none;border-radius:0 0 14px 14px;background:#fff;max-height:210px;overflow-y:auto;box-shadow:0 8px 20px rgba(0,0,0,.09)}
+.SR-item{padding:11px 15px;border-bottom:1px solid #f3f4f6;cursor:pointer;transition:background .1s}
+.SR-item:last-child{border-bottom:none}
+.SR-item:hover,.SR-item.on{background:#eff6ff}
+.SR-name{font-size:14px;font-weight:700;color:#0f172a}
+.SR-meta{font-size:11.5px;color:#6b7280;margin-top:2px}
 
-/* ═══════════ SEARCH DROPDOWN ═══════════ */
-.search-results{
-border:2px solid #e5e7eb;border-top:none;
-border-radius:0 0 10px 10px;
-background:#fff;
-max-height:220px;overflow-y:auto;
-box-shadow:0 8px 24px rgba(0,0,0,.1);
+/* SUPPLIER TABLE */
+.ST{width:100%;border-collapse:collapse}
+.ST tr{border-bottom:1px solid #f3f4f6}
+.ST tr:last-child{border-bottom:none}
+.ST td{padding:9px 0;font-size:14.5px;vertical-align:top}
+.ST td:first-child{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#6b7280;width:105px;padding-right:10px;padding-top:11px}
+.ST td:last-child{color:#0f172a;font-weight:600}
+.SCORES{display:flex;gap:10px;margin-top:15px}
+.SC2{flex:1;padding:13px;border-radius:14px;border:2px solid;text-align:center;position:relative;overflow:hidden}
+.SC2::before{content:’’;position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.8),transparent)}
+.SC2-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+.SC2-val{font-family:‘Instrument Serif’,serif;font-size:30px;font-weight:400;display:block}
+.SC2-b{background:#eff6ff;border-color:#bfdbfe}.SC2-b .SC2-lbl{color:#1d4ed8}.SC2-b .SC2-val{color:#1d4ed8}
+.SC2-c{background:#ecfeff;border-color:#a5f3fc}.SC2-c .SC2-lbl{color:#0891b2}.SC2-c .SC2-val{color:#0891b2}
+
+/* METRICS */
+.MR{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
+.MC{background:#f8fafc;border:1.5px solid #e8edf5;border-radius:13px;padding:11px 14px;text-align:center}
+.ML{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-bottom:5px}
+.MV{font-size:14.5px;font-weight:700;color:#0f172a;letter-spacing:-.01em}
+
+/* AI RESPONSE */
+.AI{
+background:linear-gradient(145deg,#1e40af,#2563eb,#1d4ed8);
+padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
 }
+.AI::before{content:’’;position:absolute;inset:0;background:radial-gradient(ellipse 100% 80% at 30% 30%,rgba(255,255,255,.13),transparent 60%);pointer-events:none}
+.AI::after{content:’’;position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#60a5fa,#a5f3fc,#60a5fa);pointer-events:none}
+.AI-dots{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);background-size:27px 27px;pointer-events:none}
+.AI-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;position:relative;z-index:1}
+.AI-pill{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:50px;padding:7px 16px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff}
+.AI-dot{width:7px;height:7px;border-radius:50%;background:#a5f3fc;box-shadow:0 0 8px #a5f3fc;-webkit-animation:pulse 2s ease-in-out infinite;animation:pulse 2s ease-in-out infinite}
+.AI-tag{font-size:10.5px;font-weight:600;letter-spacing:.08em;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 11px}
+.AI-txt{position:relative;z-index:1;font-family:‘Instrument Serif’,serif;font-size:27px;font-weight:400;font-style:italic;line-height:1.55;color:#fff;letter-spacing:-.01em;min-height:82px;text-shadow:0 2px 20px rgba(0,0,80,.3)}
+.AI-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.18);position:relative;z-index:1}
+.AI-chip{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.26);border-radius:50px;padding:7px 14px;font-size:11.5px;font-weight:600;color:rgba(255,255,255,.92);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.AI-chip b{color:#a5f3fc;font-weight:800}
 
-.search-item{
-padding:12px 16px;
-border-bottom:1px solid #f3f4f6;
-cursor:pointer;transition:background .1s;
-}
-.search-item:last-child{border-bottom:none;}
-.search-item:hover,.search-item.active{background:var(–blue-light);}
-.si-name{font-size:14px;font-weight:700;color:#0f172a;}
-.si-meta{font-size:12px;color:#6b7280;margin-top:2px;}
+/* INFO */
+.INFO{font-size:15px;line-height:1.72;color:#374151;font-weight:500}
 
-/* ═══════════ SUPPLIER TABLE ═══════════ */
-.sup-table{width:100%;border-collapse:collapse;}
-.sup-table tr{border-bottom:1px solid #f3f4f6;}
-.sup-table tr:last-child{border-bottom:none;}
-.sup-table td{padding:10px 0;font-size:15px;vertical-align:top;}
-.sup-table td:first-child{
-font-size:11px;font-weight:700;
-letter-spacing:.07em;text-transform:uppercase;
-color:#6b7280;width:110px;padding-right:12px;padding-top:12px;
-}
-.sup-table td:last-child{color:#0f172a;font-weight:600;}
+/* TRANS */
+.TR-panel{background:linear-gradient(135deg,#ecfeff,#eff6ff);border:2px solid #a5f3fc;border-radius:18px;padding:17px 20px;margin-top:14px}
+.TR-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.TR-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0891b2}
+.TR-es-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;font-family:‘Inter’,sans-serif;background:#fef3c7;color:#b45309;border:1.5px solid #fcd34d;border-radius:50px;padding:5px 12px;cursor:pointer;transition:background .15s}
+.TR-es-btn:hover{background:#fde68a}
+.TR-block{background:#fff;border:1.5px solid #cffafe;border-radius:13px;padding:13px 15px;margin-bottom:9px}
+.TR-block.reply{background:linear-gradient(135deg,#eff6ff,#f0fdf4);border-color:#bfdbfe}
+.TR-block:last-of-type{margin-bottom:0}
+.TR-blbl{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:7px}
+.LB{display:inline-block;padding:2px 8px;border-radius:50px;font-size:10px;font-weight:800}
+.LB-es{background:#fee2e2;color:#dc2626}
+.LB-en{background:#dbeafe;color:#1d4ed8}
+.TR-txt{font-size:15.5px;font-weight:600;color:#0f172a;line-height:1.6;margin-bottom:9px;min-height:22px}
+.TR-txt.blue{color:#1d4ed8}
+.SPK{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;font-family:‘Inter’,sans-serif;background:#f0f9ff;color:#0891b2;border:1.5px solid #bae6fd;border-radius:50px;padding:7px 13px;cursor:pointer;transition:all .15s;margin-right:6px;margin-top:2px}
+.SPK:hover{background:#e0f2fe;transform:translateY(-1px)}
+.SPK-pri{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(37,99,235,.3);font-size:13px;padding:9px 16px}
+.SPK-pri:hover{box-shadow:0 4px 16px rgba(37,99,235,.42);transform:translateY(-1px)}
+.TR-status{font-size:12px;font-weight:600;color:#6b7280;text-align:center;margin-top:7px;min-height:16px}
 
-.score-row{display:flex;gap:12px;margin-top:16px;}
-.score-chip{
-flex:1;padding:14px;border-radius:12px;text-align:center;
-border:2px solid;position:relative;overflow:hidden;
-}
-.score-chip::before{
-content:’’;position:absolute;inset:0;
-background:linear-gradient(135deg,rgba(255,255,255,.8),transparent);
-}
-.sc-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:5px;}
-.sc-val{font-family:‘Instrument Serif’,serif;font-size:32px;font-weight:400;display:block;}
-.chip-blue{background:#eff6ff;border-color:#bfdbfe;}
-.chip-blue .sc-label{color:var(–blue-dark);}
-.chip-blue .sc-val{color:var(–blue-dark);}
-.chip-cyan{background:#ecfeff;border-color:#a5f3fc;}
-.chip-cyan .sc-label{color:var(–cyan);}
-.chip-cyan .sc-val{color:var(–cyan);}
+/* HISTORY */
+.HE{padding:13px 0;border-bottom:1.5px solid #f3f4f6}
+.HE:last-child{border-bottom:none}
+.HE-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.HE-name{font-size:15.5px;font-weight:700;color:#0f172a}
+.HE-date{font-size:11px;color:#9ca3af;margin-top:3px;font-weight:500}
+.HE-obj{font-size:13.5px;color:#6b7280;margin-top:4px;font-style:italic}
+.TAG{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 11px;border-radius:50px;border:1.5px solid;white-space:nowrap;flex-shrink:0}
+.T-ok{background:#ecfdf5;color:#059669;border-color:#6ee7b7}
+.T-no{background:#fef2f2;color:#dc2626;border-color:#fca5a5}
+.T-pd{background:#f9fafb;color:#6b7280;border-color:#e5e7eb}
+.T-fu{background:#fffbeb;color:#d97706;border-color:#fcd34d}
 
-/* ═══════════ METRIC CELLS ═══════════ */
-.metric-row{
-display:grid;grid-template-columns:repeat(4,1fr);
-gap:10px;margin-bottom:20px;
-}
-.metric-cell{
-background:#f8fafc;border:1.5px solid #e5e7eb;
-border-radius:10px;padding:12px 14px;text-align:center;
-}
-.metric-label{
-font-size:10px;font-weight:700;letter-spacing:.1em;
-text-transform:uppercase;color:#9ca3af;margin-bottom:5px;
-}
-.metric-val{font-size:15px;font-weight:800;color:#0f172a;letter-spacing:-.01em;}
+/* OBJ BARS */
+.OBJ{display:flex;align-items:center;gap:13px;margin-bottom:13px}
+.OBJ:last-child{margin-bottom:0}
+.OBJ-lbl{font-size:14px;font-weight:600;color:#374151;width:135px;flex-shrink:0}
+.OBJ-trk{flex:1;height:9px;background:#e8edf5;border-radius:50px;overflow:hidden}
+.OBJ-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,#1d4ed8,#60a5fa);box-shadow:0 2px 6px rgba(37,99,235,.28);transition:width .7s cubic-bezier(.4,0,.2,1)}
+.OBJ-cnt{font-size:13px;font-weight:700;color:#374151;width:20px;text-align:right}
 
-/* ═══════════ AI RESPONSE HERO ═══════════ */
-.ai-zone{
-background:linear-gradient(150deg,#1e40af 0%,#2563eb 50%,#1d4ed8 100%);
-padding:28px 32px;
-position:relative;overflow:hidden;
-border-top:none;
-}
-
-.ai-zone::before{
-content:’’;position:absolute;inset:0;
-background:
-radial-gradient(ellipse 100% 80% at 30% 30%,rgba(255,255,255,.12) 0%,transparent 60%),
-radial-gradient(ellipse 60% 50% at 80% 80%,rgba(0,0,0,.15) 0%,transparent 60%);
-pointer-events:none;
-}
-
-.ai-zone::after{
-content:’’;position:absolute;top:0;left:0;right:0;height:3px;
-background:linear-gradient(90deg,#60a5fa,#a5f3fc,#60a5fa);
-pointer-events:none;
-}
-
-.ai-dots{
-position:absolute;inset:0;
-background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);
-background-size:28px 28px;
-pointer-events:none;
-}
-
-.ai-header{
-display:flex;align-items:center;justify-content:space-between;
-margin-bottom:20px;position:relative;z-index:1;
-}
-
-.ai-pill{
-display:flex;align-items:center;gap:8px;
-background:rgba(255,255,255,.18);
-border:1.5px solid rgba(255,255,255,.35);
-border-radius:20px;padding:7px 16px;
-font-size:11px;font-weight:700;
-letter-spacing:.1em;text-transform:uppercase;
-color:#ffffff;
-}
-
-.ai-pill-dot{
-width:7px;height:7px;border-radius:50%;
-background:#a5f3fc;
-box-shadow:0 0 8px #a5f3fc;
-animation:pulse 2s ease-in-out infinite;
-}
-
-.ai-tag{
-font-size:11px;font-weight:600;letter-spacing:.08em;
-color:rgba(255,255,255,.6);
-background:rgba(255,255,255,.1);
-border:1px solid rgba(255,255,255,.2);
-border-radius:6px;padding:4px 12px;
-}
-
-/* BIG BOLD RESPONSE TEXT */
-.ai-response{
-font-family:‘Instrument Serif’,serif;
-font-size:28px;font-weight:400;font-style:italic;
-line-height:1.55;color:#ffffff;
-letter-spacing:-.01em;min-height:80px;
-position:relative;z-index:1;
-text-shadow:0 2px 20px rgba(0,0,80,.3);
-}
-
-.ai-cursor{
-display:inline-block;width:2px;height:26px;
-background:#a5f3fc;
-box-shadow:0 0 10px #a5f3fc;
-border-radius:1px;
-animation:blink .7s step-end infinite;
-vertical-align:middle;margin-left:4px;
-}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-
-.ai-chips{
-display:flex;flex-wrap:wrap;gap:8px;
-margin-top:20px;padding-top:18px;
-border-top:1px solid rgba(255,255,255,.18);
-position:relative;z-index:1;
-}
-
-.ai-chip{
-background:rgba(255,255,255,.15);
-border:1.5px solid rgba(255,255,255,.28);
-border-radius:8px;padding:8px 14px;
-font-size:12px;font-weight:600;
-color:rgba(255,255,255,.95);
-display:flex;align-items:center;gap:6px;white-space:nowrap;
-}
-
-.ai-chip .cv{color:#a5f3fc;font-weight:800;}
-
-/* ═══════════ INFO TEXT ═══════════ */
-.info-text{font-size:15px;line-height:1.7;color:#374151;font-weight:500;}
-
-/* ═══════════ TRANSLATION ═══════════ */
-.trans-panel{
-background:#ecfeff;border:2px solid #a5f3fc;
-border-radius:12px;padding:16px 20px;margin-top:14px;
-}
-.trans-head{
-font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-color:var(–cyan);margin-bottom:12px;
-}
-.trans-line{display:flex;gap:12px;font-size:15px;margin-bottom:9px;}
-.trans-line:last-child{margin-bottom:0;}
-.t-k{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(–cyan);white-space:nowrap;padding-top:2px;}
-.t-v{color:#0f172a;line-height:1.6;font-weight:500;}
-
-/* ═══════════ HISTORY ═══════════ */
-.history-entry{padding:14px 0;border-bottom:1.5px solid #f3f4f6;}
-.history-entry:last-child{border-bottom:none;}
-.he-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-.he-name{font-size:16px;font-weight:700;color:#0f172a;}
-.he-date{font-size:12px;color:#9ca3af;margin-top:3px;font-weight:500;}
-.he-obj{font-size:14px;color:#6b7280;margin-top:5px;font-style:italic;}
-
-.stag{
-font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-padding:4px 10px;border-radius:6px;border:1.5px solid;white-space:nowrap;flex-shrink:0;
-}
-.st-conv{background:var(–green-light);color:var(–green);border-color:#6ee7b7;}
-.st-rej{background:var(–red-light);color:var(–red);border-color:#fca5a5;}
-.st-pend{background:#f9fafb;color:#6b7280;border-color:#e5e7eb;}
-.st-fup{background:var(–gold-light);color:var(–amber);border-color:#fcd34d;}
-
-/* ═══════════ OBJ BARS ═══════════ */
-.obj-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
-.obj-row:last-child{margin-bottom:0;}
-.obj-label{font-size:14px;font-weight:600;color:#374151;width:140px;flex-shrink:0;}
-.obj-track{flex:1;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;}
-.obj-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#1d4ed8,#60a5fa);transition:width .7s cubic-bezier(.4,0,.2,1);}
-.obj-count{font-size:14px;font-weight:700;color:#374151;width:22px;text-align:right;}
-
-/* ═══════════ WEB LOOKUP ═══════════ */
-.divider-or{
-display:flex;align-items:center;gap:12px;
-margin:4px 0 16px;
-}
-.divider-or::before,.divider-or::after{content:’’;flex:1;height:1.5px;background:#e5e7eb;}
-.divider-or span{font-size:12px;font-weight:700;color:#9ca3af;letter-spacing:.06em;}
-
-.lookup-status{
-display:flex;align-items:center;gap:10px;
-padding:12px 16px;border-radius:10px;
-margin-bottom:12px;
-}
-.lookup-status.loading{background:#eff6ff;border:1.5px solid #bfdbfe;}
-.lookup-status.success{background:var(–green-light);border:1.5px solid #6ee7b7;}
-.lookup-status.error{background:var(–red-light);border:1.5px solid #fca5a5;}
-
+/* WEB LOOKUP */
+.DIV-OR{display:flex;align-items:center;gap:11px;margin:4px 0 15px}
+.DIV-OR::before,.DIV-OR::after{content:’’;flex:1;height:1.5px;background:#e5e7eb}
+.DIV-OR span{font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.06em}
+.LKUP-STATUS{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;margin-bottom:11px}
+.LKUP-STATUS.load{background:#eff6ff;border:1.5px solid #bfdbfe}
+.LKUP-STATUS.ok{background:#ecfdf5;border:1.5px solid #6ee7b7}
+.LKUP-STATUS.err{background:#fef2f2;border:1.5px solid #fca5a5}
+.SPIN{width:15px;height:15px;border-radius:50%;border:2px solid #bfdbfe;border-top-color:#2563eb;-webkit-animation:spin .75s linear infinite;animation:spin .75s linear infinite;flex-shrink:0}
+@-webkit-keyframes spin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-.spinner{
-width:16px;height:16px;border-radius:50%;
-border:2px solid #bfdbfe;border-top-color:var(–blue);
-animation:spin .75s linear infinite;flex-shrink:0;
-}
+.LKUP-MSG{font-size:13px;font-weight:600}
+.LKUP-STATUS.load .LKUP-MSG{color:#2563eb}
+.LKUP-STATUS.ok .LKUP-MSG{color:#059669}
+.LKUP-STATUS.err .LKUP-MSG{color:#dc2626}
+.WEB-TAG{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#059669;background:#ecfdf5;border:1.5px solid #6ee7b7;border-radius:50px;padding:3px 11px;margin-bottom:11px}
+.SLB{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;font-family:‘Inter’,sans-serif;background:#fff;color:#374151;border:2px solid #e5e7eb;border-radius:50px;padding:7px 15px;cursor:pointer;text-decoration:none;transition:all .15s;margin-right:7px;margin-bottom:7px}
+.SLB:hover{background:#f3f4f6;border-color:#d1d5db;transform:translateY(-1px)}
+.MAN-FORM{background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:16px;padding:17px}
+.G2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-.lookup-msg{font-size:13px;font-weight:600;}
-.lookup-status.loading .lookup-msg{color:var(–blue);}
-.lookup-status.success .lookup-msg{color:var(–green);}
-.lookup-status.error .lookup-msg{color:var(–red);}
+/* UTILS */
+.MUTED{color:#9ca3af;font-size:14px;font-weight:500}
+.MT{margin-top:20px}
 
-.web-tag{
-display:inline-block;
-font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-color:var(–green);background:var(–green-light);
-border:1.5px solid #6ee7b7;border-radius:6px;padding:3px 9px;
-margin-bottom:12px;
-}
-
-/* ═══════════ UTILS ═══════════ */
-.hidden{display:none!important;}
-.muted{color:#9ca3af;font-size:14px;font-weight:500;}
-.mt{margin-top:22px;}
-
+/* ANIMATIONS */
+@-webkit-keyframes fadeUp{from{opacity:0;-webkit-transform:translateY(12px);transform:translateY(12px)}to{opacity:1;-webkit-transform:translateY(0);transform:translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.a1{animation:fadeUp .35s ease both;}
-.a2{animation:fadeUp .35s .07s ease both;}
-.a3{animation:fadeUp .35s .14s ease both;}
+.A1{-webkit-animation:fadeUp .35s ease both;animation:fadeUp .35s ease both}
+.A2{-webkit-animation:fadeUp .35s .07s ease both;animation:fadeUp .35s .07s ease both}
+.A3{-webkit-animation:fadeUp .35s .14s ease both;animation:fadeUp .35s .14s ease both}
 
-::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:#f3f4f6;}
-::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
-::-webkit-scrollbar-thumb:hover{background:#9ca3af;}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:#f3f4f6}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
 
-@media(max-width:1200px){.split{grid-template-columns:1fr;}.thirds{grid-template-columns:1fr 1fr;}}
 @media(max-width:900px){
-#loginPage{grid-template-columns:1fr;}
-.lp-left{display:none;}
-.app{grid-template-columns:1fr;}
-.sidebar{display:none;}
-.stat-strip{grid-template-columns:1fr 1fr;}
-.metric-row{grid-template-columns:1fr 1fr;}
-.page{padding:16px;}
-.topbar{padding:0 16px;}
+#LP{grid-template-columns:1fr}
+.LP-L{display:none}
+.LP-R{padding:48px 28px}
+#APP{grid-template-columns:1fr}
+.SB{display:none}
+.STATS{grid-template-columns:1fr 1fr}
+.MR{grid-template-columns:1fr 1fr}
+.SPLIT,.HALVES,.THIRDS{grid-template-columns:1fr}
+.PG{padding:16px}
+.TB{padding:0 16px}
 }
-@media(max-width:600px){
-.halves,.thirds{grid-template-columns:1fr;}
-.stat-strip{grid-template-columns:1fr 1fr;}
+@media(max-width:540px){
+.STATS{grid-template-columns:1fr 1fr}
+.G2{grid-template-columns:1fr}
 }
 </style>
 
 </head>
 <body>
 
-<!-- ═══════════ LOGIN PAGE ═══════════ -->
+<!-- LOGIN -->
 
-<div id="loginPage">
-<div class="lp-left">
-<div class="lp-deco-ring"></div>
-
-```
-<div class="lp-logo">
-<div class="lp-logo-icon">
-<svg class="lp-logo-svg" viewBox="0 0 44 44" fill="none">
-<defs>
-<linearGradient id="lg" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-<stop offset="0%" stop-color="#bfdbfe"/>
-<stop offset="100%" stop-color="#93c5fd"/>
-</linearGradient>
-<linearGradient id="lga" x1="28" y1="28" x2="42" y2="14" gradientUnits="userSpaceOnUse">
-<stop offset="0%" stop-color="#fbbf24"/>
-<stop offset="100%" stop-color="#fde68a"/>
-</linearGradient>
-</defs>
-<rect x="6" y="8" width="4" height="22" rx="2" fill="url(#lg)"/>
-<path d="M10 8h8q6 0 6 7t-6 7h-8z" fill="url(#lg)" opacity=".9"/>
-<path d="M11.5 10.5h6q3.5 0 3.5 4.5t-3.5 4.5h-6z" fill="rgba(30,64,175,.9)"/>
-<rect x="24" y="8" width="4" height="22" rx="2" fill="url(#lg)" opacity=".75"/>
-<path d="M28 8h7.5q5.5 0 5.5 6.5t-5.5 6.5H28z" fill="url(#lg)" opacity=".65"/>
-<path d="M29.5 10.5h5q3 0 3 4t-3 4h-5z" fill="rgba(30,64,175,.9)"/>
-<path d="M35 31l4-6 4 6" stroke="url(#lga)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-<line x1="39" y1="25" x2="39" y2="35" stroke="url(#lga)" stroke-width="2.2" stroke-linecap="round"/>
-</svg>
-</div>
-<div class="lp-logo-name">Pay<span>Pilot</span> AI</div>
+<div id="LP">
+  <div class="LP-L">
+    <div class="LP-ring"></div>
+    <div class="LP-logo">
+      <div class="LP-icon">&#9889;</div>
+      <div class="LP-brand">Pay<b>Pilot</b> AI</div>
+    </div>
+    <div class="LP-h">Close more.<span>Faster.</span></div>
+    <div class="LP-tag">Real-time AI coaching for payment enrollment reps &#8212; live on every call.</div>
+    <div class="LP-feats">
+      <div class="LP-feat"><div class="LP-feat-ico">&#9889;</div><div><div class="LP-feat-txt">Live AI objection responses</div><div class="LP-feat-sub">Instant rebuttals powered by Claude AI</div></div></div>
+      <div class="LP-feat"><div class="LP-feat-ico">&#127760;</div><div><div class="LP-feat-txt">Web-powered supplier lookup</div><div class="LP-feat-sub">Find any company contact online</div></div></div>
+      <div class="LP-feat"><div class="LP-feat-ico">&#127908;</div><div><div class="LP-feat-txt">Real-time mic transcription</div><div class="LP-feat-sub">Speak naturally, AI responds instantly</div></div></div>
+      <div class="LP-feat"><div class="LP-feat-ico">&#128202;</div><div><div class="LP-feat-txt">Conversion analytics</div><div class="LP-feat-sub">Track performance and win rates</div></div></div>
+    </div>
+  </div>
+  <div class="LP-R">
+    <div class="LP-eyebrow">Secure Login</div>
+    <div class="LP-title">Welcome back.</div>
+    <div class="LP-sub">Sign in to your PayPilot workspace and start closing.</div>
+    <label class="LP-label" for="PW">Password</label>
+    <input class="LP-input" id="PW" type="password" placeholder="Enter your password">
+    <button class="LP-btn" id="LP-BTN">Access Workspace &#8594;</button>
+    <div class="LP-err" id="LP-ERR"></div>
+    <div class="LP-hint">Demo password: <b>demo123</b></div>
+  </div>
 </div>
 
-<div class="lp-headline">
-Close more.<span>Faster.</span>
-</div>
+<!-- APP -->
 
-<div class="lp-tagline">
-Real-time AI coaching for payment enrollment reps — live on every call.
-</div>
-
-<div class="lp-features">
-<div class="lp-feat">
-<div class="lp-feat-icon">⚡</div>
-<div>
-<div class="lp-feat-text">Live AI objection responses</div>
-<div class="lp-feat-sub">Instant rebuttals powered by Claude AI</div>
-</div>
-</div>
-<div class="lp-feat">
-<div class="lp-feat-icon">🌐</div>
-<div>
-<div class="lp-feat-text">Web-powered supplier lookup</div>
-<div class="lp-feat-sub">Find any company's AP contact online</div>
-</div>
-</div>
-<div class="lp-feat">
-<div class="lp-feat-icon">🎤</div>
-<div>
-<div class="lp-feat-text">Real-time mic transcription</div>
-<div class="lp-feat-sub">Speak naturally — AI responds instantly</div>
-</div>
-</div>
-<div class="lp-feat">
-<div class="lp-feat-icon">📊</div>
-<div>
-<div class="lp-feat-text">Conversion analytics</div>
-<div class="lp-feat-sub">Track performance and win rates</div>
-</div>
-</div>
-</div>
-```
-
-</div>
-
-<div class="lp-right">
-<div class="lp-form-eyebrow">Secure Login</div>
-<div class="lp-form-title">Welcome back.</div>
-<div class="lp-form-sub">Sign in to your PayPilot workspace and start closing.</div>
+<div id="APP" class="h">
+  <aside class="SB">
+    <div class="SB-top">
+      <div class="SB-logo">
+        <div class="SB-ico">&#9889;</div>
+        <div><div class="SB-name">Pay<b>Pilot</b></div><div class="SB-tag">AI Platform</div></div>
+      </div>
+    </div>
+    <div class="SB-sec">Workspace</div>
+    <button class="NB on" id="btnRep">&#9632; Rep View</button>
+    <button class="NB" id="btnMgr">&#9647; Manager View</button>
+    <div class="SB-sec">Tools</div>
+    <button class="NB" id="btnTrans">&#8644; Translation</button>
+    <button class="NB" id="btnMicStart">&#9678; Start Mic</button>
+    <button class="NB" id="btnMicStop">&#9635; Stop Mic</button>
+    <div class="SB-foot"><button class="NB" id="btnLogout">&#8592; Logout</button></div>
+  </aside>
+  <main class="main">
+    <div class="TB">
+      <div class="TB-logo">
+        <div class="TB-ico">&#9889;</div>
+        <div class="TB-name">Pay<b>Pilot</b></div>
+      </div>
+      <div class="TB-sep"></div>
+      <div class="TB-sub">Enrollment Intelligence Platform</div>
+      <div class="TB-R">
+        <div class="LIVE h" id="LIVE-BADGE"><div class="LIVE-dot"></div>Live</div>
+        <div class="CHIP h" id="USER-CHIP">PayPilot Rep</div>
+      </div>
+    </div>
+    <div class="PG">
 
 ```
-<label class="lp-field-label" for="password">Password</label>
-<input class="lp-input" id="password" type="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')login()"/>
+  <!-- REP VIEW -->
+  <div id="RV">
+    <div class="STATS A1">
+      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#1d4ed8,#60a5fa)"></div><div class="SC-lbl">Calls Logged</div><div class="SC-val" id="sLOG">0</div></div>
+      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#047857,#34d399)"></div><div class="SC-lbl">Converted</div><div class="SC-val" id="sCONV">0</div></div>
+      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#b45309,#fbbf24)"></div><div class="SC-lbl">Conversion Rate</div><div class="SC-val" id="sRATE">0%</div></div>
+      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#0e7490,#22d3ee)"></div><div class="SC-lbl">Top Objection</div><div class="SC-val sm" id="sTOP">None</div></div>
+    </div>
 
-<button class="lp-btn" onclick="login()">
-Access Workspace <span style="font-size:20px;">→</span>
-</button>
+    <div class="SPLIT A2">
+      <div class="STACK">
+        <div class="CD">
+          <div class="CD-head"><div class="CD-pip" style="background:#2563eb"></div><span class="CD-title">Supplier Search</span><span class="CD-badge">AI Lookup</span></div>
+          <div class="CD-body">
+            <div class="FLD"><label class="FL">Local Database</label><input id="SS" placeholder="Search company, contact, email, phone..."><div id="SR" class="SR-list h"></div></div>
+            <div class="DIV-OR"><span>OR FIND ONLINE</span></div>
+            <div class="FLD" style="margin-bottom:10px"><label class="FL">Web Contact Lookup</label>
+              <div style="display:flex;gap:8px"><input id="WLI" placeholder="e.g. Acme Electrical Charlotte NC" style="flex:1"><button class="BT BT-blue" id="btnFind" style="white-space:nowrap;padding:11px 17px">&#128269; Find</button></div>
+            </div>
+            <div id="WLS" class="LKUP-STATUS load h" style="margin-bottom:11px"><div class="SPIN" id="WL-SPIN"></div><span class="LKUP-MSG" id="WL-MSG">Searching...</span></div>
+            <div id="SI"></div>
+          </div>
+        </div>
 
-<div class="lp-hint">Demo password: <strong>demo123</strong></div>
-```
+        <div class="CD">
+          <div class="CD-head"><div class="CD-pip" style="background:#0891b2"></div><span class="CD-title">Live Call Workspace</span></div>
+          <div class="CD-body">
+            <div class="MR">
+              <div class="MC"><div class="ML">Language</div><div class="MV" id="mLANG">EN</div></div>
+              <div class="MC"><div class="ML">Lead Heat</div><div class="MV" id="mHEAT">&#8212;</div></div>
+              <div class="MC"><div class="ML">Strategy</div><div class="MV" id="mSTRAT" style="font-size:11.5px;line-height:1.3">&#8212;</div></div>
+              <div class="MC"><div class="ML">Mic</div><div class="MV" id="mMIC">Idle</div></div>
+            </div>
+            <div class="FLD"><label class="FL">Supplier Objection / What They Said</label><textarea id="OBJ" placeholder="Type what the supplier says, or start the mic..."></textarea></div>
+            <div class="TBAR">
+              <button class="BT BT-blue" id="btnGen">&#9889; Generate Response</button>
+              <button class="BT BT-cyan" id="btnMic">&#127908; Start Mic</button>
+              <button class="BT BT-out" id="btnStop">&#9632; Stop</button>
+              <button class="BT BT-out" id="btnTransToggle">&#8644; Translate</button>
+            </div>
+            <div id="TR-BOX" class="TR-panel h">
+              <div class="TR-hd"><span class="TR-title">Live Translation</span><button class="TR-es-btn" id="btnEsMic">&#127908; Escuchar</button></div>
+              <div class="TR-block"><div class="TR-blbl"><span class="LB LB-es">ES&#8594;EN</span> What they said</div><div class="TR-txt" id="trEN">&#8212;</div><button class="SPK" id="btnSpkEN">&#128266; Speak English</button></div>
+              <div class="TR-block reply"><div class="TR-blbl"><span class="LB LB-en">EN&#8594;ES</span> Your reply in Spanish</div><div class="TR-txt blue" id="trES">&#8212;</div><button class="SPK SPK-pri" id="btnSpkES">&#128266; Speak to Supplier in Spanish</button></div>
+              <div class="TR-status" id="trSTAT"></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-</div>
-</div>
+      <div class="STACK">
+        <div class="CD" style="overflow:hidden">
+          <div class="CD-head"><div class="CD-pip" style="background:#2563eb"></div><span class="CD-title">AI Response Engine</span></div>
+          <div class="AI">
+            <div class="AI-dots"></div>
+            <div class="AI-hd"><div class="AI-pill"><div class="AI-dot"></div>Live Intelligence</div><div class="AI-tag">PayPilot Engine v2</div></div>
+            <div class="AI-txt" id="AI-RESP">Enter an objection and hit Generate &#8594;</div>
+            <div class="AI-chips">
+              <div class="AI-chip">Confidence <b id="cCONF">&#8212;</b></div>
+              <div class="AI-chip">Objection <b id="cOBJ">&#8212;</b></div>
+              <div class="AI-chip">Next Action <b id="cACT">&#8212;</b></div>
+              <div class="AI-chip">Close % <b id="cCLOSE">&#8212;</b></div>
+            </div>
+          </div>
+        </div>
+        <div class="THIRDS">
+          <div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#059669"></div><span class="CD-title">Live Coaching</span></div><div class="CD-body"><p class="INFO" id="iCOACH">&#8212;</p></div></div>
+          <div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#d97706"></div><span class="CD-title">CRM Note</span></div><div class="CD-body"><p class="INFO" id="iCRM">&#8212;</p></div></div>
+          <div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#0891b2"></div><span class="CD-title">Follow-Up Email</span></div><div class="CD-body"><p class="INFO" id="iEMAIL">&#8212;</p></div></div>
+        </div>
+      </div>
+    </div>
 
-<!-- ═══════════ APP ═══════════ -->
+    <div class="HALVES MT A3">
+      <div class="CD">
+        <div class="CD-head"><div class="CD-pip" style="background:#f59e0b"></div><span class="CD-title">Call Outcome</span></div>
+        <div class="CD-body">
+          <div class="FLD"><label class="FL">Outcome</label><select id="OUT"><option>Pending</option><option>Follow Up Needed</option><option>Converted</option><option>Rejected</option></select></div>
+          <div class="FLD"><label class="FL">Enrollment Status</label><select id="ENR"><option>Pending</option><option>Enrollment Sent</option><option>Completed</option><option>Declined</option></select></div>
+          <div class="TBAR"><button class="BT BT-green" id="btnLog">&#10003; Log Call</button><button class="BT BT-gold" id="btnMark">&#9733; Mark Complete</button></div>
+        </div>
+      </div>
+      <div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#9ca3af"></div><span class="CD-title">Call History</span></div><div class="CD-body" id="HIST"></div></div>
+    </div>
+  </div>
 
-<div id="appRoot" class="hidden">
-<div class="app">
-
-<!-- SIDEBAR -->
-
-<aside class="sidebar">
-<div class="sb-top">
-<div class="sb-logo">
-<div class="sb-logo-icon">
-<svg width="22" height="22" viewBox="0 0 44 44" fill="none">
-<rect x="6" y="8" width="4" height="22" rx="2" fill="#93c5fd"/>
-<path d="M10 8h8q6 0 6 7t-6 7h-8z" fill="#93c5fd" opacity=".9"/>
-<path d="M11.5 10.5h6q3.5 0 3.5 4.5t-3.5 4.5h-6z" fill="#1e3a8a"/>
-<rect x="24" y="8" width="4" height="22" rx="2" fill="#93c5fd" opacity=".75"/>
-<path d="M28 8h7.5q5.5 0 5.5 6.5t-5.5 6.5H28z" fill="#93c5fd" opacity=".65"/>
-<path d="M29.5 10.5h5q3 0 3 4t-3 4h-5z" fill="#1e3a8a"/>
-<path d="M35 31l4-6 4 6" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-<line x1="39" y1="25" x2="39" y2="35" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round"/>
-</svg>
-</div>
-<div>
-<div class="sb-wordmark">Pay<span>Pilot</span></div>
-<div class="sb-tagline">AI Platform</div>
-</div>
-</div>
-</div>
-
-```
-<div class="sb-section">Workspace</div>
-<button class="navbtn active" id="btnRep" onclick="showRepView()"><span class="nav-ic">▣</span>Rep View</button>
-<button class="navbtn" id="btnMgr" onclick="showManagerView()"><span class="nav-ic">◫</span>Manager View</button>
-
-<div class="sb-section">Tools</div>
-<button class="navbtn" onclick="toggleTranslate()"><span class="nav-ic">⇄</span>Toggle Translation</button>
-<button class="navbtn" onclick="startListening()"><span class="nav-ic">◉</span>Start Mic</button>
-<button class="navbtn" onclick="stopListening()"><span class="nav-ic">◻</span>Stop Mic</button>
-
-<div class="sb-footer">
-<button class="navbtn" onclick="logout()"><span class="nav-ic">←</span>Logout</button>
-</div>
-```
-
-</aside>
-
-<!-- MAIN -->
-
-<main class="main">
-<div class="topbar">
-<div class="tb-logo">
-<div class="tb-logo-icon">
-<svg width="18" height="18" viewBox="0 0 44 44" fill="none">
-<rect x="6" y="8" width="4" height="22" rx="2" fill="white"/>
-<path d="M10 8h8q6 0 6 7t-6 7h-8z" fill="white" opacity=".9"/>
-<path d="M11.5 10.5h6q3.5 0 3.5 4.5t-3.5 4.5h-6z" fill="#2563eb"/>
-<rect x="24" y="8" width="4" height="22" rx="2" fill="white" opacity=".75"/>
-<path d="M28 8h7.5q5.5 0 5.5 6.5t-5.5 6.5H28z" fill="white" opacity=".65"/>
-<path d="M29.5 10.5h5q3 0 3 4t-3 4h-5z" fill="#2563eb"/>
-</svg>
-</div>
-<div class="tb-title">Pay<span>Pilot</span></div>
-</div>
-<div class="tb-sep"></div>
-<div class="tb-sub">Enrollment Intelligence Platform</div>
-<div class="tb-right">
-<div id="liveBadge" class="live-badge hidden"><div class="live-dot"></div>Live</div>
-<div id="userChip" class="hidden">demo@paypilot.ai</div>
-</div>
-</div>
-
-```
-<div class="page">
-
-<!-- REP VIEW -->
-<div id="repView">
-
-<div class="stat-strip a1">
-<div class="stat-card">
-<div class="stat-accent sa-blue"></div>
-<div class="stat-label">Calls Logged</div>
-<div class="stat-val" id="callsLogged">0</div>
-</div>
-<div class="stat-card">
-<div class="stat-accent sa-green"></div>
-<div class="stat-label">Converted</div>
-<div class="stat-val" id="callsConverted">0</div>
-</div>
-<div class="stat-card">
-<div class="stat-accent sa-gold"></div>
-<div class="stat-label">Conversion Rate</div>
-<div class="stat-val" id="conversionRate">0%</div>
-</div>
-<div class="stat-card">
-<div class="stat-accent sa-cyan"></div>
-<div class="stat-label">Top Objection</div>
-<div class="stat-val sm" id="topObjection">None</div>
-</div>
-</div>
-
-<div class="split a2">
-<!-- LEFT -->
-<div class="stack">
-
-<div class="card">
-<div class="card-head">
-<div class="card-pip cp-blue"></div>
-<span class="card-title">Supplier Search</span>
-<span class="card-badge">AI Lookup</span>
-</div>
-<div class="card-body">
-<div class="field">
-<label class="field-label">Local Database</label>
-<input id="supplierSearch" placeholder="Search by company, contact, email, or phone…" oninput="searchSuppliers()" autocomplete="off"/>
-<div id="searchResults" class="search-results hidden"></div>
-</div>
-
-<div class="divider-or"><span>OR FIND ONLINE</span></div>
-
-<div class="field" style="margin-bottom:10px;">
-<label class="field-label">🌐 Web Contact Lookup</label>
-<div style="display:flex;gap:8px;">
-<input id="webLookupInput" placeholder="e.g. Acme Electrical Charlotte NC…" style="flex:1;" onkeydown="if(event.key==='Enter')runWebLookup()"/>
-<button class="btn btn-blue" onclick="runWebLookup()" style="white-space:nowrap;padding:11px 18px;">🔍 Find</button>
-</div>
-</div>
-
-<div id="webLookupStatus" class="hidden lookup-status loading" style="margin-bottom:12px;">
-<div class="spinner" id="webLookupSpinner"></div>
-<span class="lookup-msg" id="webLookupMsg">Searching the web…</span>
-</div>
-
-<div id="supplierInfo"></div>
-</div>
-</div>
-
-<div class="card">
-<div class="card-head">
-<div class="card-pip cp-cyan"></div>
-<span class="card-title">Live Call Workspace</span>
-</div>
-<div class="card-body">
-<div class="metric-row">
-<div class="metric-cell"><div class="metric-label">Language</div><div class="metric-val" id="languageDisplay">EN</div></div>
-<div class="metric-cell"><div class="metric-label">Lead Heat</div><div class="metric-val" id="leadHeat">—</div></div>
-<div class="metric-cell"><div class="metric-label">Strategy</div><div class="metric-val" id="strategyTag" style="font-size:12px;line-height:1.3;">—</div></div>
-<div class="metric-cell"><div class="metric-label">Mic</div><div class="metric-val" id="micStatus">Idle</div></div>
-</div>
-
-<div class="field">
-<label class="field-label">Supplier Objection / What They Said</label>
-<textarea id="objection" placeholder="Type what the supplier says, or hit Start Mic to capture live…"></textarea>
-</div>
-
-<div class="toolbar">
-<button class="btn btn-blue" onclick="generateResponse()">⚡ Generate Response</button>
-<button class="btn btn-cyan" id="micBtn" onclick="startListening()">🎤 Start Mic</button>
-<button class="btn btn-outline" onclick="stopListening()">⏹ Stop</button>
-<button class="btn btn-outline" onclick="toggleTranslate()">⇄ Translate</button>
-</div>
-
-<div id="translationBox" class="trans-panel hidden">
-<div class="trans-head">◈ Live Translation</div>
-<div class="trans-line"><span class="t-k">EN</span><span class="t-v" id="translatedEnglish">—</span></div>
-<div class="trans-line"><span class="t-k">Reply</span><span class="t-v" id="translatedReply">—</span></div>
-</div>
-</div>
-</div>
-
-</div>
-
-<!-- RIGHT -->
-<div class="stack">
-
-<div class="card" style="overflow:hidden;">
-<div class="card-head">
-<div class="card-pip cp-blue"></div>
-<span class="card-title">AI Response Engine</span>
-</div>
-<div class="ai-zone">
-<div class="ai-dots"></div>
-<div class="ai-header">
-<div class="ai-pill"><div class="ai-pill-dot"></div>Live Intelligence</div>
-<div class="ai-tag">PayPilot Engine v2</div>
-</div>
-<div class="ai-response" id="response">Enter an objection and hit Generate →</div>
-<div class="ai-chips">
-<div class="ai-chip">Confidence <span class="cv" id="confidence">—</span></div>
-<div class="ai-chip">Objection <span class="cv" id="objectionTag">—</span></div>
-<div class="ai-chip">Next Action <span class="cv" id="nextBestAction">—</span></div>
-<div class="ai-chip">Close % <span class="cv" id="closeProbability">—</span></div>
-</div>
-</div>
-</div>
-
-<div class="thirds">
-<div class="card">
-<div class="card-head"><div class="card-pip cp-green"></div><span class="card-title">Live Coaching</span></div>
-<div class="card-body"><p class="info-text" id="liveCoaching">—</p></div>
-</div>
-<div class="card">
-<div class="card-head"><div class="card-pip cp-amber"></div><span class="card-title">CRM Note</span></div>
-<div class="card-body"><p class="info-text" id="crmNote">—</p></div>
-</div>
-<div class="card">
-<div class="card-head"><div class="card-pip cp-cyan"></div><span class="card-title">Follow-Up Email</span></div>
-<div class="card-body"><p class="info-text" id="emailText">—</p></div>
-</div>
-</div>
-
-</div>
-</div>
-
-<div class="halves mt a3">
-<div class="card">
-<div class="card-head"><div class="card-pip cp-gold"></div><span class="card-title">Call Outcome</span></div>
-<div class="card-body">
-<div class="field">
-<label class="field-label">Outcome</label>
-<select id="outcome"><option>Pending</option><option>Follow Up Needed</option><option>Converted</option><option>Rejected</option></select>
-</div>
-<div class="field">
-<label class="field-label">Enrollment Status</label>
-<select id="enrollment"><option>Pending</option><option>Enrollment Sent</option><option>Completed</option><option>Declined</option></select>
-</div>
-<div class="toolbar">
-<button class="btn btn-green" onclick="logCall()">✓ Log Call</button>
-<button class="btn btn-gold" onclick="markEnrollmentComplete()">★ Mark Complete</button>
-</div>
-</div>
-</div>
-
-<div class="card">
-<div class="card-head"><div class="card-pip cp-gray"></div><span class="card-title">Call History</span></div>
-<div class="card-body" id="history"></div>
-</div>
-</div>
-
-</div><!-- /repView -->
-
-<!-- MANAGER VIEW -->
-<div id="managerView" class="hidden">
-<div class="stat-strip a1">
-<div class="stat-card"><div class="stat-accent sa-blue"></div><div class="stat-label">Total Calls</div><div class="stat-val" id="mgrCalls">0</div></div>
-<div class="stat-card"><div class="stat-accent sa-green"></div><div class="stat-label">Total Converted</div><div class="stat-val" id="mgrConverted">0</div></div>
-<div class="stat-card"><div class="stat-accent sa-gold"></div><div class="stat-label">Win Rate</div><div class="stat-val" id="mgrRate">0%</div></div>
-<div class="stat-card"><div class="stat-accent sa-cyan"></div><div class="stat-label">Top Objection</div><div class="stat-val sm" id="mgrTopObjection">None</div></div>
-</div>
-<div class="card mt a2">
-<div class="card-head"><div class="card-pip cp-blue"></div><span class="card-title">Objection Breakdown</span></div>
-<div class="card-body"><div id="objectionBreakdown"></div></div>
-</div>
-</div>
+  <!-- MANAGER VIEW -->
+  <div id="MV" class="h">
+    <div class="STATS A1">
+      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#1d4ed8,#60a5fa)"></div><div class="SC-lbl">Total Calls</div><div class="SC-val" id="mCALLS">0</div></div>
+      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#047857,#34d399)"></div><div class="SC-lbl">Converted</div><div class="SC-val" id="mCONV">0</div></div>
+      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#b45309,#fbbf24)"></div><div class="SC-lbl">Win Rate</div><div class="SC-val" id="mRATE">0%</div></div>
+      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#0e7490,#22d3ee)"></div><div class="SC-lbl">Top Objection</div><div class="SC-val sm" id="mTOP">None</div></div>
+    </div>
+    <div class="CD MT A2"><div class="CD-head"><div class="CD-pip" style="background:#2563eb"></div><span class="CD-title">Objection Breakdown</span></div><div class="CD-body"><div id="OBDWN"></div></div></div>
+  </div>
 
 </div>
 ```
 
-</main>
+  </main>
 </div>
-</div><!-- /appRoot -->
 
-<script>
-let translateOn=false,recognition=null,selectedIdx=0;
-
-const suppliers=[
-{company:"Novacore Electrical",contact:"Anthony King",email:"aking@novacore.com",phone:"704-555-1122",industry:"Electrical",avg_invoice:"$9,200",ach_score:58,vcc_score:33},
-{company:"Atlas Industrial Supply",contact:"Jorge Ramirez",email:"jramirez@atlasind.com",phone:"980-555-8877",industry:"Industrial",avg_invoice:"$6,200",ach_score:74,vcc_score:18},
-{company:"Blue Ridge Property",contact:"Trista Jamieson",email:"tjamieson@blueridge.com",phone:"828-555-2211",industry:"Property",avg_invoice:"$4,100",ach_score:69,vcc_score:22},
-{company:"Keystone Facility Group",contact:"Mark Ellis",email:"mellis@keystonefg.com",phone:"704-555-9981",industry:"Facilities",avg_invoice:"$7,300",ach_score:66,vcc_score:25},
-{company:"Kingstone Mechanical",contact:"Lisa Warren",email:"lwarren@kingstone.com",phone:"919-555-4403",industry:"Mechanical",avg_invoice:"$8,100",ach_score:63,vcc_score:29},
-{company:"KLM Property Services",contact:"Derrick Cole",email:"dcole@klmproperty.com",phone:"980-555-6310",industry:"Property",avg_invoice:"$5,700",ach_score:61,vcc_score:31}
-];
-
-const gh=()=>JSON.parse(localStorage.getItem("pp_v6")||"[]");
-const sh=h=>localStorage.setItem("pp_v6",JSON.stringify(h));
-
-function login(){
-const pw=document.getElementById("password").value.trim();
-if(pw==="demo123"){
-const lp=document.getElementById("loginPage");
-lp.style.opacity="0";lp.style.transition="opacity .3s ease";
-setTimeout(()=>{
-lp.classList.add("hidden");
-document.getElementById("appRoot").classList.remove("hidden");
-document.getElementById("userChip").classList.remove("hidden");
-document.getElementById("liveBadge").classList.remove("hidden");
-document.getElementById("supplierSearch").value=suppliers[0].company;
-loadSupplier();renderHistory();updateStats();renderManager();
-},300);
-} else {
-const el=document.getElementById("password");
-el.style.borderColor="#dc2626";
-el.style.boxShadow="0 0 0 4px rgba(220,38,38,.15)";
-el.animate([{transform:"translateX(-5px)"},{transform:"translateX(5px)"},{transform:"translateX(-4px)"},{transform:"translateX(4px)"},{transform:"translateX(0)"}],{duration:320});
-setTimeout(()=>{el.style.borderColor="";el.style.boxShadow=""},1800);
-}
-}
-
-function logout(){location.reload();}
-
-function showRepView(){
-document.getElementById("repView").classList.remove("hidden");
-document.getElementById("managerView").classList.add("hidden");
-document.getElementById("btnRep").classList.add("active");
-document.getElementById("btnMgr").classList.remove("active");
-}
-function showManagerView(){
-document.getElementById("repView").classList.add("hidden");
-document.getElementById("managerView").classList.remove("hidden");
-document.getElementById("btnMgr").classList.add("active");
-document.getElementById("btnRep").classList.remove("active");
-renderManager();
-}
-
-function searchSuppliers(){
-const q=document.getElementById("supplierSearch").value.trim().toLowerCase();
-const el=document.getElementById("searchResults");
-if(!q){el.classList.add("hidden");el.innerHTML="";return}
-const m=suppliers.map((s,i)=>({s,i})).filter(x=>
-x.s.company.toLowerCase().includes(q)||x.s.contact.toLowerCase().includes(q)||
-x.s.email.toLowerCase().includes(q)||x.s.phone.includes(q));
-if(!m.length){
-el.classList.remove("hidden");
-el.innerHTML=`<div class="search-item"><div class="si-name" style="color:#9ca3af">No results found</div></div>`;
-return;
-}
-el.classList.remove("hidden");
-el.innerHTML=m.map((x,i)=>`
-<div class="search-item ${i===0?"active":""}" onclick="selectSupplier(${x.i})">
-<div class="si-name">${x.s.company}</div>
-<div class="si-meta">${x.s.contact} · ${x.s.email} · ${x.s.phone}</div>
-</div>`).join("");
-selectedIdx=m[0].i;loadSupplier();
-}
-
-function selectSupplier(i){
-selectedIdx=i;
-document.getElementById("supplierSearch").value=suppliers[i].company;
-document.getElementById("searchResults").classList.add("hidden");
-document.getElementById("searchResults").innerHTML="";
-loadSupplier();
-}
-
-function loadSupplier(){
-const s=suppliers[selectedIdx];
-document.getElementById("supplierInfo").innerHTML=`
-<table class="sup-table">
-<tr><td>Company</td><td>${s.company}</td></tr>
-<tr><td>Contact</td><td>${s.contact}</td></tr>
-<tr><td>Email</td><td>${s.email}</td></tr>
-<tr><td>Phone</td><td>${s.phone}</td></tr>
-<tr><td>Industry</td><td>${s.industry}</td></tr>
-<tr><td>Avg Invoice</td><td>${s.avg_invoice}</td></tr>
-</table>
-<div class="score-row">
-<div class="score-chip chip-blue"><span class="sc-label">ACH Score</span><span class="sc-val">${s.ach_score}%</span></div>
-<div class="score-chip chip-cyan"><span class="sc-label">VCC Score</span><span class="sc-val">${s.vcc_score}%</span></div>
-</div>`;
-}
-
-async function runWebLookup(){
-const query=document.getElementById("webLookupInput").value.trim();
-if(!query){
-document.getElementById("webLookupInput").style.borderColor="#dc2626";
-setTimeout(()=>document.getElementById("webLookupInput").style.borderColor="",1500);
-return;
-}
-const statusEl=document.getElementById("webLookupStatus");
-const msgEl=document.getElementById("webLookupMsg");
-const spinEl=document.getElementById("webLookupSpinner");
-const infoEl=document.getElementById("supplierInfo");
-
-statusEl.className="lookup-status loading";
-statusEl.classList.remove("hidden");
-msgEl.textContent="Searching the web for contact info…";
-spinEl.style.display="block";
-infoEl.innerHTML="";
-
-const systemPrompt=`You are a business contact research agent. Search the web and return the best available contact information for the Accounts Payable or primary business contact at this company. Return ONLY a JSON object with no markdown. Use this structure: {"company":"","contact":"","title":"","email":"","phone":"","address":"","website":"","industry":"","source":""}. Search company websites, LinkedIn, BBB, Manta, Yelp, ZoomInfo, Google Maps.`;
-
-try{
-const res=await fetch("https://api.anthropic.com/v1/messages",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-model:"claude-sonnet-4-20250514",
-max_tokens:1000,
-tools:[{type:"web_search_20250305",name:"web_search"}],
-system:systemPrompt,
-messages:[{role:"user",content:`Find AP contact info for: "${query}". Search their website, LinkedIn, BBB, Manta, and business directories.`}]
-})
-});
-const data=await res.json();
-if(data.error) throw new Error(data.error.message||"API error");
-const raw=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
-const clean=raw.replace(/```json/gi,"").replace(/```/g,"").trim();
-const parsed=JSON.parse(clean.slice(clean.indexOf("{"),clean.lastIndexOf("}")+1));
-
-spinEl.style.display="none";
-statusEl.className="lookup-status success";
-msgEl.textContent=`✓ Found via ${parsed.source||"web search"}`;
-
-const ach=Math.floor(Math.random()*30)+55;
-const vcc=Math.floor(Math.random()*25)+15;
-
-infoEl.innerHTML=`
-<div class="web-tag">WEB RESULT</div>
-<table class="sup-table">
-<tr><td>Company</td><td>${parsed.company||"—"}</td></tr>
-<tr><td>Contact</td><td>${parsed.contact||"—"}${parsed.title&&parsed.title!=="Not found"?` <span style="color:#6b7280;font-size:13px;">· ${parsed.title}</span>`:""}</td></tr>
-<tr><td>Email</td><td>${parsed.email||"—"}</td></tr>
-<tr><td>Phone</td><td>${parsed.phone||"—"}</td></tr>
-<tr><td>Address</td><td>${parsed.address||"—"}</td></tr>
-<tr><td>Industry</td><td>${parsed.industry||"—"}</td></tr>
-</table>
-<div class="score-row">
-<div class="score-chip chip-blue"><span class="sc-label">ACH Score</span><span class="sc-val">${ach}%</span></div>
-<div class="score-chip chip-cyan"><span class="sc-label">VCC Score</span><span class="sc-val">${vcc}%</span></div>
-</div>
-<button class="btn btn-outline" onclick="saveWebResult(this)" style="margin-top:14px;width:100%;justify-content:center;"
-data-company="${(parsed.company||"").replace(/"/g,"")}"
-data-contact="${(parsed.contact||"").replace(/"/g,"")}"
-data-email="${(parsed.email||"").replace(/"/g,"")}"
-data-phone="${(parsed.phone||"").replace(/"/g,"")}"
-data-industry="${(parsed.industry||"").replace(/"/g,"")}"
-data-ach="${ach}" data-vcc="${vcc}">
-+ Save to Local Database
-</button>`;
-}catch(err){
-spinEl.style.display="none";
-statusEl.className="lookup-status error";
-msgEl.textContent="⚠ "+( err.message||"Search failed. Try again.");
-infoEl.innerHTML=`<p class="muted" style="margin-top:8px;">Tip: Include the city/state for better results — e.g. "Novacore Electrical Charlotte NC"</p>`;
-}
-}
-
-function saveWebResult(btn){
-suppliers.push({company:btn.dataset.company||"New Co",contact:btn.dataset.contact||"Unknown",email:btn.dataset.email||"",phone:btn.dataset.phone||"",industry:btn.dataset.industry||"General",avg_invoice:"$0",ach_score:parseInt(btn.dataset.ach)||60,vcc_score:parseInt(btn.dataset.vcc)||25});
-selectedIdx=suppliers.length-1;
-document.getElementById("supplierSearch").value=suppliers[selectedIdx].company;
-loadSupplier();
-document.getElementById("webLookupStatus").classList.add("hidden");
-}
-
-function detectLang(t){
-const l=t.toLowerCase();
-return(l.includes("hola")||l.includes("cheques")||l.includes("tarjeta")||l.includes("gracias")||l.includes("tarifas"))?"Spanish":"English";
-}
-function toggleTranslate(){
-translateOn=!translateOn;
-document.getElementById("translationBox").classList.toggle("hidden",!translateOn);
-updateTranslation();
-}
-function updateTranslation(){
-const text=document.getElementById("objection").value.trim();
-const lang=detectLang(text);
-document.getElementById("languageDisplay").textContent=lang==="Spanish"?"ES":"EN";
-if(!translateOn) return;
-let en=text||"—",reply="—";
-if(lang==="Spanish"){
-en=text.replace(/hola/gi,"hello").replace(/solo aceptamos cheques/gi,"we only accept checks").replace(/no aceptamos tarjetas/gi,"we do not accept cards").replace(/no quiero pagar tarifas/gi,"i do not want to pay fees").replace(/gracias/gi,"thank you");
-reply="Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos de cheques.";
-} else {reply="That makes sense. ACH just helps you get paid faster without the delays.";}
-document.getElementById("translatedEnglish").textContent=en||"—";
-document.getElementById("translatedReply").textContent=reply;
-}
-
-function startListening(){
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(!SR){alert("Mic not supported in this browser");return}
-if(recognition) recognition.stop();
-recognition=new SR();recognition.continuous=true;recognition.interimResults=true;recognition.lang="en-US";
-recognition.onstart=()=>{document.getElementById("micStatus").textContent="Live";document.getElementById("micBtn").classList.add("recording");document.getElementById("micBtn").innerHTML="🔴 Recording";};
-recognition.onerror=()=>document.getElementById("micStatus").textContent="Error";
-recognition.onend=()=>{document.getElementById("micStatus").textContent="Idle";document.getElementById("micBtn").classList.remove("recording");document.getElementById("micBtn").innerHTML="🎤 Start Mic";};
-recognition.onresult=e=>{
-const t=e.results[e.results.length-1][0].transcript;
-document.getElementById("objection").value=t;
-updateTranslation();
-clearTimeout(window._vt);
-window._vt=setTimeout(()=>generateResponse(),300);
+<script data-cfasync="false">
+var G = {
+  translateOn: false,
+  recognition: null,
+  esRecognition: null,
+  twi: null,
+  idx: 0,
+  suppliers: [
+    {company:"Novacore Electrical",   contact:"Anthony King",    email:"aking@novacore.com",     phone:"704-555-1122", industry:"Electrical", avg:"$9,200",  ach:58, vcc:33},
+    {company:"Atlas Industrial Supply",contact:"Jorge Ramirez",  email:"jramirez@atlasind.com",  phone:"980-555-8877", industry:"Industrial", avg:"$6,200",  ach:74, vcc:18},
+    {company:"Blue Ridge Property",    contact:"Trista Jamieson", email:"tjamieson@blueridge.com",phone:"828-555-2211", industry:"Property",   avg:"$4,100",  ach:69, vcc:22},
+    {company:"Keystone Facility Group",contact:"Mark Ellis",     email:"mellis@keystonefg.com",  phone:"704-555-9981", industry:"Facilities", avg:"$7,300",  ach:66, vcc:25},
+    {company:"Kingstone Mechanical",   contact:"Lisa Warren",    email:"lwarren@kingstone.com",  phone:"919-555-4403", industry:"Mechanical", avg:"$8,100",  ach:63, vcc:29},
+    {company:"KLM Property Services",  contact:"Derrick Cole",   email:"dcole@klmproperty.com",  phone:"980-555-6310", industry:"Property",   avg:"$5,700",  ach:61, vcc:31}
+  ]
 };
-recognition.start();
-}
-function stopListening(){if(recognition) recognition.stop();}
+function $$(id){ return document.getElementById(id); }
+function gh(){ return JSON.parse(localStorage.getItem("pp7") || "[]"); }
+function sh(h){ localStorage.setItem("pp7", JSON.stringify(h)); }
+function show(el){ el.classList.remove("h"); }
+function hide(el){ el.classList.add("h"); }
 
-function calcProb(text){
-let s=70;const t=text.toLowerCase();
-if(t.includes("check")||t.includes("cheques")) s-=10;
-if(t.includes("fee")||t.includes("tarifas")) s-=15;
-if(t.includes("busy")||t.includes("later")) s-=8;
-if(t.includes("accountant")) s-=10;
-if(t.includes("not interested")) s-=18;
-if(t.includes("yes")) s+=20;
-if(t.includes("interested")) s+=15;
-const sp=suppliers[selectedIdx];
-s+=Math.round((sp.ach_score-sp.vcc_score)/10);
-return Math.max(5,Math.min(95,s));
-}
-function getTag(text){
-const t=text.toLowerCase();
-if(t.includes("check")||t.includes("cheques")) return "Payment Method";
-if(t.includes("fee")||t.includes("tarifas")) return "Cost";
-if(t.includes("busy")||t.includes("later")) return "Timing";
-if(t.includes("accountant")) return "Accounting";
-if(t.includes("not interested")) return "Rejection";
-return "General";
-}
-function getStrategy(text,score){
-const tag=getTag(text);
-if(score>=80) return "Push Next Step";
-if(tag==="Cost") return "Reframe Value";
-if(tag==="Payment Method") return "Speed & Simplicity";
-if(tag==="Timing") return "Keep It Short";
-if(tag==="Accounting") return "Lower Friction";
-if(tag==="Rejection") return "Soften & Re-engage";
-return "Guide Next Step";
-}
-function getHeat(s){return s>=80?"🔥 Hot":s>=55?"◑ Warm":"● Cold"}
-function getAction(text,score){
-const tag=getTag(text);
-if(score>=80) return "Ask for setup now";
-if(tag==="Payment Method") return "Position ACH speed";
-if(tag==="Cost") return "Reframe: no fees";
-if(tag==="Timing") return "Short push";
-if(tag==="Accounting") return "Loop in accounting";
-if(tag==="Rejection") return "Lower resistance";
-return "Guide forward";
-}
-function getCoaching(text,score){
-const s=getStrategy(text,score);
-if(s==="Push Next Step") return "They sound close. Stop explaining and move to setup.";
-if(s==="Reframe Value") return "Don't defend cost. Shift focus to simplicity and speed.";
-if(s==="Speed & Simplicity") return "Make checks sound slow. Make ACH sound effortless.";
-if(s==="Keep It Short") return "Shorten your response and hold control of the call.";
-if(s==="Lower Friction") return "Reduce effort. Offer a single, simple next step.";
-if(s==="Soften & Re-engage") return "Don't push. Rebuild interest and keep it light.";
-return "Acknowledge, reframe, and guide forward.";
-}
-function getFallback(text){
-const t=text.toLowerCase();
-if(t.includes("check")||t.includes("cheques")) return "Yeah, I get that. Most people start there, but ACH usually ends up easier since you're not waiting on checks anymore.";
-if(t.includes("fee")||t.includes("tarifas")) return "That's fair. That's why ACH is usually the better option — it keeps things simple without extra fees.";
-if(t.includes("busy")||t.includes("later")) return "No worries, I'll keep it quick so you don't have to come back to this later.";
-if(t.includes("accountant")) return "Makes sense. We can loop in accounting, but the setup itself is simple so we can keep this moving now.";
-if(t.includes("not interested")) return "All good. Usually once people see it's really about getting paid faster, it starts to make more sense.";
-if(t.includes("card")||t.includes("cards")) return "That's fine. In that case ACH is probably the cleaner fit — keeps things simple and gets funds over faster.";
-if(detectLang(text)==="Spanish") return "Entiendo. ACH le ayuda a recibir pagos más rápido y evita retrasos de cheques.";
-return "That makes sense. ACH just helps you get paid faster without the delays.";
+// ── LOGIN ──
+function doLogin(){
+  var pw = $$("PW").value.trim();
+  if(pw === "demo123"){
+    var lp = $$("LP");
+    lp.style.opacity = "0";
+    lp.style.transition = "opacity .3s";
+    setTimeout(function(){
+      hide(lp);
+      show($$("APP"));
+      show($$("LIVE-BADGE"));
+      show($$("USER-CHIP"));
+      $$("SS").value = G.suppliers[0].company;
+      loadS(); renderHist(); updateStats(); renderMgr();
+    }, 280);
+  } else {
+    $$("LP-ERR").textContent = "Wrong password. Try: demo123";
+    $$("PW").style.borderColor = "#dc2626";
+    setTimeout(function(){ $$("PW").style.borderColor = ""; $$("LP-ERR").textContent = ""; }, 2000);
+  }
 }
 
-let _twi=null;
-function typewrite(el,text){
-if(_twi){clearInterval(_twi);_twi=null;}
-el.textContent="";let i=0;
-const chars=text.split("");
-_twi=setInterval(()=>{
-if(i<chars.length){el.textContent+=chars[i];i++;}
-else{clearInterval(_twi);_twi=null;}
-},20);
+// ── NAV ──
+function showRep(){
+  show($$("RV")); hide($$("MV"));
+  $$("btnRep").classList.add("on"); $$("btnMgr").classList.remove("on");
+}
+function showMgr(){
+  hide($$("RV")); show($$("MV"));
+  $$("btnMgr").classList.add("on"); $$("btnRep").classList.remove("on");
+  renderMgr();
 }
 
-async function generateResponse(){
-const text=document.getElementById("objection").value.trim();
-if(!text) return;
-if(_twi){clearInterval(_twi);_twi=null;}
-
-const score=calcProb(text);
-const tag=getTag(text);
-const action=getAction(text,score);
-const el=document.getElementById("response");
-const supplier=suppliers[selectedIdx];
-
-el.innerHTML='<span style="font-size:15px;font-weight:500;font-style:normal;color:rgba(255,255,255,.7);">● Analyzing objection…</span>';
-updateTranslation();
-
-document.getElementById("confidence").textContent="90%";
-document.getElementById("objectionTag").textContent=tag;
-document.getElementById("nextBestAction").textContent=action;
-document.getElementById("closeProbability").textContent=score+"%";
-document.getElementById("strategyTag").textContent=getStrategy(text,score);
-document.getElementById("leadHeat").textContent=getHeat(score);
-document.getElementById("liveCoaching").textContent=getCoaching(text,score);
-genExtras();
-
-let responseText=null;
-try{
-const sysPrompt=`You are an expert B2B sales rep for PayPilot, enrolling suppliers onto ACH electronic payments. Reply to the supplier objection with ONE short, natural, conversational response (2-3 sentences max). Acknowledge their concern, pivot to the benefit (faster payment, no check delays, no fees to supplier), move toward enrollment. Sound like a real human, not a script. Supplier: ${supplier.company} (${supplier.industry}), Contact: ${supplier.contact}, Objection type: ${tag}.`;
-const r=await fetch("https://api.anthropic.com/v1/messages",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:180,system:sysPrompt,messages:[{role:"user",content:`Supplier said: "${text}"`}]})
-});
-const d=await r.json();
-if(d.content&&d.content[0]&&d.content[0].text) responseText=d.content[0].text.trim();
-}catch(e){responseText=null;}
-
-if(!responseText) responseText=getFallback(text);
-el.textContent="";
-typewrite(el,responseText);
+// ── SEARCH ──
+function doSearch(){
+  var q = $$("SS").value.trim().toLowerCase();
+  var sr = $$("SR");
+  if(!q){ hide(sr); sr.innerHTML = ""; return; }
+  var hits = [];
+  for(var i=0; i<G.suppliers.length; i++){
+    var s = G.suppliers[i];
+    if(s.company.toLowerCase().indexOf(q)>=0 || s.contact.toLowerCase().indexOf(q)>=0 || s.email.toLowerCase().indexOf(q)>=0 || s.phone.indexOf(q)>=0){
+      hits.push(i);
+    }
+  }
+  if(!hits.length){ show(sr); sr.innerHTML = '<div class="SR-item"><div class="SR-name" style="color:#9ca3af">No results</div></div>'; return; }
+  var html = "";
+  for(var j=0; j<hits.length; j++){
+    var idx = hits[j]; var s2 = G.suppliers[idx];
+    html += '<div class="SR-item '+(j===0?"on":"")+'" data-i="'+idx+'"><div class="SR-name">'+s2.company+'</div><div class="SR-meta">'+s2.contact+' &middot; '+s2.email+' &middot; '+s2.phone+'</div></div>';
+  }
+  show(sr); sr.innerHTML = html;
+  G.idx = hits[0]; loadS();
 }
 
-function genExtras(){
-const s=suppliers[selectedIdx];
-const outcome=document.getElementById("outcome").value;
-document.getElementById("crmNote").textContent=`${s.company}: Discussed electronic payment options. Contact: ${s.contact}. Outcome: ${outcome}.`;
-document.getElementById("emailText").textContent=`Hi ${s.contact}, thank you for your time. ACH may be a strong fit to help you receive payments faster and reduce delays.`;
+function pickS(i){ G.idx = i; $$("SS").value = G.suppliers[i].company; hide($$("SR")); $$("SR").innerHTML = ""; loadS(); }
+
+function loadS(){
+  var s = G.suppliers[G.idx];
+  $$("SI").innerHTML =
+    '<table class="ST">'+
+      '<tr><td>Company</td><td>'+s.company+'</td></tr>'+
+      '<tr><td>Contact</td><td>'+s.contact+'</td></tr>'+
+      '<tr><td>Email</td><td>'+s.email+'</td></tr>'+
+      '<tr><td>Phone</td><td>'+s.phone+'</td></tr>'+
+      '<tr><td>Industry</td><td>'+s.industry+'</td></tr>'+
+      '<tr><td>Avg Invoice</td><td>'+s.avg+'</td></tr>'+
+    '</table>'+
+    '<div class="SCORES">'+
+      '<div class="SC2 SC2-b"><span class="SC2-lbl">ACH Score</span><span class="SC2-val">'+s.ach+'%</span></div>'+
+      '<div class="SC2 SC2-c"><span class="SC2-lbl">VCC Score</span><span class="SC2-val">'+s.vcc+'%</span></div>'+
+    '</div>';
 }
 
+// ── WEB LOOKUP ──
+function safeA(v){ return (v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+
+function doLookup(){
+  var q = $$("WLI").value.trim();
+  if(!q){ $$("WLI").style.borderColor = "#dc2626"; setTimeout(function(){ $$("WLI").style.borderColor = ""; }, 1400); return; }
+  var ws = $$("WLS"), wm = $$("WL-MSG"), wsp = $$("WL-SPIN"), si = $$("SI");
+  ws.className = "LKUP-STATUS load"; show(ws);
+  wm.textContent = "Looking up contact info...";
+  wsp.style.display = "block";
+  si.innerHTML = "";
+  var prompt = "Find contact information for this company: " + q + ". Return ONLY a JSON object with keys: company, contact, title, email, phone, address, industry. Use empty string for unknown fields. No explanation, just the JSON.";
+  fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {"Content-Type":"application/json","anthropic-version":"2023-06-01"},
+    body: JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:350,messages:[{role:"user",content:prompt}]})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    wsp.style.display = "none";
+    if(d.error || !d.content || !d.content[0]){
+      ws.className = "LKUP-STATUS ok"; wm.textContent = "Enter details manually";
+      showManForm(si, q); return;
+    }
+    var raw = d.content[0].text || "";
+    var parsed = parseLookup(raw, q);
+    var ach = Math.floor(Math.random()*30)+55, vcc = Math.floor(Math.random()*20)+15;
+    ws.className = "LKUP-STATUS ok"; wm.textContent = "Found - verify and save";
+    renderLookup(parsed, ach, vcc, si);
+  })
+  .catch(function(){
+    wsp.style.display = "none"; ws.className = "LKUP-STATUS ok";
+    wm.textContent = "Use links below to find info"; showManForm(si, q);
+  });
+}
+
+function parseLookup(raw, q){
+  var fence = String.fromCharCode(96,96,96);
+  raw = raw.split(fence+"json").join("").split(fence).join("").trim();
+  try{ var s=raw.indexOf("{"),e=raw.lastIndexOf("}"); if(s>=0&&e>s){ var p=JSON.parse(raw.slice(s,e+1)); if(!p.company) p.company=q; return p; } }catch(ex){}
+  var em = raw.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
+  var ph = raw.match(/[\(]?\d{3}[\)\.\-\s]?\s?\d{3}[\.\-\s]?\d{4}/);
+  return {company:q,contact:"",title:"",email:em?em[0]:"",phone:ph?ph[0]:"",address:"",industry:""};
+}
+
+function renderLookup(p, ach, vcc, el){
+  var co=p.company||"",ct=p.contact||"",ti=p.title||"",em=p.email||"",ph=p.phone||"",ad=p.address||"",ind=p.industry||"";
+  el.innerHTML =
+    '<div class="WEB-TAG">Result - verify before saving</div>'+
+    '<table class="ST">'+
+      '<tr><td>Company</td><td>'+co+'</td></tr>'+
+      '<tr><td>Contact</td><td>'+ct+(ti?' <span style="color:#6b7280;font-size:13px;">&middot; '+ti+'</span>':'')+'</td></tr>'+
+      '<tr><td>Email</td><td>'+em+'</td></tr>'+
+      '<tr><td>Phone</td><td>'+ph+'</td></tr>'+
+      '<tr><td>Address</td><td>'+ad+'</td></tr>'+
+      '<tr><td>Industry</td><td>'+ind+'</td></tr>'+
+    '</table>'+
+    '<div class="SCORES">'+
+      '<div class="SC2 SC2-b"><span class="SC2-lbl">ACH Score</span><span class="SC2-val">'+ach+'%</span></div>'+
+      '<div class="SC2 SC2-c"><span class="SC2-lbl">VCC Score</span><span class="SC2-val">'+vcc+'%</span></div>'+
+    '</div>'+
+    '<button class="BT BT-blue" style="width:100%;justify-content:center;margin-top:13px" data-co="'+safeA(co)+'" data-ct="'+safeA(ct)+'" data-em="'+safeA(em)+'" data-ph="'+safeA(ph)+'" data-ind="'+safeA(ind)+'" data-ach="'+ach+'" data-vcc="'+vcc+'" id="btnSaveWeb">+ Save to Database</button>'+
+    '<p style="font-size:11.5px;color:#9ca3af;margin-top:7px;text-align:center">AI may not have current data - verify before saving</p>';
+  var sb = $$("btnSaveWeb");
+  if(sb) sb.addEventListener("click", function(){ saveWeb(this); });
+}
+
+function showManForm(el, q){
+  var gUrl = "https://www.google.com/search?q="+encodeURIComponent(q+" accounts payable contact phone");
+  var liUrl = "https://www.linkedin.com/search/results/companies/?keywords="+encodeURIComponent(q);
+  var bbUrl = "https://www.bbb.org/search?find_text="+encodeURIComponent(q);
+  el.innerHTML =
+    '<div class="WEB-TAG">Manual Lookup</div>'+
+    '<p style="font-size:14px;color:#374151;margin-bottom:11px;line-height:1.6">Open a site, find the info, fill in below:</p>'+
+    '<div style="margin-bottom:14px">'+
+      '<a class="SLB" href="'+gUrl+'" target="_blank">&#128269; Google</a>'+
+      '<a class="SLB" href="'+liUrl+'" target="_blank">in LinkedIn</a>'+
+      '<a class="SLB" href="'+bbUrl+'" target="_blank">&#127942; BBB</a>'+
+    '</div>'+
+    '<div class="MAN-FORM">'+
+      '<div class="FLD"><label class="FL">Company</label><input id="mfCo" value="'+safeA(q)+'"></div>'+
+      '<div class="G2">'+
+        '<div class="FLD"><label class="FL">Contact</label><input id="mfCt" placeholder="AP contact name"></div>'+
+        '<div class="FLD"><label class="FL">Phone</label><input id="mfPh" placeholder="555-555-5555"></div>'+
+      '</div>'+
+      '<div class="G2">'+
+        '<div class="FLD"><label class="FL">Email</label><input id="mfEm" placeholder="ap@company.com"></div>'+
+        '<div class="FLD"><label class="FL">Industry</label><input id="mfInd" placeholder="e.g. Electrical"></div>'+
+      '</div>'+
+      '<button class="BT BT-blue" style="width:100%;justify-content:center;margin-top:5px" id="btnManSave">+ Save to Database</button>'+
+    '</div>';
+  var ms = $$("btnManSave");
+  if(ms) ms.addEventListener("click", saveManual);
+}
+
+function saveWeb(btn){
+  var ach = parseInt(btn.getAttribute("data-ach"))||60;
+  var vcc2 = parseInt(btn.getAttribute("data-vcc"))||25;
+  G.suppliers.push({company:btn.getAttribute("data-co")||"New Co",contact:btn.getAttribute("data-ct")||"",email:btn.getAttribute("data-em")||"",phone:btn.getAttribute("data-ph")||"",industry:btn.getAttribute("data-ind")||"General",avg:"$0",ach:ach,vcc:vcc2});
+  G.idx = G.suppliers.length-1;
+  $$("SS").value = G.suppliers[G.idx].company;
+  loadS(); hide($$("WLS")); $$("WLI").value = "";
+}
+
+function saveManual(){
+  var co = ($$("mfCo") && $$("mfCo").value)||"New Co";
+  var ct = ($$("mfCt") && $$("mfCt").value)||"";
+  var ph = ($$("mfPh") && $$("mfPh").value)||"";
+  var em = ($$("mfEm") && $$("mfEm").value)||"";
+  var ind = ($$("mfInd") && $$("mfInd").value)||"General";
+  var ach2 = Math.floor(Math.random()*25)+55, vcc3 = Math.floor(Math.random()*20)+15;
+  G.suppliers.push({company:co,contact:ct,email:em,phone:ph,industry:ind,avg:"$0",ach:ach2,vcc:vcc3});
+  G.idx = G.suppliers.length-1;
+  $$("SS").value = co;
+  loadS(); hide($$("WLS")); $$("WLI").value = "";
+}
+
+// ── LANGUAGE DETECTION ──
+function detectLang(t){
+  var l = t.toLowerCase();
+  return (l.indexOf("hola")>=0||l.indexOf("cheques")>=0||l.indexOf("tarjeta")>=0||l.indexOf("gracias")>=0||l.indexOf("tarifas")>=0||l.indexOf("pago")>=0||l.indexOf("nosotros")>=0) ? "Spanish" : "English";
+}
+
+// ── TRANSLATION ──
+function toggleTrans(){
+  G.translateOn = !G.translateOn;
+  var tb = $$("TR-BOX");
+  if(G.translateOn){ show(tb); updateTrans(); } else { hide(tb); }
+}
+
+function updateTrans(){
+  var text = $$("OBJ").value.trim();
+  var lang = detectLang(text);
+  $$("mLANG").textContent = lang === "Spanish" ? "ES" : "EN";
+  if(!G.translateOn || !text) return;
+  if(lang === "Spanish"){
+    $$("trEN").textContent = text;
+    $$("trES").textContent = "Entiendo. ACH le ayuda a recibir pagos mas rapido y evita retrasos de cheques.";
+  } else {
+    $$("trEN").textContent = text;
+    $$("trES").textContent = "Entiendo su preocupacion. Con ACH usted recibe sus pagos mas rapido sin esperar cheques.";
+  }
+  doAITrans(text, lang);
+}
+
+function doAITrans(text, lang){
+  var prompt = lang === "Spanish"
+    ? "Translate to English (one line), then write a SHORT Spanish ACH enrollment reply. Format:\nENGLISH: [translation]\nSPANISH: [reply]\n\nText: " + text
+    : "Write a SHORT natural Spanish reply (1-2 sentences) for ACH enrollment. Start with SPANISH: then the reply.\n\nSupplier said: " + text;
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:120,messages:[{role:"user",content:prompt}]})
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if(!d.content||!d.content[0]) return;
+    var raw = d.content[0].text||"";
+    var em = raw.match(/ENGLISH:\s*(.+)/i), es = raw.match(/SPANISH:\s*(.+)/i);
+    if(em&&em[1]) $$("trEN").textContent = em[1].trim();
+    if(es&&es[1]) $$("trES").textContent = es[1].trim();
+  }).catch(function(){});
+}
+
+// ── TTS ──
+function speakTxt(text, lang){
+  if(!text||text==="—"||!text.trim()) return;
+  var syn = window.speechSynthesis;
+  if(!syn) return;
+  syn.cancel();
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = lang; u.rate = 0.9; u.volume = 1;
+  var vs = syn.getVoices();
+  var lc = lang.substring(0,2);
+  for(var i=0;i<vs.length;i++){ if(vs[i].lang.indexOf(lc)===0){ u.voice=vs[i]; break; } }
+  var st = $$("trSTAT");
+  if(st){ st.textContent = lang.indexOf("es")===0 ? "Speaking Spanish..." : "Speaking English..."; st.className = "TR-status"; }
+  u.onend = function(){ if(st) st.textContent = ""; };
+  syn.speak(u);
+}
+
+// ── SPANISH MIC ──
+function startEsMic(){
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ alert("Mic not supported"); return; }
+  var btn = $$("btnEsMic");
+  if(G.esRecognition){ G.esRecognition.stop(); G.esRecognition = null; if(btn) btn.textContent = "Escuchar"; return; }
+  G.esRecognition = new SR();
+  G.esRecognition.continuous = false; G.esRecognition.lang = "es-MX";
+  G.esRecognition.onresult = function(e){
+    var t = e.results[0][0].transcript;
+    $$("OBJ").value = t;
+    updateTrans();
+    if(!G.translateOn) toggleTrans();
+  };
+  G.esRecognition.onend = function(){ G.esRecognition = null; if(btn) btn.textContent = "Escuchar"; };
+  G.esRecognition.start();
+  if(btn) btn.textContent = "Listening...";
+}
+
+// ── ENGLISH MIC ──
+function startMic(){
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ alert("Mic not supported in this browser"); return; }
+  if(G.recognition) G.recognition.stop();
+  G.recognition = new SR();
+  G.recognition.continuous = true; G.recognition.interimResults = true; G.recognition.lang = "en-US";
+  G.recognition.onstart = function(){ $$("mMIC").textContent="Live"; $$("btnMic").classList.add("rec"); $$("btnMic").textContent="Recording"; };
+  G.recognition.onerror = function(){ $$("mMIC").textContent="Error"; };
+  G.recognition.onend = function(){ $$("mMIC").textContent="Idle"; $$("btnMic").classList.remove("rec"); $$("btnMic").textContent="Start Mic"; };
+  G.recognition.onresult = function(e){
+    var t = e.results[e.results.length-1][0].transcript;
+    $$("OBJ").value = t;
+    updateTrans();
+    clearTimeout(window._vt);
+    window._vt = setTimeout(doGen, 300);
+  };
+  G.recognition.start();
+}
+function stopMic(){ if(G.recognition) G.recognition.stop(); }
+
+// ── SCORING ──
+function calcProb(t){
+  var s=70, l=t.toLowerCase(), sp=G.suppliers[G.idx];
+  if(l.indexOf("check")>=0||l.indexOf("cheques")>=0) s-=10;
+  if(l.indexOf("fee")>=0||l.indexOf("tarifas")>=0) s-=15;
+  if(l.indexOf("busy")>=0||l.indexOf("later")>=0) s-=8;
+  if(l.indexOf("accountant")>=0) s-=10;
+  if(l.indexOf("not interested")>=0) s-=18;
+  if(l.indexOf("yes")>=0) s+=20;
+  if(l.indexOf("interested")>=0) s+=15;
+  s += Math.round((sp.ach-sp.vcc)/10);
+  return Math.max(5,Math.min(95,s));
+}
+function getTag(t){
+  var l=t.toLowerCase();
+  if(l.indexOf("check")>=0||l.indexOf("cheques")>=0) return "Payment Method";
+  if(l.indexOf("fee")>=0||l.indexOf("tarifas")>=0) return "Cost";
+  if(l.indexOf("busy")>=0||l.indexOf("later")>=0) return "Timing";
+  if(l.indexOf("accountant")>=0) return "Accounting";
+  if(l.indexOf("not interested")>=0) return "Rejection";
+  return "General";
+}
+function getStrat(t,sc){
+  var tag=getTag(t);
+  if(sc>=80) return "Push Next Step";
+  if(tag==="Cost") return "Reframe Value";
+  if(tag==="Payment Method") return "Speed & Simplicity";
+  if(tag==="Timing") return "Keep It Short";
+  if(tag==="Accounting") return "Lower Friction";
+  if(tag==="Rejection") return "Soften & Re-engage";
+  return "Guide Next Step";
+}
+function getHeat(s){ return s>=80?"Hot":s>=55?"Warm":"Cold"; }
+function getAct(t,sc){
+  var tag=getTag(t);
+  if(sc>=80) return "Ask for setup now";
+  if(tag==="Payment Method") return "Position ACH speed";
+  if(tag==="Cost") return "Reframe: no fees";
+  if(tag==="Timing") return "Short push";
+  if(tag==="Accounting") return "Loop in accounting";
+  if(tag==="Rejection") return "Lower resistance";
+  return "Guide forward";
+}
+function getCoach(t,sc){
+  var s=getStrat(t,sc);
+  if(s==="Push Next Step") return "They sound close. Stop explaining and move to setup.";
+  if(s==="Reframe Value") return "Don't defend cost. Shift to simplicity and speed.";
+  if(s==="Speed & Simplicity") return "Make checks sound slow. Make ACH sound effortless.";
+  if(s==="Keep It Short") return "Shorten your response and hold control of the call.";
+  if(s==="Lower Friction") return "Reduce effort. Offer a single, simple next step.";
+  if(s==="Soften & Re-engage") return "Don't push. Rebuild interest and keep it light.";
+  return "Acknowledge, reframe, and guide forward.";
+}
+function getFB(t){
+  var l=t.toLowerCase();
+  if(l.indexOf("check")>=0||l.indexOf("cheques")>=0) return "Yeah, I get that. Most people start there, but ACH usually ends up easier since you're not waiting on checks anymore.";
+  if(l.indexOf("fee")>=0||l.indexOf("tarifas")>=0) return "That's fair. That's why ACH is usually the better option - it keeps things simple without extra fees.";
+  if(l.indexOf("busy")>=0||l.indexOf("later")>=0) return "No worries, I'll keep it quick so you don't have to come back to this later.";
+  if(l.indexOf("accountant")>=0) return "Makes sense. We can loop in accounting, but the setup itself is simple so we can keep this moving now.";
+  if(l.indexOf("not interested")>=0) return "All good. Usually once people see it's really about getting paid faster, it starts to make more sense.";
+  if(detectLang(t)==="Spanish") return "Entiendo. ACH le ayuda a recibir pagos mas rapido y evita retrasos de cheques.";
+  return "That makes sense. ACH just helps you get paid faster without the delays.";
+}
+
+// ── TYPEWRITER ──
+function typewrite(el, txt){
+  if(G.twi){ clearInterval(G.twi); G.twi=null; }
+  el.textContent = "";
+  var i=0, chars=txt.split("");
+  G.twi = setInterval(function(){
+    if(i<chars.length){ el.textContent+=chars[i]; i++; }
+    else { clearInterval(G.twi); G.twi=null; }
+  }, 20);
+}
+
+// ── GENERATE RESPONSE ──
+function doGen(){
+  var text = $$("OBJ").value.trim();
+  if(!text) return;
+  if(G.twi){ clearInterval(G.twi); G.twi=null; }
+  var sc=calcProb(text), tag=getTag(text), act=getAct(text,sc), sp=G.suppliers[G.idx];
+  var el=$$("AI-RESP");
+  el.textContent = "Analyzing objection...";
+  updateTrans();
+  $$("cCONF").textContent="90%"; $$("cOBJ").textContent=tag; $$("cACT").textContent=act; $$("cCLOSE").textContent=sc+"%";
+  $$("mSTRAT").textContent=getStrat(text,sc); $$("mHEAT").textContent=getHeat(sc);
+  $$("iCOACH").textContent=getCoach(text,sc);
+  $$("iCRM").textContent=sp.company+": Discussed electronic payment options. Contact: "+sp.contact+". Outcome: "+$$("OUT").value+".";
+  $$("iEMAIL").textContent="Hi "+sp.contact+", thank you for your time. ACH may be a strong fit to help you receive payments faster.";
+  var sysP="You are an expert B2B sales rep for PayPilot enrolling suppliers onto ACH. Reply with ONE short natural response (2-3 sentences). Acknowledge concern, pivot to benefits: faster payment, no check delays, no supplier fees. Sound human. Supplier: "+sp.company+" ("+sp.industry+"), Contact: "+sp.contact+", Objection: "+tag+".";
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:180,system:sysP,messages:[{role:"user",content:"Supplier said: "+text}]})
+  }).then(function(r){ return r.json(); }).then(function(d){
+    var resp=(d.content&&d.content[0]&&d.content[0].text)?d.content[0].text.trim():getFB(text);
+    el.textContent=""; typewrite(el, resp);
+  }).catch(function(){ el.textContent=""; typewrite(el, getFB(text)); });
+}
+
+// ── LOG CALL ──
 function logCall(){
-const h=gh();const s=suppliers[selectedIdx];
-h.unshift({supplier:s.company,objection:document.getElementById("objection").value.trim(),outcome:document.getElementById("outcome").value,enrollment:document.getElementById("enrollment").value,createdAt:new Date().toLocaleString()});
-sh(h);renderHistory();updateStats();renderManager();
+  var h=gh(), sp=G.suppliers[G.idx];
+  h.unshift({supplier:sp.company,objection:$$("OBJ").value.trim(),outcome:$$("OUT").value,enrollment:$$("ENR").value,createdAt:new Date().toLocaleString()});
+  sh(h); renderHist(); updateStats(); renderMgr();
+}
+function markDone(){ $$("ENR").value="Completed"; $$("OUT").value="Converted"; }
+
+// ── RENDER ──
+function tagH(o){
+  if(o==="Converted") return '<span class="TAG T-ok">Converted</span>';
+  if(o==="Rejected") return '<span class="TAG T-no">Rejected</span>';
+  if(o==="Follow Up Needed") return '<span class="TAG T-fu">Follow Up</span>';
+  return '<span class="TAG T-pd">Pending</span>';
 }
 
-function tagHTML(o){
-if(o==="Converted") return`<span class="stag st-conv">Converted</span>`;
-if(o==="Rejected") return`<span class="stag st-rej">Rejected</span>`;
-if(o==="Follow Up Needed") return`<span class="stag st-fup">Follow Up</span>`;
-return`<span class="stag st-pend">Pending</span>`;
-}
-
-function renderHistory(){
-const h=gh();const el=document.getElementById("history");
-if(!h.length){el.innerHTML='<p class="muted">No calls logged yet.</p>';return}
-el.innerHTML=h.map(x=>`
-<div class="history-entry">
-<div class="he-top"><span class="he-name">${x.supplier}</span>${tagHTML(x.outcome)}</div>
-<div class="he-date">${x.createdAt}</div>
-<div class="he-obj">${x.objection||"—"}</div>
-</div>`).join("");
+function renderHist(){
+  var h=gh(), el=$$("HIST");
+  if(!h.length){ el.innerHTML='<p class="MUTED">No calls logged yet.</p>'; return; }
+  var html="";
+  for(var i=0;i<h.length;i++){
+    var x=h[i];
+    html+='<div class="HE"><div class="HE-top"><span class="HE-name">'+x.supplier+'</span>'+tagH(x.outcome)+'</div><div class="HE-date">'+x.createdAt+'</div><div class="HE-obj">'+(x.objection||"—")+'</div></div>';
+  }
+  el.innerHTML=html;
 }
 
 function updateStats(){
-const h=gh();const calls=h.length;
-const conv=h.filter(x=>x.outcome==="Converted").length;
-const rate=calls?Math.round((conv/calls)*100):0;
-const tags={};h.forEach(x=>{const t=getTag(x.objection||"");tags[t]=(tags[t]||0)+1});
-let top="None",tc=0;
-for(const k in tags){if(tags[k]>tc){top=k;tc=tags[k]}}
-document.getElementById("callsLogged").textContent=calls;
-document.getElementById("callsConverted").textContent=conv;
-document.getElementById("conversionRate").textContent=rate+"%";
-document.getElementById("topObjection").textContent=top;
+  var h=gh(), calls=h.length, conv=0, tags={};
+  for(var i=0;i<h.length;i++){
+    if(h[i].outcome==="Converted") conv++;
+    var t=getTag(h[i].objection||""); tags[t]=(tags[t]||0)+1;
+  }
+  var rate=calls?Math.round((conv/calls)*100):0;
+  var top="None",tc=0;
+  for(var k in tags){ if(tags[k]>tc){ top=k; tc=tags[k]; } }
+  $$("sLOG").textContent=calls; $$("sCONV").textContent=conv;
+  $$("sRATE").textContent=rate+"%"; $$("sTOP").textContent=top;
 }
 
-function renderManager(){
-const h=gh();const total=h.length;
-const won=h.filter(x=>x.outcome==="Converted").length;
-const rate=total?Math.round((won/total)*100):0;
-document.getElementById("mgrCalls").textContent=total;
-document.getElementById("mgrConverted").textContent=won;
-document.getElementById("mgrRate").textContent=rate+"%";
-const bd={};h.forEach(x=>{const t=getTag(x.objection||"");bd[t]=(bd[t]||0)+1});
-let top="None",tc=0;
-for(const k in bd){if(bd[k]>tc){top=k;tc=bd[k]}}
-document.getElementById("mgrTopObjection").textContent=top;
-const maxV=Math.max(...Object.values(bd),1);
-document.getElementById("objectionBreakdown").innerHTML=
-Object.keys(bd).length
-?Object.entries(bd).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
-<div class="obj-row">
-<div class="obj-label">${k}</div>
-<div class="obj-track"><div class="obj-fill" style="width:${Math.round((v/maxV)*100)}%"></div></div>
-<div class="obj-count">${v}</div>
-</div>`).join("")
-:'<p class="muted">No data yet. Log calls in Rep View.</p>';
+function renderMgr(){
+  var h=gh(), tot=h.length, won=0, bd={};
+  for(var i=0;i<h.length;i++){
+    if(h[i].outcome==="Converted") won++;
+    var t=getTag(h[i].objection||""); bd[t]=(bd[t]||0)+1;
+  }
+  var rate=tot?Math.round((won/tot)*100):0;
+  $$("mCALLS").textContent=tot; $$("mCONV").textContent=won;
+  $$("mRATE").textContent=rate+"%";
+  var top="None",tc=0;
+  for(var k in bd){ if(bd[k]>tc){ top=k; tc=bd[k]; } }
+  $$("mTOP").textContent=top;
+  var keys=Object.keys(bd),html="";
+  if(!keys.length){ $$("OBDWN").innerHTML='<p class="MUTED">No data yet.</p>'; return; }
+  keys.sort(function(a,b){ return bd[b]-bd[a]; });
+  var mx=bd[keys[0]];
+  for(var j=0;j<keys.length;j++){
+    var kk=keys[j],vv=bd[kk];
+    html+='<div class="OBJ"><div class="OBJ-lbl">'+kk+'</div><div class="OBJ-trk"><div class="OBJ-fill" style="width:'+Math.round((vv/mx)*100)+'%"></div></div><div class="OBJ-cnt">'+vv+'</div></div>';
+  }
+  $$("OBDWN").innerHTML=html;
 }
 
-function markEnrollmentComplete(){
-document.getElementById("enrollment").value="Completed";
-document.getElementById("outcome").value="Converted";
-genExtras();
-}
-
-document.addEventListener("click",e=>{
-const sr=document.getElementById("searchResults");
-const inp=document.getElementById("supplierSearch");
-if(sr&&!sr.contains(e.target)&&e.target!==inp) sr.classList.add("hidden");
+// ── WIRE UP ALL EVENTS ──
+document.addEventListener("DOMContentLoaded", function(){
+  // Login
+  $$("LP-BTN").addEventListener("click", doLogin);
+  $$("PW").addEventListener("keydown", function(e){ if(e.keyCode===13||e.key==="Enter") doLogin(); });
+  // Nav
+  $$("btnRep").addEventListener("click", showRep);
+  $$("btnMgr").addEventListener("click", showMgr);
+  $$("btnLogout").addEventListener("click", function(){ location.reload(); });
+  // Search
+  $$("SS").addEventListener("input", doSearch);
+  $$("SR").addEventListener("click", function(e){
+    var item = e.target.closest("[data-i]");
+    if(item) pickS(parseInt(item.getAttribute("data-i")));
+  });
+  document.addEventListener("click", function(e){
+    var sr=$$("SR"), ss=$$("SS");
+    if(sr&&!sr.contains(e.target)&&e.target!==ss) hide(sr);
+  });
+  // Web lookup
+  $$("btnFind").addEventListener("click", doLookup);
+  $$("WLI").addEventListener("keydown", function(e){ if(e.keyCode===13||e.key==="Enter") doLookup(); });
+  // Mic & translate
+  $$("btnMic").addEventListener("click", startMic);
+  $$("btnStop").addEventListener("click", stopMic);
+  $$("btnMicStart").addEventListener("click", startMic);
+  $$("btnMicStop").addEventListener("click", stopMic);
+  $$("btnTrans").addEventListener("click", toggleTrans);
+  $$("btnTransToggle").addEventListener("click", toggleTrans);
+  $$("btnEsMic").addEventListener("click", startEsMic);
+  // Speak buttons
+  $$("btnSpkEN").addEventListener("click", function(){ speakTxt($$("trEN").textContent, "en-US"); });
+  $$("btnSpkES").addEventListener("click", function(){ speakTxt($$("trES").textContent, "es-MX"); });
+  // Generate & log
+  $$("btnGen").addEventListener("click", doGen);
+  $$("btnLog").addEventListener("click", logCall);
+  $$("btnMark").addEventListener("click", markDone);
+  // Load voices early
+  if(window.speechSynthesis) window.speechSynthesis.getVoices();
 });
 </script>
 
