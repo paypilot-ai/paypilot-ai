@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -11,44 +10,44 @@
 html{scroll-behavior:smooth}
 
 :root{
-–bg:#eef2f9;
-–bg2:#e4eaf5;
-–white:#ffffff;
-–sidebar:#0f1c2e;
-–sidebar-hover:rgba(255,255,255,.08);
-–sidebar-active:rgba(59,130,246,.25);
-–blue:#2563eb;
-–blue-light:#eff6ff;
-–blue-mid:#3b82f6;
-–blue-dark:#1d4ed8;
-–gold:#f59e0b;
-–gold-light:#fffbeb;
-–green:#059669;
-–green-light:#ecfdf5;
-–red:#dc2626;
-–red-light:#fef2f2;
-–amber:#d97706;
-–cyan:#0891b2;
-–text:#0f172a;
-–text2:#374151;
-–text3:#6b7280;
-–text4:#9ca3af;
-–border:#d1d5db;
-–border2:#e5e7eb;
-–shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
-–shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
-–shadow-lg:0 10px 25px rgba(0,0,0,.1),0 4px 10px rgba(0,0,0,.06);
-–shadow-xl:0 25px 50px rgba(0,0,0,.12);
-–r:20px;
-–r-sm:14px;
-–r-lg:28px;
+--bg:#eef2f9;
+--bg2:#e4eaf5;
+--white:#ffffff;
+--sidebar:#0f1c2e;
+--sidebar-hover:rgba(255,255,255,.08);
+--sidebar-active:rgba(59,130,246,.25);
+--blue:#2563eb;
+--blue-light:#eff6ff;
+--blue-mid:#3b82f6;
+--blue-dark:#1d4ed8;
+--gold:#f59e0b;
+--gold-light:#fffbeb;
+--green:#059669;
+--green-light:#ecfdf5;
+--red:#dc2626;
+--red-light:#fef2f2;
+--amber:#d97706;
+--cyan:#0891b2;
+--text:#0f172a;
+--text2:#374151;
+--text3:#6b7280;
+--text4:#9ca3af;
+--border:#d1d5db;
+--border2:#e5e7eb;
+--shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+--shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+--shadow-lg:0 10px 25px rgba(0,0,0,.1),0 4px 10px rgba(0,0,0,.06);
+--shadow-xl:0 25px 50px rgba(0,0,0,.12);
+--r:20px;
+--r-sm:14px;
+--r-lg:28px;
 }
 
 body{
-font-family:‘Inter’,sans-serif;
+font-family:'Inter',sans-serif;
 background:linear-gradient(160deg,#eef2ff 0%,#f0f4fb 40%,#e8f0fe 100%);
 background-attachment:fixed;
-color:var(–text);
+color:var(--text);
 min-height:100vh;
 font-size:15px;
 line-height:1.6;
@@ -74,7 +73,7 @@ overflow:hidden;
 }
 
 .lp-left::before{
-content:’’;
+content:'';
 position:absolute;inset:0;
 background:
 radial-gradient(ellipse 80% 60% at 20% 20%,rgba(255,255,255,.12) 0%,transparent 60%),
@@ -84,7 +83,7 @@ pointer-events:none;
 
 /* Decorative circles */
 .lp-left::after{
-content:’’;
+content:'';
 position:absolute;
 width:500px;height:500px;
 border-radius:50%;
@@ -141,7 +140,7 @@ display:block;
 }
 
 .lp-tagline{
-font-family:‘Instrument Serif’,serif;
+font-family:'Instrument Serif',serif;
 font-size:20px;font-style:italic;
 color:rgba(219,234,254,.9);
 margin-bottom:48px;
@@ -191,7 +190,7 @@ justify-content:center;
 .lp-form-eyebrow{
 font-size:12px;font-weight:700;
 letter-spacing:.12em;text-transform:uppercase;
-color:var(–blue);margin-bottom:16px;
+color:var(--blue);margin-bottom:16px;
 }
 
 .lp-form-title{
@@ -215,7 +214,7 @@ letter-spacing:.01em;
 .lp-input{
 width:100%;
 padding:16px 18px;
-font-size:17px;font-family:‘Inter’,sans-serif;
+font-size:17px;font-family:'Inter',sans-serif;
 border:2px solid #e5e7eb;
 border-radius:12px;
 outline:none;
@@ -226,7 +225,7 @@ margin-bottom:20px;
 }
 
 .lp-input:focus{
-border-color:var(–blue);
+border-color:var(--blue);
 background:#fff;
 box-shadow:0 0 0 4px rgba(37,99,235,.1);
 }
@@ -237,7 +236,7 @@ box-shadow:0 0 0 4px rgba(37,99,235,.1);
 width:100%;
 padding:18px;
 font-size:18px;font-weight:800;
-font-family:‘Inter’,sans-serif;
+font-family:'Inter',sans-serif;
 border:none;border-radius:12px;
 background:linear-gradient(135deg,#1d4ed8,#3b82f6);
 color:#fff;cursor:pointer;
@@ -256,7 +255,7 @@ font-size:14px;color:#9ca3af;
 margin-top:18px;font-weight:500;
 }
 
-.lp-hint strong{color:var(–blue);}
+.lp-hint strong{color:var(--blue);}
 
 /* ═══════════ APP LAYOUT ═══════════ */
 .app{
@@ -324,18 +323,18 @@ border:none;border-radius:14px;
 background:transparent;
 color:rgba(255,255,255,.6);
 text-align:left;cursor:pointer;
-font-family:‘Inter’,sans-serif;
+font-family:'Inter',sans-serif;
 font-size:15px;font-weight:600;
 transition:all .15s;
 }
 
 .navbtn:hover{
-background:var(–sidebar-hover);
+background:var(--sidebar-hover);
 color:rgba(255,255,255,.95);
 }
 
 .navbtn.active{
-background:var(–sidebar-active);
+background:var(--sidebar-active);
 color:#93c5fd;
 border:1px solid rgba(59,130,246,.3);
 }
@@ -379,7 +378,7 @@ font-size:18px;font-weight:800;
 letter-spacing:-.02em;color:#0f172a;
 }
 
-.tb-title span{color:var(–blue);}
+.tb-title span{color:var(--blue);}
 
 .tb-sep{width:1px;height:22px;background:#e5e7eb;margin:0 4px;}
 
@@ -392,18 +391,18 @@ color:#6b7280;letter-spacing:.01em;
 
 .live-badge{
 display:flex;align-items:center;gap:7px;
-background:var(–green-light);
+background:var(--green-light);
 border:1.5px solid #6ee7b7;
 border-radius:50px;
 padding:7px 16px;
 font-size:12px;font-weight:700;
 letter-spacing:.05em;text-transform:uppercase;
-color:var(–green);
+color:var(--green);
 }
 
 .live-dot{
 width:7px;height:7px;border-radius:50%;
-background:var(–green);
+background:var(--green);
 animation:pulse 2s ease-in-out infinite;
 }
 
@@ -435,14 +434,14 @@ border:1.5px solid #e4eaf5;
 border-radius:22px;
 padding:24px 26px;
 position:relative;overflow:hidden;
-box-shadow:var(–shadow);
+box-shadow:var(--shadow);
 transition:transform .2s,box-shadow .2s;
 cursor:default;
 }
 
 .stat-card:hover{
 transform:translateY(-3px);
-box-shadow:var(–shadow-lg);
+box-shadow:var(--shadow-lg);
 }
 
 .stat-accent{
@@ -463,14 +462,14 @@ color:#8897b5;margin-bottom:12px;
 }
 
 .stat-val{
-font-family:‘Instrument Serif’,serif;
+font-family:'Instrument Serif',serif;
 font-size:56px;font-weight:400;
 line-height:1;letter-spacing:-.03em;
 color:#0f172a;
 }
 
 .stat-val.sm{
-font-family:‘Inter’,sans-serif;
+font-family:'Inter',sans-serif;
 font-size:24px;font-weight:800;
 letter-spacing:-.02em;
 margin-top:6px;
@@ -509,11 +508,11 @@ width:4px;height:18px;
 border-radius:3px;flex-shrink:0;
 }
 
-.cp-blue{background:var(–blue);}
-.cp-green{background:var(–green);}
-.cp-gold{background:var(–gold);}
-.cp-cyan{background:var(–cyan);}
-.cp-amber{background:var(–amber);}
+.cp-blue{background:var(--blue);}
+.cp-green{background:var(--green);}
+.cp-gold{background:var(--gold);}
+.cp-cyan{background:var(--cyan);}
+.cp-amber{background:var(--amber);}
 .cp-gray{background:#9ca3af;}
 
 .card-title{
@@ -526,8 +525,8 @@ color:#374151;
 margin-left:auto;
 font-size:10px;font-weight:700;
 letter-spacing:.08em;text-transform:uppercase;
-color:var(–blue);
-background:var(–blue-light);
+color:var(--blue);
+background:var(--blue-light);
 border:1px solid #bfdbfe;
 border-radius:50px;padding:4px 12px;
 }
@@ -547,7 +546,7 @@ color:#4b5e7e;margin-bottom:8px;
 input,textarea,select{
 width:100%;
 padding:12px 14px;
-font-size:15px;font-family:‘Inter’,sans-serif;font-weight:500;
+font-size:15px;font-family:'Inter',sans-serif;font-weight:500;
 border:2px solid #e5e7eb;
 border-radius:12px;
 outline:none;
@@ -560,7 +559,7 @@ appearance:none;
 input::placeholder,textarea::placeholder{color:#9ca3af;font-weight:400;}
 
 input:focus,textarea:focus,select:focus{
-border-color:var(–blue);
+border-color:var(--blue);
 box-shadow:0 0 0 4px rgba(37,99,235,.1);
 background:#fff;
 }
@@ -568,7 +567,7 @@ background:#fff;
 textarea{min-height:120px;resize:vertical;line-height:1.65;font-size:15px;}
 
 select{
-background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ fill=‘none’ viewBox=‘0 0 20 20’%3E%3Cpath stroke=’%236b7280’ stroke-width=‘1.5’ d=‘M6 8l4 4 4-4’/%3E%3C/svg%3E”);
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
 background-repeat:no-repeat;background-position:right 12px center;background-size:18px;
 padding-right:38px;cursor:pointer;
 }
@@ -578,7 +577,7 @@ select option{background:#fff;color:#0f172a;}
 /* ═══════════ BUTTONS ═══════════ */
 .btn{
 border:none;cursor:pointer;
-font-family:‘Inter’,sans-serif;
+font-family:'Inter',sans-serif;
 font-weight:700;font-size:14px;
 display:inline-flex;align-items:center;gap:8px;
 padding:12px 22px;border-radius:50px;
@@ -613,12 +612,12 @@ border:2px solid #e5e7eb;
 .btn-outline:hover{background:#f9fafb;border-color:#d1d5db;}
 
 .btn-cyan{
-background:#eff6ff;color:var(–cyan);
+background:#eff6ff;color:var(--cyan);
 border:1.5px solid #bae6fd;font-weight:700;
 }
 .btn-cyan:hover{background:#dbeafe;border-color:#93c5fd;}
 .btn-cyan.recording{
-background:#fef2f2;color:var(–red);
+background:#fef2f2;color:var(--red);
 border-color:#fca5a5;
 animation:recpulse 1.4s ease-in-out infinite;
 }
@@ -641,7 +640,7 @@ border-bottom:1px solid #f3f4f6;
 cursor:pointer;transition:background .1s;
 }
 .search-item:last-child{border-bottom:none;}
-.search-item:hover,.search-item.active{background:var(–blue-light);}
+.search-item:hover,.search-item.active{background:var(--blue-light);}
 .si-name{font-size:14px;font-weight:700;color:#0f172a;}
 .si-meta{font-size:12px;color:#6b7280;margin-top:2px;}
 
@@ -663,17 +662,17 @@ flex:1;padding:16px;border-radius:18px;text-align:center;
 border:2px solid;position:relative;overflow:hidden;
 }
 .score-chip::before{
-content:’’;position:absolute;inset:0;
+content:'';position:absolute;inset:0;
 background:linear-gradient(135deg,rgba(255,255,255,.8),transparent);
 }
 .sc-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:5px;}
-.sc-val{font-family:‘Instrument Serif’,serif;font-size:32px;font-weight:400;display:block;}
+.sc-val{font-family:'Instrument Serif',serif;font-size:32px;font-weight:400;display:block;}
 .chip-blue{background:#eff6ff;border-color:#bfdbfe;}
-.chip-blue .sc-label{color:var(–blue-dark);}
-.chip-blue .sc-val{color:var(–blue-dark);}
+.chip-blue .sc-label{color:var(--blue-dark);}
+.chip-blue .sc-val{color:var(--blue-dark);}
 .chip-cyan{background:#ecfeff;border-color:#a5f3fc;}
-.chip-cyan .sc-label{color:var(–cyan);}
-.chip-cyan .sc-val{color:var(–cyan);}
+.chip-cyan .sc-label{color:var(--cyan);}
+.chip-cyan .sc-val{color:var(--cyan);}
 
 /* ═══════════ METRIC CELLS ═══════════ */
 .metric-row{
@@ -700,7 +699,7 @@ border-radius:0 0 22px 22px;
 }
 
 .ai-zone::before{
-content:’’;position:absolute;inset:0;
+content:'';position:absolute;inset:0;
 background:
 radial-gradient(ellipse 100% 80% at 30% 30%,rgba(255,255,255,.12) 0%,transparent 60%),
 radial-gradient(ellipse 60% 50% at 80% 80%,rgba(0,0,0,.15) 0%,transparent 60%);
@@ -708,7 +707,7 @@ pointer-events:none;
 }
 
 .ai-zone::after{
-content:’’;position:absolute;top:0;left:0;right:0;height:3px;
+content:'';position:absolute;top:0;left:0;right:0;height:3px;
 background:linear-gradient(90deg,#60a5fa,#a5f3fc,#60a5fa);
 pointer-events:none;
 }
@@ -742,17 +741,9 @@ box-shadow:0 0 8px #a5f3fc;
 animation:pulse 2s ease-in-out infinite;
 }
 
-.ai-tag{
-font-size:11px;font-weight:600;letter-spacing:.08em;
-color:rgba(255,255,255,.6);
-background:rgba(255,255,255,.1);
-border:1px solid rgba(255,255,255,.2);
-border-radius:6px;padding:4px 12px;
-}
-
 /* BIG BOLD RESPONSE TEXT */
 .ai-response{
-font-family:‘Instrument Serif’,serif;
+font-family:'Instrument Serif',serif;
 font-size:30px;font-weight:400;font-style:italic;
 line-height:1.55;color:#ffffff;
 letter-spacing:-.01em;min-height:88px;
@@ -798,11 +789,11 @@ border-radius:18px;padding:18px 22px;margin-top:14px;
 }
 .trans-head{
 font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-color:var(–cyan);margin-bottom:12px;
+color:var(--cyan);margin-bottom:12px;
 }
 .trans-line{display:flex;gap:12px;font-size:15px;margin-bottom:9px;}
 .trans-line:last-child{margin-bottom:0;}
-.t-k{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(–cyan);white-space:nowrap;padding-top:2px;}
+.t-k{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);white-space:nowrap;padding-top:2px;}
 .t-v{color:#0f172a;line-height:1.6;font-weight:500;}
 
 /* ═══════════ HISTORY ═══════════ */
@@ -817,10 +808,10 @@ color:var(–cyan);margin-bottom:12px;
 font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
 padding:4px 12px;border-radius:50px;border:1.5px solid;white-space:nowrap;flex-shrink:0;
 }
-.st-conv{background:var(–green-light);color:var(–green);border-color:#6ee7b7;}
-.st-rej{background:var(–red-light);color:var(–red);border-color:#fca5a5;}
+.st-conv{background:var(--green-light);color:var(--green);border-color:#6ee7b7;}
+.st-rej{background:var(--red-light);color:var(--red);border-color:#fca5a5;}
 .st-pend{background:#f9fafb;color:#6b7280;border-color:#e5e7eb;}
-.st-fup{background:var(–gold-light);color:var(–amber);border-color:#fcd34d;}
+.st-fup{background:var(--gold-light);color:var(--amber);border-color:#fcd34d;}
 
 /* ═══════════ OBJ BARS ═══════════ */
 .obj-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
@@ -835,7 +826,7 @@ padding:4px 12px;border-radius:50px;border:1.5px solid;white-space:nowrap;flex-s
 display:flex;align-items:center;gap:12px;
 margin:4px 0 16px;
 }
-.divider-or::before,.divider-or::after{content:’’;flex:1;height:1.5px;background:#e5e7eb;}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1.5px;background:#e5e7eb;}
 .divider-or span{font-size:12px;font-weight:700;color:#9ca3af;letter-spacing:.06em;}
 
 .lookup-status{
@@ -844,25 +835,25 @@ padding:13px 18px;border-radius:16px;
 margin-bottom:12px;
 }
 .lookup-status.loading{background:#eff6ff;border:1.5px solid #bfdbfe;}
-.lookup-status.success{background:var(–green-light);border:1.5px solid #6ee7b7;}
-.lookup-status.error{background:var(–red-light);border:1.5px solid #fca5a5;}
+.lookup-status.success{background:var(--green-light);border:1.5px solid #6ee7b7;}
+.lookup-status.error{background:var(--red-light);border:1.5px solid #fca5a5;}
 
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{
 width:16px;height:16px;border-radius:50%;
-border:2px solid #bfdbfe;border-top-color:var(–blue);
+border:2px solid #bfdbfe;border-top-color:var(--blue);
 animation:spin .75s linear infinite;flex-shrink:0;
 }
 
 .lookup-msg{font-size:13px;font-weight:600;}
-.lookup-status.loading .lookup-msg{color:var(–blue);}
-.lookup-status.success .lookup-msg{color:var(–green);}
-.lookup-status.error .lookup-msg{color:var(–red);}
+.lookup-status.loading .lookup-msg{color:var(--blue);}
+.lookup-status.success .lookup-msg{color:var(--green);}
+.lookup-status.error .lookup-msg{color:var(--red);}
 
 .web-tag{
 display:inline-block;
 font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-color:var(–green);background:var(–green-light);
+color:var(--green);background:var(--green-light);
 border:1.5px solid #6ee7b7;border-radius:6px;padding:3px 9px;
 margin-bottom:12px;
 }
@@ -901,8 +892,8 @@ margin-bottom:12px;
 
 /* ── Translation Panel ── */
 .trans-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.trans-head{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(–cyan);}
-.btn-mic-es{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;font-family:“Inter”,sans-serif;background:#fef3c7;color:#b45309;border:1.5px solid #fcd34d;border-radius:50px;padding:5px 12px;cursor:pointer;transition:all .15s;}
+.trans-head{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);}
+.btn-mic-es{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;font-family:"Inter",sans-serif;background:#fef3c7;color:#b45309;border:1.5px solid #fcd34d;border-radius:50px;padding:5px 12px;cursor:pointer;transition:all .15s;}
 .btn-mic-es:hover{background:#fde68a;}
 .btn-mic-es.listening{background:#fef2f2;color:#dc2626;border-color:#fca5a5;}
 .trans-block{background:#fff;border:1.5px solid #cffafe;border-radius:14px;padding:14px 16px;margin-bottom:10px;}
@@ -913,13 +904,25 @@ margin-bottom:12px;
 .lang-en{background:#dbeafe;color:#1d4ed8;}
 .trans-text{font-size:16px;font-weight:600;color:#0f172a;line-height:1.6;margin-bottom:10px;min-height:22px;}
 .trans-reply-text{color:#1d4ed8;}
-.speak-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;font-family:“Inter”,sans-serif;background:#f0f9ff;color:var(–cyan);border:1.5px solid #bae6fd;border-radius:50px;padding:7px 14px;cursor:pointer;transition:all .15s;margin-top:2px;}
+.speak-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;font-family:"Inter",sans-serif;background:#f0f9ff;color:var(--cyan);border:1.5px solid #bae6fd;border-radius:50px;padding:7px 14px;cursor:pointer;transition:all .15s;margin-top:2px;}
 .speak-btn:hover{background:#e0f2fe;transform:translateY(-1px);}
 .speak-btn-primary{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(37,99,235,.3);font-size:13px;padding:10px 18px;}
 .speak-btn-primary:hover{box-shadow:0 4px 16px rgba(37,99,235,.4);transform:translateY(-1px);}
 .trans-status{font-size:12px;font-weight:600;color:#6b7280;text-align:center;margin-top:8px;min-height:16px;}
-.trans-status.speaking{color:var(–blue);}
-.trans-status.error{color:var(–red);}
+.trans-status.speaking{color:var(--blue);}
+.trans-status.error{color:var(--red);}
+
+/* ── Web Search Links ── */
+.search-link-btn{
+display:inline-flex;align-items:center;gap:6px;
+font-size:13px;font-weight:700;font-family:"Inter",sans-serif;
+background:#fff;color:#374151;
+border:2px solid #e5e7eb;border-radius:50px;
+padding:8px 16px;cursor:pointer;
+text-decoration:none;transition:all .15s;
+}
+.search-link-btn:hover{background:#f3f4f6;border-color:#d1d5db;transform:translateY(-1px);}
+.manual-form{background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:16px;padding:18px;}
 </style>
 
 </head>
@@ -931,7 +934,6 @@ margin-bottom:12px;
   <div class="lp-left">
     <div class="lp-deco-ring"></div>
 
-```
 <div class="lp-logo">
   <div class="lp-logo-icon">
     <svg class="lp-logo-svg" viewBox="0 0 44 44" fill="none">
@@ -996,7 +998,6 @@ margin-bottom:12px;
     </div>
   </div>
 </div>
-```
 
   </div>
 
@@ -1005,7 +1006,6 @@ margin-bottom:12px;
     <div class="lp-form-title">Welcome back.</div>
     <div class="lp-form-sub">Sign in to your PayPilot workspace and start closing.</div>
 
-```
 <label class="lp-field-label" for="password">Password</label>
 <input class="lp-input" id="password" type="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')login()"/>
 
@@ -1014,7 +1014,6 @@ margin-bottom:12px;
 </button>
 
 <div class="lp-hint">Demo password: <strong>demo123</strong></div>
-```
 
   </div>
 </div>
@@ -1048,7 +1047,6 @@ margin-bottom:12px;
       </div>
     </div>
 
-```
 <div class="sb-section">Workspace</div>
 <button class="navbtn active" id="btnRep" onclick="showRepView()"><span class="nav-ic">▣</span>Rep View</button>
 <button class="navbtn" id="btnMgr" onclick="showManagerView()"><span class="nav-ic">◫</span>Manager View</button>
@@ -1061,7 +1059,6 @@ margin-bottom:12px;
 <div class="sb-footer">
   <button class="navbtn" onclick="logout()"><span class="nav-ic">←</span>Logout</button>
 </div>
-```
 
   </aside>
 
@@ -1086,11 +1083,10 @@ margin-bottom:12px;
       <div class="tb-sub">Enrollment Intelligence Platform</div>
       <div class="tb-right">
         <div id="liveBadge" class="live-badge hidden"><div class="live-dot"></div>Live</div>
-        <div id="userChip" class="hidden"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d0b4b5bdbf90a0b1a9a0b9bcbfa4feb1b9">[email&#160;protected]</a></div>
+        <div id="userChip" class="hidden">PayPilot Rep</div>
       </div>
     </div>
 
-```
 <div class="page">
 
   <!-- REP VIEW -->
@@ -1188,12 +1184,12 @@ margin-bottom:12px;
               <div class="trans-block">
                 <div class="trans-block-label"><span class="lang-badge lang-es">ES → EN</span> What they said</div>
                 <div class="trans-text" id="translatedEnglish">—</div>
-                <button class="speak-btn" onclick="speakText(document.getElementById('translatedEnglish').textContent,'en-US')">🔊 Speak English</button>
+                <button class="speak-btn" onclick="speakTranslation('en')">🔊 Play English</button>
               </div>
               <div class="trans-block trans-block-reply">
                 <div class="trans-block-label"><span class="lang-badge lang-en">EN → ES</span> Your reply in Spanish</div>
                 <div class="trans-text trans-reply-text" id="translatedReply">—</div>
-                <button class="speak-btn speak-btn-primary" onclick="speakText(document.getElementById('translatedReply').textContent,'es-MX')">🔊 Speak to Supplier in Spanish</button>
+                <button class="speak-btn speak-btn-primary" onclick="speakTranslation('es')">🔊 Play Spanish Reply</button>
               </div>
               <div class="trans-status" id="transStatus"></div>
             </div>
@@ -1286,688 +1282,770 @@ margin-bottom:12px;
   </div>
 
 </div>
-```
 
   </main>
 </div>
 </div><!-- /appRoot -->
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-
+<script data-cfasync="false">
 // ── State ──
 var translateOn = false;
 var recognition = null;
+var esRecognition = null;
 var selectedIdx = 0;
 var _twi = null;
+var isSpeaking = false;
 
 // ── Data ──
 var suppliers = [
-{company:“Novacore Electrical”,   contact:“Anthony King”,    email:“aking@novacore.com”,     phone:“704-555-1122”, industry:“Electrical”, avg_invoice:”$9,200”, ach_score:58, vcc_score:33},
-{company:“Atlas Industrial Supply”,contact:“Jorge Ramirez”,  email:“jramirez@atlasind.com”,  phone:“980-555-8877”, industry:“Industrial”, avg_invoice:”$6,200”, ach_score:74, vcc_score:18},
-{company:“Blue Ridge Property”,    contact:“Trista Jamieson”, email:“tjamieson@blueridge.com”,phone:“828-555-2211”, industry:“Property”,   avg_invoice:”$4,100”, ach_score:69, vcc_score:22},
-{company:“Keystone Facility Group”,contact:“Mark Ellis”,     email:“mellis@keystonefg.com”,  phone:“704-555-9981”, industry:“Facilities”, avg_invoice:”$7,300”, ach_score:66, vcc_score:25},
-{company:“Kingstone Mechanical”,   contact:“Lisa Warren”,    email:“lwarren@kingstone.com”,  phone:“919-555-4403”, industry:“Mechanical”, avg_invoice:”$8,100”, ach_score:63, vcc_score:29},
-{company:“KLM Property Services”,  contact:“Derrick Cole”,   email:“dcole@klmproperty.com”,  phone:“980-555-6310”, industry:“Property”,   avg_invoice:”$5,700”, ach_score:61, vcc_score:31}
+  {company:"Novacore Electrical",   contact:"Anthony King",    email:"aking@novacore.com",     phone:"704-555-1122", industry:"Electrical", avg_invoice:"$9,200", ach_score:58, vcc_score:33},
+  {company:"Atlas Industrial Supply",contact:"Jorge Ramirez",  email:"jramirez@atlasind.com",  phone:"980-555-8877", industry:"Industrial", avg_invoice:"$6,200", ach_score:74, vcc_score:18},
+  {company:"Blue Ridge Property",    contact:"Trista Jamieson", email:"tjamieson@blueridge.com",phone:"828-555-2211", industry:"Property",   avg_invoice:"$4,100", ach_score:69, vcc_score:22},
+  {company:"Keystone Facility Group",contact:"Mark Ellis",     email:"mellis@keystonefg.com",  phone:"704-555-9981", industry:"Facilities", avg_invoice:"$7,300", ach_score:66, vcc_score:25},
+  {company:"Kingstone Mechanical",   contact:"Lisa Warren",    email:"lwarren@kingstone.com",  phone:"919-555-4403", industry:"Mechanical", avg_invoice:"$8,100", ach_score:63, vcc_score:29},
+  {company:"KLM Property Services",  contact:"Derrick Cole",   email:"dcole@klmproperty.com",  phone:"980-555-6310", industry:"Property",   avg_invoice:"$5,700", ach_score:61, vcc_score:31}
 ];
 
-function gh(){ return JSON.parse(localStorage.getItem(“pp_v6”) || “[]”); }
-function sh(h){ localStorage.setItem(“pp_v6”, JSON.stringify(h)); }
+function gh(){ return JSON.parse(localStorage.getItem("pp_v6") || "[]"); }
+function sh(h){ localStorage.setItem("pp_v6", JSON.stringify(h)); }
 
 // ── Login ──
 function login(){
-var pw = document.getElementById(“password”).value.trim();
-if(pw === “demo123”){
-var lp = document.getElementById(“loginPage”);
-lp.style.opacity = “0”;
-lp.style.transition = “opacity .3s ease”;
-setTimeout(function(){
-lp.classList.add(“hidden”);
-document.getElementById(“appRoot”).classList.remove(“hidden”);
-document.getElementById(“userChip”).classList.remove(“hidden”);
-document.getElementById(“liveBadge”).classList.remove(“hidden”);
-document.getElementById(“supplierSearch”).value = suppliers[0].company;
-loadSupplier();
-renderHistory();
-updateStats();
-renderManager();
-}, 300);
-} else {
-var el = document.getElementById(“password”);
-el.style.borderColor = “#dc2626”;
-el.style.boxShadow = “0 0 0 4px rgba(220,38,38,.15)”;
-el.style.transition = “all .2s”;
-setTimeout(function(){ el.style.borderColor = “”; el.style.boxShadow = “”; }, 1800);
-}
+  var pw = document.getElementById("password").value.trim();
+  if(pw === "demo123"){
+    var lp = document.getElementById("loginPage");
+    lp.style.opacity = "0";
+    lp.style.transition = "opacity .3s ease";
+    setTimeout(function(){
+      lp.classList.add("hidden");
+      document.getElementById("appRoot").classList.remove("hidden");
+      document.getElementById("userChip").classList.remove("hidden");
+      document.getElementById("liveBadge").classList.remove("hidden");
+      document.getElementById("supplierSearch").value = suppliers[0].company;
+      loadSupplier();
+      renderHistory();
+      updateStats();
+      renderManager();
+    }, 300);
+  } else {
+    var el = document.getElementById("password");
+    el.style.borderColor = "#dc2626";
+    el.style.boxShadow = "0 0 0 4px rgba(220,38,38,.15)";
+    el.style.transition = "all .2s";
+    setTimeout(function(){ el.style.borderColor = ""; el.style.boxShadow = ""; }, 1800);
+  }
 }
 
 function logout(){ location.reload(); }
 
 // ── Navigation ──
 function showRepView(){
-document.getElementById(“repView”).classList.remove(“hidden”);
-document.getElementById(“managerView”).classList.add(“hidden”);
-document.getElementById(“btnRep”).classList.add(“active”);
-document.getElementById(“btnMgr”).classList.remove(“active”);
+  document.getElementById("repView").classList.remove("hidden");
+  document.getElementById("managerView").classList.add("hidden");
+  document.getElementById("btnRep").classList.add("active");
+  document.getElementById("btnMgr").classList.remove("active");
 }
 function showManagerView(){
-document.getElementById(“repView”).classList.add(“hidden”);
-document.getElementById(“managerView”).classList.remove(“hidden”);
-document.getElementById(“btnMgr”).classList.add(“active”);
-document.getElementById(“btnRep”).classList.remove(“active”);
-renderManager();
+  document.getElementById("repView").classList.add("hidden");
+  document.getElementById("managerView").classList.remove("hidden");
+  document.getElementById("btnMgr").classList.add("active");
+  document.getElementById("btnRep").classList.remove("active");
+  renderManager();
 }
 
 // ── Supplier Search ──
 function searchSuppliers(){
-var q = document.getElementById(“supplierSearch”).value.trim().toLowerCase();
-var el = document.getElementById(“searchResults”);
-if(!q){ el.classList.add(“hidden”); el.innerHTML = “”; return; }
-var m = [];
-for(var i=0; i<suppliers.length; i++){
-var s = suppliers[i];
-if(s.company.toLowerCase().indexOf(q)>=0 || s.contact.toLowerCase().indexOf(q)>=0 ||
-s.email.toLowerCase().indexOf(q)>=0  || s.phone.indexOf(q)>=0){
-m.push({s:s, i:i});
-}
-}
-if(!m.length){
-el.classList.remove(“hidden”);
-el.innerHTML = ‘<div class="search-item"><div class="si-name" style="color:#9ca3af">No results found</div></div>’;
-return;
-}
-el.classList.remove(“hidden”);
-var html = “”;
-for(var j=0; j<m.length; j++){
-html += ‘<div class=“search-item ‘+(j===0?“active”:””)+’” onclick=“selectSupplier(’+m[j].i+’)”>’+
-‘<div class="si-name">’+m[j].s.company+’</div>’+
-‘<div class="si-meta">’+m[j].s.contact+’ · ‘+m[j].s.email+’ · ‘+m[j].s.phone+’</div>’+
-‘</div>’;
-}
-el.innerHTML = html;
-selectedIdx = m[0].i;
-loadSupplier();
+  var q = document.getElementById("supplierSearch").value.trim().toLowerCase();
+  var el = document.getElementById("searchResults");
+  if(!q){ el.classList.add("hidden"); el.innerHTML = ""; return; }
+  var m = [];
+  for(var i=0; i<suppliers.length; i++){
+    var s = suppliers[i];
+    if(s.company.toLowerCase().indexOf(q)>=0 || s.contact.toLowerCase().indexOf(q)>=0 ||
+       s.email.toLowerCase().indexOf(q)>=0  || s.phone.indexOf(q)>=0){
+      m.push({s:s, i:i});
+    }
+  }
+  if(!m.length){
+    el.classList.remove("hidden");
+    el.innerHTML = '<div class="search-item"><div class="si-name" style="color:#9ca3af">No results found</div></div>';
+    return;
+  }
+  el.classList.remove("hidden");
+  var html = "";
+  for(var j=0; j<m.length; j++){
+    html += '<div class="search-item '+(j===0?"active":"")+'" onclick="selectSupplier('+m[j].i+')">'+
+      '<div class="si-name">'+m[j].s.company+'</div>'+
+      '<div class="si-meta">'+m[j].s.contact+' &middot; '+m[j].s.email+' &middot; '+m[j].s.phone+'</div>'+
+    '</div>';
+  }
+  el.innerHTML = html;
+  selectedIdx = m[0].i;
+  loadSupplier();
 }
 
 function selectSupplier(i){
-selectedIdx = i;
-document.getElementById(“supplierSearch”).value = suppliers[i].company;
-document.getElementById(“searchResults”).classList.add(“hidden”);
-document.getElementById(“searchResults”).innerHTML = “”;
-loadSupplier();
+  selectedIdx = i;
+  document.getElementById("supplierSearch").value = suppliers[i].company;
+  document.getElementById("searchResults").classList.add("hidden");
+  document.getElementById("searchResults").innerHTML = "";
+  loadSupplier();
 }
 
 function loadSupplier(){
-var s = suppliers[selectedIdx];
-document.getElementById(“supplierInfo”).innerHTML =
-‘<table class="sup-table">’+
-‘<tr><td>Company</td><td>’+s.company+’</td></tr>’+
-‘<tr><td>Contact</td><td>’+s.contact+’</td></tr>’+
-‘<tr><td>Email</td><td>’+s.email+’</td></tr>’+
-‘<tr><td>Phone</td><td>’+s.phone+’</td></tr>’+
-‘<tr><td>Industry</td><td>’+s.industry+’</td></tr>’+
-‘<tr><td>Avg Invoice</td><td>’+s.avg_invoice+’</td></tr>’+
-‘</table>’+
-‘<div class="score-row">’+
-‘<div class="score-chip chip-blue"><span class="sc-label">ACH Score</span><span class="sc-val">’+s.ach_score+’%</span></div>’+
-‘<div class="score-chip chip-cyan"><span class="sc-label">VCC Score</span><span class="sc-val">’+s.vcc_score+’%</span></div>’+
-‘</div>’;
+  var s = suppliers[selectedIdx];
+  document.getElementById("supplierInfo").innerHTML =
+    '<table class="sup-table">'+
+      '<tr><td>Company</td><td>'+s.company+'</td></tr>'+
+      '<tr><td>Contact</td><td>'+s.contact+'</td></tr>'+
+      '<tr><td>Email</td><td>'+s.email+'</td></tr>'+
+      '<tr><td>Phone</td><td>'+s.phone+'</td></tr>'+
+      '<tr><td>Industry</td><td>'+s.industry+'</td></tr>'+
+      '<tr><td>Avg Invoice</td><td>'+s.avg_invoice+'</td></tr>'+
+    '</table>'+
+    '<div class="score-row">'+
+      '<div class="score-chip chip-blue"><span class="sc-label">ACH Score</span><span class="sc-val">'+s.ach_score+'%</span></div>'+
+      '<div class="score-chip chip-cyan"><span class="sc-label">VCC Score</span><span class="sc-val">'+s.vcc_score+'%</span></div>'+
+    '</div>';
 }
 
 // ── Web Lookup ──
-function safeAttr(v){ return (v||””).replace(/&/g,”&”).replace(/”/g,”"”).replace(/’/g,”'”); }
+function safeAttr(v){ return (v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 
 function runWebLookup(){
-var query = document.getElementById(“webLookupInput”).value.trim();
-if(!query){
-document.getElementById(“webLookupInput”).style.borderColor = “#dc2626”;
-setTimeout(function(){ document.getElementById(“webLookupInput”).style.borderColor = “”; }, 1500);
-return;
-}
-var statusEl = document.getElementById(“webLookupStatus”);
-var msgEl    = document.getElementById(“webLookupMsg”);
-var spinEl   = document.getElementById(“webLookupSpinner”);
-var infoEl   = document.getElementById(“supplierInfo”);
+  var query = document.getElementById("webLookupInput").value.trim();
+  if(!query){
+    document.getElementById("webLookupInput").style.borderColor = "#dc2626";
+    setTimeout(function(){ document.getElementById("webLookupInput").style.borderColor = ""; }, 1500);
+    return;
+  }
+  var statusEl = document.getElementById("webLookupStatus");
+  var msgEl    = document.getElementById("webLookupMsg");
+  var spinEl   = document.getElementById("webLookupSpinner");
+  var infoEl   = document.getElementById("supplierInfo");
 
-statusEl.className = “lookup-status loading”;
-statusEl.classList.remove(“hidden”);
-msgEl.textContent = “Searching the web for contact info…”;
-spinEl.style.display = “block”;
-infoEl.innerHTML = “”;
+  statusEl.className = "lookup-status loading";
+  statusEl.classList.remove("hidden");
+  msgEl.textContent = "Looking up contact info...";
+  spinEl.style.display = "block";
+  infoEl.innerHTML = "";
 
-var sysP = “You are a business contact research agent. Search the web to find the Accounts Payable contact or primary business contact for the requested company. Return ONLY valid JSON, no markdown. Schema: {company,contact,title,email,phone,address,website,industry,source}”;
-var userMsg = “Find AP contact info for: “ + query + “. Search their website, LinkedIn, BBB, Manta, Yelp, Google Maps.”;
+  var prompt = "Find contact information for this company: " + query + ". I need their Accounts Payable contact name, phone number, email address, and physical address. Also identify their industry. Return ONLY a JSON object with these exact keys (use empty string if not known): company, contact, title, email, phone, address, industry. No explanation, no markdown, just the raw JSON object.";
 
-doWebLookup(sysP, userMsg, [], 0, statusEl, msgEl, spinEl, infoEl);
-}
-
-function doWebLookup(sysP, userMsg, prevMessages, iteration, statusEl, msgEl, spinEl, infoEl){
-var messages = prevMessages.length > 0 ? prevMessages : [{role:“user”, content:userMsg}];
-var body = {
-model: “claude-sonnet-4-20250514”,
-max_tokens: 1500,
-tools: [{type:“web_search_20250305”, name:“web_search”}],
-system: sysP,
-messages: messages
-};
-
-fetch(“https://api.anthropic.com/v1/messages”, {
-method: “POST”,
-headers: {“Content-Type”:“application/json”,“anthropic-version”:“2023-06-01”},
-body: JSON.stringify(body)
-})
-.then(function(r){ return r.json(); })
-.then(function(data){
-if(data.error){ throw new Error(data.error.message || “API error”); }
-
-```
-if(data.stop_reason === "tool_use" && iteration < 3){
-  // Continue the tool use loop
-  var toolBlocks = (data.content||[]).filter(function(b){ return b.type==="tool_use"; });
-  if(toolBlocks.length === 0){ processLookupResult(data, statusEl, msgEl, spinEl, infoEl); return; }
-  var toolResults = toolBlocks.map(function(tu){
-    return {type:"tool_result", tool_use_id:tu.id, content:"Search completed."};
+  fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "anthropic-version": "2023-06-01"
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 400,
+      messages: [{role: "user", content: prompt}]
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    spinEl.style.display = "none";
+    if(data.error){
+      statusEl.className = "lookup-status success";
+      msgEl.textContent = "Use links below to find info";
+      showManualForm(infoEl, query);
+      return;
+    }
+    var raw = "";
+    if(data.content && data.content[0] && data.content[0].text){
+      raw = data.content[0].text;
+    }
+    if(!raw){
+      statusEl.className = "lookup-status success";
+      msgEl.textContent = "Enter details manually";
+      showManualForm(infoEl, query);
+      return;
+    }
+    var parsed = tryParseResult(raw, query);
+    var ach = Math.floor(Math.random()*30)+55;
+    var vcc = Math.floor(Math.random()*25)+15;
+    statusEl.className = "lookup-status success";
+    msgEl.textContent = "Found - verify and save";
+    renderLookupResult(parsed, ach, vcc, infoEl);
+  })
+  .catch(function(){
+    spinEl.style.display = "none";
+    statusEl.className = "lookup-status success";
+    msgEl.textContent = "Use links below to find info";
+    showManualForm(infoEl, query);
   });
-  var newMessages = messages.concat([
-    {role:"assistant", content:data.content},
-    {role:"user", content:toolResults}
-  ]);
-  doWebLookup(sysP, userMsg, newMessages, iteration+1, statusEl, msgEl, spinEl, infoEl);
-} else {
-  processLookupResult(data, statusEl, msgEl, spinEl, infoEl);
-}
-```
-
-})
-.catch(function(err){
-spinEl.style.display = “none”;
-statusEl.className = “lookup-status error”;
-msgEl.textContent = “Search failed: “ + (err.message||“Try again”);
-infoEl.innerHTML = ‘<p class="muted" style="margin-top:8px;">Tip: Include city/state — e.g. “Novacore Electrical Charlotte NC”</p>’;
-});
 }
 
-function processLookupResult(data, statusEl, msgEl, spinEl, infoEl){
-var raw = (data.content||[]).filter(function(b){ return b.type===“text”; }).map(function(b){ return b.text; }).join(”\n”);
-if(!raw.trim()){
-spinEl.style.display = “none”;
-statusEl.className = “lookup-status error”;
-msgEl.textContent = “No results found. Try a more specific search.”;
-return;
+function tryParseResult(raw, query){
+  var fence = String.fromCharCode(96,96,96);
+  raw = raw.split(fence+"json").join("").split(fence).join("").trim();
+  try {
+    var s = raw.indexOf("{");
+    var e = raw.lastIndexOf("}");
+    if(s >= 0 && e > s){
+      var parsed = JSON.parse(raw.slice(s, e+1));
+      if(!parsed.company) parsed.company = query;
+      return parsed;
+    }
+  } catch(ex){}
+  var emailMatch = raw.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
+  var phoneMatch = raw.match(/[\(]?\d{3}[\)\.\-\s]?\s?\d{3}[\.\-\s]?\d{4}/);
+  return {
+    company:  query,
+    contact:  extractVal(raw, ["contact","person","name","manager","owner","ap "]) || "",
+    title:    extractVal(raw, ["title","role","position"]) || "",
+    email:    emailMatch ? emailMatch[0] : "",
+    phone:    phoneMatch ? phoneMatch[0] : "",
+    address:  extractVal(raw, ["address","location","city","street"]) || "",
+    industry: extractVal(raw, ["industry","sector","type of business"]) || ""
+  };
 }
-try{
-var s = raw.indexOf(”{”), e = raw.lastIndexOf(”}”);
-if(s === -1) throw new Error(“No JSON found”);
-var parsed = JSON.parse(raw.slice(s, e+1));
-var ach = Math.floor(Math.random()*30)+55;
-var vcc = Math.floor(Math.random()*25)+15;
 
-```
-spinEl.style.display = "none";
-statusEl.className = "lookup-status success";
-msgEl.textContent = "Found via " + (parsed.source||"web search");
-
-infoEl.innerHTML =
-  '<div class="web-tag">WEB RESULT</div>'+
-  '<table class="sup-table">'+
-    '<tr><td>Company</td><td>'+(parsed.company||"—")+'</td></tr>'+
-    '<tr><td>Contact</td><td>'+(parsed.contact||"—")+(parsed.title&&parsed.title!=="Not found"?' <span style="color:#6b7280;font-size:13px;">&middot; '+parsed.title+'</span>':'')+'</td></tr>'+
-    '<tr><td>Email</td><td>'+(parsed.email||"—")+'</td></tr>'+
-    '<tr><td>Phone</td><td>'+(parsed.phone||"—")+'</td></tr>'+
-    '<tr><td>Address</td><td>'+(parsed.address||"—")+'</td></tr>'+
-    '<tr><td>Industry</td><td>'+(parsed.industry||"—")+'</td></tr>'+
-  '</table>'+
-  '<div class="score-row">'+
-    '<div class="score-chip chip-blue"><span class="sc-label">ACH Score</span><span class="sc-val">'+ach+'%</span></div>'+
-    '<div class="score-chip chip-cyan"><span class="sc-label">VCC Score</span><span class="sc-val">'+vcc+'%</span></div>'+
-  '</div>'+
-  '<button class="btn btn-outline" onclick="saveWebResult(this)" style="margin-top:14px;width:100%;justify-content:center;"'+
-    ' data-company="'+safeAttr(parsed.company)+'"'+
-    ' data-contact="'+safeAttr(parsed.contact)+'"'+
-    ' data-email="'+safeAttr(parsed.email)+'"'+
-    ' data-phone="'+safeAttr(parsed.phone)+'"'+
-    ' data-industry="'+safeAttr(parsed.industry)+'"'+
-    ' data-ach="'+ach+'" data-vcc="'+vcc+'">'+
-    '+ Save to Local Database'+
-  '</button>';
-```
-
-} catch(e2){
-spinEl.style.display = “none”;
-statusEl.className = “lookup-status error”;
-msgEl.textContent = “Could not read results — try a more specific search.”;
+function extractVal(text, keys){
+  for(var i=0; i<keys.length; i++){
+    var idx = text.toLowerCase().indexOf(keys[i]);
+    if(idx >= 0){
+      var after = text.slice(idx + keys[i].length).replace(/^[\s:"]+/, "");
+      var val = after.split(/[
+,}]/)[0].trim().replace(/^["']|["']$/g,"");
+      if(val && val.length > 1 && val.length < 100) return val;
+    }
+  }
+  return "";
 }
+
+function renderLookupResult(parsed, ach, vcc, infoEl){
+  var co = parsed.company  || "";
+  var ct = parsed.contact  || "";
+  var ti = parsed.title    || "";
+  var em = parsed.email    || "";
+  var ph = parsed.phone    || "";
+  var ad = parsed.address  || "";
+  var ind= parsed.industry || "";
+  infoEl.innerHTML =
+    '<div class="web-tag">RESULT - verify before saving</div>'+
+    '<table class="sup-table">'+
+      '<tr><td>Company</td><td>'+co+'</td></tr>'+
+      '<tr><td>Contact</td><td>'+ct+(ti?' <span style="color:#6b7280;font-size:13px;">&middot; '+ti+'</span>':'')+'</td></tr>'+
+      '<tr><td>Email</td><td>'+em+'</td></tr>'+
+      '<tr><td>Phone</td><td>'+ph+'</td></tr>'+
+      '<tr><td>Address</td><td>'+ad+'</td></tr>'+
+      '<tr><td>Industry</td><td>'+ind+'</td></tr>'+
+    '</table>'+
+    '<div class="score-row">'+
+      '<div class="score-chip chip-blue"><span class="sc-label">ACH Score</span><span class="sc-val">'+ach+'%</span></div>'+
+      '<div class="score-chip chip-cyan"><span class="sc-label">VCC Score</span><span class="sc-val">'+vcc+'%</span></div>'+
+    '</div>'+
+    '<button class="btn btn-blue" onclick="saveWebResult(this)" style="width:100%;justify-content:center;margin-top:14px;"'+
+      ' data-company="'+safeAttr(co)+'"'+
+      ' data-contact="'+safeAttr(ct)+'"'+
+      ' data-email="'+safeAttr(em)+'"'+
+      ' data-phone="'+safeAttr(ph)+'"'+
+      ' data-industry="'+safeAttr(ind)+'"'+
+      ' data-ach="'+ach+'" data-vcc="'+vcc+'">'+
+      '+ Save to Database'+
+    '</button>'+
+    '<p style="font-size:12px;color:#9ca3af;margin-top:8px;text-align:center;">Verify info before saving — AI may not have live data</p>';
+}
+
+function showManualForm(infoEl, prefill){
+  var q = prefill || "";
+  var googleUrl  = "https://www.google.com/search?q="+encodeURIComponent(q+" accounts payable contact phone");
+  var linkedInUrl= "https://www.linkedin.com/search/results/companies/?keywords="+encodeURIComponent(q);
+  var bbbUrl     = "https://www.bbb.org/search?find_text="+encodeURIComponent(q);
+  infoEl.innerHTML =
+    '<div class="web-tag">MANUAL LOOKUP</div>'+
+    '<p style="font-size:14px;color:#374151;margin-bottom:12px;line-height:1.6;">Open a site, find the info, paste it below:</p>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">'+
+      '<a href="'+googleUrl+'" target="_blank" class="search-link-btn">🔍 Google</a>'+
+      '<a href="'+linkedInUrl+'" target="_blank" class="search-link-btn">in LinkedIn</a>'+
+      '<a href="'+bbbUrl+'" target="_blank" class="search-link-btn">🏆 BBB</a>'+
+    '</div>'+
+    '<div class="manual-form">'+
+      '<div class="field"><label class="field-label">Company</label>'+
+        '<input id="mf-company" placeholder="Company name" value="'+safeAttr(q)+'"/></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'+
+        '<div class="field"><label class="field-label">Contact</label>'+
+          '<input id="mf-contact" placeholder="AP contact name"/></div>'+
+        '<div class="field"><label class="field-label">Phone</label>'+
+          '<input id="mf-phone" placeholder="555-555-5555"/></div>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'+
+        '<div class="field"><label class="field-label">Email</label>'+
+          '<input id="mf-email" placeholder="ap@company.com"/></div>'+
+        '<div class="field"><label class="field-label">Industry</label>'+
+          '<input id="mf-industry" placeholder="e.g. Electrical"/></div>'+
+      '</div>'+
+      '<button class="btn btn-blue" onclick="saveManualEntry()" style="width:100%;justify-content:center;margin-top:6px;">+ Save to Database</button>'+
+    '</div>';
 }
 
 function saveWebResult(btn){
-suppliers.push({
-company:   btn.getAttribute(“data-company”)  || “New Company”,
-contact:   btn.getAttribute(“data-contact”)  || “Unknown”,
-email:     btn.getAttribute(“data-email”)    || “”,
-phone:     btn.getAttribute(“data-phone”)    || “”,
-industry:  btn.getAttribute(“data-industry”) || “General”,
-avg_invoice:”$0”,
-ach_score: parseInt(btn.getAttribute(“data-ach”))||60,
-vcc_score: parseInt(btn.getAttribute(“data-vcc”))||25
-});
-selectedIdx = suppliers.length - 1;
-document.getElementById(“supplierSearch”).value = suppliers[selectedIdx].company;
-loadSupplier();
-document.getElementById(“webLookupStatus”).classList.add(“hidden”);
+  suppliers.push({
+    company:   btn.getAttribute("data-company")  || "New Company",
+    contact:   btn.getAttribute("data-contact")  || "Unknown",
+    email:     btn.getAttribute("data-email")    || "",
+    phone:     btn.getAttribute("data-phone")    || "",
+    industry:  btn.getAttribute("data-industry") || "General",
+    avg_invoice:"$0",
+    ach_score: parseInt(btn.getAttribute("data-ach"))||60,
+    vcc_score: parseInt(btn.getAttribute("data-vcc"))||25
+  });
+  selectedIdx = suppliers.length - 1;
+  document.getElementById("supplierSearch").value = suppliers[selectedIdx].company;
+  loadSupplier();
+  document.getElementById("webLookupStatus").classList.add("hidden");
+}
+
+function saveManualEntry(){
+  var co = document.getElementById("mf-company").value.trim() || "New Company";
+  var ct = document.getElementById("mf-contact").value.trim() || "Unknown";
+  var ph = document.getElementById("mf-phone").value.trim() || "";
+  var em = document.getElementById("mf-email").value.trim() || "";
+  var ind = document.getElementById("mf-industry").value.trim() || "General";
+  suppliers.push({
+    company: co, contact: ct, phone: ph, email: em, industry: ind,
+    avg_invoice: "$0", ach_score: 60, vcc_score: 25
+  });
+  selectedIdx = suppliers.length - 1;
+  document.getElementById("supplierSearch").value = co;
+  loadSupplier();
+  document.getElementById("webLookupStatus").classList.add("hidden");
 }
 
 // ── Text-to-Speech ──
 function speakText(text, lang){
-if(!text || text === “—” || !text.trim()) return;
-var synth = window.speechSynthesis;
-if(!synth){ alert(“Speech not supported on this device.”); return; }
-synth.cancel();
-var utter = new SpeechSynthesisUtterance(text);
-utter.lang  = lang || “en-US”;
-utter.rate  = 0.9;
-utter.pitch = 1.0;
-utter.volume = 1.0;
-// Load voices - some browsers need a delay
-var voices = synth.getVoices();
-if(voices.length > 0){
-var pick = voices.filter(function(v){ return v.lang.indexOf(lang.substring(0,2)) === 0; });
-if(pick.length) utter.voice = pick[0];
-}
-var statusEl = document.getElementById(“transStatus”);
-if(statusEl){
-statusEl.textContent = lang.indexOf(“es”)===0 ? “🔊 Speaking Spanish…” : “🔊 Speaking English…”;
-statusEl.className = “trans-status speaking”;
-}
-utter.onend = function(){
-if(statusEl){ statusEl.textContent = “”; statusEl.className = “trans-status”; }
-};
-utter.onerror = function(){
-if(statusEl){ statusEl.textContent = “Speaker error — check volume”; statusEl.className = “trans-status error”; }
-};
-synth.speak(utter);
+  if(!text || text === "—" || !text.trim()) return;
+  var synth = window.speechSynthesis;
+  if(!synth){ alert("Speech not supported on this device."); return; }
+  synth.cancel();
+  var utter = new SpeechSynthesisUtterance(text);
+  utter.lang  = lang || "en-US";
+  utter.rate  = 0.9;
+  utter.pitch = 1.0;
+  utter.volume = 1.0;
+  var voices = synth.getVoices();
+  if(voices.length > 0){
+    var pick = voices.filter(function(v){ return v.lang.indexOf(lang.substring(0,2)) === 0; });
+    if(pick.length) utter.voice = pick[0];
+  }
+  var statusEl = document.getElementById("transStatus");
+  if(statusEl){
+    statusEl.textContent = lang.indexOf("es")===0 ? "🔊 Speaking Spanish…" : "🔊 Speaking English…";
+    statusEl.className = "trans-status speaking";
+  }
+  utter.onend = function(){
+    if(statusEl){ statusEl.textContent = ""; statusEl.className = "trans-status"; }
+    isSpeaking = false;
+  };
+  utter.onerror = function(){
+    if(statusEl){ statusEl.textContent = "Speaker error — check volume"; statusEl.className = "trans-status error"; }
+    isSpeaking = false;
+  };
+  isSpeaking = true;
+  synth.speak(utter);
 }
 
 // ── Language & Translation ──
 function detectLang(t){
-var l = t.toLowerCase();
-return (l.indexOf(“hola”)>=0 || l.indexOf(“cheques”)>=0 || l.indexOf(“tarjeta”)>=0 ||
-l.indexOf(“gracias”)>=0 || l.indexOf(“tarifas”)>=0 || l.indexOf(“no quiero”)>=0 ||
-l.indexOf(“pago”)>=0 || l.indexOf(“nosotros”)>=0) ? “Spanish” : “English”;
+  var l = t.toLowerCase();
+  return (l.indexOf("hola")>=0 || l.indexOf("cheques")>=0 || l.indexOf("tarjeta")>=0 ||
+          l.indexOf("gracias")>=0 || l.indexOf("tarifas")>=0 || l.indexOf("no quiero")>=0 ||
+          l.indexOf("pago")>=0 || l.indexOf("nosotros")>=0) ? "Spanish" : "English";
 }
 
 function toggleTranslate(){
-translateOn = !translateOn;
-document.getElementById(“translationBox”).classList.toggle(“hidden”, !translateOn);
-if(translateOn) updateTranslation();
+  translateOn = !translateOn;
+  document.getElementById("translationBox").classList.toggle("hidden", !translateOn);
+  if(translateOn) updateTranslation();
 }
 
 function updateTranslation(){
-var text = document.getElementById(“objection”).value.trim();
-var lang = detectLang(text);
-document.getElementById(“languageDisplay”).textContent = lang === “Spanish” ? “ES” : “EN”;
-if(!translateOn || !text) return;
+  var text = document.getElementById("objection").value.trim();
+  var lang = detectLang(text);
+  document.getElementById("languageDisplay").textContent = lang === "Spanish" ? "ES" : "EN";
+  if(!translateOn || !text) return;
 
-if(lang === “Spanish”){
-// What they said → English (local fast)
-var en = text
-.replace(/hola/gi,“hello”)
-.replace(/solo aceptamos cheques/gi,“we only accept checks”)
-.replace(/no aceptamos tarjetas/gi,“we do not accept cards”)
-.replace(/no quiero pagar tarifas/gi,“i do not want to pay fees”)
-.replace(/gracias/gi,“thank you”)
-.replace(/no/gi,“no”)
-.replace(/cheques/gi,“checks”)
-.replace(/tarjetas/gi,“cards”)
-.replace(/tarifas/gi,“fees”)
-.replace(/pagos/gi,“payments”);
-document.getElementById(“translatedEnglish”).textContent = en || text;
-document.getElementById(“translatedReply”).textContent = “Entiendo. ACH le ayuda a recibir pagos mas rapido y evita retrasos de cheques. Puedo configurarlo ahora mismo.”;
-} else {
-document.getElementById(“translatedEnglish”).textContent = text;
-document.getElementById(“translatedReply”).textContent = “Entiendo su preocupacion. Con ACH, usted recibe sus pagos mas rapido y sin necesidad de esperar cheques. Podemos configurarlo hoy.”;
-}
+  if(lang === "Spanish"){
+    var en = text
+      .replace(/hola/gi,"hello")
+      .replace(/solo aceptamos cheques/gi,"we only accept checks")
+      .replace(/no aceptamos tarjetas/gi,"we do not accept cards")
+      .replace(/no quiero pagar tarifas/gi,"i do not want to pay fees")
+      .replace(/gracias/gi,"thank you")
+      .replace(/no/gi,"no")
+      .replace(/cheques/gi,"checks")
+      .replace(/tarjetas/gi,"cards")
+      .replace(/tarifas/gi,"fees")
+      .replace(/pagos/gi,"payments");
+    document.getElementById("translatedEnglish").textContent = en || text;
+    document.getElementById("translatedReply").textContent = "Entiendo. ACH le ayuda a recibir pagos mas rapido y evita retrasos de cheques. Puedo configurarlo ahora mismo.";
+  } else {
+    document.getElementById("translatedEnglish").textContent = text;
+    document.getElementById("translatedReply").textContent = "Entiendo su preocupacion. Con ACH, usted recibe sus pagos mas rapido y sin necesidad de esperar cheques. Podemos configurarlo hoy.";
+  }
 
-// Upgrade with Claude AI translation in background
-doAITranslation(text, lang);
+  doAITranslation(text, lang);
 }
 
 function doAITranslation(text, lang){
-var prompt = lang === “Spanish”
-? “Translate to English (one line): “ + text + “\nThen write a SHORT Spanish reply (1-2 sentences) to help enroll them in ACH payments. Format exactly: ENGLISH: [translation]\nSPANISH: [reply]”
-: “Write a SHORT natural Spanish reply (1-2 sentences) to this supplier concern about ACH enrollment: “ + text + “. Start with SPANISH: then the reply.”;
+  var prompt = lang === "Spanish"
+    ? "Translate to English (one line): " + text + "\nThen write a SHORT Spanish reply (1-2 sentences) to help enroll them in ACH payments. Format exactly: ENGLISH: [translation]\nSPANISH: [reply]"
+    : "Write a SHORT natural Spanish reply (1-2 sentences) to this supplier concern about ACH enrollment: " + text + ". Start with SPANISH: then the reply.";
 
-fetch(“https://api.anthropic.com/v1/messages”,{
-method:“POST”,
-headers:{“Content-Type”:“application/json”,“anthropic-version”:“2023-06-01”},
-body:JSON.stringify({
-model:“claude-sonnet-4-20250514”,
-max_tokens:150,
-messages:[{role:“user”,content:prompt}]
-})
-})
-.then(function(r){ return r.json(); })
-.then(function(d){
-if(!d.content || !d.content[0]) return;
-var raw = d.content[0].text || “”;
-var enMatch  = raw.match(/ENGLISH:\s*(.+)/i);
-var esMatch  = raw.match(/SPANISH:\s*(.+)/i);
-if(enMatch && enMatch[1]) document.getElementById(“translatedEnglish”).textContent = enMatch[1].trim();
-if(esMatch && esMatch[1]) document.getElementById(“translatedReply”).textContent   = esMatch[1].trim();
-})
-.catch(function(){}); // silent fallback
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-20250514",
+      max_tokens:150,
+      messages:[{role:"user",content:prompt}]
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(!d.content || !d.content[0]) return;
+    var raw = d.content[0].text || "";
+    var enMatch  = raw.match(/ENGLISH:\s*(.+)/i);
+    var esMatch  = raw.match(/SPANISH:\s*(.+)/i);
+    if(enMatch && enMatch[1]) document.getElementById("translatedEnglish").textContent = enMatch[1].trim();
+    if(esMatch && esMatch[1]) document.getElementById("translatedReply").textContent   = esMatch[1].trim();
+  })
+  .catch(function(){});
+}
+
+// ── Speak Translation ──
+function speakTranslation(lang){
+  if(lang === 'en'){
+    var text = document.getElementById("translatedEnglish").textContent;
+    if(text && text !== "—") speakText(text, "en-US");
+  } else if(lang === 'es'){
+    var text = document.getElementById("translatedReply").textContent;
+    if(text && text !== "—") speakText(text, "es-MX");
+  }
 }
 
 // ── Spanish Mic (listen to supplier speak Spanish) ──
-var esRecognition = null;
 function startSpanishListening(){
-var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-if(!SR){ alert(“Mic not supported in this browser”); return; }
-var btn = document.getElementById(“esMicBtn”);
-if(esRecognition){
-esRecognition.stop();
-esRecognition = null;
-if(btn){ btn.classList.remove(“listening”); btn.textContent = “\uD83C\uDFA4 Escuchar”; }
-return;
-}
-esRecognition = new SR();
-esRecognition.continuous = false;
-esRecognition.interimResults = false;
-esRecognition.lang = “es-MX”;
-esRecognition.onstart = function(){
-if(btn){ btn.classList.add(“listening”); btn.textContent = “🔴 Escuchando…”; }
-};
-esRecognition.onresult = function(e){
-var t = e.results[0][0].transcript;
-document.getElementById(“objection”).value = t;
-updateTranslation();
-if(!translateOn){ toggleTranslate(); }
-};
-esRecognition.onend = function(){
-esRecognition = null;
-if(btn){ btn.classList.remove(“listening”); btn.textContent = “\uD83C\uDFA4 Escuchar”; }
-};
-esRecognition.onerror = function(){
-esRecognition = null;
-if(btn){ btn.classList.remove(“listening”); btn.textContent = “\uD83C\uDFA4 Escuchar”; }
-};
-esRecognition.start();
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ alert("Mic not supported in this browser"); return; }
+  var btn = document.getElementById("esMicBtn");
+  if(esRecognition){
+    esRecognition.stop();
+    esRecognition = null;
+    if(btn){ btn.classList.remove("listening"); btn.textContent = "🎤 Escuchar"; }
+    return;
+  }
+  esRecognition = new SR();
+  esRecognition.continuous = false;
+  esRecognition.interimResults = false;
+  esRecognition.lang = "es-MX";
+  esRecognition.onstart = function(){
+    if(btn){ btn.classList.add("listening"); btn.textContent = "🔴 Escuchando…"; }
+  };
+  esRecognition.onresult = function(e){
+    var t = e.results[0][0].transcript;
+    document.getElementById("objection").value = t;
+    updateTranslation();
+    if(!translateOn){ toggleTranslate(); }
+  };
+  esRecognition.onend = function(){
+    esRecognition = null;
+    if(btn){ btn.classList.remove("listening"); btn.textContent = "🎤 Escuchar"; }
+  };
+  esRecognition.onerror = function(){
+    esRecognition = null;
+    if(btn){ btn.classList.remove("listening"); btn.textContent = "🎤 Escuchar"; }
+  };
+  esRecognition.start();
 }
 
 // ── English Mic ──
 function startListening(){
-var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-if(!SR){ alert(“Mic not supported in this browser”); return; }
-if(recognition) recognition.stop();
-recognition = new SR();
-recognition.continuous = true;
-recognition.interimResults = true;
-recognition.lang = “en-US”;
-recognition.onstart = function(){
-document.getElementById(“micStatus”).textContent = “Live”;
-document.getElementById(“micBtn”).classList.add(“recording”);
-document.getElementById(“micBtn”).innerHTML = “\uD83D\uDD34 Recording”;
-};
-recognition.onerror = function(){ document.getElementById(“micStatus”).textContent = “Error”; };
-recognition.onend = function(){
-document.getElementById(“micStatus”).textContent = “Idle”;
-document.getElementById(“micBtn”).classList.remove(“recording”);
-document.getElementById(“micBtn”).innerHTML = “\uD83C\uDFA4 Start Mic”;
-};
-recognition.onresult = function(e){
-var t = e.results[e.results.length-1][0].transcript;
-document.getElementById(“objection”).value = t;
-updateTranslation();
-clearTimeout(window._vt);
-window._vt = setTimeout(function(){ generateResponse(); }, 300);
-};
-recognition.start();
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ alert("Mic not supported in this browser"); return; }
+  if(recognition) recognition.stop();
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = "en-US";
+  recognition.onstart = function(){
+    document.getElementById("micStatus").textContent = "Live";
+    document.getElementById("micBtn").classList.add("recording");
+    document.getElementById("micBtn").innerHTML = "🔴 Recording";
+  };
+  recognition.onerror = function(){ document.getElementById("micStatus").textContent = "Error"; };
+  recognition.onend = function(){
+    document.getElementById("micStatus").textContent = "Idle";
+    document.getElementById("micBtn").classList.remove("recording");
+    document.getElementById("micBtn").innerHTML = "🎤 Start Mic";
+  };
+  recognition.onresult = function(e){
+    var t = e.results[e.results.length-1][0].transcript;
+    document.getElementById("objection").value = t;
+    updateTranslation();
+    clearTimeout(window._vt);
+    window._vt = setTimeout(function(){ generateResponse(); }, 300);
+  };
+  recognition.start();
 }
-function stopListening(){ if(recognition) recognition.stop(); }
+function stopListening(){ 
+  if(recognition) recognition.stop(); 
+  if(esRecognition) {
+    esRecognition.stop();
+    esRecognition = null;
+    var btn = document.getElementById("esMicBtn");
+    if(btn){ btn.classList.remove("listening"); btn.textContent = "🎤 Escuchar"; }
+  }
+}
 
 // ── Scoring & Strategy ──
 function calcProb(text){
-var s = 70;
-var t = text.toLowerCase();
-if(t.indexOf(“check”)>=0||t.indexOf(“cheques”)>=0) s-=10;
-if(t.indexOf(“fee”)>=0||t.indexOf(“tarifas”)>=0)   s-=15;
-if(t.indexOf(“busy”)>=0||t.indexOf(“later”)>=0)    s-=8;
-if(t.indexOf(“accountant”)>=0)                      s-=10;
-if(t.indexOf(“not interested”)>=0)                  s-=18;
-if(t.indexOf(“yes”)>=0)                             s+=20;
-if(t.indexOf(“interested”)>=0)                      s+=15;
-var sp = suppliers[selectedIdx];
-s += Math.round((sp.ach_score - sp.vcc_score)/10);
-return Math.max(5, Math.min(95, s));
+  var s = 70;
+  var t = text.toLowerCase();
+  if(t.indexOf("check")>=0||t.indexOf("cheques")>=0) s-=10;
+  if(t.indexOf("fee")>=0||t.indexOf("tarifas")>=0)   s-=15;
+  if(t.indexOf("busy")>=0||t.indexOf("later")>=0)    s-=8;
+  if(t.indexOf("accountant")>=0)                      s-=10;
+  if(t.indexOf("not interested")>=0)                  s-=18;
+  if(t.indexOf("yes")>=0)                             s+=20;
+  if(t.indexOf("interested")>=0)                      s+=15;
+  var sp = suppliers[selectedIdx];
+  s += Math.round((sp.ach_score - sp.vcc_score)/10);
+  return Math.max(5, Math.min(95, s));
 }
 function getTag(text){
-var t = text.toLowerCase();
-if(t.indexOf(“check”)>=0||t.indexOf(“cheques”)>=0) return “Payment Method”;
-if(t.indexOf(“fee”)>=0||t.indexOf(“tarifas”)>=0)   return “Cost”;
-if(t.indexOf(“busy”)>=0||t.indexOf(“later”)>=0)    return “Timing”;
-if(t.indexOf(“accountant”)>=0)                      return “Accounting”;
-if(t.indexOf(“not interested”)>=0)                  return “Rejection”;
-return “General”;
+  var t = text.toLowerCase();
+  if(t.indexOf("check")>=0||t.indexOf("cheques")>=0) return "Payment Method";
+  if(t.indexOf("fee")>=0||t.indexOf("tarifas")>=0)   return "Cost";
+  if(t.indexOf("busy")>=0||t.indexOf("later")>=0)    return "Timing";
+  if(t.indexOf("accountant")>=0)                      return "Accounting";
+  if(t.indexOf("not interested")>=0)                  return "Rejection";
+  return "General";
 }
 function getStrategy(text, score){
-var tag = getTag(text);
-if(score>=80)               return “Push Next Step”;
-if(tag===“Cost”)            return “Reframe Value”;
-if(tag===“Payment Method”)  return “Speed & Simplicity”;
-if(tag===“Timing”)          return “Keep It Short”;
-if(tag===“Accounting”)      return “Lower Friction”;
-if(tag===“Rejection”)       return “Soften & Re-engage”;
-return “Guide Next Step”;
+  var tag = getTag(text);
+  if(score>=80)               return "Push Next Step";
+  if(tag==="Cost")            return "Reframe Value";
+  if(tag==="Payment Method")  return "Speed & Simplicity";
+  if(tag==="Timing")          return "Keep It Short";
+  if(tag==="Accounting")      return "Lower Friction";
+  if(tag==="Rejection")       return "Soften & Re-engage";
+  return "Guide Next Step";
 }
-function getHeat(s){ return s>=80 ? “Hot” : s>=55 ? “Warm” : “Cold”; }
+function getHeat(s){ return s>=80 ? "Hot" : s>=55 ? "Warm" : "Cold"; }
 function getAction(text, score){
-var tag = getTag(text);
-if(score>=80)               return “Ask for setup now”;
-if(tag===“Payment Method”)  return “Position ACH speed”;
-if(tag===“Cost”)            return “Reframe: no fees”;
-if(tag===“Timing”)          return “Short push”;
-if(tag===“Accounting”)      return “Loop in accounting”;
-if(tag===“Rejection”)       return “Lower resistance”;
-return “Guide forward”;
+  var tag = getTag(text);
+  if(score>=80)               return "Ask for setup now";
+  if(tag==="Payment Method")  return "Position ACH speed";
+  if(tag==="Cost")            return "Reframe: no fees";
+  if(tag==="Timing")          return "Short push";
+  if(tag==="Accounting")      return "Loop in accounting";
+  if(tag==="Rejection")       return "Lower resistance";
+  return "Guide forward";
 }
 function getCoaching(text, score){
-var s = getStrategy(text, score);
-if(s===“Push Next Step”)     return “They sound close. Stop explaining and move to setup.”;
-if(s===“Reframe Value”)      return “Don’t defend cost. Shift focus to simplicity and speed.”;
-if(s===“Speed & Simplicity”) return “Make checks sound slow. Make ACH sound effortless.”;
-if(s===“Keep It Short”)      return “Shorten your response and hold control of the call.”;
-if(s===“Lower Friction”)     return “Reduce effort. Offer a single, simple next step.”;
-if(s===“Soften & Re-engage”) return “Don’t push. Rebuild interest and keep it light.”;
-return “Acknowledge, reframe, and guide forward.”;
+  var s = getStrategy(text, score);
+  if(s==="Push Next Step")     return "They sound close. Stop explaining and move to setup.";
+  if(s==="Reframe Value")      return "Don't defend cost. Shift focus to simplicity and speed.";
+  if(s==="Speed & Simplicity") return "Make checks sound slow. Make ACH sound effortless.";
+  if(s==="Keep It Short")      return "Shorten your response and hold control of the call.";
+  if(s==="Lower Friction")     return "Reduce effort. Offer a single, simple next step.";
+  if(s==="Soften & Re-engage") return "Don't push. Rebuild interest and keep it light.";
+  return "Acknowledge, reframe, and guide forward.";
 }
 function getFallback(text){
-var t = text.toLowerCase();
-if(t.indexOf(“check”)>=0||t.indexOf(“cheques”)>=0) return “Yeah, I get that. Most people start there, but ACH usually ends up easier since you’re not waiting on checks anymore.”;
-if(t.indexOf(“fee”)>=0||t.indexOf(“tarifas”)>=0)   return “That’s fair. That’s why ACH is usually the better option — it keeps things simple without extra fees.”;
-if(t.indexOf(“busy”)>=0||t.indexOf(“later”)>=0)    return “No worries, I’ll keep it quick so you don’t have to come back to this later.”;
-if(t.indexOf(“accountant”)>=0)                      return “Makes sense. We can loop in accounting, but the setup itself is simple so we can keep this moving now.”;
-if(t.indexOf(“not interested”)>=0)                  return “All good. Usually once people see it’s really about getting paid faster, it starts to make more sense.”;
-if(detectLang(text)===“Spanish”)                    return “Entiendo. ACH le ayuda a recibir pagos mas rapido y evita retrasos de cheques.”;
-return “That makes sense. ACH just helps you get paid faster without the delays.”;
+  var t = text.toLowerCase();
+  if(t.indexOf("check")>=0||t.indexOf("cheques")>=0) return "Yeah, I get that. Most people start there, but ACH usually ends up easier since you're not waiting on checks anymore.";
+  if(t.indexOf("fee")>=0||t.indexOf("tarifas")>=0)   return "That's fair. That's why ACH is usually the better option — it keeps things simple without extra fees.";
+  if(t.indexOf("busy")>=0||t.indexOf("later")>=0)    return "No worries, I'll keep it quick so you don't have to come back to this later.";
+  if(t.indexOf("accountant")>=0)                      return "Makes sense. We can loop in accounting, but the setup itself is simple so we can keep this moving now.";
+  if(t.indexOf("not interested")>=0)                  return "All good. Usually once people see it's really about getting paid faster, it starts to make more sense.";
+  if(detectLang(text)==="Spanish")                    return "Entiendo. ACH le ayuda a recibir pagos mas rapido y evita retrasos de cheques.";
+  return "That makes sense. ACH just helps you get paid faster without the delays.";
 }
 
 // ── Typewriter ──
 function typewrite(el, text){
-if(_twi){ clearInterval(_twi); _twi = null; }
-el.textContent = “”;
-var i = 0;
-var chars = text.split(””);
-_twi = setInterval(function(){
-if(i < chars.length){ el.textContent += chars[i]; i++; }
-else { clearInterval(_twi); _twi = null; }
-}, 20);
+  if(_twi){ clearInterval(_twi); _twi = null; }
+  el.textContent = "";
+  var i = 0;
+  var chars = text.split("");
+  _twi = setInterval(function(){
+    if(i < chars.length){ el.textContent += chars[i]; i++; }
+    else { clearInterval(_twi); _twi = null; }
+  }, 20);
 }
 
 // ── Generate AI Response ──
 function generateResponse(){
-var text = document.getElementById(“objection”).value.trim();
-if(!text) return;
-if(_twi){ clearInterval(_twi); _twi = null; }
+  var text = document.getElementById("objection").value.trim();
+  if(!text) return;
+  if(_twi){ clearInterval(_twi); _twi = null; }
 
-var score   = calcProb(text);
-var tag     = getTag(text);
-var action  = getAction(text, score);
-var el      = document.getElementById(“response”);
-var supplier = suppliers[selectedIdx];
+  var score   = calcProb(text);
+  var tag     = getTag(text);
+  var action  = getAction(text, score);
+  var el      = document.getElementById("response");
+  var supplier = suppliers[selectedIdx];
 
-el.innerHTML = ‘<span style="font-size:15px;font-weight:500;font-style:normal;color:rgba(255,255,255,.7);">Analyzing objection…</span>’;
-updateTranslation();
+  el.innerHTML = '<span style="font-size:15px;font-weight:500;font-style:normal;color:rgba(255,255,255,.7);">Analyzing objection...</span>';
+  updateTranslation();
 
-document.getElementById(“confidence”).textContent       = “90%”;
-document.getElementById(“objectionTag”).textContent     = tag;
-document.getElementById(“nextBestAction”).textContent   = action;
-document.getElementById(“closeProbability”).textContent = score + “%”;
-document.getElementById(“strategyTag”).textContent      = getStrategy(text, score);
-document.getElementById(“leadHeat”).textContent         = getHeat(score);
-document.getElementById(“liveCoaching”).textContent     = getCoaching(text, score);
-genExtras();
+  document.getElementById("confidence").textContent       = "90%";
+  document.getElementById("objectionTag").textContent     = tag;
+  document.getElementById("nextBestAction").textContent   = action;
+  document.getElementById("closeProbability").textContent = score + "%";
+  document.getElementById("strategyTag").textContent      = getStrategy(text, score);
+  document.getElementById("leadHeat").textContent         = getHeat(score);
+  document.getElementById("liveCoaching").textContent     = getCoaching(text, score);
+  genExtras();
 
-var sysP = “You are an expert B2B sales rep for PayPilot enrolling suppliers onto ACH. Reply with ONE short natural response (2-3 sentences). Acknowledge the concern, pivot to benefits: faster payment, no check delays, no supplier fees. Sound like a real human. Supplier: “ + supplier.company + “ (” + supplier.industry + “), Contact: “ + supplier.contact + “, Objection type: “ + tag + “.”;
+  var sysP = "You are an expert B2B sales rep for PayPilot enrolling suppliers onto ACH. Reply with ONE short natural response (2-3 sentences). Acknowledge the concern, pivot to benefits: faster payment, no check delays, no supplier fees. Sound like a real human. Supplier: " + supplier.company + " (" + supplier.industry + "), Contact: " + supplier.contact + ", Objection type: " + tag + ".";
 
-fetch(“https://api.anthropic.com/v1/messages”,{
-method:“POST”,
-headers:{“Content-Type”:“application/json”,“anthropic-version”:“2023-06-01”},
-body:JSON.stringify({
-model:“claude-sonnet-4-20250514”,
-max_tokens:180,
-system:sysP,
-messages:[{role:“user”, content:“Supplier said: “ + text}]
-})
-})
-.then(function(r){ return r.json(); })
-.then(function(d){
-var resp = (d.content && d.content[0] && d.content[0].text) ? d.content[0].text.trim() : getFallback(text);
-el.textContent = “”;
-typewrite(el, resp);
-})
-.catch(function(){
-el.textContent = “”;
-typewrite(el, getFallback(text));
-});
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-20250514",
+      max_tokens:180,
+      system:sysP,
+      messages:[{role:"user", content:"Supplier said: " + text}]
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    var resp = (d.content && d.content[0] && d.content[0].text) ? d.content[0].text.trim() : getFallback(text);
+    el.textContent = "";
+    typewrite(el, resp);
+  })
+  .catch(function(){
+    el.textContent = "";
+    typewrite(el, getFallback(text));
+  });
 }
 
 // ── Extras ──
 function genExtras(){
-var s = suppliers[selectedIdx];
-var outcome = document.getElementById(“outcome”).value;
-document.getElementById(“crmNote”).textContent   = s.company + “: Discussed electronic payment options. Contact: “ + s.contact + “. Outcome: “ + outcome + “.”;
-document.getElementById(“emailText”).textContent = “Hi “ + s.contact + “, thank you for your time. ACH may be a strong fit to help you receive payments faster and reduce delays.”;
+  var s = suppliers[selectedIdx];
+  var outcome = document.getElementById("outcome").value;
+  document.getElementById("crmNote").textContent   = s.company + ": Discussed electronic payment options. Contact: " + s.contact + ". Outcome: " + outcome + ".";
+  document.getElementById("emailText").textContent = "Hi " + s.contact + ", thank you for your time. ACH may be a strong fit to help you receive payments faster and reduce delays.";
 }
 
 function logCall(){
-var h = gh();
-var s = suppliers[selectedIdx];
-h.unshift({
-supplier:   s.company,
-objection:  document.getElementById(“objection”).value.trim(),
-outcome:    document.getElementById(“outcome”).value,
-enrollment: document.getElementById(“enrollment”).value,
-createdAt:  new Date().toLocaleString()
-});
-sh(h);
-renderHistory();
-updateStats();
-renderManager();
+  var h = gh();
+  var s = suppliers[selectedIdx];
+  h.unshift({
+    supplier:   s.company,
+    objection:  document.getElementById("objection").value.trim(),
+    outcome:    document.getElementById("outcome").value,
+    enrollment: document.getElementById("enrollment").value,
+    createdAt:  new Date().toLocaleString()
+  });
+  sh(h);
+  renderHistory();
+  updateStats();
+  renderManager();
 }
 
 function tagHTML(o){
-if(o===“Converted”)       return ‘<span class="stag st-conv">Converted</span>’;
-if(o===“Rejected”)        return ‘<span class="stag st-rej">Rejected</span>’;
-if(o===“Follow Up Needed”) return ‘<span class="stag st-fup">Follow Up</span>’;
-return ‘<span class="stag st-pend">Pending</span>’;
+  if(o==="Converted")       return '<span class="stag st-conv">Converted</span>';
+  if(o==="Rejected")        return '<span class="stag st-rej">Rejected</span>';
+  if(o==="Follow Up Needed") return '<span class="stag st-fup">Follow Up</span>';
+  return '<span class="stag st-pend">Pending</span>';
 }
 
 function renderHistory(){
-var h = gh();
-var el = document.getElementById(“history”);
-if(!h.length){ el.innerHTML = ‘<p class="muted">No calls logged yet.</p>’; return; }
-var html = “”;
-for(var i=0; i<h.length; i++){
-var x = h[i];
-html += ‘<div class="history-entry">’+
-‘<div class="he-top"><span class="he-name">’+x.supplier+’</span>’+tagHTML(x.outcome)+’</div>’+
-‘<div class="he-date">’+x.createdAt+’</div>’+
-‘<div class="he-obj">’+(x.objection||”—”)+’</div>’+
-‘</div>’;
-}
-el.innerHTML = html;
+  var h = gh();
+  var el = document.getElementById("history");
+  if(!h.length){ el.innerHTML = '<p class="muted">No calls logged yet.</p>'; return; }
+  var html = "";
+  for(var i=0; i<h.length; i++){
+    var x = h[i];
+    html += '<div class="history-entry">'+
+      '<div class="he-top"><span class="he-name">'+x.supplier+'</span>'+tagHTML(x.outcome)+'</div>'+
+      '<div class="he-date">'+x.createdAt+'</div>'+
+      '<div class="he-obj">'+(x.objection||"—")+'</div>'+
+    '</div>';
+  }
+  el.innerHTML = html;
 }
 
 function updateStats(){
-var h     = gh();
-var calls = h.length;
-var conv  = 0;
-var tags  = {};
-for(var i=0; i<h.length; i++){
-if(h[i].outcome === “Converted”) conv++;
-var t = getTag(h[i].objection||””);
-tags[t] = (tags[t]||0) + 1;
-}
-var rate = calls ? Math.round((conv/calls)*100) : 0;
-var top = “None”, tc = 0;
-for(var k in tags){ if(tags[k]>tc){ top=k; tc=tags[k]; } }
-document.getElementById(“callsLogged”).textContent     = calls;
-document.getElementById(“callsConverted”).textContent  = conv;
-document.getElementById(“conversionRate”).textContent  = rate + “%”;
-document.getElementById(“topObjection”).textContent    = top;
+  var h     = gh();
+  var calls = h.length;
+  var conv  = 0;
+  var tags  = {};
+  for(var i=0; i<h.length; i++){
+    if(h[i].outcome === "Converted") conv++;
+    var t = getTag(h[i].objection||"");
+    tags[t] = (tags[t]||0) + 1;
+  }
+  var rate = calls ? Math.round((conv/calls)*100) : 0;
+  var top = "None", tc = 0;
+  for(var k in tags){ if(tags[k]>tc){ top=k; tc=tags[k]; } }
+  document.getElementById("callsLogged").textContent     = calls;
+  document.getElementById("callsConverted").textContent  = conv;
+  document.getElementById("conversionRate").textContent  = rate + "%";
+  document.getElementById("topObjection").textContent    = top;
 }
 
 function renderManager(){
-var h     = gh();
-var total = h.length;
-var won   = 0;
-var bd    = {};
-for(var i=0; i<h.length; i++){
-if(h[i].outcome === “Converted”) won++;
-var t = getTag(h[i].objection||””);
-bd[t] = (bd[t]||0) + 1;
-}
-var rate = total ? Math.round((won/total)*100) : 0;
-document.getElementById(“mgrCalls”).textContent     = total;
-document.getElementById(“mgrConverted”).textContent = won;
-document.getElementById(“mgrRate”).textContent      = rate + “%”;
-var top = “None”, tc = 0;
-for(var k in bd){ if(bd[k]>tc){ top=k; tc=bd[k]; } }
-document.getElementById(“mgrTopObjection”).textContent = top;
+  var h     = gh();
+  var total = h.length;
+  var won   = 0;
+  var bd    = {};
+  for(var i=0; i<h.length; i++){
+    if(h[i].outcome === "Converted") won++;
+    var t = getTag(h[i].objection||"");
+    bd[t] = (bd[t]||0) + 1;
+  }
+  var rate = total ? Math.round((won/total)*100) : 0;
+  document.getElementById("mgrCalls").textContent     = total;
+  document.getElementById("mgrConverted").textContent = won;
+  document.getElementById("mgrRate").textContent      = rate + "%";
+  var top = "None", tc = 0;
+  for(var k in bd){ if(bd[k]>tc){ top=k; tc=bd[k]; } }
+  document.getElementById("mgrTopObjection").textContent = top;
 
-var keys = Object.keys(bd);
-if(!keys.length){
-document.getElementById(“objectionBreakdown”).innerHTML = ‘<p class="muted">No data yet. Log calls in Rep View.</p>’;
-return;
-}
-keys.sort(function(a,b){ return bd[b]-bd[a]; });
-var maxV = bd[keys[0]];
-var html = “”;
-for(var j=0; j<keys.length; j++){
-var k2 = keys[j], v = bd[k2];
-html += ‘<div class="obj-row">’+
-‘<div class="obj-label">’+k2+’</div>’+
-‘<div class="obj-track"><div class="obj-fill" style="width:'+Math.round((v/maxV)*100)+'%"></div></div>’+
-‘<div class="obj-count">’+v+’</div>’+
-‘</div>’;
-}
-document.getElementById(“objectionBreakdown”).innerHTML = html;
+  var keys = Object.keys(bd);
+  if(!keys.length){
+    document.getElementById("objectionBreakdown").innerHTML = '<p class="muted">No data yet. Log calls in Rep View.</p>';
+    return;
+  }
+  keys.sort(function(a,b){ return bd[b]-bd[a]; });
+  var maxV = bd[keys[0]];
+  var html = "";
+  for(var j=0; j<keys.length; j++){
+    var k2 = keys[j], v = bd[k2];
+    html += '<div class="obj-row">'+
+      '<div class="obj-label">'+k2+'</div>'+
+      '<div class="obj-track"><div class="obj-fill" style="width:'+Math.round((v/maxV)*100)+'%"></div></div>'+
+      '<div class="obj-count">'+v+'</div>'+
+    '</div>';
+  }
+  document.getElementById("objectionBreakdown").innerHTML = html;
 }
 
 function markEnrollmentComplete(){
-document.getElementById(“enrollment”).value = “Completed”;
-document.getElementById(“outcome”).value    = “Converted”;
-genExtras();
+  document.getElementById("enrollment").value = "Completed";
+  document.getElementById("outcome").value    = "Converted";
+  genExtras();
 }
 
 // Load voices for TTS as soon as possible
 if(window.speechSynthesis){
-window.speechSynthesis.onvoiceschanged = function(){};
-window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = function(){};
+  window.speechSynthesis.getVoices();
 }
 
-document.addEventListener(“click”, function(e){
-var sr  = document.getElementById(“searchResults”);
-var inp = document.getElementById(“supplierSearch”);
-if(sr && !sr.contains(e.target) && e.target !== inp) sr.classList.add(“hidden”);
+document.addEventListener("click", function(e){
+  var sr  = document.getElementById("searchResults");
+  var inp = document.getElementById("supplierSearch");
+  if(sr && !sr.contains(e.target) && e.target !== inp) sr.classList.add("hidden");
 });
 </script>
 
