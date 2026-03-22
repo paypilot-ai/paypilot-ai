@@ -5,56 +5,56 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="email-protection" content="off">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com;">
 <title>PayPilot AI</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;-webkit-font-smoothing:antialiased}
-body{font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;background:#eef2ff;color:#0f172a}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;background:#eef2ff;color:#0f172a}
 
-/* ── HIDDEN ── */
+/* -- HIDDEN -- */
 .h{display:none!important}
 
-/* ── LOGIN ── */
+/* -- LOGIN -- */
 #LP{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
 .LP-L{
-background:linear-gradient(145deg,#1e40af,#2563eb);
-padding:60px 56px;
-display:flex;flex-direction:column;justify-content:center;
-position:relative;overflow:hidden;
+  background:linear-gradient(145deg,#1e40af,#2563eb);
+  padding:60px 56px;
+  display:flex;flex-direction:column;justify-content:center;
+  position:relative;overflow:hidden;
 }
 .LP-L::before{
-content:’’;position:absolute;inset:0;
-background:radial-gradient(ellipse 80% 60% at 20% 20%,rgba(255,255,255,.12),transparent 60%);
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 20% 20%,rgba(255,255,255,.12),transparent 60%);
 }
 .LP-L::after{
-content:’’;position:absolute;
-width:500px;height:500px;border-radius:50%;
-border:1px solid rgba(255,255,255,.1);
-top:-150px;right:-150px;
+  content:'';position:absolute;
+  width:500px;height:500px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.1);
+  top:-150px;right:-150px;
 }
 .LP-ring{
-position:absolute;width:300px;height:300px;border-radius:50%;
-border:1px solid rgba(255,255,255,.07);
-bottom:-80px;left:-80px;
+  position:absolute;width:300px;height:300px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.07);
+  bottom:-80px;left:-80px;
 }
 .LP-logo{display:flex;align-items:center;gap:14px;margin-bottom:52px;position:relative;z-index:1}
 .LP-icon{
-width:50px;height:50px;border-radius:14px;
-background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
-display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;
+  width:50px;height:50px;border-radius:14px;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;
 }
 .LP-brand{font-size:21px;font-weight:800;color:#fff;letter-spacing:-.02em}
 .LP-brand b{color:#bfdbfe}
 .LP-h{font-size:58px;font-weight:900;color:#fff;line-height:1;letter-spacing:-.04em;margin-bottom:18px;position:relative;z-index:1}
 .LP-h span{color:#bfdbfe;display:block}
-.LP-tag{font-family:‘Instrument Serif’,serif;font-size:19px;font-style:italic;color:rgba(219,234,254,.9);margin-bottom:44px;position:relative;z-index:1;max-width:380px;line-height:1.5}
+.LP-tag{font-family:Georgia,'Times New Roman',serif;font-size:19px;font-style:italic;color:rgba(219,234,254,.9);margin-bottom:44px;position:relative;z-index:1;max-width:380px;line-height:1.5}
 .LP-feats{display:flex;flex-direction:column;gap:12px;position:relative;z-index:1}
 .LP-feat{
-display:flex;align-items:center;gap:14px;
-background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
-border-radius:14px;padding:13px 16px;
+  display:flex;align-items:center;gap:14px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+  border-radius:14px;padding:13px 16px;
 }
 .LP-feat-ico{font-size:20px;width:36px;text-align:center;flex-shrink:0}
 .LP-feat-txt{font-size:15px;font-weight:600;color:#fff}
@@ -66,52 +66,52 @@ border-radius:14px;padding:13px 16px;
 .LP-sub{font-size:16px;color:#6b7280;margin-bottom:36px;line-height:1.5}
 .LP-label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
 .LP-input{
-width:100%;padding:15px 17px;font-size:16px;font-family:‘Inter’,sans-serif;
-border:2px solid #e5e7eb;border-radius:12px;outline:none;
-color:#0f172a;background:#f9fafb;transition:border-color .15s,box-shadow .15s;
-margin-bottom:18px;-webkit-appearance:none;appearance:none;
+  width:100%;padding:15px 17px;font-size:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  border:2px solid #e5e7eb;border-radius:12px;outline:none;
+  color:#0f172a;background:#f9fafb;transition:border-color .15s,box-shadow .15s;
+  margin-bottom:18px;-webkit-appearance:none;appearance:none;
 }
 .LP-input:focus{border-color:#2563eb;background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.1)}
 .LP-btn{
-width:100%;padding:17px;font-size:17px;font-weight:800;font-family:‘Inter’,sans-serif;
-border:none;border-radius:12px;cursor:pointer;
-background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;
-box-shadow:0 4px 18px rgba(37,99,235,.4);transition:transform .15s,box-shadow .15s;
-display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:17px;font-size:17px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  border:none;border-radius:12px;cursor:pointer;
+  background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;
+  box-shadow:0 4px 18px rgba(37,99,235,.4);transition:transform .15s,box-shadow .15s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
 }
 .LP-btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(37,99,235,.5)}
 .LP-hint{text-align:center;font-size:13px;color:#9ca3af;margin-top:16px;font-weight:500}
 .LP-hint b{color:#2563eb}
 .LP-err{color:#dc2626;font-size:13px;text-align:center;margin-top:10px;min-height:18px}
 
-/* ── APP ── */
+/* -- APP -- */
 #APP{display:grid;grid-template-columns:258px 1fr;min-height:100vh}
 
 /* SIDEBAR */
 .SB{
-background:linear-gradient(180deg,#0d1a2d,#0a1520);
-display:flex;flex-direction:column;
-position:sticky;top:0;height:100vh;overflow-y:auto;
+  background:linear-gradient(180deg,#0d1a2d,#0a1520);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
 }
 .SB-top{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
 .SB-logo{display:flex;align-items:center;gap:11px}
 .SB-ico{
-width:38px;height:38px;border-radius:11px;flex-shrink:0;
-background:linear-gradient(135deg,#1d4ed8,#3b82f6);
-display:flex;align-items:center;justify-content:center;
-box-shadow:0 4px 12px rgba(37,99,235,.5);font-size:17px;
+  width:38px;height:38px;border-radius:11px;flex-shrink:0;
+  background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(37,99,235,.5);font-size:17px;
 }
 .SB-name{font-size:17px;font-weight:800;letter-spacing:-.02em;color:#fff;line-height:1}
 .SB-name b{color:#93c5fd}
 .SB-tag{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:4px}
 .SB-sec{padding:18px 20px 5px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.28)}
 .NB{
-display:flex;align-items:center;gap:10px;
-width:calc(100% - 22px);margin:2px 11px;
-padding:11px 13px;border:1px solid transparent;border-radius:11px;
-background:transparent;color:rgba(255,255,255,.55);
-text-align:left;cursor:pointer;font-family:‘Inter’,sans-serif;
-font-size:14.5px;font-weight:600;transition:all .15s;
+  display:flex;align-items:center;gap:10px;
+  width:calc(100% - 22px);margin:2px 11px;
+  padding:11px 13px;border:1px solid transparent;border-radius:11px;
+  background:transparent;color:rgba(255,255,255,.55);
+  text-align:left;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  font-size:14.5px;font-weight:600;transition:all .15s;
 }
 .NB:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9)}
 .NB.on{background:rgba(59,130,246,.18);color:#93c5fd;border-color:rgba(59,130,246,.3)}
@@ -121,18 +121,18 @@ font-size:14.5px;font-weight:600;transition:all .15s;
 /* TOPBAR */
 .main{min-width:0;display:flex;flex-direction:column}
 .TB{
-position:sticky;top:0;z-index:20;height:64px;
-background:rgba(255,255,255,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-border-bottom:1px solid #e8edf5;
-display:flex;align-items:center;padding:0 30px;gap:15px;
-box-shadow:0 2px 12px rgba(37,99,235,.06);
+  position:sticky;top:0;z-index:20;height:64px;
+  background:rgba(255,255,255,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid #e8edf5;
+  display:flex;align-items:center;padding:0 30px;gap:15px;
+  box-shadow:0 2px 12px rgba(37,99,235,.06);
 }
 .TB-logo{display:flex;align-items:center;gap:9px}
 .TB-ico{
-width:30px;height:30px;border-radius:8px;
-background:linear-gradient(135deg,#1d4ed8,#3b82f6);
-display:flex;align-items:center;justify-content:center;font-size:14px;
-box-shadow:0 2px 8px rgba(37,99,235,.4);
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  box-shadow:0 2px 8px rgba(37,99,235,.4);
 }
 .TB-name{font-size:17px;font-weight:800;letter-spacing:-.02em;color:#0f172a}
 .TB-name b{color:#2563eb}
@@ -140,10 +140,10 @@ box-shadow:0 2px 8px rgba(37,99,235,.4);
 .TB-sub{font-size:12px;font-weight:600;color:#6b7280;letter-spacing:.01em}
 .TB-R{margin-left:auto;display:flex;align-items:center;gap:10px}
 .LIVE{
-display:flex;align-items:center;gap:7px;
-background:#ecfdf5;border:1.5px solid #6ee7b7;border-radius:50px;
-padding:6px 14px;font-size:11px;font-weight:700;
-letter-spacing:.06em;text-transform:uppercase;color:#059669;
+  display:flex;align-items:center;gap:7px;
+  background:#ecfdf5;border:1.5px solid #6ee7b7;border-radius:50px;
+  padding:6px 14px;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:#059669;
 }
 .LIVE-dot{width:6px;height:6px;border-radius:50%;background:#059669;-webkit-animation:pulse 2s ease-in-out infinite;animation:pulse 2s ease-in-out infinite}
 @-webkit-keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -156,15 +156,15 @@ letter-spacing:.06em;text-transform:uppercase;color:#059669;
 /* STATS */
 .STATS{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
 .SC{
-background:#fff;border:1.5px solid #e8edf5;border-radius:20px;
-padding:22px 24px;position:relative;overflow:hidden;
-box-shadow:0 2px 8px rgba(37,99,235,.05);transition:transform .2s,box-shadow .2s;cursor:default;
+  background:#fff;border:1.5px solid #e8edf5;border-radius:20px;
+  padding:22px 24px;position:relative;overflow:hidden;
+  box-shadow:0 2px 8px rgba(37,99,235,.05);transition:transform .2s,box-shadow .2s;cursor:default;
 }
 .SC:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,.1)}
 .SC-bar{position:absolute;top:0;left:0;right:0;height:4px;border-radius:20px 20px 0 0}
 .SC-lbl{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8897b5;margin-bottom:10px}
-.SC-val{font-family:‘Instrument Serif’,serif;font-size:52px;font-weight:400;line-height:1;letter-spacing:-.03em;color:#0f172a}
-.SC-val.sm{font-family:‘Inter’,sans-serif;font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:6px}
+.SC-val{font-family:Georgia,'Times New Roman',serif;font-size:52px;font-weight:400;line-height:1;letter-spacing:-.03em;color:#0f172a}
+.SC-val.sm{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:6px}
 
 /* LAYOUT */
 .SPLIT{display:grid;grid-template-columns:1fr 1.5fr;gap:18px}
@@ -176,15 +176,15 @@ box-shadow:0 2px 8px rgba(37,99,235,.05);transition:transform .2s,box-shadow .2s
 .CD{background:#fff;border:1.5px solid #e8edf5;border-radius:20px;overflow:hidden;box-shadow:0 2px 8px rgba(37,99,235,.04);transition:box-shadow .2s}
 .CD:hover{box-shadow:0 6px 20px rgba(37,99,235,.08)}
 .CD-head{
-padding:15px 22px;border-bottom:1.5px solid #f0f3f9;
-display:flex;align-items:center;gap:10px;
-background:linear-gradient(to bottom,#fafbff,#f5f7fc);
+  padding:15px 22px;border-bottom:1.5px solid #f0f3f9;
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(to bottom,#fafbff,#f5f7fc);
 }
 .CD-pip{width:4px;height:17px;border-radius:3px;flex-shrink:0}
 .CD-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#374151}
 .CD-badge{
-margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
-color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:50px;padding:3px 11px;
+  margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:50px;padding:3px 11px;
 }
 .CD-body{padding:22px}
 
@@ -192,26 +192,26 @@ color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:50px;pad
 .FLD{margin-bottom:15px}
 .FL{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#4b5e7e;margin-bottom:7px}
 input,textarea,select{
-width:100%;padding:11px 13px;font-size:14.5px;font-family:‘Inter’,sans-serif;font-weight:500;
-border:2px solid #e5e7eb;border-radius:11px;outline:none;
-background:#f8fafc;color:#0f172a;transition:border-color .15s,box-shadow .15s;
--webkit-appearance:none;appearance:none;
+  width:100%;padding:11px 13px;font-size:14.5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-weight:500;
+  border:2px solid #e5e7eb;border-radius:11px;outline:none;
+  background:#f8fafc;color:#0f172a;transition:border-color .15s,box-shadow .15s;
+  -webkit-appearance:none;appearance:none;
 }
 input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:#9ca3af;font-weight:400}
 input:focus,textarea:focus,select:focus{border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.1);background:#fff}
 textarea{min-height:115px;resize:vertical;line-height:1.65}
 select{
-background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ fill=‘none’ viewBox=‘0 0 20 20’%3E%3Cpath stroke=’%236b7280’ stroke-width=‘1.5’ d=‘M6 8l4 4 4-4’/%3E%3C/svg%3E”);
-background-repeat:no-repeat;background-position:right 11px center;background-size:17px;padding-right:36px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;background-size:17px;padding-right:36px;cursor:pointer;
 }
 select option{background:#fff;color:#0f172a}
 
 /* BUTTONS */
 .BT{
-border:none;cursor:pointer;font-family:‘Inter’,sans-serif;
-font-weight:700;font-size:13.5px;
-display:inline-flex;align-items:center;gap:7px;
-padding:11px 20px;border-radius:50px;transition:all .15s;
+  border:none;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  font-weight:700;font-size:13.5px;
+  display:inline-flex;align-items:center;gap:7px;
+  padding:11px 20px;border-radius:50px;transition:all .15s;
 }
 .BT-blue{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;box-shadow:0 2px 10px rgba(37,99,235,.32)}
 .BT-blue:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,99,235,.44)}
@@ -245,9 +245,9 @@ padding:11px 20px;border-radius:50px;transition:all .15s;
 .ST td:last-child{color:#0f172a;font-weight:600}
 .SCORES{display:flex;gap:10px;margin-top:15px}
 .SC2{flex:1;padding:13px;border-radius:14px;border:2px solid;text-align:center;position:relative;overflow:hidden}
-.SC2::before{content:’’;position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.8),transparent)}
+.SC2::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.8),transparent)}
 .SC2-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
-.SC2-val{font-family:‘Instrument Serif’,serif;font-size:30px;font-weight:400;display:block}
+.SC2-val{font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:400;display:block}
 .SC2-b{background:#eff6ff;border-color:#bfdbfe}.SC2-b .SC2-lbl{color:#1d4ed8}.SC2-b .SC2-val{color:#1d4ed8}
 .SC2-c{background:#ecfeff;border-color:#a5f3fc}.SC2-c .SC2-lbl{color:#0891b2}.SC2-c .SC2-val{color:#0891b2}
 
@@ -259,17 +259,17 @@ padding:11px 20px;border-radius:50px;transition:all .15s;
 
 /* AI RESPONSE */
 .AI{
-background:linear-gradient(145deg,#1e40af,#2563eb,#1d4ed8);
-padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
+  background:linear-gradient(145deg,#1e40af,#2563eb,#1d4ed8);
+  padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
 }
-.AI::before{content:’’;position:absolute;inset:0;background:radial-gradient(ellipse 100% 80% at 30% 30%,rgba(255,255,255,.13),transparent 60%);pointer-events:none}
-.AI::after{content:’’;position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#60a5fa,#a5f3fc,#60a5fa);pointer-events:none}
+.AI::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 100% 80% at 30% 30%,rgba(255,255,255,.13),transparent 60%);pointer-events:none}
+.AI::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#60a5fa,#a5f3fc,#60a5fa);pointer-events:none}
 .AI-dots{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);background-size:27px 27px;pointer-events:none}
 .AI-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;position:relative;z-index:1}
 .AI-pill{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:50px;padding:7px 16px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff}
 .AI-dot{width:7px;height:7px;border-radius:50%;background:#a5f3fc;box-shadow:0 0 8px #a5f3fc;-webkit-animation:pulse 2s ease-in-out infinite;animation:pulse 2s ease-in-out infinite}
 .AI-tag{font-size:10.5px;font-weight:600;letter-spacing:.08em;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 11px}
-.AI-txt{position:relative;z-index:1;font-family:‘Instrument Serif’,serif;font-size:27px;font-weight:400;font-style:italic;line-height:1.55;color:#fff;letter-spacing:-.01em;min-height:82px;text-shadow:0 2px 20px rgba(0,0,80,.3)}
+.AI-txt{position:relative;z-index:1;font-family:Georgia,'Times New Roman',serif;font-size:27px;font-weight:400;font-style:italic;line-height:1.55;color:#fff;letter-spacing:-.01em;min-height:82px;text-shadow:0 2px 20px rgba(0,0,80,.3)}
 .AI-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.18);position:relative;z-index:1}
 .AI-chip{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.26);border-radius:50px;padding:7px 14px;font-size:11.5px;font-weight:600;color:rgba(255,255,255,.92);display:flex;align-items:center;gap:6px;white-space:nowrap}
 .AI-chip b{color:#a5f3fc;font-weight:800}
@@ -281,7 +281,7 @@ padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
 .TR-panel{background:linear-gradient(135deg,#ecfeff,#eff6ff);border:2px solid #a5f3fc;border-radius:18px;padding:17px 20px;margin-top:14px}
 .TR-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
 .TR-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0891b2}
-.TR-es-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;font-family:‘Inter’,sans-serif;background:#fef3c7;color:#b45309;border:1.5px solid #fcd34d;border-radius:50px;padding:5px 12px;cursor:pointer;transition:background .15s}
+.TR-es-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:#fef3c7;color:#b45309;border:1.5px solid #fcd34d;border-radius:50px;padding:5px 12px;cursor:pointer;transition:background .15s}
 .TR-es-btn:hover{background:#fde68a}
 .TR-block{background:#fff;border:1.5px solid #cffafe;border-radius:13px;padding:13px 15px;margin-bottom:9px}
 .TR-block.reply{background:linear-gradient(135deg,#eff6ff,#f0fdf4);border-color:#bfdbfe}
@@ -292,7 +292,7 @@ padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
 .LB-en{background:#dbeafe;color:#1d4ed8}
 .TR-txt{font-size:15.5px;font-weight:600;color:#0f172a;line-height:1.6;margin-bottom:9px;min-height:22px}
 .TR-txt.blue{color:#1d4ed8}
-.SPK{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;font-family:‘Inter’,sans-serif;background:#f0f9ff;color:#0891b2;border:1.5px solid #bae6fd;border-radius:50px;padding:7px 13px;cursor:pointer;transition:all .15s;margin-right:6px;margin-top:2px}
+.SPK{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:#f0f9ff;color:#0891b2;border:1.5px solid #bae6fd;border-radius:50px;padding:7px 13px;cursor:pointer;transition:all .15s;margin-right:6px;margin-top:2px}
 .SPK:hover{background:#e0f2fe;transform:translateY(-1px)}
 .SPK-pri{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(37,99,235,.3);font-size:13px;padding:9px 16px}
 .SPK-pri:hover{box-shadow:0 4px 16px rgba(37,99,235,.42);transform:translateY(-1px)}
@@ -321,7 +321,7 @@ padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
 
 /* WEB LOOKUP */
 .DIV-OR{display:flex;align-items:center;gap:11px;margin:4px 0 15px}
-.DIV-OR::before,.DIV-OR::after{content:’’;flex:1;height:1.5px;background:#e5e7eb}
+.DIV-OR::before,.DIV-OR::after{content:'';flex:1;height:1.5px;background:#e5e7eb}
 .DIV-OR span{font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.06em}
 .LKUP-STATUS{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;margin-bottom:11px}
 .LKUP-STATUS.load{background:#eff6ff;border:1.5px solid #bfdbfe}
@@ -335,7 +335,7 @@ padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
 .LKUP-STATUS.ok .LKUP-MSG{color:#059669}
 .LKUP-STATUS.err .LKUP-MSG{color:#dc2626}
 .WEB-TAG{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#059669;background:#ecfdf5;border:1.5px solid #6ee7b7;border-radius:50px;padding:3px 11px;margin-bottom:11px}
-.SLB{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;font-family:‘Inter’,sans-serif;background:#fff;color:#374151;border:2px solid #e5e7eb;border-radius:50px;padding:7px 15px;cursor:pointer;text-decoration:none;transition:all .15s;margin-right:7px;margin-bottom:7px}
+.SLB{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:#fff;color:#374151;border:2px solid #e5e7eb;border-radius:50px;padding:7px 15px;cursor:pointer;text-decoration:none;transition:all .15s;margin-right:7px;margin-bottom:7px}
 .SLB:hover{background:#f3f4f6;border-color:#d1d5db;transform:translateY(-1px)}
 .MAN-FORM{background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:16px;padding:17px}
 .G2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -356,32 +356,32 @@ padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
 ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
 
 @media(max-width:900px){
-#LP{grid-template-columns:1fr}
-.LP-L{display:none}
-.LP-R{padding:48px 28px}
-#APP{grid-template-columns:1fr}
-.SB{display:none}
-.STATS{grid-template-columns:1fr 1fr}
-.MR{grid-template-columns:1fr 1fr}
-.SPLIT,.HALVES,.THIRDS{grid-template-columns:1fr}
-.PG{padding:14px}
-.TB{padding:0 12px;height:56px}
-.TB-sep{display:none}
-.TB-sub{display:none}
-#USER-CHIP{display:none!important}
-.TB-name{font-size:15px}
-.TB-ico{width:26px;height:26px;font-size:12px}
-#VIEW-TOGGLE button{padding:6px 11px!important;font-size:11px!important}
+  #LP{grid-template-columns:1fr}
+  .LP-L{display:none}
+  .LP-R{padding:48px 28px}
+  #APP{grid-template-columns:1fr}
+  .SB{display:none}
+  .STATS{grid-template-columns:1fr 1fr}
+  .MR{grid-template-columns:1fr 1fr}
+  .SPLIT,.HALVES,.THIRDS{grid-template-columns:1fr}
+  .PG{padding:14px}
+  .TB{padding:0 12px;height:56px}
+  .TB-sep{display:none}
+  .TB-sub{display:none}
+  #USER-CHIP{display:none!important}
+  .TB-name{font-size:15px}
+  .TB-ico{width:26px;height:26px;font-size:12px}
+  #VIEW-TOGGLE button{padding:6px 11px!important;font-size:11px!important}
 }
 @media(max-width:400px){
-.LIVE{display:none!important}
+  .LIVE{display:none!important}
 }
 @media(max-width:540px){
-.STATS{grid-template-columns:1fr 1fr}
-.G2{grid-template-columns:1fr}
+  .STATS{grid-template-columns:1fr 1fr}
+  .G2{grid-template-columns:1fr}
 }
 
-/* ── MANAGER VIEW EXTRAS ── */
+/* -- MANAGER VIEW EXTRAS -- */
 .FUNNEL-ROW{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .FUNNEL-ROW:last-child{margin-bottom:0}
 .FUNNEL-LBL{font-size:13px;font-weight:600;color:#374151;width:120px;flex-shrink:0}
@@ -405,6 +405,89 @@ padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
 
 .LEG-ITEM{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:#374151}
 .LEG-DOT{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+
+/* -- SCRIPT PANEL -- */
+.BT-script{
+  background:#faf5ff;color:#7c3aed;
+  border:1.5px solid #ddd6fe;font-size:13.5px;
+}
+.BT-script:hover{background:#f3e8ff;border-color:#c4b5fd;transform:translateY(-1px)}
+.BT-script.open{background:#7c3aed;color:#fff;border-color:#7c3aed;box-shadow:0 2px 10px rgba(124,58,237,.35)}
+
+.script-panel{
+  margin-top:16px;
+  background:#fff;
+  border:2px solid #ddd6fe;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 4px 20px rgba(124,58,237,.1);
+  animation:fadeUp .2s ease both;
+}
+
+.script-panel-head{
+  background:linear-gradient(135deg,#7c3aed,#6d28d9);
+  padding:14px 20px;
+  display:flex;align-items:center;gap:12px;
+  flex-wrap:wrap;
+}
+
+.script-panel-title{
+  font-size:14px;font-weight:800;color:#fff;
+  letter-spacing:.02em;
+}
+
+.script-panel-sub{
+  font-size:12px;color:rgba(255,255,255,.75);
+  flex:1;
+}
+
+.script-close-btn{
+  background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:50px;
+  color:#fff;font-size:12px;font-weight:700;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  padding:5px 13px;cursor:pointer;
+  margin-left:auto;
+  transition:background .15s;
+}
+.script-close-btn:hover{background:rgba(255,255,255,.25)}
+
+.script-textarea{
+  width:100%;
+  min-height:220px;
+  max-height:400px;
+  resize:vertical;
+  border:none;
+  border-radius:0;
+  background:#fafbff;
+  font-size:15px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.7;
+  color:#1e1b4b;
+  padding:20px;
+  outline:none;
+  box-shadow:none;
+}
+.script-textarea:focus{
+  border-color:transparent;
+  box-shadow:none;
+  background:#fff;
+}
+
+.script-footer{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;
+  border-top:1.5px solid #f3f4f6;
+  background:#fafbff;
+}
+
+.script-saved{
+  font-size:12px;font-weight:600;
+  color:#059669;margin-left:auto;
+  opacity:0;transition:opacity .3s;
+}
+.script-saved.show{opacity:1}
 </style>
 
 </head>
@@ -470,8 +553,8 @@ padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
       <div class="TB-R">
         <div class="LIVE h" id="LIVE-BADGE"><div class="LIVE-dot"></div>Live</div>
         <div id="VIEW-TOGGLE" class="h" style="display:none;gap:5px">
-          <button id="tbRep" style="padding:7px 15px;font-size:12px;font-weight:700;font-family:Inter,sans-serif;border:2px solid #2563eb;border-radius:50px;background:#2563eb;color:#fff;cursor:pointer">Rep View</button>
-          <button id="tbMgr" style="padding:7px 15px;font-size:12px;font-weight:700;font-family:Inter,sans-serif;border:2px solid #e5e7eb;border-radius:50px;background:#fff;color:#374151;cursor:pointer">Manager View</button>
+          <button id="tbRep" style="padding:7px 15px;font-size:12px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;border:2px solid #2563eb;border-radius:50px;background:#2563eb;color:#fff;cursor:pointer">Rep View</button>
+          <button id="tbMgr" style="padding:7px 15px;font-size:12px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;border:2px solid #e5e7eb;border-radius:50px;background:#fff;color:#374151;cursor:pointer">Manager View</button>
         </div>
         <div class="CHIP h" id="USER-CHIP">PayPilot Rep</div>
       </div>
@@ -518,11 +601,38 @@ padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
               <button class="BT BT-cyan" id="btnMic">&#127908; Start Mic</button>
               <button class="BT BT-out" id="btnStop">&#9632; Stop</button>
               <button class="BT BT-out" id="btnTransToggle">&#8644; Translate</button>
+              <button class="BT BT-script" id="btnScript">&#128196; Script</button>
+            </div>
+
+            <!-- SCRIPT PANEL - hidden until button pressed -->
+            <div id="SCRIPT-BOX" class="script-panel h">
+              <div class="script-panel-head">
+                <span class="script-panel-title">&#128196; Call Script</span>
+                <span class="script-panel-sub">Paste your script here - visible only to you during the call</span>
+                <button class="script-close-btn" id="btnScriptClose">&#10005; Close</button>
+              </div>
+              <textarea id="SCRIPT-TEXT" class="script-textarea" placeholder="Paste your call script here...&#10;&#10;Example:&#10;Hi, this is [Your Name] calling from PayPilot. I wanted to reach out about your payment terms with [Company]...&#10;&#10;Your script will stay here the entire call. Scroll as needed."></textarea>
+              <div class="script-footer">
+                <button class="BT BT-out" id="btnScriptClear" style="font-size:12px;padding:7px 14px">&#128465; Clear</button>
+                <span class="script-saved" id="scriptSaved"></span>
+              </div>
             </div>
             <div id="TR-BOX" class="TR-panel h">
-              <div class="TR-hd"><span class="TR-title">Live Translation</span><button class="TR-es-btn" id="btnEsMic">&#127908; Escuchar</button></div>
-              <div class="TR-block"><div class="TR-blbl"><span class="LB LB-es">ES&#8594;EN</span> What they said</div><div class="TR-txt" id="trEN">&#8212;</div><button class="SPK" id="btnSpkEN">&#128266; Speak English</button></div>
-              <div class="TR-block reply"><div class="TR-blbl"><span class="LB LB-en">EN&#8594;ES</span> Your reply in Spanish</div><div class="TR-txt blue" id="trES">&#8212;</div><button class="SPK SPK-pri" id="btnSpkES">&#128266; Speak to Supplier in Spanish</button></div>
+              <div class="TR-hd">
+                <span class="TR-title">Live Translation</span>
+                <button class="TR-es-btn" id="btnEsMic" data-lang="es-MX">&#127908; Listen</button>
+              </div>
+              <div style="font-size:12px;font-weight:600;margin-bottom:10px" id="TR-DET" style="color:#9ca3af">Auto-detecting language...</div>
+              <div class="TR-block">
+                <div class="TR-blbl"><span class="LB LB-es" id="TR-FROM-LBL">THEIR LANG</span>&nbsp;What they said (in English)</div>
+                <div class="TR-txt" id="trEN">&#8212;</div>
+                <button class="SPK" id="btnSpkEN">&#128266; Speak English</button>
+              </div>
+              <div class="TR-block reply">
+                <div class="TR-blbl"><span class="LB LB-en" id="TR-TO-LBL">YOUR REPLY</span>&nbsp;Your reply in their language</div>
+                <div class="TR-txt blue" id="trES">&#8212;</div>
+                <button class="SPK SPK-pri" id="btnSpkES" data-lang="es-MX">&#128266; Speak Reply to Supplier</button>
+              </div>
               <div class="TR-status" id="trSTAT"></div>
             </div>
           </div>
@@ -629,7 +739,7 @@ padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px;
   </main>
 </div>
 
-<script data-cfasync="false">
+<script type="text/javascript" data-cfasync="false" data-rocket-loader="false" data-cf-settings="no-rocket">
 var G = {
   translateOn: false,
   recognition: null,
@@ -651,7 +761,7 @@ function sh(h){ localStorage.setItem("pp7", JSON.stringify(h)); }
 function show(el){ el.classList.remove("h"); }
 function hide(el){ el.classList.add("h"); }
 
-// ── LOGIN ──
+// -- LOGIN --
 function doLogin(){
   var pw = $$("PW").value.trim();
   if(pw === "demo123"){
@@ -675,7 +785,7 @@ function doLogin(){
   }
 }
 
-// ── NAV ──
+// -- NAV --
 function showRep(){
   show($$("RV")); hide($$("MV"));
   $$("btnRep").classList.add("on"); $$("btnMgr").classList.remove("on");
@@ -690,7 +800,7 @@ function showMgr(){
   renderMgr();
 }
 
-// ── SEARCH ──
+// -- SEARCH --
 function doSearch(){
   var q = $$("SS").value.trim().toLowerCase();
   var sr = $$("SR");
@@ -731,7 +841,7 @@ function loadS(){
     '</div>';
 }
 
-// ── WEB LOOKUP ──
+// -- WEB LOOKUP --
 function safeA(v){ return (v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 
 function doLookup(){
@@ -848,13 +958,45 @@ function saveManual(){
   loadS(); hide($$("WLS")); $$("WLI").value = "";
 }
 
-// ── LANGUAGE DETECTION ──
+// -- LANGUAGE DETECTION --
+// -- LANGUAGE CONFIG --
+var LANGS = {
+  "Spanish":    {code:"es-MX", label:"ES", flag:"MX", name:"Spanish"},
+  "Portuguese": {code:"pt-BR", label:"PT", flag:"BR", name:"Portuguese"},
+  "Mandarin":   {code:"zh-CN", label:"ZH", flag:"CN", name:"Mandarin"},
+  "Hindi":      {code:"hi-IN", label:"HI", flag:"IN", name:"Hindi"},
+  "French":     {code:"fr-FR", label:"FR", flag:"FR", name:"French"},
+  "Arabic":     {code:"ar-SA", label:"AR", flag:"SA", name:"Arabic"},
+  "Vietnamese": {code:"vi-VN", label:"VI", flag:"VN", name:"Vietnamese"},
+  "Korean":     {code:"ko-KR", label:"KO", flag:"KR", name:"Korean"}
+};
+
+// -- DETECT LANGUAGE from text content --
 function detectLang(t){
+  if(!t) return "English";
   var l = t.toLowerCase();
-  return (l.indexOf("hola")>=0||l.indexOf("cheques")>=0||l.indexOf("tarjeta")>=0||l.indexOf("gracias")>=0||l.indexOf("tarifas")>=0||l.indexOf("pago")>=0||l.indexOf("nosotros")>=0) ? "Spanish" : "English";
+  // Check character ranges for script-based languages first
+  var i, code;
+  for(i=0; i<t.length; i++){
+    code = t.charCodeAt(i);
+    if(code >= 0x0900 && code <= 0x097F) return "Hindi";
+    if(code >= 0x0600 && code <= 0x06FF) return "Arabic";
+    if((code >= 0x4E00 && code <= 0x9FFF)||(code >= 0x3400 && code <= 0x4DBF)) return "Mandarin";
+    if(code >= 0xAC00 && code <= 0xD7AF) return "Korean";
+  }
+  // Word-based detection for Latin-script languages
+  var spWords = ["hola","gracias","cheques","tarjeta","tarifas","pago","nosotros","por favor","buenas","cuanto","cuesta","cobran","interesa","tiempo","ahora","precio","usted","dinero","banco"];
+  for(i=0; i<spWords.length; i++){ if(l.indexOf(spWords[i])>=0) return "Spanish"; }
+  var ptWords = ["obrigado","pagamento","dinheiro","quanto","custa","interessa","nao","favor","banco","conta","taxa","agora","voce","entendo","cobran"];
+  for(i=0; i<ptWords.length; i++){ if(l.indexOf(ptWords[i])>=0) return "Portuguese"; }
+  var frWords = ["bonjour","merci","frais","paiement","banque","maintenant","combien","interes","comment","nous","oui","non","pourquoi","besoin","argent","compte"];
+  for(i=0; i<frWords.length; i++){ if(l.indexOf(frWords[i])>=0) return "French"; }
+  var viWords = ["xin","phi","thanh toan","ngan hang","bay gio","bao nhieu","quan tam","khong","vang","tien","chao","cam on"];
+  for(i=0; i<viWords.length; i++){ if(l.indexOf(viWords[i])>=0) return "Vietnamese"; }
+  return "English";
 }
 
-// ── TRANSLATION ──
+// -- TRANSLATION PANEL UPDATE --
 function toggleTrans(){
   G.translateOn = !G.translateOn;
   var tb = $$("TR-BOX");
@@ -864,38 +1006,124 @@ function toggleTrans(){
 function updateTrans(){
   var text = $$("OBJ").value.trim();
   var lang = detectLang(text);
-  $$("mLANG").textContent = lang === "Spanish" ? "ES" : "EN";
-  if(!G.translateOn || !text) return;
-  if(lang === "Spanish"){
-    $$("trEN").textContent = text;
-    $$("trES").textContent = "Entiendo. ACH le ayuda a recibir pagos mas rapido y evita retrasos de cheques.";
+  var lc = LANGS[lang];
+  // Update language display chip
+  if(lc){
+    $$("mLANG").textContent = lc.flag + " " + lc.label;
   } else {
-    $$("trEN").textContent = text;
-    $$("trES").textContent = "Entiendo su preocupacion. Con ACH usted recibe sus pagos mas rapido sin esperar cheques.";
+    $$("mLANG").textContent = "EN";
   }
+  if(!G.translateOn) return;
+  if(!text){ return; }
+
+  // Show detected language badge in panel
+  var detBadge = $$("TR-DET");
+  if(detBadge){
+    detBadge.textContent = lang === "English" ? "Detected: English" : "Detected: " + (lc ? lc.flag + " " + lc.name : lang);
+    detBadge.style.color = lang === "English" ? "#9ca3af" : "#2563eb";
+  }
+
+  // Update Escuchar button label to match language
+  var esMicBtn = $$("btnEsMic");
+  if(esMicBtn && lang !== "English" && lc){
+    esMicBtn.textContent = lc.flag + " Listen in " + lc.name;
+    esMicBtn.setAttribute("data-lang", lc.code);
+  } else if(esMicBtn){
+    esMicBtn.textContent = "Listen";
+    esMicBtn.setAttribute("data-lang", "es-MX");
+  }
+
+  if(lang === "English"){
+    // English supplier -- show English + generate Spanish reply as default
+    $$("trEN").textContent = text;
+    $$("trES").textContent = "Generating reply...";
+    doAITrans(text, lang);
+    return;
+  }
+
+  // Non-English -- set instant local fallback then upgrade with AI
+  var fallbackEN = "[Translating...]";
+  var fallbackReply = "[Generating reply...]";
+
+  // Spanish instant fallbacks
+  if(lang === "Spanish"){
+    fallbackEN = text;
+    fallbackReply = "Entiendo. La tarifa es del 1.2% pero usted recibe su pago 20-30 dias antes de lo normal. La mayoria de proveedores encuentran que vale la pena.";
+  }
+  if(lang === "Portuguese"){
+    fallbackEN = text;
+    fallbackReply = "Entendo. A taxa e de 1,2% mas voce recebe o pagamento 20-30 dias mais cedo do que o normal. A maioria dos fornecedores acha que vale a pena.";
+  }
+  if(lang === "French"){
+    fallbackEN = text;
+    fallbackReply = "Je comprends. Les frais sont de 1,2% mais vous etes paye 20 a 30 jours plus tot que d habitude. La plupart des fournisseurs trouvent que cela en vaut la peine.";
+  }
+  if(lang === "Vietnamese"){
+    fallbackEN = text;
+    fallbackReply = "Toi hieu. Phi la 1,2% nhung ban duoc thanh toan som hon 20-30 ngay so voi binh thuong. Phan lon nha cung cap thay rang dieu nay xung dang.";
+  }
+
+  $$("trEN").textContent = fallbackEN;
+  $$("trES").textContent = fallbackReply;
+
+  // Upgrade with real AI translation
   doAITrans(text, lang);
 }
 
+function extractLine(text, prefix){
+  var lines = text.split("\n");
+  for(var i=0; i<lines.length; i++){
+    var line = lines[i].trim();
+    if(line.toLowerCase().indexOf(prefix.toLowerCase())===0){
+      return line.slice(prefix.length).trim();
+    }
+  }
+  return "";
+}
+
 function doAITrans(text, lang){
-  var prompt = lang === "Spanish"
-    ? "Translate to English (one line), then write a SHORT Spanish ACH enrollment reply. Format:\nENGLISH: [translation]\nSPANISH: [reply]\n\nText: " + text
-    : "Write a SHORT natural Spanish reply (1-2 sentences) for ACH enrollment. Start with SPANISH: then the reply.\n\nSupplier said: " + text;
+  var lc = LANGS[lang];
+  var langName = lc ? lc.name : lang;
+  var prompt;
+  if(lang === "English"){
+    prompt = "The supplier said in English: " + JSON.stringify(text) + ". Write a SHORT natural reply (1-2 sentences) for ACH payment enrollment - defend the 1.2% fee by emphasizing they get paid 20-30 days earlier. Pick the most relevant language: Spanish, Portuguese, Mandarin, Hindi, French, Arabic, Vietnamese, or Korean. Format exactly: LANG: [language name] TRANSLATION: [reply in that language] ENGLISH: [english version of reply]";
+  } else {
+    prompt = "The supplier spoke in " + langName + ": " + JSON.stringify(text) + ". Translate what they said to English. Then write a SHORT natural reply (1-2 sentences) in " + langName + " for ACH payment enrollment - 1.2% fee but paid 20-30 days earlier. Do NOT use company name. Format: ENGLISH: [translation] REPLY: [reply in " + langName + "] REPLY_EN: [english version]";
+  }
+
   fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
     headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01"},
-    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:120,messages:[{role:"user",content:prompt}]})
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:200,messages:[{role:"user",content:prompt}]})
   }).then(function(r){ return r.json(); }).then(function(d){
     if(!d.content||!d.content[0]) return;
     var raw = d.content[0].text||"";
-    var em = raw.match(/ENGLISH:\s*(.+)/i), es = raw.match(/SPANISH:\s*(.+)/i);
-    if(em&&em[1]) $$("trEN").textContent = em[1].trim();
-    if(es&&es[1]) $$("trES").textContent = es[1].trim();
+    if(lang === "English"){
+        var replyMatch = extractLine(raw, "TRANSLATION:");
+      var enMatch    = extractLine(raw, "ENGLISH:");
+      var langMatch  = extractLine(raw, "LANG:");
+      if(replyMatch) $$("trES").textContent = replyMatch;
+      if(enMatch)    $$("trEN").textContent = enMatch;
+      // Update speak button label
+      if(langMatch && langMatch[1]){
+        var detLang = langMatch[1].trim();
+        var detLC = LANGS[detLang];
+        if(detLC && $$("btnSpkES")) $$("btnSpkES").setAttribute("data-lang", detLC.code);
+      }
+    } else {
+      var enMatch2    = extractLine(raw, "ENGLISH:");
+      var replyMatch2 = extractLine(raw, "REPLY:");
+      if(enMatch2)    $$("trEN").textContent = enMatch2;
+      if(replyMatch2) $$("trES").textContent = replyMatch2;
+      // Update speak button to use correct language
+      if(lc && $$("btnSpkES")) $$("btnSpkES").setAttribute("data-lang", lc.code);
+    }
   }).catch(function(){});
 }
 
-// ── TTS ──
+
 function speakTxt(text, lang){
-  if(!text||text==="—"||!text.trim()) return;
+  if(!text||text==="--"||!text.trim()) return;
   var syn = window.speechSynthesis;
   if(!syn) return;
   syn.cancel();
@@ -910,26 +1138,38 @@ function speakTxt(text, lang){
   syn.speak(u);
 }
 
-// ── SPANISH MIC ──
+// -- SPANISH MIC --
 function startEsMic(){
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){ alert("Mic not supported"); return; }
+  if(!SR){ alert("Mic not supported in this browser"); return; }
   var btn = $$("btnEsMic");
-  if(G.esRecognition){ G.esRecognition.stop(); G.esRecognition = null; if(btn) btn.textContent = "Escuchar"; return; }
+  if(G.esRecognition){ G.esRecognition.stop(); G.esRecognition = null; if(btn) btn.textContent = "Listen"; return; }
+  // Get language from button attribute, default to es-MX
+  var listenLang = (btn && btn.getAttribute("data-lang")) || "es-MX";
   G.esRecognition = new SR();
-  G.esRecognition.continuous = false; G.esRecognition.lang = "es-MX";
+  G.esRecognition.continuous = false;
+  G.esRecognition.interimResults = false;
+  G.esRecognition.lang = listenLang;
+  G.esRecognition.onstart = function(){ if(btn) btn.textContent = "Listening..."; };
   G.esRecognition.onresult = function(e){
     var t = e.results[0][0].transcript;
     $$("OBJ").value = t;
-    updateTrans();
+    // Auto-detect language and update translation
     if(!G.translateOn) toggleTrans();
+    else updateTrans();
   };
-  G.esRecognition.onend = function(){ G.esRecognition = null; if(btn) btn.textContent = "Escuchar"; };
+  G.esRecognition.onend = function(){
+    G.esRecognition = null;
+    if(btn) btn.textContent = "Listen";
+  };
+  G.esRecognition.onerror = function(){
+    G.esRecognition = null;
+    if(btn) btn.textContent = "Listen";
+  };
   G.esRecognition.start();
-  if(btn) btn.textContent = "Listening...";
 }
 
-// ── ENGLISH MIC ──
+// -- ENGLISH MIC --
 function startMic(){
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){ alert("Mic not supported in this browser"); return; }
@@ -950,7 +1190,7 @@ function startMic(){
 }
 function stopMic(){ if(G.recognition) G.recognition.stop(); }
 
-// ── SCORING ──
+// -- SCORING --
 function calcProb(t){
   var s=70, l=t.toLowerCase(), sp=G.suppliers[G.idx];
   if(l.indexOf("check")>=0||l.indexOf("cheques")>=0) s-=10;
@@ -1005,29 +1245,24 @@ function getCoach(t,sc){
 }
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
-// ── Smart objection classifier ──
+// -- Smart objection classifier --
+function hasWord(l, words){
+  for(var w=0; w<words.length; w++){ if(l.indexOf(words[w])>=0) return true; }
+  return false;
+}
 function classifyObjection(t){
   var l = t.toLowerCase();
-  // Fee / rate / cost
-  if(l.match(/fee|cost|charge|expensive|price|rate|percent|%|too much|worth it|tarifas|costo|pagar/)) return "fee";
-  // Want a discount / negotiate
-  if(l.match(/lower|reduce|less|better deal|discount|negotiate|can you do|bring it down|come down/)) return "negotiate";
-  // Prefer checks
-  if(l.match(/check|cheque|paper|mail|already.*pay|pay.*check/)) return "check";
-  // Timing / busy
-  if(l.match(/busy|later|call back|not a good time|right now|another time|not today|too much going on/)) return "timing";
-  // Need approval
-  if(l.match(/accountant|controller|cfo|finance|approval|approve|boss|manager|owner|check with|run it by|let me ask/)) return "approval";
-  // Not interested
-  if(l.match(/not interested|don.t need|no thanks|pass|not for us|don.t want|not looking/)) return "notinterested";
-  // Already on ACH
-  if(l.match(/already|we use|we have|set up|current|do it now|doing that|have that/)) return "already";
-  // Security / trust
-  if(l.match(/safe|secure|trust|scam|fraud|hack|data|information|risk/)) return "security";
-  // How it works
-  if(l.match(/how does|what is|explain|tell me more|how do|what does|how would/)) return "howworks";
-  // Spanish
-  if(detectLang(t)==="Spanish") return "spanish";
+  var lang = detectLang(t);
+  if(lang !== "English") return "foreign";
+  if(hasWord(l,["fee","cost","charge","expensive","price","rate","percent","%","too much","worth it","tarifas","costo","pagar"])) return "fee";
+  if(hasWord(l,["lower","reduce","less","better deal","discount","negotiate","can you do","bring it down","come down","cheaper","go lower"])) return "negotiate";
+  if(hasWord(l,["check","cheque","paper","mail","prefer check","use check"])) return "check";
+  if(hasWord(l,["busy","later","call back","not a good time","right now","another time","not today","too much going on","call me back"])) return "timing";
+  if(hasWord(l,["accountant","controller","cfo","finance","approval","approve","boss","manager","owner","check with","run it by","let me ask","need to ask"])) return "approval";
+  if(hasWord(l,["not interested","dont need","no thanks","pass","not for us","dont want","not looking"])) return "notinterested";
+  if(hasWord(l,["already","we use","we have","set up","current","do it now","doing that","have that"])) return "already";
+  if(hasWord(l,["safe","secure","trust","scam","fraud","hack","data","information","risk"])) return "security";
+  if(hasWord(l,["how does","what is","explain","tell me more","how do","what does","how would"])) return "howworks";
   return "general";
 }
 
@@ -1037,100 +1272,100 @@ function getFB(t){
   var isHighVol = avgN >= 650000;
   var type = classifyObjection(t);
 
-  // ── FEE OBJECTION — defend 1.2%, do NOT mention discount ──
+  // -- FEE OBJECTION -- defend 1.2%, do NOT mention discount --
   if(type === "fee"){
     if(isHighVol) return pick([
-      "At your volume you actually qualify for our 0.75% preferred rate — that's our best tier. Think of it this way: if your terms are net-30 or net-60, you're already giving the buyer an interest-free loan for that whole time. We flip that. You get paid early and the 0.75% is the only cost.",
-      "Good news — at your volume we can offer 0.75%. Most suppliers at that level tell us after the first payment they stop thinking about the fee because the cash flow change is so noticeable.",
-      "You qualify for 0.75% based on your volume — that's our preferred rate. The math usually works out simply: getting paid weeks earlier at 0.75% beats sitting on an invoice waiting on a check to clear."
+      "At your volume you actually qualify for our 0.75% preferred rate -- that's our best tier. Think of it this way: if your terms are net-30 or net-60, you're already giving the buyer an interest-free loan for that whole time. We flip that. You get paid early and the 0.75% is the only cost.",
+      "Good news -- at your volume we can offer 0.75%. Most suppliers at that level tell us after the first payment they stop thinking about the fee because the cash flow change is so noticeable.",
+      "You qualify for 0.75% based on your volume -- that's our preferred rate. The math usually works out simply: getting paid weeks earlier at 0.75% beats sitting on an invoice waiting on a check to clear."
     ]);
     return pick([
-      "The fee is 1.2% — and I want to be upfront about that. What you're getting in exchange is getting paid significantly earlier than your standard terms. If you're on net-30 or net-60 right now, that's weeks of cash sitting out there that we can put in your account now. For most suppliers the early payment more than offsets the 1.2%.",
-      "That's 1.2% of the invoice — I won't dance around it. But here's how most suppliers think about it: every invoice you're waiting on is basically a free loan to the buyer. ACH ends that. You get paid early, guaranteed. Most find the cash flow improvement is worth more than 1.2% costs them.",
-      "Fair question. The fee is 1.2%. In exchange you get paid weeks earlier than standard terms and you never chase a check again. What are your current payment terms with this buyer — net-30? Net-60? Because that gap is what we're closing.",
-      "The 1.2% is real — and it's there because you're getting something valuable: early payment. If your terms are anything beyond net-15, you're already waiting longer than you have to. We're essentially turning a slow-pay buyer into a fast-pay one for you, and 1.2% is the cost of that."
+      "The fee is 1.2% -- and I want to be upfront about that. What you're getting in exchange is getting paid significantly earlier than your standard terms. If you're on net-30 or net-60 right now, that's weeks of cash sitting out there that we can put in your account now. For most suppliers the early payment more than offsets the 1.2%.",
+      "That's 1.2% of the invoice -- I won't dance around it. But here's how most suppliers think about it: every invoice you're waiting on is basically a free loan to the buyer. ACH ends that. You get paid early, guaranteed. Most find the cash flow improvement is worth more than 1.2% costs them.",
+      "Fair question. The fee is 1.2%. In exchange you get paid weeks earlier than standard terms and you never chase a check again. What are your current payment terms with this buyer -- net-30? Net-60? Because that gap is what we're closing.",
+      "The 1.2% is real -- and it's there because you're getting something valuable: early payment. If your terms are anything beyond net-15, you're already waiting longer than you have to. We're essentially turning a slow-pay buyer into a fast-pay one for you, and 1.2% is the cost of that."
     ]);
   }
 
-  // ── NEGOTIATING — they want lower, now we do the "let me get it authorized" play ──
+  // -- NEGOTIATING -- they want lower, now we do the "let me get it authorized" play --
   if(type === "negotiate"){
     return pick([
-      "I hear you. Honestly 1.2% is our standard and it's where I'd start — but let me see what I can do. I'd need to get authorization from my manager to go below that. Can I put you on a brief hold, or call you right back?",
-      "I appreciate you being straight with me. The 1.2% is where we are right now — I can't just move off that on my own. Let me reach out internally and see if there's any room. Give me a few minutes and I'll call you right back with an answer.",
-      "I get it. I'm not going to make a promise I can't keep — I'd need to go back and get that approved. The 1.2% is standard. But if you're serious about moving forward and the rate is the only thing holding you back, let me make a call and see what I can do.",
-      "That's fair to ask. I don't have the ability to just drop the rate — it's 1.2% and anything below that has to go through approval. Tell you what: if we agree on everything else and the rate is the last piece, I'll get on it right now and come back to you. Does that work?"
+      "I hear you. Honestly 1.2% is our standard and it's where I'd start -- but let me see what I can do. I'd need to get authorization from my manager to go below that. Can I put you on a brief hold, or call you right back?",
+      "I appreciate you being straight with me. The 1.2% is where we are right now -- I can't just move off that on my own. Let me reach out internally and see if there's any room. Give me a few minutes and I'll call you right back with an answer.",
+      "I get it. I'm not going to make a promise I can't keep -- I'd need to go back and get that approved. The 1.2% is standard. But if you're serious about moving forward and the rate is the only thing holding you back, let me make a call and see what I can do.",
+      "That's fair to ask. I don't have the ability to just drop the rate -- it's 1.2% and anything below that has to go through approval. Tell you what: if we agree on everything else and the rate is the last piece, I'll get on it right now and come back to you. Does that work?"
     ]);
   }
 
-  // ── CHECKS ──
+  // -- CHECKS --
   if(type === "check"){
     return pick([
-      "Checks work — no argument. The difference is just timing. Right now you're waiting on a check to be cut, mailed, and clear your bank. With ACH the money is in your account directly — typically weeks ahead of where you'd be on standard terms. The 1.2% is the trade-off for that speed.",
-      "I get it — checks are familiar. But think about what happens when one gets delayed or lost. ACH is guaranteed and faster. You always know when it's coming and it's already in your account before a check would even arrive.",
-      "Nothing wrong with checks. But consider this: every time you wait on one, you're giving the buyer extra time with your money. ACH flips that — you get paid early, consistently, and the 1.2% is the only cost of making that happen.",
+      "Checks work -- no argument. The difference is just timing. Right now you're waiting on a check to be cut, mailed, and clear your bank. With ACH the money is in your account directly -- typically weeks ahead of where you'd be on standard terms. The 1.2% is the trade-off for that speed.",
+      "I get it -- checks are familiar. But think about what happens when one gets delayed or lost. ACH is guaranteed and faster. You always know when it's coming and it's already in your account before a check would even arrive.",
+      "Nothing wrong with checks. But consider this: every time you wait on one, you're giving the buyer extra time with your money. ACH flips that -- you get paid early, consistently, and the 1.2% is the only cost of making that happen.",
       "Checks are fine until they're slow, lost, or you're waiting on a Friday before a long weekend. ACH is direct, predictable, and early. Most suppliers tell me after the first payment they never want to go back to paper."
     ]);
   }
 
-  // ── TIMING ──
+  // -- TIMING --
   if(type === "timing"){
     return pick([
-      "No problem. Quick question before I let you go — do you have an email I can send the details to? That way you have everything in front of you and we can wrap this up in one follow-up.",
-      "Totally understand. I'll be quick — this is a one-time setup and then you're on early payments permanently. Even two minutes now means every future invoice gets paid faster. When's a better window today?",
-      "Of course. I'll send you a short summary — the fee, what the payment timeline looks like, and what enrollment takes. Takes about 30 seconds to read. What's the best email?",
-      "No worries at all. Just know that every day on standard terms is time you're waiting to get paid that you don't have to. I'll follow up — what's the best way to reach you?"
+      "No problem. Quick question before I let you go -- do you have an email I can send the details to? That way you have everything in front of you and we can wrap this up in one follow-up.",
+      "Totally understand. I'll be quick -- this is a one-time setup and then you're on early payments permanently. Even two minutes now means every future invoice gets paid faster. When's a better window today?",
+      "Of course. I'll send you a short summary -- the fee, what the payment timeline looks like, and what enrollment takes. Takes about 30 seconds to read. What's the best email?",
+      "No worries at all. Just know that every day on standard terms is time you're waiting to get paid that you don't have to. I'll follow up -- what's the best way to reach you?"
     ]);
   }
 
-  // ── APPROVAL ──
+  // -- APPROVAL --
   if(type === "approval"){
     return pick([
-      "Absolutely — loop them in. I can send a clean one-pager: the 1.2% fee, what the early payment timeline looks like, and what the enrollment actually requires. Most accounting teams sign off pretty quickly once they see it. What's the best email to send it to?",
-      "That's the right call. Send me their email and I'll put together a quick summary they can review. Usually takes accounting about 10 minutes — it's a straightforward enrollment, no changes to your banking setup.",
-      "Makes sense. I can reach out directly to them if that helps — just point me in the right direction. The main questions they'll have are about the fee structure and how the payments hit the books. I can answer all of that in one email.",
-      "Smart move. Most controllers actually prefer ACH once they see it — cleaner reconciliation, no check exceptions to deal with. I'll send something they can review at their own pace. What's the best contact?"
+      "Absolutely -- loop them in. I can send a clean one-pager: the 1.2% fee, what the early payment timeline looks like, and what the enrollment actually requires. Most accounting teams sign off pretty quickly once they see it. What's the best email to send it to?",
+      "That's the right call. Send me their email and I'll put together a quick summary they can review. Usually takes accounting about 10 minutes -- it's a straightforward enrollment, no changes to your banking setup.",
+      "Makes sense. I can reach out directly to them if that helps -- just point me in the right direction. The main questions they'll have are about the fee structure and how the payments hit the books. I can answer all of that in one email.",
+      "Smart move. Most controllers actually prefer ACH once they see it -- cleaner reconciliation, no check exceptions to deal with. I'll send something they can review at their own pace. What's the best contact?"
     ]);
   }
 
-  // ── NOT INTERESTED ──
+  // -- NOT INTERESTED --
   if(type === "notinterested"){
     return pick([
-      "I respect that. Before I go — is it the fee specifically, or something else? I just want to make sure I'm not missing something I could actually address.",
-      "Understood. Quick question — what are your current payment terms with this buyer? Sometimes when people see the timing difference it changes the conversation. If not, no pressure.",
+      "I respect that. Before I go -- is it the fee specifically, or something else? I just want to make sure I'm not missing something I could actually address.",
+      "Understood. Quick question -- what are your current payment terms with this buyer? Sometimes when people see the timing difference it changes the conversation. If not, no pressure.",
       "Fair enough. I'd just leave you with this: if your terms are net-30 or longer, there's money sitting out there we could be putting in your account now for 1.2%. If that ever becomes relevant, I'm one call away.",
-      "No problem. Can I ask what the main hesitation is? Just so I understand — is it the fee, the timing, or something else entirely? I'm not going to push you, I just want to make sure I understand."
+      "No problem. Can I ask what the main hesitation is? Just so I understand -- is it the fee, the timing, or something else entirely? I'm not going to push you, I just want to make sure I understand."
     ]);
   }
 
-  // ── ALREADY ON ACH ──
+  // -- ALREADY ON ACH --
   if(type === "already"){
     return pick([
-      "Good to hear. The question is whether your current setup includes early payment. Our program gets you paid significantly ahead of standard terms — that's the piece most suppliers aren't getting with a standard ACH setup.",
-      "Great — so you know how it works. The value we add is the timing. Are you getting paid early right now, or still sitting on net-30, net-60 terms? Because that's exactly what we solve.",
-      "Perfect. So the technical side is already there. This is really just about whether 1.2% to get paid weeks earlier makes sense for your cash flow — that's the only difference from what you have now.",
+      "Good to hear. The question is whether your current setup includes early payment. Our program gets you paid significantly ahead of standard terms -- that's the piece most suppliers aren't getting with a standard ACH setup.",
+      "Great -- so you know how it works. The value we add is the timing. Are you getting paid early right now, or still sitting on net-30, net-60 terms? Because that's exactly what we solve.",
+      "Perfect. So the technical side is already there. This is really just about whether 1.2% to get paid weeks earlier makes sense for your cash flow -- that's the only difference from what you have now.",
       "Nice. Then this should be an easy conversation. Most standard ACH setups just mirror your existing terms. We accelerate the payment. Same method, just faster money in your account."
     ]);
   }
 
-  // ── SECURITY ──
+  // -- SECURITY --
   if(type === "security"){
     return pick([
-      "Completely valid. ACH runs through the federal banking network — the same system behind every payroll and direct deposit in the country. It's regulated by NACHA and is actually more secure than a paper check, which can be lost or intercepted.",
-      "Good question. Your banking info is encrypted and processed through a regulated federal network. Honestly a paper check is riskier — it has your full account number printed on it and can be stolen in the mail.",
+      "Completely valid. ACH runs through the federal banking network -- the same system behind every payroll and direct deposit in the country. It's regulated by NACHA and is actually more secure than a paper check, which can be lost or intercepted.",
+      "Good question. Your banking info is encrypted and processed through a regulated federal network. Honestly a paper check is riskier -- it has your full account number printed on it and can be stolen in the mail.",
       "ACH has been the backbone of business payments since the 1970s. Every payroll run, utility payment, and tax payment uses the same network. It's one of the most audited payment systems in existence."
     ]);
   }
 
-  // ── HOW IT WORKS ──
+  // -- HOW IT WORKS --
   if(type === "howworks"){
     return pick([
       "Simple version: instead of waiting on a check, payment routes directly to your bank account. You get paid earlier, you know exactly when it's coming, and nothing to cash or wait to clear.",
       "ACH is a direct bank-to-bank transfer. We enroll your account, and instead of a check being issued and mailed, the funds go straight to your bank. Usually settles in 1-2 business days.",
-      "Think of it like direct deposit for your invoices. The buyer's payment routes straight to your account electronically — faster, more predictable, and no check handling on your end."
+      "Think of it like direct deposit for your invoices. The buyer's payment routes straight to your account electronically -- faster, more predictable, and no check handling on your end."
     ]);
   }
 
-  // ── SPANISH ──
+  // -- SPANISH --
   if(type === "spanish"){
     var rES = isHighVol ? "0.75%" : "1.2%";
     return pick([
@@ -1140,12 +1375,12 @@ function getFB(t){
     ]);
   }
 
-  // ── GENERAL ──
+  // -- GENERAL --
   var rGen = isHighVol ? "0.75%" : "1.2%";
   return pick([
-    "Here's the straight version: there's a "+rGen+" fee, and in exchange you get paid significantly faster than standard terms — typically 20-30 days earlier. For most suppliers that early cash flow more than covers the fee.",
+    "Here's the straight version: there's a "+rGen+" fee, and in exchange you get paid significantly faster than standard terms -- typically 20-30 days earlier. For most suppliers that early cash flow more than covers the fee.",
     "The trade-off is simple: "+rGen+" fee, and you stop waiting on checks and get paid early. Whether that math works depends on your current terms. What are you typically sitting on with this buyer?",
-    "I'll be direct: "+rGen+" fee, paid on your side. What you get is early payment — weeks ahead of standard terms — and guaranteed delivery. Most suppliers decide it's worth it after the first payment.",
+    "I'll be direct: "+rGen+" fee, paid on your side. What you get is early payment -- weeks ahead of standard terms -- and guaranteed delivery. Most suppliers decide it's worth it after the first payment.",
     "It comes down to this: "+rGen+" to get paid 20-30 days faster and never chase a check again. For a lot of businesses that cash flow improvement is worth more than the fee costs them. Happy to walk through the numbers if that helps."
   ]);
 }
@@ -1161,7 +1396,7 @@ function typewrite(el, txt){
   }, 20);
 }
 
-// ── GENERATE RESPONSE ──
+// -- GENERATE RESPONSE --
 function doGen(){
   var text = $$("OBJ").value.trim();
   if(!text) return;
@@ -1200,14 +1435,19 @@ function doGen(){
     if(d.content && d.content[0] && d.content[0].text){
       resp = d.content[0].text.trim();
       // Strip any preamble like "Here's my reply:" 
-      resp = resp.replace(/^(here\'s|here is|my reply|response|rep:|sales rep:)[^a-zA-Z]*/i, "").trim();
+      // Strip preamble words
+      var preambles = ["here is my reply:","here's my reply:","my reply:","response:","rep:","sales rep:","here is:","here's:"];
+      var rl = resp.toLowerCase();
+      for(var pi=0; pi<preambles.length; pi++){
+        if(rl.indexOf(preambles[pi])===0){ resp = resp.slice(preambles[pi].length).trim(); break; }
+      }
     }
     if(!resp) resp = getFB(text);
     el.textContent=""; typewrite(el, resp);
   }).catch(function(){ el.textContent=""; typewrite(el, getFB(text)); });
 }
 
-// ── LOG CALL ──
+// -- LOG CALL --
 function logCall(){
   var h=gh(), sp=G.suppliers[G.idx];
   h.unshift({supplier:sp.company,objection:$$("OBJ").value.trim(),outcome:$$("OUT").value,enrollment:$$("ENR").value,createdAt:new Date().toLocaleString()});
@@ -1215,7 +1455,7 @@ function logCall(){
 }
 function markDone(){ $$("ENR").value="Completed"; $$("OUT").value="Converted"; }
 
-// ── RENDER ──
+// -- RENDER --
 function tagH(o){
   if(o==="Converted") return '<span class="TAG T-ok">Converted</span>';
   if(o==="Rejected") return '<span class="TAG T-no">Rejected</span>';
@@ -1229,7 +1469,7 @@ function renderHist(){
   var html="";
   for(var i=0;i<h.length;i++){
     var x=h[i];
-    html+='<div class="HE"><div class="HE-top"><span class="HE-name">'+x.supplier+'</span>'+tagH(x.outcome)+'</div><div class="HE-date">'+x.createdAt+'</div><div class="HE-obj">'+(x.objection||"—")+'</div></div>';
+    html+='<div class="HE"><div class="HE-top"><span class="HE-name">'+x.supplier+'</span>'+tagH(x.outcome)+'</div><div class="HE-date">'+x.createdAt+'</div><div class="HE-obj">'+(x.objection||"--")+'</div></div>';
   }
   el.innerHTML=html;
 }
@@ -1273,7 +1513,7 @@ function renderMgr(){
 
   var noData = '<p class="MUTED" style="padding:8px 0">No calls logged yet. Log calls in Rep View.</p>';
 
-  // ── OBJECTION BREAKDOWN ──
+  // -- OBJECTION BREAKDOWN --
   var keys=Object.keys(bd);
   if(!keys.length){ $$("OBDWN").innerHTML=noData; }
   else {
@@ -1286,7 +1526,7 @@ function renderMgr(){
     $$("OBDWN").innerHTML=html;
   }
 
-  // ── OUTCOME PIE CHART (canvas) ──
+  // -- OUTCOME PIE CHART (canvas) --
   var cvs = $$("OUT-CHART");
   var lgd = $$("OUT-LEGEND");
   var outColors = {"Converted":"#059669","Pending":"#9ca3af","Follow Up Needed":"#d97706","Rejected":"#dc2626"};
@@ -1326,7 +1566,7 @@ function renderMgr(){
     if(lgd) lgd.innerHTML="";
   }
 
-  // ── ENROLLMENT FUNNEL ──
+  // -- ENROLLMENT FUNNEL --
   var fEl=$$("FUNNEL");
   if(fEl){
     var fStages=[
@@ -1349,7 +1589,7 @@ function renderMgr(){
     fEl.innerHTML=fHtml;
   }
 
-  // ── INDUSTRY BREAKDOWN ──
+  // -- INDUSTRY BREAKDOWN --
   var indEl=$$("IND-BRKDN");
   if(indEl){
     var indKeys=Object.keys(indMap);
@@ -1370,7 +1610,7 @@ function renderMgr(){
     }
   }
 
-  // ── FULL CALL LOG TABLE ──
+  // -- FULL CALL LOG TABLE --
   var logEl=$$("CALL-LOG");
   if(logEl){
     if(!hist.length){ logEl.innerHTML='<tr><td style="padding:20px;color:#9ca3af;font-size:14px">No calls logged yet.</td></tr>'; }
@@ -1383,7 +1623,7 @@ function renderMgr(){
           '<td style="font-weight:700">'+lx.supplier+'</td>'+
           '<td><span style="'+outStyle+'">'+lx.outcome+'</span></td>'+
           '<td>'+lx.enrollment+'</td>'+
-          '<td style="color:#6b7280;font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(lx.objection||"—")+'</td>'+
+          '<td style="color:#6b7280;font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(lx.objection||"--")+'</td>'+
           '<td style="color:#9ca3af;font-size:12px;white-space:nowrap">'+lx.createdAt+'</td>'+
         '</tr>';
       }
@@ -1392,7 +1632,7 @@ function renderMgr(){
     }
   }
 
-  // ── AI COACHING INSIGHTS ──
+  // -- AI COACHING INSIGHTS --
   var insEl=$$("INSIGHTS");
   if(insEl){
     if(!tot){ insEl.innerHTML=noData; }
@@ -1402,10 +1642,10 @@ function renderMgr(){
       // Win rate insight
       if(convRate>=50) insights.push({icon:"&#127881;",cls:"great",title:"Strong conversion rate",body:"You're converting "+convRate+"% of calls. That's above average. Keep focusing on ACH speed and simplicity messaging."});
       else if(convRate>=25) insights.push({icon:"&#128200;",cls:"",title:"Conversion rate: "+convRate+"%",body:"There's room to grow. Try spending more time on ACH benefits before asking to enroll. Push the 'get paid faster' angle harder."});
-      else insights.push({icon:"&#128337;",cls:"warn",title:"Low conversion rate: "+convRate+"%",body:"Focus on listening more before pitching. Match your response to the specific objection — use the AI suggestions more aggressively."});
+      else insights.push({icon:"&#128337;",cls:"warn",title:"Low conversion rate: "+convRate+"%",body:"Focus on listening more before pitching. Match your response to the specific objection -- use the AI suggestions more aggressively."});
       // Top objection insight
       if(top !== "None"){
-        var objTips={"Cost":"Cost objections mean they think ACH costs them money. Clarify there are NO fees to the supplier — only to the buyer.","Payment Method":"They like checks. Emphasize speed: ACH typically pays 2-5 days faster. Ask when they need funds the most.","Timing":"They're busy. Keep calls under 3 minutes. Lead with a simple yes/no close.","Accounting":"Loop in their accountant early. Offer an email summary they can forward.","Rejection":"Don't push. Ask what would make ACH a fit. Plant a seed and follow up."};
+        var objTips={"Cost":"Cost objections mean they think ACH costs them money. Clarify there are NO fees to the supplier -- only to the buyer.","Payment Method":"They like checks. Emphasize speed: ACH typically pays 2-5 days faster. Ask when they need funds the most.","Timing":"They're busy. Keep calls under 3 minutes. Lead with a simple yes/no close.","Accounting":"Loop in their accountant early. Offer an email summary they can forward.","Rejection":"Don't push. Ask what would make ACH a fit. Plant a seed and follow up."};
         insights.push({icon:"&#9888;&#65039;",cls:"warn",title:"Top objection: "+top,body:objTips[top]||"Address this objection directly with the AI response suggestions."});
       }
       // Volume insight
@@ -1424,7 +1664,7 @@ function renderMgr(){
   }
 }
 
-// ── WIRE UP ALL EVENTS ──
+// -- WIRE UP ALL EVENTS --
 document.addEventListener("DOMContentLoaded", function(){
   // Login
   $$("LP-BTN").addEventListener("click", doLogin);
@@ -1458,7 +1698,10 @@ document.addEventListener("DOMContentLoaded", function(){
   $$("btnEsMic").addEventListener("click", startEsMic);
   // Speak buttons
   $$("btnSpkEN").addEventListener("click", function(){ speakTxt($$("trEN").textContent, "en-US"); });
-  $$("btnSpkES").addEventListener("click", function(){ speakTxt($$("trES").textContent, "es-MX"); });
+  $$("btnSpkES").addEventListener("click", function(){
+    var lang = $$("btnSpkES").getAttribute("data-lang") || "es-MX";
+    speakTxt($$("trES").textContent, lang);
+  });
   // Generate & log
   $$("btnGen").addEventListener("click", doGen);
   $$("btnLog").addEventListener("click", logCall);
@@ -1470,6 +1713,56 @@ document.addEventListener("DOMContentLoaded", function(){
   });
   // Load voices early
   if(window.speechSynthesis) window.speechSynthesis.getVoices();
+
+  // Script panel
+  var scriptBox = $$("SCRIPT-BOX");
+  var scriptBtn = $$("btnScript");
+  var scriptText = $$("SCRIPT-TEXT");
+  var scriptSaved = $$("scriptSaved");
+  var scriptSaveTimer = null;
+
+  // Load saved script
+  var savedScript = localStorage.getItem("pp_script");
+  if(savedScript && scriptText) scriptText.value = savedScript;
+
+  if(scriptBtn) scriptBtn.addEventListener("click", function(){
+    if(scriptBox.classList.contains("h")){
+      show(scriptBox);
+      scriptBtn.classList.add("open");
+      scriptBtn.innerHTML = "&#10005; Close Script";
+      if(scriptText) scriptText.focus();
+    } else {
+      hide(scriptBox);
+      scriptBtn.classList.remove("open");
+      scriptBtn.innerHTML = "&#128196; Script";
+    }
+  });
+
+  if($$("btnScriptClose")) $$("btnScriptClose").addEventListener("click", function(){
+    hide(scriptBox);
+    scriptBtn.classList.remove("open");
+    scriptBtn.innerHTML = "&#128196; Script";
+  });
+
+  if($$("btnScriptClear")) $$("btnScriptClear").addEventListener("click", function(){
+    if(confirm("Clear the script? This cannot be undone.")){
+      if(scriptText) scriptText.value = "";
+      localStorage.removeItem("pp_script");
+    }
+  });
+
+  // Auto-save script as they type
+  if(scriptText) scriptText.addEventListener("input", function(){
+    clearTimeout(scriptSaveTimer);
+    scriptSaveTimer = setTimeout(function(){
+      localStorage.setItem("pp_script", scriptText.value);
+      if(scriptSaved){
+        scriptSaved.textContent = "Saved";
+        scriptSaved.classList.add("show");
+        setTimeout(function(){ scriptSaved.classList.remove("show"); }, 2000);
+      }
+    }, 800);
+  });
 });
 </script>
 
