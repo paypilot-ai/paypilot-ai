@@ -794,7 +794,939 @@ $$("SI").innerHTML =
 '</table>'+
 '<div class="SCORES">'+
 '<div class="SC2 SC2-b"><span class="SC2-lbl">ACH Score</span><span class="SC2-val">'+s.ach+'%</span></div>'+
-'<div class="SC2 SC2-c"><span class="SC2-lbl">VCC Sco
-...
+'<div class="SC2 SC2-c"><span class="SC2-lbl">VCC Score</span><span class="SC2-val">'+s.vcc+'%</span></div>'+
+'</div>';
+}
+
+// -- WEB LOOKUP --
+function safeA(v){ return (v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+
+function doLookup(){
+var q = $$("WLI").value.trim();
+if(!q){ $$("WLI").style.borderColor = "#dc2626"; setTimeout(function(){ $$("WLI").style.borderColor = ""; }, 1400); return; }
+var ws = $$("WLS"), wm = $$("WL-MSG"), wsp = $$("WL-SPIN"), si = $$("SI");
+ws.className = "LKUP-STATUS load"; show(ws);
+wm.textContent = "Looking up contact info...";
+wsp.style.display = "block";
+si.innerHTML = "";
+var prompt = "Find contact information for this company: " + q + ". Return ONLY a JSON object with keys: company, contact, title, email, phone, address, industry. Use empty string for unknown fields. No explanation, just the JSON.";
+fetch("https://api.anthropic.com/v1/messages", {
+method: "POST",
+headers: {"Content-Type":"application/json","anthropic-version":"2023-06-01"},
+body: JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:350,messages:[{role:"user",content:prompt}]})
+})
+.then(function(r){ return r.json(); })
+.then(function(d){
+wsp.style.display = "none";
+if(d.error || !d.content || !d.content[0]){
+ws.className = "LKUP-STATUS ok"; wm.textContent = "Enter details manually";
+showManForm(si, q); return;
+}
+var raw = d.content[0].text || "";
+var parsed = parseLookup(raw, q);
+var ach = Math.floor(Math.random()*30)+55, vcc = Math.floor(Math.random()*20)+15;
+ws.className = "LKUP-STATUS ok"; wm.textContent = "Found - verify and save";
+renderLookup(parsed, ach, vcc, si);
+})
+.catch(function(){
+wsp.style.display = "none"; ws.className = "LKUP-STATUS ok";
+wm.textContent = "Use links below to find info"; showManForm(si, q);
+});
+}
+
+function parseLookup(raw, q){
+var fence = String.fromCharCode(96,96,96);
+raw = raw.split(fence+"json").join("").split(fence).join("").trim();
+try{ var s=raw.indexOf("{"),e=raw.lastIndexOf("}"); if(s>=0&&e>s){ var p=JSON.parse(raw.slice(s,e+1)); if(!p.company) p.company=q; return p; } }catch(ex){}
+var em = raw.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
+var ph = raw.match(/[\(]?\d{3}[\)\.\-\s]?\s?\d{3}[\.\-\s]?\d{4}/);
+return {company:q,contact:"",title:"",email:em?em[0]:"",phone:ph?ph[0]:"",address:"",industry:""};
+}
+
+function renderLookup(p, ach, vcc, el){
+var co=p.company||"",ct=p.contact||"",ti=p.title||"",em=p.email||"",ph=p.phone||"",ad=p.address||"",ind=p.industry||"";
+el.innerHTML =
+'<div class="WEB-TAG">Result - verify before saving</div>'+
+'<table class="ST">'+
+'<tr><td>Company</td><td>'+co+'</td></tr>'+
+'<tr><td>Contact</td><td>'+ct+(ti?' <span style="color:#6b7280;font-size:13px;">&middot; '+ti+'</span>':'')+'</td></tr>'+
+'<tr><td>Email</td><td>'+em+'</td></tr>'+
+'<tr><td>Phone</td><td>'+ph+'</td></tr>'+
+'<tr><td>Address</td><td>'+ad+'</td></tr>'+
+'<tr><td>Industry</td><td>'+ind+'</td></tr>'+
+'</table>'+
+'<div class="SCORES">'+
+'<div class="SC2 SC2-b"><span class="SC2-lbl">ACH Score</span><span class="SC2-val">'+ach+'%</span></div>'+
+'<div class="SC2 SC2-c"><span class="SC2-lbl">VCC Score</span><span class="SC2-val">'+vcc+'%</span></div>'+
+'</div>'+
+'<button class="BT BT-blue" style="width:100%;justify-content:center;margin-top:13px" data-co="'+safeA(co)+'" data-ct="'+safeA(ct)+'" data-em="'+safeA(em)+'" data-ph="'+safeA(ph)+'" data-ind="'+safeA(ind)+'" data-ach="'+ach+'" data-vcc="'+vcc+'" id="btnSaveWeb">+ Save to Database</button>'+
+'<p style="font-size:11.5px;color:#9ca3af;margin-top:7px;text-align:center">AI may not have current data - verify before saving</p>';
+var sb = $$("btnSaveWeb");
+if(sb) sb.addEventListener("click", function(){ saveWeb(this); });
+}
+
+function showManForm(el, q){
+var gUrl = "https://www.google.com/search?q="+encodeURIComponent(q+" accounts payable contact phone");
+var liUrl = "https://www.linkedin.com/search/results/companies/?keywords="+encodeURIComponent(q);
+var bbUrl = "https://www.bbb.org/search?find_text="+encodeURIComponent(q);
+el.innerHTML =
+'<div class="WEB-TAG">Manual Lookup</div>'+
+'<p style="font-size:14px;color:#374151;margin-bottom:11px;line-height:1.6">Open a site, find the info, fill in below:</p>'+
+'<div style="margin-bottom:14px">'+
+'<a class="SLB" href="'+gUrl+'" target="_blank">&#128269; Google</a>'+
+'<a class="SLB" href="'+liUrl+'" target="_blank">in LinkedIn</a>'+
+'<a class="SLB" href="'+bbUrl+'" target="_blank">&#127942; BBB</a>'+
+'</div>'+
+'<div class="MAN-FORM">'+
+'<div class="FLD"><label class="FL">Company</label><input id="mfCo" value="'+safeA(q)+'"></div>'+
+'<div class="G2">'+
+'<div class="FLD"><label class="FL">Contact</label><input id="mfCt" placeholder="AP contact name"></div>'+
+'<div class="FLD"><label class="FL">Phone</label><input id="mfPh" placeholder="555-555-5555"></div>'+
+'</div>'+
+'<div class="G2">'+
+'<div class="FLD"><label class="FL">Email</label><input id="mfEm" placeholder="ap@company.com"></div>'+
+'<div class="FLD"><label class="FL">Industry</label><input id="mfInd" placeholder="e.g. Electrical"></div>'+
+'</div>'+
+'<button class="BT BT-blue" style="width:100%;justify-content:center;margin-top:5px" id="btnManSave">+ Save to Database</button>'+
+'</div>';
+var ms = $$("btnManSave");
+if(ms) ms.addEventListener("click", saveManual);
+}
+
+function saveWeb(btn){
+var ach = parseInt(btn.getAttribute("data-ach"))||60;
+var vcc2 = parseInt(btn.getAttribute("data-vcc"))||25;
+G.suppliers.push({company:btn.getAttribute("data-co")||"New Co",contact:btn.getAttribute("data-ct")||"",email:btn.getAttribute("data-em")||"",phone:btn.getAttribute("data-ph")||"",industry:btn.getAttribute("data-ind")||"General",avg:"$0",ach:ach,vcc:vcc2});
+G.idx = G.suppliers.length-1;
+$$("SS").value = G.suppliers[G.idx].company;
+loadS(); hide($$("WLS")); $$("WLI").value = "";
+}
+
+function saveManual(){
+var co = ($$("mfCo") && $$("mfCo").value)||"New Co";
+var ct = ($$("mfCt") && $$("mfCt").value)||"";
+var ph = ($$("mfPh") && $$("mfPh").value)||"";
+var em = ($$("mfEm") && $$("mfEm").value)||"";
+var ind = ($$("mfInd") && $$("mfInd").value)||"General";
+var ach2 = Math.floor(Math.random()*25)+55, vcc3 = Math.floor(Math.random()*20)+15;
+G.suppliers.push({company:co,contact:ct,email:em,phone:ph,industry:ind,avg:"$0",ach:ach2,vcc:vcc3});
+G.idx = G.suppliers.length-1;
+$$("SS").value = co;
+loadS(); hide($$("WLS")); $$("WLI").value = "";
+}
+
+// -- LANGUAGE DETECTION --
+// -- LANGUAGE CONFIG --
+var LANGS = {
+"Spanish": {code:"es-MX", label:"ES", flag:"MX", name:"Spanish"},
+"Portuguese": {code:"pt-BR", label:"PT", flag:"BR", name:"Portuguese"},
+"Mandarin": {code:"zh-CN", label:"ZH", flag:"CN", name:"Mandarin"},
+"Hindi": {code:"hi-IN", label:"HI", flag:"IN", name:"Hindi"},
+"French": {code:"fr-FR", label:"FR", flag:"FR", name:"French"},
+"Arabic": {code:"ar-SA", label:"AR", flag:"SA", name:"Arabic"},
+"Vietnamese": {code:"vi-VN", label:"VI", flag:"VN", name:"Vietnamese"},
+"Korean": {code:"ko-KR", label:"KO", flag:"KR", name:"Korean"}
+};
+
+// -- DETECT LANGUAGE from text content --
+function detectLang(t){
+if(!t) return "English";
+var l = t.toLowerCase();
+// Check character ranges for script-based languages first
+var i, code;
+for(i=0; i<t.length; i++){
+code = t.charCodeAt(i);
+if(code >= 0x0900 && code <= 0x097F) return "Hindi";
+if(code >= 0x0600 && code <= 0x06FF) return "Arabic";
+if((code >= 0x4E00 && code <= 0x9FFF)||(code >= 0x3400 && code <= 0x4DBF)) return "Mandarin";
+if(code >= 0xAC00 && code <= 0xD7AF) return "Korean";
+}
+// Word-based detection for Latin-script languages
+var spWords = ["hola","gracias","cheques","tarjeta","tarifas","pago","nosotros","por favor","buenas","cuanto","cuesta","cobran","interesa","tiempo","ahora","precio","usted","dinero","banco"];
+for(i=0; i<spWords.length; i++){ if(l.indexOf(spWords[i])>=0) return "Spanish"; }
+var ptWords = ["obrigado","pagamento","dinheiro","quanto","custa","interessa","nao","favor","banco","conta","taxa","agora","voce","entendo","cobran"];
+for(i=0; i<ptWords.length; i++){ if(l.indexOf(ptWords[i])>=0) return "Portuguese"; }
+var frWords = ["bonjour","merci","frais","paiement","banque","maintenant","combien","interes","comment","nous","oui","non","pourquoi","besoin","argent","compte"];
+for(i=0; i<frWords.length; i++){ if(l.indexOf(frWords[i])>=0) return "French"; }
+var viWords = ["xin","phi","thanh toan","ngan hang","bay gio","bao nhieu","quan tam","khong","vang","tien","chao","cam on"];
+for(i=0; i<viWords.length; i++){ if(l.indexOf(viWords[i])>=0) return "Vietnamese"; }
+return "English";
+}
+
+// -- TRANSLATION PANEL UPDATE --
+function toggleTrans(){
+G.translateOn = !G.translateOn;
+var tb = $$("TR-BOX");
+if(G.translateOn){ show(tb); updateTrans(); } else { hide(tb); }
+}
+
+function updateTrans(){
+var text = $$("OBJ").value.trim();
+var lang = detectLang(text);
+var lc = LANGS[lang];
+// Update language display chip
+if(lc){
+$$("mLANG").textContent = lc.flag + " " + lc.label;
+} else {
+$$("mLANG").textContent = "EN";
+}
+if(!G.translateOn) return;
+if(!text){ return; }
+
+// Show detected language badge in panel
+var detBadge = $$("TR-DET");
+if(detBadge){
+detBadge.textContent = lang === "English" ? "Detected: English" : "Detected: " + (lc ? lc.flag + " " + lc.name : lang);
+detBadge.style.color = lang === "English" ? "#9ca3af" : "#2563eb";
+}
+
+// Update Escuchar button label to match language
+var esMicBtn = $$("btnEsMic");
+if(esMicBtn && lang !== "English" && lc){
+esMicBtn.textContent = lc.flag + " Listen in " + lc.name;
+esMicBtn.setAttribute("data-lang", lc.code);
+} else if(esMicBtn){
+esMicBtn.textContent = "Listen";
+esMicBtn.setAttribute("data-lang", "es-MX");
+}
+
+if(lang === "English"){
+// English supplier -- show English + generate Spanish reply as default
+$$("trEN").textContent = text;
+$$("trES").textContent = "Generating reply...";
+doAITrans(text, lang);
+return;
+}
+
+// Non-English -- set instant local fallback then upgrade with AI
+var fallbackEN = "[Translating...]";
+var fallbackReply = "[Generating reply...]";
+
+// Spanish instant fallbacks
+if(lang === "Spanish"){
+fallbackEN = text;
+fallbackReply = "Entiendo. La tarifa es del 1.2% pero usted recibe su pago 20-30 dias antes de lo normal. La mayoria de proveedores encuentran que vale la pena.";
+}
+if(lang === "Portuguese"){
+fallbackEN = text;
+fallbackReply = "Entendo. A taxa e de 1,2% mas voce recebe o pagamento 20-30 dias mais cedo do que o normal. A maioria dos fornecedores acha que vale a pena.";
+}
+if(lang === "French"){
+fallbackEN = text;
+fallbackReply = "Je comprends. Les frais sont de 1,2% mais vous etes paye 20 a 30 jours plus tot que d habitude. La plupart des fournisseurs trouvent que cela en vaut la peine.";
+}
+if(lang === "Vietnamese"){
+fallbackEN = text;
+fallbackReply = "Toi hieu. Phi la 1,2% nhung ban duoc thanh toan som hon 20-30 ngay so voi binh thuong. Phan lon nha cung cap thay rang dieu nay xung dang.";
+}
+
+$$("trEN").textContent = fallbackEN;
+$$("trES").textContent = fallbackReply;
+
+// Upgrade with real AI translation
+doAITrans(text, lang);
+}
+
+function extractLine(text, prefix){
+var lines = text.split("\n");
+for(var i=0; i<lines.length; i++){
+var line = lines[i].trim();
+if(line.toLowerCase().indexOf(prefix.toLowerCase())===0){
+return line.slice(prefix.length).trim();
+}
+}
+return "";
+}
+
+function doAITrans(text, lang){
+var lc = LANGS[lang];
+var langName = lc ? lc.name : lang;
+var prompt;
+if(lang === "English"){
+prompt = "The supplier said in English: " + JSON.stringify(text) + ". Write a SHORT natural reply (1-2 sentences) for ACH payment enrollment - defend the 1.2% fee by emphasizing they get paid 20-30 days earlier. Pick the most relevant language: Spanish, Portuguese, Mandarin, Hindi, French, Arabic, Vietnamese, or Korean. Format exactly: LANG: [language name] TRANSLATION: [reply in that language] ENGLISH: [english version of reply]";
+} else {
+prompt = "The supplier spoke in " + langName + ": " + JSON.stringify(text) + ". Translate what they said to English. Then write a SHORT natural reply (1-2 sentences) in " + langName + " for ACH payment enrollment - 1.2% fee but paid 20-30 days earlier. Do NOT use company name. Format: ENGLISH: [translation] REPLY: [reply in " + langName + "] REPLY_EN: [english version]";
+}
+
+fetch("https://api.anthropic.com/v1/messages",{
+method:"POST",
+headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01"},
+body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:200,messages:[{role:"user",content:prompt}]})
+}).then(function(r){ return r.json(); }).then(function(d){
+if(!d.content||!d.content[0]) return;
+var raw = d.content[0].text||"";
+if(lang === "English"){
+var replyMatch = extractLine(raw, "TRANSLATION:");
+var enMatch = extractLine(raw, "ENGLISH:");
+var langMatch = extractLine(raw, "LANG:");
+if(replyMatch) $$("trES").textContent = replyMatch;
+if(enMatch) $$("trEN").textContent = enMatch;
+// Update speak button label
+if(langMatch && langMatch[1]){
+var detLang = langMatch[1].trim();
+var detLC = LANGS[detLang];
+if(detLC && $$("btnSpkES")) $$("btnSpkES").setAttribute("data-lang", detLC.code);
+}
+} else {
+var enMatch2 = extractLine(raw, "ENGLISH:");
+var replyMatch2 = extractLine(raw, "REPLY:");
+if(enMatch2) $$("trEN").textContent = enMatch2;
+if(replyMatch2) $$("trES").textContent = replyMatch2;
+// Update speak button to use correct language
+if(lc && $$("btnSpkES")) $$("btnSpkES").setAttribute("data-lang", lc.code);
+}
+}).catch(function(){});
+}
+
+
+function speakTxt(text, lang){
+if(!text||text==="--"||!text.trim()) return;
+var syn = window.speechSynthesis;
+if(!syn) return;
+syn.cancel();
+var u = new SpeechSynthesisUtterance(text);
+u.lang = lang; u.rate = 0.9; u.volume = 1;
+var vs = syn.getVoices();
+var lc = lang.substring(0,2);
+for(var i=0;i<vs.length;i++){ if(vs[i].lang.indexOf(lc)===0){ u.voice=vs[i]; break; } }
+var st = $$("trSTAT");
+if(st){ st.textContent = lang.indexOf("es")===0 ? "Speaking Spanish..." : "Speaking English..."; st.className = "TR-status"; }
+u.onend = function(){ if(st) st.textContent = ""; };
+syn.speak(u);
+}
+
+// -- SPANISH MIC --
+function startEsMic(){
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SR){ alert("Mic not supported in this browser"); return; }
+var btn = $$("btnEsMic");
+if(G.esRecognition){ G.esRecognition.stop(); G.esRecognition = null; if(btn) btn.textContent = "Listen"; return; }
+// Get language from button attribute, default to es-MX
+var listenLang = (btn && btn.getAttribute("data-lang")) || "es-MX";
+G.esRecognition = new SR();
+G.esRecognition.continuous = false;
+G.esRecognition.interimResults = false;
+G.esRecognition.lang = listenLang;
+G.esRecognition.onstart = function(){ if(btn) btn.textContent = "Listening..."; };
+G.esRecognition.onresult = function(e){
+var t = e.results[0][0].transcript;
+$$("OBJ").value = t;
+// Auto-detect language and update translation
+if(!G.translateOn) toggleTrans();
+else updateTrans();
+};
+G.esRecognition.onend = function(){
+G.esRecognition = null;
+if(btn) btn.textContent = "Listen";
+};
+G.esRecognition.onerror = function(){
+G.esRecognition = null;
+if(btn) btn.textContent = "Listen";
+};
+G.esRecognition.start();
+}
+
+// -- ENGLISH MIC --
+function startMic(){
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SR){ alert("Mic not supported in this browser"); return; }
+if(G.recognition) G.recognition.stop();
+G.recognition = new SR();
+G.recognition.continuous = true; G.recognition.interimResults = true; G.recognition.lang = "en-US";
+G.recognition.onstart = function(){ $$("mMIC").textContent="Live"; $$("btnMic").classList.add("rec"); $$("btnMic").textContent="Recording"; };
+G.recognition.onerror = function(){ $$("mMIC").textContent="Error"; };
+G.recognition.onend = function(){ $$("mMIC").textContent="Idle"; $$("btnMic").classList.remove("rec"); $$("btnMic").textContent="Start Mic"; };
+G.recognition.onresult = function(e){
+var t = e.results[e.results.length-1][0].transcript;
+$$("OBJ").value = t;
+updateTrans();
+clearTimeout(window._vt);
+window._vt = setTimeout(doGen, 300);
+};
+G.recognition.start();
+}
+function stopMic(){ if(G.recognition) G.recognition.stop(); }
+
+// -- SCORING --
+function calcProb(t){
+var s=70, l=t.toLowerCase(), sp=G.suppliers[G.idx];
+if(l.indexOf("check")>=0||l.indexOf("cheques")>=0) s-=10;
+if(l.indexOf("fee")>=0||l.indexOf("tarifas")>=0) s-=15;
+if(l.indexOf("busy")>=0||l.indexOf("later")>=0) s-=8;
+if(l.indexOf("accountant")>=0) s-=10;
+if(l.indexOf("not interested")>=0) s-=18;
+if(l.indexOf("yes")>=0) s+=20;
+if(l.indexOf("interested")>=0) s+=15;
+s += Math.round((sp.ach-sp.vcc)/10);
+return Math.max(5,Math.min(95,s));
+}
+function getTag(t){
+var l=t.toLowerCase();
+if(l.indexOf("check")>=0||l.indexOf("cheques")>=0) return "Payment Method";
+if(l.indexOf("fee")>=0||l.indexOf("tarifas")>=0) return "Cost";
+if(l.indexOf("busy")>=0||l.indexOf("later")>=0) return "Timing";
+if(l.indexOf("accountant")>=0) return "Accounting";
+if(l.indexOf("not interested")>=0) return "Rejection";
+return "General";
+}
+function getStrat(t,sc){
+var tag=getTag(t);
+if(sc>=80) return "Push Next Step";
+if(tag==="Cost") return "Reframe Value";
+if(tag==="Payment Method") return "Speed & Simplicity";
+if(tag==="Timing") return "Keep It Short";
+if(tag==="Accounting") return "Lower Friction";
+if(tag==="Rejection") return "Soften & Re-engage";
+return "Guide Next Step";
+}
+function getHeat(s){ return s>=80?"Hot":s>=55?"Warm":"Cold"; }
+function getAct(t,sc){
+var tag=getTag(t);
+if(sc>=80) return "Ask for setup now";
+if(tag==="Payment Method") return "Position ACH speed";
+if(tag==="Cost") return "Reframe: no fees";
+if(tag==="Timing") return "Short push";
+if(tag==="Accounting") return "Loop in accounting";
+if(tag==="Rejection") return "Lower resistance";
+return "Guide forward";
+}
+function getCoach(t,sc){
+var s=getStrat(t,sc);
+if(s==="Push Next Step") return "They sound close. Stop explaining and move to setup.";
+if(s==="Reframe Value") return "Don't defend cost. Shift to simplicity and speed.";
+if(s==="Speed & Simplicity") return "Make checks sound slow. Make ACH sound effortless.";
+if(s==="Keep It Short") return "Shorten your response and hold control of the call.";
+if(s==="Lower Friction") return "Reduce effort. Offer a single, simple next step.";
+if(s==="Soften & Re-engage") return "Don't push. Rebuild interest and keep it light.";
+return "Acknowledge, reframe, and guide forward.";
+}
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+// -- Smart objection classifier --
+function hasWord(l, words){
+for(var w=0; w<words.length; w++){ if(l.indexOf(words[w])>=0) return true; }
+return false;
+}
+function classifyObjection(t){
+var l = t.toLowerCase();
+var lang = detectLang(t);
+if(lang !== "English") return "foreign";
+if(hasWord(l,["fee","cost","charge","expensive","price","rate","percent","%","too much","worth it","tarifas","costo","pagar"])) return "fee";
+if(hasWord(l,["lower","reduce","less","better deal","discount","negotiate","can you do","bring it down","come down","cheaper","go lower"])) return "negotiate";
+if(hasWord(l,["check","cheque","paper","mail","prefer check","use check"])) return "check";
+if(hasWord(l,["busy","later","call back","not a good time","right now","another time","not today","too much going on","call me back"])) return "timing";
+if(hasWord(l,["accountant","controller","cfo","finance","approval","approve","boss","manager","owner","check with","run it by","let me ask","need to ask"])) return "approval";
+if(hasWord(l,["not interested","dont need","no thanks","pass","not for us","dont want","not looking"])) return "notinterested";
+if(hasWord(l,["already","we use","we have","set up","current","do it now","doing that","have that"])) return "already";
+if(hasWord(l,["safe","secure","trust","scam","fraud","hack","data","information","risk"])) return "security";
+if(hasWord(l,["how does","what is","explain","tell me more","how do","what does","how would"])) return "howworks";
+return "general";
+}
+
+function getFB(t){
+var sp = G.suppliers[G.idx];
+var avgN = parseFloat((sp.avg||"0").replace(/[^0-9.]/g,""))||0;
+var isHighVol = avgN >= 650000;
+var type = classifyObjection(t);
+
+// -- FEE OBJECTION -- defend 1.2%, do NOT mention discount --
+if(type === "fee"){
+if(isHighVol) return pick([
+"At your volume you actually qualify for our 0.75% preferred rate -- that's our best tier. Think of it this way: if your terms are net-30 or net-60, you're already giving the buyer an interest-free loan for that whole time. We flip that. You get paid early and the 0.75% is the only cost.",
+"Good news -- at your volume we can offer 0.75%. Most suppliers at that level tell us after the first payment they stop thinking about the fee because the cash flow change is so noticeable.",
+"You qualify for 0.75% based on your volume -- that's our preferred rate. The math usually works out simply: getting paid weeks earlier at 0.75% beats sitting on an invoice waiting on a check to clear."
+]);
+return pick([
+"The fee is 1.2% -- and I want to be upfront about that. What you're getting in exchange is getting paid significantly earlier than your standard terms. If you're on net-30 or net-60 right now, that's weeks of cash sitting out there that we can put in your account now. For most suppliers the early payment more than offsets the 1.2%.",
+"That's 1.2% of the invoice -- I won't dance around it. But here's how most suppliers think about it: every invoice you're waiting on is basically a free loan to the buyer. ACH ends that. You get paid early, guaranteed. Most find the cash flow improvement is worth more than 1.2% costs them.",
+"Fair question. The fee is 1.2%. In exchange you get paid weeks earlier than standard terms and you never chase a check again. What are your current payment terms with this buyer -- net-30? Net-60? Because that gap is what we're closing.",
+"The 1.2% is real -- and it's there because you're getting something valuable: early payment. If your terms are anything beyond net-15, you're already waiting longer than you have to. We're essentially turning a slow-pay buyer into a fast-pay one for you, and 1.2% is the cost of that."
+]);
+}
+
+// -- NEGOTIATING -- they want lower, now we do the "let me get it authorized" play --
+if(type === "negotiate"){
+return pick([
+"I hear you. Honestly 1.2% is our standard and it's where I'd start -- but let me see what I can do. I'd need to get authorization from my manager to go below that. Can I put you on a brief hold, or call you right back?",
+"I appreciate you being straight with me. The 1.2% is where we are right now -- I can't just move off that on my own. Let me reach out internally and see if there's any room. Give me a few minutes and I'll call you right back with an answer.",
+"I get it. I'm not going to make a promise I can't keep -- I'd need to go back and get that approved. The 1.2% is standard. But if you're serious about moving forward and the rate is the only thing holding you back, let me make a call and see what I can do.",
+"That's fair to ask. I don't have the ability to just drop the rate -- it's 1.2% and anything below that has to go through approval. Tell you what: if we agree on everything else and the rate is the last piece, I'll get on it right now and come back to you. Does that work?"
+]);
+}
+
+// -- CHECKS --
+if(type === "check"){
+return pick([
+"Checks work -- no argument. The difference is just timing. Right now you're waiting on a check to be cut, mailed, and clear your bank. With ACH the money is in your account directly -- typically weeks ahead of where you'd be on standard terms. The 1.2% is the trade-off for that speed.",
+"I get it -- checks are familiar. But think about what happens when one gets delayed or lost. ACH is guaranteed and faster. You always know when it's coming and it's already in your account before a check would even arrive.",
+"Nothing wrong with checks. But consider this: every time you wait on one, you're giving the buyer extra time with your money. ACH flips that -- you get paid early, consistently, and the 1.2% is the only cost of making that happen.",
+"Checks are fine until they're slow, lost, or you're waiting on a Friday before a long weekend. ACH is direct, predictable, and early. Most suppliers tell me after the first payment they never want to go back to paper."
+]);
+}
+
+// -- TIMING --
+if(type === "timing"){
+return pick([
+"No problem. Quick question before I let you go -- do you have an email I can send the details to? That way you have everything in front of you and we can wrap this up in one follow-up.",
+"Totally understand. I'll be quick -- this is a one-time setup and then you're on early payments permanently. Even two minutes now means every future invoice gets paid faster. When's a better window today?",
+"Of course. I'll send you a short summary -- the fee, what the payment timeline looks like, and what enrollment takes. Takes about 30 seconds to read. What's the best email?",
+"No worries at all. Just know that every day on standard terms is time you're waiting to get paid that you don't have to. I'll follow up -- what's the best way to reach you?"
+]);
+}
+
+// -- APPROVAL --
+if(type === "approval"){
+return pick([
+"Absolutely -- loop them in. I can send a clean one-pager: the 1.2% fee, what the early payment timeline looks like, and what the enrollment actually requires. Most accounting teams sign off pretty quickly once they see it. What's the best email to send it to?",
+"That's the right call. Send me their email and I'll put together a quick summary they can review. Usually takes accounting about 10 minutes -- it's a straightforward enrollment, no changes to your banking setup.",
+"Makes sense. I can reach out directly to them if that helps -- just point me in the right direction. The main questions they'll have are about the fee structure and how the payments hit the books. I can answer all of that in one email.",
+"Smart move. Most controllers actually prefer ACH once they see it -- cleaner reconciliation, no check exceptions to deal with. I'll send something they can review at their own pace. What's the best contact?"
+]);
+}
+
+// -- NOT INTERESTED --
+if(type === "notinterested"){
+return pick([
+"I respect that. Before I go -- is it the fee specifically, or something else? I just want to make sure I'm not missing something I could actually address.",
+"Understood. Quick question -- what are your current payment terms with this buyer? Sometimes when people see the timing difference it changes the conversation. If not, no pressure.",
+"Fair enough. I'd just leave you with this: if your terms are net-30 or longer, there's money sitting out there we could be putting in your account now for 1.2%. If that ever becomes relevant, I'm one call away.",
+"No problem. Can I ask what the main hesitation is? Just so I understand -- is it the fee, the timing, or something else entirely? I'm not going to push you, I just want to make sure I understand."
+]);
+}
+
+// -- ALREADY ON ACH --
+if(type === "already"){
+return pick([
+"Good to hear. The question is whether your current setup includes early payment. Our program gets you paid significantly ahead of standard terms -- that's the piece most suppliers aren't getting with a standard ACH setup.",
+"Great -- so you know how it works. The value we add is the timing. Are you getting paid early right now, or still sitting on net-30, net-60 terms? Because that's exactly what we solve.",
+"Perfect. So the technical side is already there. This is really just about whether 1.2% to get paid weeks earlier makes sense for your cash flow -- that's the only difference from what you have now.",
+"Nice. Then this should be an easy conversation. Most standard ACH setups just mirror your existing terms. We accelerate the payment. Same method, just faster money in your account."
+]);
+}
+
+// -- SECURITY --
+if(type === "security"){
+return pick([
+"Completely valid. ACH runs through the federal banking network -- the same system behind every payroll and direct deposit in the country. It's regulated by NACHA and is actually more secure than a paper check, which can be lost or intercepted.",
+"Good question. Your banking info is encrypted and processed through a regulated federal network. Honestly a paper check is riskier -- it has your full account number printed on it and can be stolen in the mail.",
+"ACH has been the backbone of business payments since the 1970s. Every payroll run, utility payment, and tax payment uses the same network. It's one of the most audited payment systems in existence."
+]);
+}
+
+// -- HOW IT WORKS --
+if(type === "howworks"){
+return pick([
+"Simple version: instead of waiting on a check, payment routes directly to your bank account. You get paid earlier, you know exactly when it's coming, and nothing to cash or wait to clear.",
+"ACH is a direct bank-to-bank transfer. We enroll your account, and instead of a check being issued and mailed, the funds go straight to your bank. Usually settles in 1-2 business days.",
+"Think of it like direct deposit for your invoices. The buyer's payment routes straight to your account electronically -- faster, more predictable, and no check handling on your end."
+]);
+}
+
+// -- SPANISH --
+if(type === "spanish"){
+var rES = isHighVol ? "0.75%" : "1.2%";
+return pick([
+"Entiendo su preocupacion. Con ACH usted recibe los pagos directamente en su cuenta bancaria, tipicamente 20 a 30 dias antes de lo normal. La tarifa es del "+rES+", pero la mayoria encuentran que el flujo de caja anticipado vale la pena.",
+"Lo comprendo. La tarifa del "+rES+" existe, pero a cambio recibe su pago semanas antes de lo habitual. Para muchos proveedores eso significa mejor liquidez y menos espera en cada factura.",
+"Tiene razon en preguntar. Pienselo asi: en lugar de esperar 30 o 60 dias, el dinero llega directamente a su cuenta en dias. El "+rES+" es el costo de ese anticipo, y la mayoria de nuestros proveedores dicen que vale la pena."
+]);
+}
+
+// -- GENERAL --
+var rGen = isHighVol ? "0.75%" : "1.2%";
+return pick([
+"Here's the straight version: there's a "+rGen+" fee, and in exchange you get paid significantly faster than standard terms -- typically 20-30 days earlier. For most suppliers that early cash flow more than covers the fee.",
+"The trade-off is simple: "+rGen+" fee, and you stop waiting on checks and get paid early. Whether that math works depends on your current terms. What are you typically sitting on with this buyer?",
+"I'll be direct: "+rGen+" fee, paid on your side. What you get is early payment -- weeks ahead of standard terms -- and guaranteed delivery. Most suppliers decide it's worth it after the first payment.",
+"It comes down to this: "+rGen+" to get paid 20-30 days faster and never chase a check again. For a lot of businesses that cash flow improvement is worth more than the fee costs them. Happy to walk through the numbers if that helps."
+]);
+}
+
+
+function typewrite(el, txt){
+if(G.twi){ clearInterval(G.twi); G.twi=null; }
+el.textContent = "";
+var i=0, chars=txt.split("");
+G.twi = setInterval(function(){
+if(i<chars.length){ el.textContent+=chars[i]; i++; }
+else { clearInterval(G.twi); G.twi=null; }
+}, 20);
+}
+
+// -- GENERATE RESPONSE --
+function doGen(){
+var text = $$("OBJ").value.trim();
+if(!text) return;
+if(G.twi){ clearInterval(G.twi); G.twi=null; }
+var sc=calcProb(text), tag=getTag(text), act=getAct(text,sc), sp=G.suppliers[G.idx];
+var el=$$("AI-RESP");
+el.textContent = "Analyzing objection...";
+updateTrans();
+$$("cCONF").textContent="90%"; $$("cOBJ").textContent=tag; $$("cACT").textContent=act; $$("cCLOSE").textContent=sc+"%";
+$$("mSTRAT").textContent=getStrat(text,sc); $$("mHEAT").textContent=getHeat(sc);
+$$("iCOACH").textContent=getCoach(text,sc);
+$$("iCRM").textContent=sp.company+": Discussed electronic payment options. Contact: "+sp.contact+". Outcome: "+$$("OUT").value+".";
+$$("iEMAIL").textContent="Hi "+sp.contact+", thank you for your time. ACH may be a strong fit to help you receive payments faster.";
+// Determine rate tier based on avg invoice volume
+var avgNum = parseFloat((sp.avg||"0").replace(/[^0-9.]/g,"")) || 0;
+var rateTier = "1.2%";
+var rateNote = "";
+if(avgNum >= 650000){
+rateTier = "0.75%";
+rateNote = "This account qualifies for the 0.75% preferred rate due to high volume (over $650k). Lead with this as a positive - it shows you are giving them your best rate.";
+} else {
+rateNote = "Standard rate is 1.2% paid by the supplier. You can negotiate down to 0.95% if they push back on cost - but do NOT open with the discount. Only offer it if they are close to closing and the fee is the sticking point.";
+}
+var sysP="You are a real B2B payment enrollment sales rep for PayPilot. Your job is to enroll suppliers onto ACH or VCC electronic payment programs. The supplier DOES pay a fee - that is the objection you need to overcome. CRITICAL FEE STRUCTURE: Base rate is "+rateTier+" of invoice volume (paid by the supplier). "+rateNote+" Your goal is to convince them the trade-off is worth it: they get paid SIGNIFICANTLY FASTER (often 20-30 days faster than net terms), guaranteed payment with no bounced checks, and simplified reconciliation. Early payment cash flow is the main value prop. Give ONE short, natural, conversational reply (2-4 sentences). Address their SPECIFIC concern. IMPORTANT: Do NOT use the company name or contact name in your response - the rep will verify those verbally. Write the response as if speaking naturally without knowing their name yet. DO NOT be robotic or scripted. Industry context: "+sp.industry+", Avg invoice: "+sp.avg+", Objection type: "+tag+".";
+fetch("https://api.anthropic.com/v1/messages",{
+method:"POST",
+headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01"},
+body:JSON.stringify({
+model:"claude-sonnet-4-20250514",
+max_tokens:200,
+system:sysP,
+messages:[{role:"user",content:"The supplier just said: \""+text+"\" -- Write your reply now, speaking directly to them:"}]
+})
+}).then(function(r){ return r.json(); }).then(function(d){
+var resp = "";
+if(d.content && d.content[0] && d.content[0].text){
+resp = d.content[0].text.trim();
+// Strip any preamble like "Here's my reply:"
+// Strip preamble words
+var preambles = ["here is my reply:","here's my reply:","my reply:","response:","rep:","sales rep:","here is:","here's:"];
+var rl = resp.toLowerCase();
+for(var pi=0; pi<preambles.length; pi++){
+if(rl.indexOf(preambles[pi])===0){ resp = resp.slice(preambles[pi].length).trim(); break; }
+}
+}
+if(!resp) resp = getFB(text);
+el.textContent=""; typewrite(el, resp);
+}).catch(function(){ el.textContent=""; typewrite(el, getFB(text)); });
+}
+
+// -- LOG CALL --
+function logCall(){
+var h=gh(), sp=G.suppliers[G.idx];
+h.unshift({supplier:sp.company,objection:$$("OBJ").value.trim(),outcome:$$("OUT").value,enrollment:$$("ENR").value,createdAt:new Date().toLocaleString()});
+sh(h); renderHist(); updateStats(); renderMgr();
+}
+function markDone(){ $$("ENR").value="Completed"; $$("OUT").value="Converted"; }
+
+// -- RENDER --
+function tagH(o){
+if(o==="Converted") return '<span class="TAG T-ok">Converted</span>';
+if(o==="Rejected") return '<span class="TAG T-no">Rejected</span>';
+if(o==="Follow Up Needed") return '<span class="TAG T-fu">Follow Up</span>';
+return '<span class="TAG T-pd">Pending</span>';
+}
+
+function renderHist(){
+var h=gh(), el=$$("HIST");
+if(!h.length){ el.innerHTML='<p class="MUTED">No calls logged yet.</p>'; return; }
+var html="";
+for(var i=0;i<h.length;i++){
+var x=h[i];
+html+='<div class="HE"><div class="HE-top"><span class="HE-name">'+x.supplier+'</span>'+tagH(x.outcome)+'</div><div class="HE-date">'+x.createdAt+'</div><div class="HE-obj">'+(x.objection||"--")+'</div></div>';
+}
+el.innerHTML=html;
+}
+
+function updateStats(){
+var h=gh(), calls=h.length, conv=0, tags={};
+for(var i=0;i<h.length;i++){
+if(h[i].outcome==="Converted") conv++;
+var t=getTag(h[i].objection||""); tags[t]=(tags[t]||0)+1;
+}
+var rate=calls?Math.round((conv/calls)*100):0;
+var top="None",tc=0;
+for(var k in tags){ if(tags[k]>tc){ top=k; tc=tags[k]; } }
+$$("sLOG").textContent=calls; $$("sCONV").textContent=conv;
+$$("sRATE").textContent=rate+"%"; $$("sTOP").textContent=top;
+}
+
+function renderMgr(){
+var hist=gh(), tot=hist.length, won=0, bd={}, outMap={}, enrMap={}, indMap={};
+for(var i=0;i<hist.length;i++){
+var x=hist[i];
+if(x.outcome==="Converted") won++;
+var t=getTag(x.objection||""); bd[t]=(bd[t]||0)+1;
+outMap[x.outcome||"Pending"]=(outMap[x.outcome||"Pending"]||0)+1;
+enrMap[x.enrollment||"Pending"]=(enrMap[x.enrollment||"Pending"]||0)+1;
+// industry from supplier name match
+var ind="Other";
+for(var si=0;si<G.suppliers.length;si++){
+if(G.suppliers[si].company===x.supplier){ ind=G.suppliers[si].industry; break; }
+}
+indMap[ind]=(indMap[ind]||0)+1;
+}
+var rate=tot?Math.round((won/tot)*100):0;
+$$("mCALLS").textContent=tot; $$("mCONV").textContent=won;
+$$("mRATE").textContent=rate+"%";
+
+// Top objection
+var top="None",tc=0;
+for(var k in bd){ if(bd[k]>tc){ top=k; tc=bd[k]; } }
+$$("mTOP").textContent=top;
+
+var noData = '<p class="MUTED" style="padding:8px 0">No calls logged yet. Log calls in Rep View.</p>';
+
+// -- OBJECTION BREAKDOWN --
+var keys=Object.keys(bd);
+if(!keys.length){ $$("OBDWN").innerHTML=noData; }
+else {
+keys.sort(function(a,b){ return bd[b]-bd[a]; });
+var mx=bd[keys[0]], html="";
+for(var j=0;j<keys.length;j++){
+var kk=keys[j],vv=bd[kk];
+html+='<div class="OBJ"><div class="OBJ-lbl">'+kk+'</div><div class="OBJ-trk"><div class="OBJ-fill" style="width:'+Math.round((vv/mx)*100)+'%"></div></div><div class="OBJ-cnt">'+vv+'</div></div>';
+}
+$$("OBDWN").innerHTML=html;
+}
+
+// -- OUTCOME PIE CHART (canvas) --
+var cvs = $$("OUT-CHART");
+var lgd = $$("OUT-LEGEND");
+var outColors = {"Converted":"#059669","Pending":"#9ca3af","Follow Up Needed":"#d97706","Rejected":"#dc2626"};
+var outKeys = Object.keys(outMap);
+if(cvs && outKeys.length){
+var ctx = cvs.getContext("2d");
+var W=cvs.width, H=cvs.height, cx=W/2, cy=H/2, R=Math.min(W,H)/2-18;
+ctx.clearRect(0,0,W,H);
+var startAngle = -Math.PI/2, total2=0;
+for(var ok=0;ok<outKeys.length;ok++) total2+=outMap[outKeys[ok]];
+for(var ok2=0;ok2<outKeys.length;ok2++){
+var ok2k=outKeys[ok2], ok2v=outMap[ok2k];
+var slice=(ok2v/total2)*2*Math.PI;
+ctx.beginPath(); ctx.moveTo(cx,cy);
+ctx.arc(cx,cy,R,startAngle,startAngle+slice);
+ctx.closePath();
+ctx.fillStyle=outColors[ok2k]||"#6b7280"; ctx.fill();
+ctx.strokeStyle="#fff"; ctx.lineWidth=2; ctx.stroke();
+startAngle+=slice;
+}
+// Center label
+ctx.fillStyle="#0f172a"; ctx.font="bold 22px Inter,sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+ctx.fillText(tot, cx, cy-8);
+ctx.fillStyle="#6b7280"; ctx.font="12px Inter,sans-serif";
+ctx.fillText("calls", cx, cy+12);
+// Legend
+var legHtml="";
+for(var lk=0;lk<outKeys.length;lk++){
+var lkk=outKeys[lk];
+legHtml+='<div class="LEG-ITEM"><div class="LEG-DOT" style="background:'+(outColors[lkk]||"#6b7280")+'"></div>'+lkk+' ('+outMap[lkk]+')</div>';
+}
+lgd.innerHTML=legHtml;
+} else if(cvs){
+var ctx2=cvs.getContext("2d"); ctx2.clearRect(0,0,cvs.width,cvs.height);
+ctx2.fillStyle="#9ca3af"; ctx2.font="13px Inter,sans-serif"; ctx2.textAlign="center"; ctx2.textBaseline="middle";
+ctx2.fillText("No data yet", cvs.width/2, cvs.height/2);
+if(lgd) lgd.innerHTML="";
+}
+
+// -- ENROLLMENT FUNNEL --
+var fEl=$$("FUNNEL");
+if(fEl){
+var fStages=[
+{lbl:"Calls Made", key:null, color:"linear-gradient(90deg,#1d4ed8,#60a5fa)", n:tot},
+{lbl:"Enrollment Sent", key:"Enrollment Sent", color:"linear-gradient(90deg,#0891b2,#22d3ee)", n:enrMap["Enrollment Sent"]||0},
+{lbl:"Completed", key:"Completed", color:"linear-gradient(90deg,#059669,#34d399)", n:enrMap["Completed"]||0},
+{lbl:"Converted", key:null, color:"linear-gradient(90deg,#047857,#10b981)", n:won}
+];
+var fMax=Math.max(tot,1), fHtml="";
+for(var fi=0;fi<fStages.length;fi++){
+var fs=fStages[fi], fpct=Math.round((fs.n/fMax)*100);
+fHtml+='<div class="FUNNEL-ROW">'+
+'<div class="FUNNEL-LBL">'+fs.lbl+'</div>'+
+'<div class="FUNNEL-BAR-WRAP"><div class="FUNNEL-BAR" style="width:'+fpct+'%;background:'+fs.color+'">'+
+(fpct>15?fs.n:'')+'</div></div>'+
+'<div class="FUNNEL-N">'+(fpct<=15?fs.n:'')+'</div>'+
+'</div>';
+}
+if(!tot) fHtml=noData;
+fEl.innerHTML=fHtml;
+}
+
+// -- INDUSTRY BREAKDOWN --
+var indEl=$$("IND-BRKDN");
+if(indEl){
+var indKeys=Object.keys(indMap);
+if(!indKeys.length){ indEl.innerHTML=noData; }
+else {
+indKeys.sort(function(a,b){ return indMap[b]-indMap[a]; });
+var indMax=indMap[indKeys[0]], indHtml="";
+var indColors=["#8b5cf6","#2563eb","#0891b2","#059669","#d97706","#ec4899","#6b7280"];
+for(var ii=0;ii<indKeys.length;ii++){
+var ik=indKeys[ii], iv=indMap[ik];
+indHtml+='<div class="OBJ">'+
+'<div class="OBJ-lbl">'+ik+'</div>'+
+'<div class="OBJ-trk"><div class="OBJ-fill" style="width:'+Math.round((iv/indMax)*100)+'%;background:'+indColors[ii%indColors.length]+'"></div></div>'+
+'<div class="OBJ-cnt">'+iv+'</div>'+
+'</div>';
+}
+indEl.innerHTML=indHtml;
+}
+}
+
+// -- FULL CALL LOG TABLE --
+var logEl=$$("CALL-LOG");
+if(logEl){
+if(!hist.length){ logEl.innerHTML='<tr><td style="padding:20px;color:#9ca3af;font-size:14px">No calls logged yet.</td></tr>'; }
+else {
+var tHtml='<thead class="LOG-HDR"><tr><th>Company</th><th>Outcome</th><th>Enrollment</th><th>Objection</th><th>Date/Time</th></tr></thead><tbody>';
+for(var li=0;li<hist.length;li++){
+var lx=hist[li];
+var outStyle=lx.outcome==="Converted"?"color:#059669;font-weight:700":lx.outcome==="Rejected"?"color:#dc2626;font-weight:700":"";
+tHtml+='<tr class="LOG-ROW">'+
+'<td style="font-weight:700">'+lx.supplier+'</td>'+
+'<td><span style="'+outStyle+'">'+lx.outcome+'</span></td>'+
+'<td>'+lx.enrollment+'</td>'+
+'<td style="color:#6b7280;font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(lx.objection||"--")+'</td>'+
+'<td style="color:#9ca3af;font-size:12px;white-space:nowrap">'+lx.createdAt+'</td>'+
+'</tr>';
+}
+tHtml+='</tbody>';
+logEl.innerHTML=tHtml;
+}
+}
+
+// -- AI COACHING INSIGHTS --
+var insEl=$$("INSIGHTS");
+if(insEl){
+if(!tot){ insEl.innerHTML=noData; }
+else {
+var insights=[];
+var convRate=tot?Math.round((won/tot)*100):0;
+// Win rate insight
+if(convRate>=50) insights.push({icon:"&#127881;",cls:"great",title:"Strong conversion rate",body:"You're converting "+convRate+"% of calls. That's above average. Keep focusing on ACH speed and simplicity messaging."});
+else if(convRate>=25) insights.push({icon:"&#128200;",cls:"",title:"Conversion rate: "+convRate+"%",body:"There's room to grow. Try spending more time on ACH benefits before asking to enroll. Push the 'get paid faster' angle harder."});
+else insights.push({icon:"&#128337;",cls:"warn",title:"Low conversion rate: "+convRate+"%",body:"Focus on listening more before pitching. Match your response to the specific objection -- use the AI suggestions more aggressively."});
+// Top objection insight
+if(top !== "None"){
+var objTips={"Cost":"Cost objections mean they think ACH costs them money. Clarify there are NO fees to the supplier -- only to the buyer.","Payment Method":"They like checks. Emphasize speed: ACH typically pays 2-5 days faster. Ask when they need funds the most.","Timing":"They're busy. Keep calls under 3 minutes. Lead with a simple yes/no close.","Accounting":"Loop in their accountant early. Offer an email summary they can forward.","Rejection":"Don't push. Ask what would make ACH a fit. Plant a seed and follow up."};
+insights.push({icon:"&#9888;&#65039;",cls:"warn",title:"Top objection: "+top,body:objTips[top]||"Address this objection directly with the AI response suggestions."});
+}
+// Volume insight
+if(tot>=10) insights.push({icon:"&#128293;",cls:"great",title:tot+" calls logged",body:"Great call volume. Review the outcome distribution to identify which supplier industries are converting best."});
+else insights.push({icon:"&#128241;",cls:"",title:"Keep building call volume",body:"Log more calls to unlock pattern insights. Aim for 10+ calls to see meaningful trends in your dashboard."});
+// Enrollment funnel insight
+var enrSent=enrMap["Enrollment Sent"]||0, enrComp=enrMap["Completed"]||0;
+if(enrSent>enrComp && enrSent>0) insights.push({icon:"&#128203;",cls:"warn",title:enrSent-enrComp+" enrollment(s) not yet completed",body:"Follow up with suppliers who received enrollment but haven't completed. A quick check-in call often closes these."});
+var insHtml="";
+for(var ii2=0;ii2<insights.length;ii2++){
+var ins=insights[ii2];
+insHtml+='<div class="INSIGHT-CARD '+ins.cls+'"><div class="INSIGHT-ICON">'+ins.icon+'</div><div class="INSIGHT-TITLE">'+ins.title+'</div><div class="INSIGHT-BODY">'+ins.body+'</div></div>';
+}
+insEl.innerHTML=insHtml;
+}
+}
+}
+
+// -- WIRE UP ALL EVENTS --
+document.addEventListener("DOMContentLoaded", function(){
+// Show login overlay
+var lpEl = $$("LP");
+if(lpEl){ lpEl.style.display = "grid"; }
+// Login
+$$("LP-BTN").addEventListener("click", doLogin);
+$$("PW").addEventListener("keydown", function(e){ if(e.keyCode===13||e.key==="Enter") doLogin(); });
+// Nav
+$$("btnRep").addEventListener("click", showRep);
+$$("btnMgr").addEventListener("click", showMgr);
+$$("tbRep").addEventListener("click", showRep);
+$$("tbMgr").addEventListener("click", showMgr);
+$$("btnLogout").addEventListener("click", function(){ location.reload(); });
+// Search
+$$("SS").addEventListener("input", doSearch);
+$$("SR").addEventListener("click", function(e){
+var item = e.target.closest("[data-i]");
+if(item) pickS(parseInt(item.getAttribute("data-i")));
+});
+document.addEventListener("click", function(e){
+var sr=$$("SR"), ss=$$("SS");
+if(sr&&!sr.contains(e.target)&&e.target!==ss) hide(sr);
+});
+// Web lookup
+$$("btnFind").addEventListener("click", doLookup);
+$$("WLI").addEventListener("keydown", function(e){ if(e.keyCode===13||e.key==="Enter") doLookup(); });
+// Mic & translate
+$$("btnMic").addEventListener("click", startMic);
+$$("btnStop").addEventListener("click", stopMic);
+$$("btnMicStart").addEventListener("click", startMic);
+$$("btnMicStop").addEventListener("click", stopMic);
+$$("btnTrans").addEventListener("click", toggleTrans);
+$$("btnTransToggle").addEventListener("click", toggleTrans);
+$$("btnEsMic").addEventListener("click", startEsMic);
+// Speak buttons
+$$("btnSpkEN").addEventListener("click", function(){ speakTxt($$("trEN").textContent, "en-US"); });
+$$("btnSpkES").addEventListener("click", function(){
+var lang = $$("btnSpkES").getAttribute("data-lang") || "es-MX";
+speakTxt($$("trES").textContent, lang);
+});
+// Generate & log
+$$("btnGen").addEventListener("click", doGen);
+$$("btnLog").addEventListener("click", logCall);
+$$("btnMark").addEventListener("click", markDone);
+$$("btnClearLog").addEventListener("click", function(){
+if(confirm("Clear all call history? This cannot be undone.")){
+sh([]); renderHist(); updateStats(); renderMgr();
+}
+});
+// Load voices early
+if(window.speechSynthesis) window.speechSynthesis.getVoices();
+
+// Script panel
+var scriptBox = $$("SCRIPT-BOX");
+var scriptBtn = $$("btnScript");
+var scriptText = $$("SCRIPT-TEXT");
+var scriptSaved = $$("scriptSaved");
+var scriptSaveTimer = null;
+
+// Load saved script
+var savedScript = localStorage.getItem("pp_script");
+if(savedScript && scriptText) scriptText.value = savedScript;
+
+if(scriptBtn) scriptBtn.addEventListener("click", function(){
+if(scriptBox.classList.contains("h")){
+show(scriptBox);
+scriptBtn.classList.add("open");
+scriptBtn.innerHTML = "&#10005; Close Script";
+if(scriptText) scriptText.focus();
+} else {
+hide(scriptBox);
+scriptBtn.classList.remove("open");
+scriptBtn.innerHTML = "&#128196; Script";
+}
+});
+
+if($$("btnScriptClose")) $$("btnScriptClose").addEventListener("click", function(){
+hide(scriptBox);
+scriptBtn.classList.remove("open");
+scriptBtn.innerHTML = "&#128196; Script";
+});
+
+if($$("btnScriptClear")) $$("btnScriptClear").addEventListener("click", function(){
+if(confirm("Clear the script? This cannot be undone.")){
+if(scriptText) scriptText.value = "";
+localStorage.removeItem("pp_script");
+}
+});
+
+// Auto-save script as they type
+if(scriptText) scriptText.addEventListener("input", function(){
+clearTimeout(scriptSaveTimer);
+scriptSaveTimer = setTimeout(function(){
+localStorage.setItem("pp_script", scriptText.value);
+if(scriptSaved){
+scriptSaved.textContent = "Saved";
+scriptSaved.classList.add("show");
+setTimeout(function(){ scriptSaved.classList.remove("show"); }, 2000);
+}
+}, 800);
+});
+});
+</script>
+
+</body>
+</html>
 
 
