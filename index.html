@@ -11,26 +11,26 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;background:#f0f2f8;color:#0f172a}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;background:#f0f2f8;color:#0f172a;margin:0;padding:0}
 .h{display:none!important}
 
 /* ========== LOGIN ========== */
-#LP{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+#LP{display:none;grid-template-columns:1fr 1fr;position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;width:100%;height:100%}
 .LP-L{
-  background:linear-gradient(160deg,#0a0f1e 0%,#0d1b3e 40%,#0f2055 100%);
-  padding:56px 60px;display:flex;flex-direction:column;justify-content:center;
-  position:relative;overflow:hidden;
+background:linear-gradient(160deg,#0a0f1e 0%,#0d1b3e 40%,#0f2055 100%);
+padding:56px 60px;display:flex;flex-direction:column;justify-content:center;
+position:relative;overflow:hidden;
 }
 .LP-L::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 80% 60% at 15% 40%,rgba(0,140,255,.18) 0%,transparent 60%),
-             radial-gradient(ellipse 60% 50% at 85% 70%,rgba(0,220,255,.1) 0%,transparent 55%);
+background:radial-gradient(ellipse 80% 60% at 15% 40%,rgba(0,140,255,.18) 0%,transparent 60%),
+radial-gradient(ellipse 60% 50% at 85% 70%,rgba(0,220,255,.1) 0%,transparent 55%);
 }
 .LP-L::after{content:'';position:absolute;width:600px;height:600px;border-radius:50%;
-  border:1px solid rgba(255,255,255,.06);top:-200px;right:-200px;pointer-events:none}
+border:1px solid rgba(255,255,255,.06);top:-200px;right:-200px;pointer-events:none}
 .LP-ring{position:absolute;width:350px;height:350px;border-radius:50%;
-  border:1px solid rgba(255,255,255,.04);bottom:-100px;left:-100px}
+border:1px solid rgba(255,255,255,.04);bottom:-100px;left:-100px}
 .LP-ring2{position:absolute;width:200px;height:200px;border-radius:50%;
-  border:1px solid rgba(0,180,255,.1);top:30%;right:10%;pointer-events:none}
+border:1px solid rgba(0,180,255,.1);top:30%;right:10%;pointer-events:none}
 
 .LP-logo{margin-bottom:44px;position:relative;z-index:1;display:flex;align-items:center;gap:14px}
 .LP-logo img{height:80px;width:auto;filter:drop-shadow(0 0 20px rgba(0,180,255,.5))}
@@ -38,82 +38,82 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .LP-brand span{display:block;font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:rgba(0,210,255,.7);margin-top:3px}
 
 .LP-h{font-size:54px;font-weight:900;color:#fff;line-height:.95;letter-spacing:-.04em;
-  margin-bottom:20px;position:relative;z-index:1}
+margin-bottom:20px;position:relative;z-index:1}
 .LP-h span{background:linear-gradient(90deg,#00d4ff,#0095ff);-webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;background-clip:text;display:block}
+-webkit-text-fill-color:transparent;background-clip:text;display:block}
 .LP-tag{font-family:Georgia,"Times New Roman",serif;font-size:18px;font-style:italic;
-  color:rgba(180,220,255,.85);margin-bottom:44px;position:relative;z-index:1;
-  max-width:380px;line-height:1.55}
+color:rgba(180,220,255,.85);margin-bottom:44px;position:relative;z-index:1;
+max-width:380px;line-height:1.55}
 .LP-feats{display:flex;flex-direction:column;gap:10px;position:relative;z-index:1}
 .LP-feat{display:flex;align-items:center;gap:14px;
-  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
-  border-radius:12px;padding:12px 16px;backdrop-filter:blur(10px);
-  transition:background .2s}
+background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+border-radius:12px;padding:12px 16px;backdrop-filter:blur(10px);
+transition:background .2s}
 .LP-feat:hover{background:rgba(255,255,255,.09)}
 .LP-feat-ico{font-size:18px;width:32px;text-align:center;flex-shrink:0}
 .LP-feat-txt{font-size:14px;font-weight:600;color:#fff}
 .LP-feat-sub{font-size:11.5px;color:rgba(160,210,255,.7);margin-top:1px}
 
-.LP-R{background:#fff;padding:56px 64px;display:flex;flex-direction:column;justify-content:center}
+.LP-R{background:#fff;padding:48px 64px 48px;display:flex;flex-direction:column;justify-content:flex-start}
 .LP-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  color:#2563eb;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+color:#2563eb;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .LP-eyebrow::before{content:'';width:24px;height:2px;background:#2563eb;border-radius:1px}
 .LP-title{font-size:42px;font-weight:900;color:#0a0f1e;letter-spacing:-.04em;line-height:1;margin-bottom:8px}
 .LP-sub{font-size:16px;color:#64748b;margin-bottom:36px;line-height:1.55}
 .LP-label{display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:7px;letter-spacing:.02em}
 .LP-input{width:100%;padding:15px 18px;font-size:16px;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  border:2px solid #e2e8f0;border-radius:14px;outline:none;
-  color:#0f172a;background:#f8fafc;transition:all .18s;
-  margin-bottom:16px;-webkit-appearance:none;appearance:none}
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+border:2px solid #e2e8f0;border-radius:14px;outline:none;
+color:#0f172a;background:#f8fafc;transition:all .18s;
+margin-bottom:16px;-webkit-appearance:none;appearance:none}
 .LP-input:focus{border-color:#2563eb;background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.08)}
 .LP-btn{width:100%;padding:17px;font-size:16px;font-weight:800;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  border:none;border-radius:14px;cursor:pointer;
-  background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;
-  box-shadow:0 4px 20px rgba(37,99,235,.38);
-  transition:all .18s;display:flex;align-items:center;justify-content:center;gap:10px}
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+border:none;border-radius:14px;cursor:pointer;
+background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;
+box-shadow:0 4px 20px rgba(37,99,235,.38);
+transition:all .18s;display:flex;align-items:center;justify-content:center;gap:10px}
 .LP-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(37,99,235,.5)}
 .LP-hint{text-align:center;font-size:13px;color:#94a3b8;margin-top:14px;font-weight:500}
 .LP-hint b{color:#2563eb;font-weight:700}
 .LP-err{color:#dc2626;font-size:13px;text-align:center;margin-top:8px;min-height:18px;font-weight:600}
 
 /* ========== APP SHELL ========== */
-#APP{display:grid;grid-template-columns:258px 1fr;min-height:100vh}
+#APP{display:grid;grid-template-columns:258px 1fr;min-height:100vh;position:relative;z-index:1}
 
 /* ========== SIDEBAR ========== */
 .SB{background:linear-gradient(180deg,#0a0f1e 0%,#0d1b3e 100%);
-  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;
-  box-shadow:4px 0 30px rgba(0,0,0,.25)}
+display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;
+box-shadow:4px 0 30px rgba(0,0,0,.25)}
 .SB-top{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.07)}
 .SB-logo{display:flex;align-items:center;gap:11px}
 .SB-logo img{height:38px;width:auto;filter:drop-shadow(0 0 10px rgba(0,180,255,.4))}
 .SB-name{font-size:16px;font-weight:800;letter-spacing:-.02em;color:#fff;line-height:1}
 .SB-name b{color:#38bdf8}
 .SB-tag{font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  color:rgba(56,189,248,.5);margin-top:3px}
+color:rgba(56,189,248,.5);margin-top:3px}
 .SB-sec{padding:18px 18px 5px;font-size:9.5px;font-weight:700;letter-spacing:.12em;
-  text-transform:uppercase;color:rgba(255,255,255,.25)}
+text-transform:uppercase;color:rgba(255,255,255,.25)}
 .NB{display:flex;align-items:center;gap:10px;
-  width:calc(100% - 20px);margin:2px 10px;padding:11px 13px;
-  border:1px solid transparent;border-radius:12px;
-  background:transparent;color:rgba(255,255,255,.5);
-  text-align:left;cursor:pointer;font-family:inherit;
-  font-size:14px;font-weight:600;transition:all .15s}
+width:calc(100% - 20px);margin:2px 10px;padding:11px 13px;
+border:1px solid transparent;border-radius:12px;
+background:transparent;color:rgba(255,255,255,.5);
+text-align:left;cursor:pointer;font-family:inherit;
+font-size:14px;font-weight:600;transition:all .15s}
 .NB:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9)}
 .NB.on{background:linear-gradient(135deg,rgba(37,99,235,.3),rgba(56,189,248,.15));
-  color:#7dd3fc;border-color:rgba(56,189,248,.2);
-  box-shadow:inset 0 0 20px rgba(37,99,235,.1)}
+color:#7dd3fc;border-color:rgba(56,189,248,.2);
+box-shadow:inset 0 0 20px rgba(37,99,235,.1)}
 .NB-ic{font-size:14px;width:18px;text-align:center;flex-shrink:0;opacity:.8}
 .SB-foot{margin-top:auto;padding:12px 10px;border-top:1px solid rgba(255,255,255,.06)}
 
 /* ========== TOPBAR ========== */
 .main{min-width:0;display:flex;flex-direction:column}
-.TB{position:sticky;top:0;z-index:20;height:62px;
-  background:rgba(255,255,255,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(0,0,0,.06);
-  display:flex;align-items:center;padding:0 28px;gap:14px;
-  box-shadow:0 1px 20px rgba(37,99,235,.07)}
+.TB{position:sticky;top:0;z-index:20;height:62px;overflow:hidden;min-height:62px;max-height:62px;
+background:rgba(255,255,255,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+border-bottom:1px solid rgba(0,0,0,.06);
+display:flex;align-items:center;padding:0 28px;gap:14px;
+box-shadow:0 1px 20px rgba(37,99,235,.07)}
 .TB-logo{display:flex;align-items:center;gap:10px}
 .TB-logo img{height:30px;width:auto;filter:drop-shadow(0 0 8px rgba(0,140,255,.3))}
 .TB-name{font-size:17px;font-weight:900;letter-spacing:-.03em;color:#0a0f1e}
@@ -122,15 +122,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .TB-sub{font-size:12px;font-weight:600;color:#94a3b8;letter-spacing:.01em}
 .TB-R{margin-left:auto;display:flex;align-items:center;gap:8px}
 .LIVE{display:flex;align-items:center;gap:6px;background:#ecfdf5;
-  border:1.5px solid #86efac;border-radius:50px;
-  padding:6px 13px;font-size:11px;font-weight:700;
-  letter-spacing:.06em;text-transform:uppercase;color:#16a34a}
+border:1.5px solid #86efac;border-radius:50px;
+padding:6px 13px;font-size:11px;font-weight:700;
+letter-spacing:.06em;text-transform:uppercase;color:#16a34a}
 .LIVE-dot{width:6px;height:6px;border-radius:50%;background:#16a34a;
-  -webkit-animation:pulse 2s ease-in-out infinite;animation:pulse 2s ease-in-out infinite}
+-webkit-animation:pulse 2s ease-in-out infinite;animation:pulse 2s ease-in-out infinite}
 @-webkit-keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(22,163,74,.4)}50%{opacity:.7;box-shadow:0 0 0 5px rgba(22,163,74,0)}}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(22,163,74,.4)}50%{opacity:.7;box-shadow:0 0 0 5px rgba(22,163,74,0)}}
 .CHIP{font-size:12px;font-weight:600;color:#475569;background:#f1f5f9;
-  border:1.5px solid #e2e8f0;border-radius:50px;padding:6px 13px}
+border:1.5px solid #e2e8f0;border-radius:50px;padding:6px 13px}
 
 /* ========== PAGE ========== */
 .PG{padding:24px 28px;max-width:1560px;margin:0 auto;width:100%}
@@ -138,19 +138,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 /* ========== STAT CARDS ========== */
 .STATS{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
 .SC{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;
-  padding:22px 24px;position:relative;overflow:hidden;
-  box-shadow:0 1px 3px rgba(0,0,0,.05),0 8px 24px rgba(37,99,235,.04);
-  transition:transform .2s,box-shadow .2s;cursor:default}
+padding:22px 24px;position:relative;overflow:hidden;
+box-shadow:0 1px 3px rgba(0,0,0,.05),0 8px 24px rgba(37,99,235,.04);
+transition:transform .2s,box-shadow .2s;cursor:default}
 .SC:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(37,99,235,.12)}
 .SC-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0}
 .SC-glow{position:absolute;top:-30px;right:-30px;width:100px;height:100px;
-  border-radius:50%;filter:blur(30px);opacity:.12}
+border-radius:50%;filter:blur(30px);opacity:.12}
 .SC-lbl{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:#94a3b8;margin-bottom:10px}
+color:#94a3b8;margin-bottom:10px}
 .SC-val{font-family:Georgia,"Times New Roman",serif;font-size:50px;font-weight:400;
-  line-height:1;letter-spacing:-.03em;color:#0a0f1e}
+line-height:1;letter-spacing:-.03em;color:#0a0f1e}
 .SC-val.sm{font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:6px}
+font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:6px}
 
 /* ========== LAYOUT ========== */
 .SPLIT{display:grid;grid-template-columns:1fr 1.5fr;gap:18px}
@@ -160,69 +160,69 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 
 /* ========== CARDS ========== */
 .CD{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;overflow:hidden;
-  box-shadow:0 1px 3px rgba(0,0,0,.04),0 4px 16px rgba(37,99,235,.04);
-  transition:box-shadow .2s,transform .18s}
+box-shadow:0 1px 3px rgba(0,0,0,.04),0 4px 16px rgba(37,99,235,.04);
+transition:box-shadow .2s,transform .18s}
 .CD:hover{box-shadow:0 4px 24px rgba(37,99,235,.1);transform:translateY(-1px)}
 .CD-head{padding:15px 22px;border-bottom:1px solid #f1f5f9;
-  display:flex;align-items:center;gap:10px;
-  background:linear-gradient(180deg,#fafbff,#f5f7fd)}
+display:flex;align-items:center;gap:10px;
+background:linear-gradient(180deg,#fafbff,#f5f7fd)}
 .CD-pip{width:3px;height:16px;border-radius:2px;flex-shrink:0}
 .CD-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#374151}
 .CD-badge{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.07em;
-  text-transform:uppercase;color:#2563eb;background:linear-gradient(135deg,#eff6ff,#dbeafe);
-  border:1px solid #bfdbfe;border-radius:50px;padding:3px 12px}
-.CD-body{padding:22px}
+text-transform:uppercase;color:#2563eb;background:linear-gradient(135deg,#eff6ff,#dbeafe);
+border:1px solid #bfdbfe;border-radius:50px;padding:3px 12px}
+.CD-
 
 /* ========== FORMS ========== */
 .FLD{margin-bottom:14px}
 .FL{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;color:#475569;margin-bottom:7px}
+text-transform:uppercase;color:#475569;margin-bottom:7px}
 input,textarea,select{width:100%;padding:11px 14px;font-size:14.5px;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-weight:500;
-  border:1.5px solid #e2e8f0;border-radius:12px;outline:none;
-  background:#f8fafc;color:#0f172a;transition:all .15s;
-  -webkit-appearance:none;appearance:none}
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-weight:500;
+border:1.5px solid #e2e8f0;border-radius:12px;outline:none;
+background:#f8fafc;color:#0f172a;transition:all .15s;
+-webkit-appearance:none;appearance:none}
 input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:#94a3b8;font-weight:400}
 input:focus,textarea:focus,select:focus{border-color:#2563eb;
-  box-shadow:0 0 0 4px rgba(37,99,235,.08);background:#fff}
+box-shadow:0 0 0 4px rgba(37,99,235,.08);background:#fff}
 textarea{min-height:110px;resize:vertical;line-height:1.65}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 12px center;background-size:16px;
-  padding-right:36px;cursor:pointer}
+background-repeat:no-repeat;background-position:right 12px center;background-size:16px;
+padding-right:36px;cursor:pointer}
 select option{background:#fff;color:#0f172a}
 
 /* ========== BUTTONS ========== */
 .BT{border:none;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  font-weight:700;font-size:13.5px;
-  display:inline-flex;align-items:center;gap:7px;
-  padding:11px 20px;border-radius:50px;transition:all .15s}
+font-weight:700;font-size:13.5px;
+display:inline-flex;align-items:center;gap:7px;
+padding:11px 20px;border-radius:50px;transition:all .15s}
 .BT-blue{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;
-  box-shadow:0 2px 12px rgba(37,99,235,.3)}
+box-shadow:0 2px 12px rgba(37,99,235,.3)}
 .BT-blue:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(37,99,235,.45)}
 .BT-green{background:linear-gradient(135deg,#166534,#22c55e);color:#fff;
-  font-weight:800;font-size:14px;box-shadow:0 2px 12px rgba(34,197,94,.25)}
+font-weight:800;font-size:14px;box-shadow:0 2px 12px rgba(34,197,94,.25)}
 .BT-green:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(34,197,94,.38)}
 .BT-gold{background:linear-gradient(135deg,#92400e,#f59e0b);color:#fff;
-  font-weight:800;font-size:14px;box-shadow:0 2px 12px rgba(245,158,11,.25)}
+font-weight:800;font-size:14px;box-shadow:0 2px 12px rgba(245,158,11,.25)}
 .BT-gold:hover{transform:translateY(-1px)}
 .BT-out{background:#fff;color:#475569;border:1.5px solid #e2e8f0;font-weight:600}
 .BT-out:hover{background:#f8fafc;border-color:#cbd5e1;color:#334155}
 .BT-cyan{background:#ecfeff;color:#0891b2;border:1.5px solid #a5f3fc;font-size:13.5px;font-weight:700}
 .BT-cyan:hover{background:#cffafe;border-color:#67e8f9}
 .BT-cyan.rec{background:#fef2f2;color:#dc2626;border-color:#fca5a5;
-  -webkit-animation:recpulse 1.5s infinite;animation:recpulse 1.5s infinite}
+-webkit-animation:recpulse 1.5s infinite;animation:recpulse 1.5s infinite}
 @-webkit-keyframes recpulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.3)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
 @keyframes recpulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.3)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
 .BT-script{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;
-  border:none;font-size:13.5px;box-shadow:0 2px 12px rgba(124,58,237,.25)}
+border:none;font-size:13.5px;box-shadow:0 2px 12px rgba(124,58,237,.25)}
 .BT-script:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(124,58,237,.4)}
 .BT-script.open{background:linear-gradient(135deg,#5b21b6,#8b5cf6)}
 .TBAR{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 
 /* ========== SEARCH ========== */
 .SR-list{border:1.5px solid #e2e8f0;border-top:none;border-radius:0 0 14px 14px;
-  background:#fff;max-height:210px;overflow-y:auto;
-  box-shadow:0 8px 24px rgba(37,99,235,.1)}
+background:#fff;max-height:210px;overflow-y:auto;
+box-shadow:0 8px 24px rgba(37,99,235,.1)}
 .SR-item{padding:11px 15px;border-bottom:1px solid #f8fafc;cursor:pointer;transition:background .1s}
 .SR-item:last-child{border-bottom:none}
 .SR-item:hover,.SR-item.on{background:#eff6ff}
@@ -235,7 +235,7 @@ select option{background:#fff;color:#0f172a}
 .ST tr:last-child{border-bottom:none}
 .ST td{padding:9px 0;font-size:14px;vertical-align:top}
 .ST td:first-child{font-size:10.5px;font-weight:700;letter-spacing:.07em;
-  text-transform:uppercase;color:#64748b;width:110px;padding-right:10px;padding-top:11px}
+text-transform:uppercase;color:#64748b;width:110px;padding-right:10px;padding-top:11px}
 .ST td:last-child{color:#0f172a;font-weight:600}
 .SCORES{display:flex;gap:10px;margin-top:14px}
 .SC2{flex:1;padding:13px;border-radius:14px;border:1.5px solid;text-align:center;position:relative;overflow:hidden}
@@ -248,40 +248,40 @@ select option{background:#fff;color:#0f172a}
 /* ========== METRICS ========== */
 .MR{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
 .MC{background:linear-gradient(135deg,#f8fafc,#f1f5f9);border:1.5px solid #e2e8f0;
-  border-radius:14px;padding:12px 14px;text-align:center}
+border-radius:14px;padding:12px 14px;text-align:center}
 .ML{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:5px}
 .MV{font-size:14.5px;font-weight:800;color:#0f172a;letter-spacing:-.01em}
 
 /* ========== AI RESPONSE ========== */
 .AI{background:linear-gradient(145deg,#020817 0%,#0d1b3e 35%,#0f2055 70%,#0a1a3a 100%);
-  padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px}
+padding:30px 32px;position:relative;overflow:hidden;border-radius:0 0 20px 20px}
 .AI::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 70% 60% at 20% 30%,rgba(0,140,255,.2) 0%,transparent 60%),
-             radial-gradient(ellipse 50% 40% at 80% 70%,rgba(0,220,255,.12) 0%,transparent 55%);pointer-events:none}
+background:radial-gradient(ellipse 70% 60% at 20% 30%,rgba(0,140,255,.2) 0%,transparent 60%),
+radial-gradient(ellipse 50% 40% at 80% 70%,rgba(0,220,255,.12) 0%,transparent 55%);pointer-events:none}
 .AI::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,#00d4ff,#0080ff,#00d4ff,transparent);pointer-events:none}
+background:linear-gradient(90deg,transparent,#00d4ff,#0080ff,#00d4ff,transparent);pointer-events:none}
 .AI-dots{position:absolute;inset:0;
-  background-image:radial-gradient(circle,rgba(255,255,255,.08) 1px,transparent 1px);
-  background-size:28px 28px;pointer-events:none}
+background-image:radial-gradient(circle,rgba(255,255,255,.08) 1px,transparent 1px);
+background-size:28px 28px;pointer-events:none}
 .AI-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;position:relative;z-index:1}
 .AI-pill{display:flex;align-items:center;gap:7px;
-  background:rgba(255,255,255,.1);border:1px solid rgba(0,210,255,.3);
-  border-radius:50px;padding:7px 16px;
-  font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;
-  box-shadow:0 0 20px rgba(0,180,255,.15)}
+background:rgba(255,255,255,.1);border:1px solid rgba(0,210,255,.3);
+border-radius:50px;padding:7px 16px;
+font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;
+box-shadow:0 0 20px rgba(0,180,255,.15)}
 .AI-dot{width:7px;height:7px;border-radius:50%;background:#00d4ff;
-  box-shadow:0 0 10px #00d4ff;-webkit-animation:pulse 2s ease-in-out infinite;animation:pulse 2s ease-in-out infinite}
+box-shadow:0 0 10px #00d4ff;-webkit-animation:pulse 2s ease-in-out infinite;animation:pulse 2s ease-in-out infinite}
 .AI-tag{font-size:10px;font-weight:600;letter-spacing:.08em;color:rgba(0,210,255,.6);
-  background:rgba(0,180,255,.08);border:1px solid rgba(0,180,255,.2);border-radius:6px;padding:4px 11px}
+background:rgba(0,180,255,.08);border:1px solid rgba(0,180,255,.2);border-radius:6px;padding:4px 11px}
 .AI-txt{position:relative;z-index:1;font-family:Georgia,"Times New Roman",serif;
-  font-size:26px;font-weight:400;font-style:italic;line-height:1.55;
-  color:#fff;letter-spacing:-.01em;min-height:80px;
-  text-shadow:0 2px 24px rgba(0,100,200,.4)}
+font-size:26px;font-weight:400;font-style:italic;line-height:1.55;
+color:#fff;letter-spacing:-.01em;min-height:80px;
+text-shadow:0 2px 24px rgba(0,100,200,.4)}
 .AI-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px;padding-top:18px;
-  border-top:1px solid rgba(255,255,255,.1);position:relative;z-index:1}
+border-top:1px solid rgba(255,255,255,.1);position:relative;z-index:1}
 .AI-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
-  border-radius:50px;padding:7px 15px;font-size:11.5px;font-weight:600;
-  color:rgba(255,255,255,.9);display:flex;align-items:center;gap:6px;white-space:nowrap}
+border-radius:50px;padding:7px 15px;font-size:11.5px;font-weight:600;
+color:rgba(255,255,255,.9);display:flex;align-items:center;gap:6px;white-space:nowrap}
 .AI-chip b{color:#00d4ff;font-weight:800}
 
 /* ========== INFO ========== */
@@ -289,31 +289,31 @@ select option{background:#fff;color:#0f172a}
 
 /* ========== TRANSLATION ========== */
 .TR-panel{background:linear-gradient(135deg,#ecfeff,#eff6ff);border:2px solid #a5f3fc;
-  border-radius:18px;padding:16px 20px;margin-top:14px}
+border-radius:18px;padding:16px 20px;margin-top:14px}
 .TR-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .TR-title{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0891b2}
 .TR-es-btn{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#fef3c7;color:#b45309;border:1.5px solid #fcd34d;
-  border-radius:50px;padding:5px 12px;cursor:pointer;transition:background .15s}
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+background:#fef3c7;color:#b45309;border:1.5px solid #fcd34d;
+border-radius:50px;padding:5px 12px;cursor:pointer;transition:background .15s}
 .TR-es-btn:hover{background:#fde68a}
 .TR-block{background:#fff;border:1.5px solid #cffafe;border-radius:13px;padding:13px 15px;margin-bottom:9px}
 .TR-block.reply{background:linear-gradient(135deg,#eff6ff,#f0fdf4);border-color:#bfdbfe}
 .TR-block:last-of-type{margin-bottom:0}
 .TR-blbl{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;
-  letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:7px}
+letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:7px}
 .LB{display:inline-block;padding:2px 8px;border-radius:50px;font-size:10px;font-weight:800}
 .LB-es{background:#fee2e2;color:#dc2626}
 .LB-en{background:#dbeafe;color:#1d4ed8}
 .TR-txt{font-size:15px;font-weight:600;color:#0f172a;line-height:1.6;margin-bottom:9px;min-height:20px}
 .TR-txt.blue{color:#1d4ed8}
 .SPK{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f0f9ff;color:#0891b2;border:1.5px solid #bae6fd;
-  border-radius:50px;padding:7px 13px;cursor:pointer;transition:all .15s;margin-right:6px;margin-top:2px}
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+background:#f0f9ff;color:#0891b2;border:1.5px solid #bae6fd;
+border-radius:50px;padding:7px 13px;cursor:pointer;transition:all .15s;margin-right:6px;margin-top:2px}
 .SPK:hover{background:#e0f2fe;transform:translateY(-1px)}
 .SPK-pri{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;
-  border-color:transparent;box-shadow:0 2px 10px rgba(37,99,235,.28);font-size:12.5px;padding:9px 16px}
+border-color:transparent;box-shadow:0 2px 10px rgba(37,99,235,.28);font-size:12.5px;padding:9px 16px}
 .SPK-pri:hover{box-shadow:0 4px 16px rgba(37,99,235,.42);transform:translateY(-1px)}
 .TR-status{font-size:12px;font-weight:600;color:#64748b;text-align:center;margin-top:7px;min-height:16px}
 
@@ -325,7 +325,7 @@ select option{background:#fff;color:#0f172a}
 .HE-date{font-size:11px;color:#94a3b8;margin-top:3px;font-weight:500}
 .HE-obj{font-size:13px;color:#64748b;margin-top:4px;font-style:italic}
 .TAG{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  padding:4px 11px;border-radius:50px;border:1.5px solid;white-space:nowrap;flex-shrink:0}
+padding:4px 11px;border-radius:50px;border:1.5px solid;white-space:nowrap;flex-shrink:0}
 .T-ok{background:#ecfdf5;color:#16a34a;border-color:#86efac}
 .T-no{background:#fef2f2;color:#dc2626;border-color:#fca5a5}
 .T-pd{background:#f8fafc;color:#64748b;border-color:#e2e8f0}
@@ -337,7 +337,7 @@ select option{background:#fff;color:#0f172a}
 .OBJ-lbl{font-size:13.5px;font-weight:600;color:#374151;width:140px;flex-shrink:0}
 .OBJ-trk{flex:1;height:8px;background:#e2e8f0;border-radius:50px;overflow:hidden}
 .OBJ-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,#1e40af,#38bdf8);
-  box-shadow:0 2px 6px rgba(37,99,235,.25);transition:width .7s cubic-bezier(.4,0,.2,1)}
+box-shadow:0 2px 6px rgba(37,99,235,.25);transition:width .7s cubic-bezier(.4,0,.2,1)}
 .OBJ-cnt{font-size:13px;font-weight:700;color:#374151;width:20px;text-align:right}
 
 /* ========== WEB LOOKUP ========== */
@@ -345,12 +345,12 @@ select option{background:#fff;color:#0f172a}
 .DIV-OR::before,.DIV-OR::after{content:'';flex:1;height:1px;background:#e2e8f0}
 .DIV-OR span{font-size:10.5px;font-weight:700;color:#94a3b8;letter-spacing:.06em}
 .LKUP-STATUS{display:flex;align-items:center;gap:10px;padding:11px 15px;
-  border-radius:12px;margin-bottom:10px}
+border-radius:12px;margin-bottom:10px}
 .LKUP-STATUS.load{background:#eff6ff;border:1.5px solid #bfdbfe}
 .LKUP-STATUS.ok{background:#ecfdf5;border:1.5px solid #86efac}
 .LKUP-STATUS.err{background:#fef2f2;border:1.5px solid #fca5a5}
 .SPIN{width:14px;height:14px;border-radius:50%;border:2px solid #bfdbfe;
-  border-top-color:#2563eb;-webkit-animation:spin .7s linear infinite;animation:spin .7s linear infinite;flex-shrink:0}
+border-top-color:#2563eb;-webkit-animation:spin .7s linear infinite;animation:spin .7s linear infinite;flex-shrink:0}
 @-webkit-keyframes spin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .LKUP-MSG{font-size:13px;font-weight:600}
@@ -358,13 +358,13 @@ select option{background:#fff;color:#0f172a}
 .LKUP-STATUS.ok .LKUP-MSG{color:#16a34a}
 .LKUP-STATUS.err .LKUP-MSG{color:#dc2626}
 .WEB-TAG{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;color:#16a34a;background:#ecfdf5;
-  border:1.5px solid #86efac;border-radius:50px;padding:3px 11px;margin-bottom:11px}
+text-transform:uppercase;color:#16a34a;background:#ecfdf5;
+border:1.5px solid #86efac;border-radius:50px;padding:3px 11px;margin-bottom:11px}
 .SLB{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#fff;color:#374151;border:1.5px solid #e2e8f0;
-  border-radius:50px;padding:7px 15px;cursor:pointer;text-decoration:none;
-  transition:all .15s;margin-right:6px;margin-bottom:6px}
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+background:#fff;color:#374151;border:1.5px solid #e2e8f0;
+border-radius:50px;padding:7px 15px;cursor:pointer;text-decoration:none;
+transition:all .15s;margin-right:6px;margin-bottom:6px}
 .SLB:hover{background:#f8fafc;border-color:#cbd5e1;transform:translateY(-1px)}
 .MAN-FORM{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:16px;padding:16px}
 .G2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -375,18 +375,18 @@ select option{background:#fff;color:#0f172a}
 .FUNNEL-LBL{font-size:13px;font-weight:600;color:#374151;width:130px;flex-shrink:0}
 .FUNNEL-BAR-WRAP{flex:1;background:#f1f5f9;border-radius:50px;height:26px;overflow:hidden;position:relative}
 .FUNNEL-BAR{height:100%;border-radius:50px;display:flex;align-items:center;justify-content:flex-end;
-  padding-right:10px;font-size:11px;font-weight:700;color:#fff;min-width:30px;
-  transition:width .7s cubic-bezier(.4,0,.2,1)}
+padding-right:10px;font-size:11px;font-weight:700;color:#fff;min-width:30px;
+transition:width .7s cubic-bezier(.4,0,.2,1)}
 .FUNNEL-N{font-size:14px;font-weight:700;color:#0f172a;width:30px;text-align:right}
 .LOG-HDR{background:#f8fafc}
 .LOG-HDR th{padding:10px 16px;text-align:left;border-bottom:1.5px solid #e2e8f0;
-  font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#64748b}
+font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#64748b}
 .LOG-ROW td{padding:11px 16px;font-size:13.5px;font-weight:500;color:#0f172a;
-  border-bottom:1px solid #f1f5f9;vertical-align:middle}
+border-bottom:1px solid #f1f5f9;vertical-align:middle}
 .LOG-ROW:last-child td{border-bottom:none}
 .LOG-ROW:hover td{background:#f8fafc}
 .INSIGHT-CARD{background:linear-gradient(135deg,#eff6ff,#f0fdf4);
-  border:1.5px solid #bfdbfe;border-radius:16px;padding:15px 18px;margin-bottom:11px}
+border:1.5px solid #bfdbfe;border-radius:16px;padding:15px 18px;margin-bottom:11px}
 .INSIGHT-CARD:last-child{margin-bottom:0}
 .INSIGHT-CARD.warn{background:linear-gradient(135deg,#fffbeb,#fef2f2);border-color:#fcd34d}
 .INSIGHT-CARD.great{background:linear-gradient(135deg,#ecfdf5,#eff6ff);border-color:#86efac}
@@ -398,30 +398,30 @@ select option{background:#fff;color:#0f172a}
 
 /* ========== SCRIPT PANEL ========== */
 .BT-script{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;
-  border:none;font-size:13.5px;box-shadow:0 2px 12px rgba(124,58,237,.25)}
+border:none;font-size:13.5px;box-shadow:0 2px 12px rgba(124,58,237,.25)}
 .BT-script:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(124,58,237,.4)}
 .BT-script.open{background:linear-gradient(135deg,#5b21b6,#8b5cf6)}
 .script-panel{margin-top:16px;background:#fff;border:2px solid #ddd6fe;
-  border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(124,58,237,.1);
-  -webkit-animation:fadeUp .2s ease both;animation:fadeUp .2s ease both}
+border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(124,58,237,.1);
+-webkit-animation:fadeUp .2s ease both;animation:fadeUp .2s ease both}
 .script-panel-head{background:linear-gradient(135deg,#3730a3,#6d28d9);
-  padding:13px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+padding:13px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .script-panel-title{font-size:14px;font-weight:800;color:#fff;letter-spacing:.02em}
 .script-panel-sub{font-size:11.5px;color:rgba(255,255,255,.65);flex:1}
 .script-close-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
-  border-radius:50px;color:#fff;font-size:12px;font-weight:700;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  padding:5px 13px;cursor:pointer;margin-left:auto;transition:background .15s}
+border-radius:50px;color:#fff;font-size:12px;font-weight:700;
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+padding:5px 13px;cursor:pointer;margin-left:auto;transition:background .15s}
 .script-close-btn:hover{background:rgba(255,255,255,.22)}
 .script-textarea{width:100%;min-height:220px;max-height:400px;resize:vertical;
-  border:none;border-radius:0;background:#fafbff;font-size:15px;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  line-height:1.7;color:#1e1b4b;padding:20px;outline:none;box-shadow:none}
+border:none;border-radius:0;background:#fafbff;font-size:15px;
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+line-height:1.7;color:#1e1b4b;padding:20px;outline:none;box-shadow:none}
 .script-textarea:focus{border-color:transparent;box-shadow:none;background:#fff}
 .script-footer{display:flex;align-items:center;gap:12px;padding:11px 16px;
-  border-top:1.5px solid #f1f5f9;background:#fafbff}
+border-top:1.5px solid #f1f5f9;background:#fafbff}
 .script-saved{font-size:12px;font-weight:600;color:#16a34a;margin-left:auto;
-  opacity:0;transition:opacity .3s}
+opacity:0;transition:opacity .3s}
 .script-saved.show{opacity:1}
 
 /* ========== UTILS ========== */
@@ -437,20 +437,20 @@ select option{background:#fff;color:#0f172a}
 ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
 
 @media(max-width:900px){
-  #LP{grid-template-columns:1fr}
-  .LP-L{display:none}
-  .LP-R{padding:44px 28px}
-  #APP{grid-template-columns:1fr}
-  .SB{display:none}
-  .STATS{grid-template-columns:1fr 1fr}
-  .MR{grid-template-columns:1fr 1fr}
-  .SPLIT,.HALVES,.THIRDS{grid-template-columns:1fr}
-  .PG{padding:14px}
-  .TB{padding:0 14px;height:56px}
-  .TB-sep,.TB-sub{display:none}
-  #USER-CHIP{display:none!important}
-  .TB-name{font-size:15px}
-  #VIEW-TOGGLE button{padding:6px 11px!important;font-size:11px!important}
+#LP{grid-template-columns:1fr}
+.LP-L{display:none}
+.LP-R{padding:36px 24px}
+#APP{grid-template-columns:1fr}
+.SB{display:none}
+.STATS{grid-template-columns:1fr 1fr}
+.MR{grid-template-columns:1fr 1fr}
+.SPLIT,.HALVES,.THIRDS{grid-template-columns:1fr}
+.PG{padding:14px}
+.TB{padding:0 14px;height:56px}
+.TB-sep,.TB-sub{display:none}
+#USER-CHIP{display:none!important}
+.TB-name{font-size:15px}
+#VIEW-TOGGLE button{padding:6px 11px!important;font-size:11px!important}
 }
 @media(max-width:400px){.LIVE{display:none!important}}
 </style>
@@ -461,263 +461,258 @@ select option{background:#fff;color:#0f172a}
 <!-- LOGIN -->
 
 <div id="LP">
-  <div class="LP-L">
-    <div class="LP-ring"></div>
-    <div class="LP-logo">
-      <img src="data:image/png;base64,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" alt="PayPilot AI" style="height:86px;width:auto;filter:drop-shadow(0 0 24px rgba(0,180,255,.5))">
-    </div>
-    <div class="LP-h">Close more.<span>Faster.</span></div>
-    <div class="LP-tag">Real-time AI coaching for payment enrollment reps &#8212; live on every call.</div>
-    <div class="LP-feats">
-      <div class="LP-feat"><div class="LP-feat-ico">&#9889;</div><div><div class="LP-feat-txt">Live AI objection responses</div><div class="LP-feat-sub">Instant rebuttals powered by Claude AI</div></div></div>
-      <div class="LP-feat"><div class="LP-feat-ico">&#127760;</div><div><div class="LP-feat-txt">Web-powered supplier lookup</div><div class="LP-feat-sub">Find any company contact online</div></div></div>
-      <div class="LP-feat"><div class="LP-feat-ico">&#127908;</div><div><div class="LP-feat-txt">Real-time mic transcription</div><div class="LP-feat-sub">Speak naturally, AI responds instantly</div></div></div>
-      <div class="LP-feat"><div class="LP-feat-ico">&#128202;</div><div><div class="LP-feat-txt">Conversion analytics</div><div class="LP-feat-sub">Track performance and win rates</div></div></div>
-    </div>
-  </div>
-  <div class="LP-R">
-    <div class="LP-eyebrow">Secure Login</div>
-    <div class="LP-title">Welcome back.</div>
-    <div class="LP-sub">Sign in to your PayPilot workspace and start closing.</div>
-    <label class="LP-label" for="PW">Password</label>
-    <input class="LP-input" id="PW" type="password" placeholder="Enter your password">
-    <button class="LP-btn" id="LP-BTN">Access Workspace &#8594;</button>
-    <div class="LP-err" id="LP-ERR"></div>
-    <div class="LP-hint">Demo password: <b>demo123</b></div>
-  </div>
+<div class="LP-L">
+<div class="LP-ring"></div>
+<div class="LP-logo"><img src="data:image/jpeg;base64,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" style="width:180px;height:auto;border-radius:12px;display:block"></div>
+<div class="LP-h">Close more.<span>Faster.</span></div>
+<div class="LP-tag">Real-time AI coaching for payment enrollment reps &#8212; live on every call.</div>
+<div class="LP-feats">
+<div class="LP-feat"><div class="LP-feat-ico">&#128640;</div><div><div class="LP-feat-txt">Live AI objection responses</div><div class="LP-feat-sub">Instant rebuttals powered by Claude AI</div></div></div>
+<div class="LP-feat"><div class="LP-feat-ico">&#127760;</div><div><div class="LP-feat-txt">Web-powered supplier lookup</div><div class="LP-feat-sub">Find any company contact online</div></div></div>
+<div class="LP-feat"><div class="LP-feat-ico">&#127908;</div><div><div class="LP-feat-txt">Real-time mic transcription</div><div class="LP-feat-sub">Speak naturally, AI responds instantly</div></div></div>
+<div class="LP-feat"><div class="LP-feat-ico">&#128202;</div><div><div class="LP-feat-txt">Conversion analytics</div><div class="LP-feat-sub">Track performance and win rates</div></div></div>
+</div>
+</div>
+<div class="LP-R">
+<div class="LP-eyebrow">Secure Login</div>
+<div class="LP-title">Welcome back.</div>
+<div class="LP-sub">Sign in to your PayPilot workspace and start closing.</div>
+<label class="LP-label" for="PW">Password</label>
+<input class="LP-input" id="PW" type="password" placeholder="Enter your password">
+<button class="LP-btn" id="LP-BTN">Access Workspace &#8594;</button>
+<div class="LP-err" id="LP-ERR"></div>
+<div class="LP-hint">Demo password: <b>demo123</b></div>
+</div>
 </div>
 
 <!-- APP -->
 
 <div id="APP" class="h">
-  <aside class="SB">
-    <div class="SB-top">
-      <div class="SB-logo">
-        <div class="SB-ico">&#9889;</div>
-        <div><div class="SB-name">Pay<b>Pilot</b></div><div class="SB-tag">AI Platform</div></div>
-      </div>
-    </div>
-    <div class="SB-sec">Workspace</div>
-    <button class="NB on" id="btnRep">&#9632; Rep View</button>
-    <button class="NB" id="btnMgr">&#9647; Manager View</button>
-    <div class="SB-sec">Tools</div>
-    <button class="NB" id="btnTrans">&#8644; Translation</button>
-    <button class="NB" id="btnMicStart">&#9678; Start Mic</button>
-    <button class="NB" id="btnMicStop">&#9635; Stop Mic</button>
-    <div class="SB-foot"><button class="NB" id="btnLogout">&#8592; Logout</button></div>
-  </aside>
-  <main class="main">
-    <div class="TB">
-      <div class="TB-logo">
-        <img src="data:image/png;base64,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" alt="PayPilot AI" style="height:28px;width:auto;filter:drop-shadow(0 0 6px rgba(0,140,255,.3))">
-        <div class="TB-name">Pay<b>Pilot</b></div>
-      </div>
-      <div class="TB-sep"></div>
-      <div class="TB-sub">Enrollment Intelligence Platform</div>
-      <div class="TB-R">
-        <div class="LIVE h" id="LIVE-BADGE"><div class="LIVE-dot"></div>Live</div>
-        <div id="VIEW-TOGGLE" class="h" style="display:none;gap:5px">
-          <button id="tbRep" style="padding:7px 15px;font-size:12px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;border:2px solid #2563eb;border-radius:50px;background:#2563eb;color:#fff;cursor:pointer">Rep View</button>
-          <button id="tbMgr" style="padding:7px 15px;font-size:12px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;border:2px solid #e5e7eb;border-radius:50px;background:#fff;color:#374151;cursor:pointer">Manager View</button>
-        </div>
-        <div class="CHIP h" id="USER-CHIP">PayPilot Rep</div>
-      </div>
-    </div>
-    <div class="PG">
+<aside class="SB">
+<div class="SB-top">
+<div class="SB-logo">
+<img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAoADgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD568Kajp5Men61Y/aoGbEbIuXUnsOQcZ9D+dejxaF8NWtt1xb+IIp+6JDPgfmh/nXiY45HWvRfCPxF1W0tHsL7XZ7W3xhXNok/HoScN+PNaRfRkSXVD9UtvAVtIREmpAf9NfMU/qoqXTP+FZsw/tA6mo7+Wz//ABNYetyXGr29xfzXJuYS/lwuYhGZG4zhR7kVreHPDem+HQl948ghEUwHk2UkjiXOfvMqkYHsf0renSlUdopW79DkxGJhh43ldvolu/RHf6X8OPhp480y5g8D6/eWmvQxmRbe8JKvj1DKDjpypOM8ivBdR0660+8ura7heOa2laCUEfccEgjPTsa9J0vWYbn4ppqvh+0gsdI04NDCtvGEVk2svOOpYsTzzj6VY1TxFot/b+IZb1BLBc3jSNgHmbyZ1jb65KkHpUxpczauEsVKFONTkd3bTqr/AKnkZoqa9NubuY2YlFtvPliUgvtzxuxxn6UVgztTurkNLjJwOTSVd0iZLe/jnkYL5XzKSMgN2OPY8/hTik3Zik2ldHZx6wnhCwtkSKOfX4o9qFxuj0/dycDoZTkkn+Hp2rnDrkVxcvc6lDLeXMhy8srhiT+IrP1K7juNscCvtVizSSHLSMe5qlitZ1m/djpFHPSw0YN1Jaze7/TyXl+upv3viSR7Y29jD9mQjG7PIHtgAD+dYI6UUVk23udCSWwhooNFIo9F1vTfCtzrq2Gnxx2aQXr+c8MsrKtooyS5k/5acYG3jn6VC2meGG1q5WWKSPTLiEX9s9tcGUxCMEzW2TjdnDKHIyCFPQmiinZE3IbX/hFv+EaFzfWMUNxcteFQk0zSx4A8lYxnZgMcEvyRnvUF9o1hNYagNLtJZLuOLTnjCOWxvgLTnHoXx9OlFFCVwbsWRYaINH2HTf3A07z/AO1zctu+1bN3l7M7Nu/93txu/izVDxMumXR0ODRNIgs57q3SSXy55X3SMzLt+diAOB78nmiimlqiJyai32Ok1Lwv4cW7tDp88VxaxwXEFyY7gtm4jhZ1k7bQxB+Xp8vvRRRXXOMex4uGqVHo5t2/zZ//2Q==" style="width:38px;height:auto;border-radius:6px;flex-shrink:0">
+<div><div class="SB-name">Pay<b>Pilot</b></div><div class="SB-tag">AI Platform</div></div>
+</div>
+</div>
+<div class="SB-sec">Workspace</div>
+<button class="NB on" id="btnRep">&#9632; Rep View</button>
+<button class="NB" id="btnMgr">&#9647; Manager View</button>
+<div class="SB-sec">Tools</div>
+<button class="NB" id="btnTrans">&#8644; Translation</button>
+<button class="NB" id="btnMicStart">&#9678; Start Mic</button>
+<button class="NB" id="btnMicStop">&#9635; Stop Mic</button>
+<div class="SB-foot"><button class="NB" id="btnLogout">&#8592; Logout</button></div>
+</aside>
+<main class="main">
+<div class="TB">
+<div class="TB-logo"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAoADgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD568Kajp5Men61Y/aoGbEbIuXUnsOQcZ9D+dejxaF8NWtt1xb+IIp+6JDPgfmh/nXiY45HWvRfCPxF1W0tHsL7XZ7W3xhXNok/HoScN+PNaRfRkSXVD9UtvAVtIREmpAf9NfMU/qoqXTP+FZsw/tA6mo7+Wz//ABNYetyXGr29xfzXJuYS/lwuYhGZG4zhR7kVreHPDem+HQl948ghEUwHk2UkjiXOfvMqkYHsf0renSlUdopW79DkxGJhh43ldvolu/RHf6X8OPhp480y5g8D6/eWmvQxmRbe8JKvj1DKDjpypOM8ivBdR0660+8ura7heOa2laCUEfccEgjPTsa9J0vWYbn4ppqvh+0gsdI04NDCtvGEVk2svOOpYsTzzj6VY1TxFot/b+IZb1BLBc3jSNgHmbyZ1jb65KkHpUxpczauEsVKFONTkd3bTqr/AKnkZoqa9NubuY2YlFtvPliUgvtzxuxxn6UVgztTurkNLjJwOTSVd0iZLe/jnkYL5XzKSMgN2OPY8/hTik3Zik2ldHZx6wnhCwtkSKOfX4o9qFxuj0/dycDoZTkkn+Hp2rnDrkVxcvc6lDLeXMhy8srhiT+IrP1K7juNscCvtVizSSHLSMe5qlitZ1m/djpFHPSw0YN1Jaze7/TyXl+upv3viSR7Y29jD9mQjG7PIHtgAD+dYI6UUVk23udCSWwhooNFIo9F1vTfCtzrq2Gnxx2aQXr+c8MsrKtooyS5k/5acYG3jn6VC2meGG1q5WWKSPTLiEX9s9tcGUxCMEzW2TjdnDKHIyCFPQmiinZE3IbX/hFv+EaFzfWMUNxcteFQk0zSx4A8lYxnZgMcEvyRnvUF9o1hNYagNLtJZLuOLTnjCOWxvgLTnHoXx9OlFFCVwbsWRYaINH2HTf3A07z/AO1zctu+1bN3l7M7Nu/93txu/izVDxMumXR0ODRNIgs57q3SSXy55X3SMzLt+diAOB78nmiimlqiJyai32Ok1Lwv4cW7tDp88VxaxwXEFyY7gtm4jhZ1k7bQxB+Xp8vvRRRXXOMex4uGqVHo5t2/zZ//2Q==" style="height:34px;width:auto;border-radius:4px;display:block"><div class="TB-name">Pay<b>Pilot</b></div></div>
+<div class="TB-sep"></div>
+<div class="TB-sub">Enrollment Intelligence Platform</div>
+<div class="TB-R">
+<div class="LIVE h" id="LIVE-BADGE"><div class="LIVE-dot"></div>Live</div>
+<div id="VIEW-TOGGLE" class="h" style="display:none;gap:5px">
+<button id="tbRep" style="padding:7px 15px;font-size:12px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;border:2px solid #2563eb;border-radius:50px;background:#2563eb;color:#fff;cursor:pointer">Rep View</button>
+<button id="tbMgr" style="padding:7px 15px;font-size:12px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;border:2px solid #e5e7eb;border-radius:50px;background:#fff;color:#374151;cursor:pointer">Manager View</button>
+</div>
+<div class="CHIP h" id="USER-CHIP">PayPilot Rep</div>
+</div>
+</div>
+<div class="PG">
 
 ```
-  <!-- REP VIEW -->
-  <div id="RV">
-    <div class="STATS A1">
-      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#1d4ed8,#60a5fa)"></div><div class="SC-lbl">Calls Logged</div><div class="SC-val" id="sLOG">0</div></div>
-      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#047857,#34d399)"></div><div class="SC-lbl">Converted</div><div class="SC-val" id="sCONV">0</div></div>
-      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#b45309,#fbbf24)"></div><div class="SC-lbl">Conversion Rate</div><div class="SC-val" id="sRATE">0%</div></div>
-      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#0e7490,#22d3ee)"></div><div class="SC-lbl">Top Objection</div><div class="SC-val sm" id="sTOP">None</div></div>
-    </div>
+<!-- REP VIEW -->
+<div id="RV">
+<div class="STATS A1">
+<div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#1d4ed8,#60a5fa)"></div><div class="SC-lbl">Calls Logged</div><div class="SC-val" id="sLOG">0</div></div>
+<div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#047857,#34d399)"></div><div class="SC-lbl">Converted</div><div class="SC-val" id="sCONV">0</div></div>
+<div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#b45309,#fbbf24)"></div><div class="SC-lbl">Conversion Rate</div><div class="SC-val" id="sRATE">0%</div></div>
+<div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#0e7490,#22d3ee)"></div><div class="SC-lbl">Top Objection</div><div class="SC-val sm" id="sTOP">None</div></div>
+</div>
 
-    <div class="SPLIT A2">
-      <div class="STACK">
-        <div class="CD">
-          <div class="CD-head"><div class="CD-pip" style="background:#2563eb"></div><span class="CD-title">Supplier Search</span><span class="CD-badge">AI Lookup</span></div>
-          <div class="CD-body">
-            <div class="FLD"><label class="FL">Local Database</label><input id="SS" placeholder="Search company, contact, email, phone..."><div id="SR" class="SR-list h"></div></div>
-            <div class="DIV-OR"><span>OR FIND ONLINE</span></div>
-            <div class="FLD" style="margin-bottom:10px"><label class="FL">Web Contact Lookup</label>
-              <div style="display:flex;gap:8px"><input id="WLI" placeholder="e.g. Acme Electrical Charlotte NC" style="flex:1"><button class="BT BT-blue" id="btnFind" style="white-space:nowrap;padding:11px 17px">&#128269; Find</button></div>
-            </div>
-            <div id="WLS" class="LKUP-STATUS load h" style="margin-bottom:11px"><div class="SPIN" id="WL-SPIN"></div><span class="LKUP-MSG" id="WL-MSG">Searching...</span></div>
-            <div id="SI"></div>
-          </div>
-        </div>
+<div class="SPLIT A2">
+<div class="STACK">
+<div class="CD">
+<div class="CD-head"><div class="CD-pip" style="background:#2563eb"></div><span class="CD-title">Supplier Search</span><span class="CD-badge">AI Lookup</span></div>
+<div class="CD-body">
+<div class="FLD"><label class="FL">Local Database</label><input id="SS" placeholder="Search company, contact, email, phone..."><div id="SR" class="SR-list h"></div></div>
+<div class="DIV-OR"><span>OR FIND ONLINE</span></div>
+<div class="FLD" style="margin-bottom:10px"><label class="FL">Web Contact Lookup</label>
+<div style="display:flex;gap:8px"><input id="WLI" placeholder="e.g. Acme Electrical Charlotte NC" style="flex:1"><button class="BT BT-blue" id="btnFind" style="white-space:nowrap;padding:11px 17px">&#128269; Find</button></div>
+</div>
+<div id="WLS" class="LKUP-STATUS load h" style="margin-bottom:11px"><div class="SPIN" id="WL-SPIN"></div><span class="LKUP-MSG" id="WL-MSG">Searching...</span></div>
+<div id="SI"></div>
+</div>
+</div>
 
-        <div class="CD">
-          <div class="CD-head"><div class="CD-pip" style="background:#0891b2"></div><span class="CD-title">Live Call Workspace</span></div>
-          <div class="CD-body">
-            <div class="MR">
-              <div class="MC"><div class="ML">Language</div><div class="MV" id="mLANG">EN</div></div>
-              <div class="MC"><div class="ML">Lead Heat</div><div class="MV" id="mHEAT">&#8212;</div></div>
-              <div class="MC"><div class="ML">Strategy</div><div class="MV" id="mSTRAT" style="font-size:11.5px;line-height:1.3">&#8212;</div></div>
-              <div class="MC"><div class="ML">Mic</div><div class="MV" id="mMIC">Idle</div></div>
-            </div>
-            <div class="FLD"><label class="FL">Supplier Objection / What They Said</label><textarea id="OBJ" placeholder="Type what the supplier says, or start the mic..."></textarea></div>
-            <div class="TBAR">
-              <button class="BT BT-blue" id="btnGen">&#9889; Generate Response</button>
-              <button class="BT BT-cyan" id="btnMic">&#127908; Start Mic</button>
-              <button class="BT BT-out" id="btnStop">&#9632; Stop</button>
-              <button class="BT BT-out" id="btnTransToggle">&#8644; Translate</button>
-              <button class="BT BT-script" id="btnScript">&#128196; Script</button>
-            </div>
+<div class="CD">
+<div class="CD-head"><div class="CD-pip" style="background:#0891b2"></div><span class="CD-title">Live Call Workspace</span></div>
+<div class="CD-body">
+<div class="MR">
+<div class="MC"><div class="ML">Language</div><div class="MV" id="mLANG">EN</div></div>
+<div class="MC"><div class="ML">Lead Heat</div><div class="MV" id="mHEAT">&#8212;</div></div>
+<div class="MC"><div class="ML">Strategy</div><div class="MV" id="mSTRAT" style="font-size:11.5px;line-height:1.3">&#8212;</div></div>
+<div class="MC"><div class="ML">Mic</div><div class="MV" id="mMIC">Idle</div></div>
+</div>
+<div class="FLD"><label class="FL">Supplier Objection / What They Said</label><textarea id="OBJ" placeholder="Type what the supplier says, or start the mic..."></textarea></div>
+<div class="TBAR">
+<button class="BT BT-blue" id="btnGen">&#9889; Generate Response</button>
+<button class="BT BT-cyan" id="btnMic">&#127908; Start Mic</button>
+<button class="BT BT-out" id="btnStop">&#9632; Stop</button>
+<button class="BT BT-out" id="btnTransToggle">&#8644; Translate</button>
+<button class="BT BT-script" id="btnScript">&#128196; Script</button>
+</div>
 
-            <!-- SCRIPT PANEL - hidden until button pressed -->
-            <div id="SCRIPT-BOX" class="script-panel h">
-              <div class="script-panel-head">
-                <span class="script-panel-title">&#128196; Call Script</span>
-                <span class="script-panel-sub">Paste your script here - visible only to you during the call</span>
-                <button class="script-close-btn" id="btnScriptClose">&#10005; Close</button>
-              </div>
-              <textarea id="SCRIPT-TEXT" class="script-textarea" placeholder="Paste your call script here...&#10;&#10;Example:&#10;Hi, this is [Your Name] calling from PayPilot. I wanted to reach out about your payment terms with [Company]...&#10;&#10;Your script will stay here the entire call. Scroll as needed."></textarea>
-              <div class="script-footer">
-                <button class="BT BT-out" id="btnScriptClear" style="font-size:12px;padding:7px 14px">&#128465; Clear</button>
-                <span class="script-saved" id="scriptSaved"></span>
-              </div>
-            </div>
-            <div id="TR-BOX" class="TR-panel h">
-              <div class="TR-hd">
-                <span class="TR-title">Live Translation</span>
-                <button class="TR-es-btn" id="btnEsMic" data-lang="es-MX">&#127908; Listen</button>
-              </div>
-              <div style="font-size:12px;font-weight:600;margin-bottom:10px" id="TR-DET" style="color:#9ca3af">Auto-detecting language...</div>
-              <div class="TR-block">
-                <div class="TR-blbl"><span class="LB LB-es" id="TR-FROM-LBL">THEIR LANG</span>&nbsp;What they said (in English)</div>
-                <div class="TR-txt" id="trEN">&#8212;</div>
-                <button class="SPK" id="btnSpkEN">&#128266; Speak English</button>
-              </div>
-              <div class="TR-block reply">
-                <div class="TR-blbl"><span class="LB LB-en" id="TR-TO-LBL">YOUR REPLY</span>&nbsp;Your reply in their language</div>
-                <div class="TR-txt blue" id="trES">&#8212;</div>
-                <button class="SPK SPK-pri" id="btnSpkES" data-lang="es-MX">&#128266; Speak Reply to Supplier</button>
-              </div>
-              <div class="TR-status" id="trSTAT"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+<!-- SCRIPT PANEL - hidden until button pressed -->
+<div id="SCRIPT-BOX" class="script-panel h">
+<div class="script-panel-head">
+<span class="script-panel-title">&#128196; Call Script</span>
+<span class="script-panel-sub">Paste your script here - visible only to you during the call</span>
+<button class="script-close-btn" id="btnScriptClose">&#10005; Close</button>
+</div>
+<textarea id="SCRIPT-TEXT" class="script-textarea" placeholder="Paste your call script here...&#10;&#10;Example:&#10;Hi, this is [Your Name] calling from PayPilot. I wanted to reach out about your payment terms with [Company]...&#10;&#10;Your script will stay here the entire call. Scroll as needed."></textarea>
+<div class="script-footer">
+<button class="BT BT-out" id="btnScriptClear" style="font-size:12px;padding:7px 14px">&#128465; Clear</button>
+<span class="script-saved" id="scriptSaved"></span>
+</div>
+</div>
+<div id="TR-BOX" class="TR-panel h">
+<div class="TR-hd">
+<span class="TR-title">Live Translation</span>
+<button class="TR-es-btn" id="btnEsMic" data-lang="es-MX">&#127908; Listen</button>
+</div>
+<div style="font-size:12px;font-weight:600;margin-bottom:10px" id="TR-DET" style="color:#9ca3af">Auto-detecting language...</div>
+<div class="TR-block">
+<div class="TR-blbl"><span class="LB LB-es" id="TR-FROM-LBL">THEIR LANG</span>&nbsp;What they said (in English)</div>
+<div class="TR-txt" id="trEN">&#8212;</div>
+<button class="SPK" id="btnSpkEN">&#128266; Speak English</button>
+</div>
+<div class="TR-block reply">
+<div class="TR-blbl"><span class="LB LB-en" id="TR-TO-LBL">YOUR REPLY</span>&nbsp;Your reply in their language</div>
+<div class="TR-txt blue" id="trES">&#8212;</div>
+<button class="SPK SPK-pri" id="btnSpkES" data-lang="es-MX">&#128266; Speak Reply to Supplier</button>
+</div>
+<div class="TR-status" id="trSTAT"></div>
+</div>
+</div>
+</div>
+</div>
 
-      <div class="STACK">
-        <div class="CD" style="overflow:hidden">
-          <div class="CD-head"><div class="CD-pip" style="background:#2563eb"></div><span class="CD-title">AI Response Engine</span></div>
-          <div class="AI">
-            <div class="AI-dots"></div>
-            <div class="AI-hd"><div class="AI-pill"><div class="AI-dot"></div>Live Intelligence</div><div class="AI-tag">PayPilot Engine v2</div></div>
-            <div class="AI-txt" id="AI-RESP">Enter an objection and hit Generate &#8594;</div>
-            <div class="AI-chips">
-              <div class="AI-chip">Confidence <b id="cCONF">&#8212;</b></div>
-              <div class="AI-chip">Objection <b id="cOBJ">&#8212;</b></div>
-              <div class="AI-chip">Next Action <b id="cACT">&#8212;</b></div>
-              <div class="AI-chip">Close % <b id="cCLOSE">&#8212;</b></div>
-            </div>
-          </div>
-        </div>
-        <div class="THIRDS">
-          <div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#059669"></div><span class="CD-title">Live Coaching</span></div><div class="CD-body"><p class="INFO" id="iCOACH">&#8212;</p></div></div>
-          <div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#d97706"></div><span class="CD-title">CRM Note</span></div><div class="CD-body"><p class="INFO" id="iCRM">&#8212;</p></div></div>
-          <div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#0891b2"></div><span class="CD-title">Follow-Up Email</span></div><div class="CD-body"><p class="INFO" id="iEMAIL">&#8212;</p></div></div>
-        </div>
-      </div>
-    </div>
+<div class="STACK">
+<div class="CD" style="overflow:hidden">
+<div class="CD-head"><div class="CD-pip" style="background:#2563eb"></div><span class="CD-title">AI Response Engine</span></div>
+<div class="AI">
+<div class="AI-dots"></div>
+<div class="AI-hd"><div class="AI-pill"><div class="AI-dot"></div>Live Intelligence</div><div class="AI-tag">PayPilot Engine v2</div></div>
+<div class="AI-txt" id="AI-RESP">Enter an objection and hit Generate &#8594;</div>
+<div class="AI-chips">
+<div class="AI-chip">Confidence <b id="cCONF">&#8212;</b></div>
+<div class="AI-chip">Objection <b id="cOBJ">&#8212;</b></div>
+<div class="AI-chip">Next Action <b id="cACT">&#8212;</b></div>
+<div class="AI-chip">Close % <b id="cCLOSE">&#8212;</b></div>
+</div>
+</div>
+</div>
+<div class="THIRDS">
+<div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#059669"></div><span class="CD-title">Live Coaching</span></div><div class="CD-body"><p class="INFO" id="iCOACH">&#8212;</p></div></div>
+<div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#d97706"></div><span class="CD-title">CRM Note</span></div><div class="CD-body"><p class="INFO" id="iCRM">&#8212;</p></div></div>
+<div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#0891b2"></div><span class="CD-title">Follow-Up Email</span></div><div class="CD-body"><p class="INFO" id="iEMAIL">&#8212;</p></div></div>
+</div>
+</div>
+</div>
 
-    <div class="HALVES MT A3">
-      <div class="CD">
-        <div class="CD-head"><div class="CD-pip" style="background:#f59e0b"></div><span class="CD-title">Call Outcome</span></div>
-        <div class="CD-body">
-          <div class="FLD"><label class="FL">Outcome</label><select id="OUT"><option>Pending</option><option>Follow Up Needed</option><option>Converted</option><option>Rejected</option></select></div>
-          <div class="FLD"><label class="FL">Enrollment Status</label><select id="ENR"><option>Pending</option><option>Enrollment Sent</option><option>Completed</option><option>Declined</option></select></div>
-          <div class="TBAR"><button class="BT BT-green" id="btnLog">&#10003; Log Call</button><button class="BT BT-gold" id="btnMark">&#9733; Mark Complete</button></div>
-        </div>
-      </div>
-      <div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#9ca3af"></div><span class="CD-title">Call History</span></div><div class="CD-body" id="HIST"></div></div>
-    </div>
-  </div>
+<div class="HALVES MT A3">
+<div class="CD">
+<div class="CD-head"><div class="CD-pip" style="background:#f59e0b"></div><span class="CD-title">Call Outcome</span></div>
+<div class="CD-body">
+<div class="FLD"><label class="FL">Outcome</label><select id="OUT"><option>Pending</option><option>Follow Up Needed</option><option>Converted</option><option>Rejected</option></select></div>
+<div class="FLD"><label class="FL">Enrollment Status</label><select id="ENR"><option>Pending</option><option>Enrollment Sent</option><option>Completed</option><option>Declined</option></select></div>
+<div class="TBAR"><button class="BT BT-green" id="btnLog">&#10003; Log Call</button><button class="BT BT-gold" id="btnMark">&#9733; Mark Complete</button></div>
+</div>
+</div>
+<div class="CD"><div class="CD-head"><div class="CD-pip" style="background:#9ca3af"></div><span class="CD-title">Call History</span></div><div class="CD-body" id="HIST"></div></div>
+</div>
+</div>
 
-  <!-- MANAGER VIEW -->
-  <div id="MV" class="h">
+<!-- MANAGER VIEW -->
+<div id="MV" class="h">
 
-    <!-- KPI STRIP -->
-    <div class="STATS A1">
-      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#1d4ed8,#60a5fa)"></div><div class="SC-lbl">Total Calls</div><div class="SC-val" id="mCALLS">0</div></div>
-      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#047857,#34d399)"></div><div class="SC-lbl">Converted</div><div class="SC-val" id="mCONV">0</div></div>
-      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#b45309,#fbbf24)"></div><div class="SC-lbl">Win Rate</div><div class="SC-val" id="mRATE">0%</div></div>
-      <div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#0e7490,#22d3ee)"></div><div class="SC-lbl">Top Objection</div><div class="SC-val sm" id="mTOP">None</div></div>
-    </div>
+<!-- KPI STRIP -->
+<div class="STATS A1">
+<div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#1d4ed8,#60a5fa)"></div><div class="SC-lbl">Total Calls</div><div class="SC-val" id="mCALLS">0</div></div>
+<div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#047857,#34d399)"></div><div class="SC-lbl">Converted</div><div class="SC-val" id="mCONV">0</div></div>
+<div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#b45309,#fbbf24)"></div><div class="SC-lbl">Win Rate</div><div class="SC-val" id="mRATE">0%</div></div>
+<div class="SC"><div class="SC-bar" style="background:linear-gradient(90deg,#0e7490,#22d3ee)"></div><div class="SC-lbl">Top Objection</div><div class="SC-val sm" id="mTOP">None</div></div>
+</div>
 
-    <!-- ROW 1: Objection breakdown + Outcome pie -->
-    <div class="HALVES A2" style="margin-top:16px">
-      <div class="CD">
-        <div class="CD-head"><div class="CD-pip" style="background:#2563eb"></div><span class="CD-title">Objection Breakdown</span></div>
-        <div class="CD-body"><div id="OBDWN"></div></div>
-      </div>
-      <div class="CD">
-        <div class="CD-head"><div class="CD-pip" style="background:#059669"></div><span class="CD-title">Outcome Distribution</span></div>
-        <div class="CD-body">
-          <canvas id="OUT-CHART" width="300" height="200" style="max-width:100%"></canvas>
-          <div id="OUT-LEGEND" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px"></div>
-        </div>
-      </div>
-    </div>
+<!-- ROW 1: Objection breakdown + Outcome pie -->
+<div class="HALVES A2" style="margin-top:16px">
+<div class="CD">
+<div class="CD-head"><div class="CD-pip" style="background:#2563eb"></div><span class="CD-title">Objection Breakdown</span></div>
+<div class="CD-body"><div id="OBDWN"></div></div>
+</div>
+<div class="CD">
+<div class="CD-head"><div class="CD-pip" style="background:#059669"></div><span class="CD-title">Outcome Distribution</span></div>
+<div class="CD-body">
+<canvas id="OUT-CHART" width="300" height="200" style="max-width:100%"></canvas>
+<div id="OUT-LEGEND" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px"></div>
+</div>
+</div>
+</div>
 
-    <!-- ROW 2: Enrollment funnel + Industry breakdown -->
-    <div class="HALVES" style="margin-top:16px">
-      <div class="CD">
-        <div class="CD-head"><div class="CD-pip" style="background:#f59e0b"></div><span class="CD-title">Enrollment Funnel</span></div>
-        <div class="CD-body"><div id="FUNNEL"></div></div>
-      </div>
-      <div class="CD">
-        <div class="CD-head"><div class="CD-pip" style="background:#8b5cf6"></div><span class="CD-title">Industry Breakdown</span></div>
-        <div class="CD-body"><div id="IND-BRKDN"></div></div>
-      </div>
-    </div>
+<!-- ROW 2: Enrollment funnel + Industry breakdown -->
+<div class="HALVES" style="margin-top:16px">
+<div class="CD">
+<div class="CD-head"><div class="CD-pip" style="background:#f59e0b"></div><span class="CD-title">Enrollment Funnel</span></div>
+<div class="CD-body"><div id="FUNNEL"></div></div>
+</div>
+<div class="CD">
+<div class="CD-head"><div class="CD-pip" style="background:#8b5cf6"></div><span class="CD-title">Industry Breakdown</span></div>
+<div class="CD-body"><div id="IND-BRKDN"></div></div>
+</div>
+</div>
 
-    <!-- ROW 3: Full call log -->
-    <div class="CD" style="margin-top:16px">
-      <div class="CD-head">
-        <div class="CD-pip" style="background:#9ca3af"></div>
-        <span class="CD-title">Full Call Log</span>
-        <button class="BT BT-out" id="btnClearLog" style="margin-left:auto;padding:6px 14px;font-size:12px;border-radius:50px">&#128465; Clear Log</button>
-      </div>
-      <div class="CD-body" style="padding:0">
-        <table style="width:100%;border-collapse:collapse" id="CALL-LOG"></table>
-      </div>
-    </div>
+<!-- ROW 3: Full call log -->
+<div class="CD" style="margin-top:16px">
+<div class="CD-head">
+<div class="CD-pip" style="background:#9ca3af"></div>
+<span class="CD-title">Full Call Log</span>
+<button class="BT BT-out" id="btnClearLog" style="margin-left:auto;padding:6px 14px;font-size:12px;border-radius:50px">&#128465; Clear Log</button>
+</div>
+<div class="CD-body" style="padding:0">
+<table style="width:100%;border-collapse:collapse" id="CALL-LOG"></table>
+</div>
+</div>
 
-    <!-- ROW 4: Coaching insights -->
-    <div class="CD A3" style="margin-top:16px">
-      <div class="CD-head"><div class="CD-pip" style="background:#ec4899"></div><span class="CD-title">AI Coaching Insights</span></div>
-      <div class="CD-body"><div id="INSIGHTS"></div></div>
-    </div>
+<!-- ROW 4: Coaching insights -->
+<div class="CD A3" style="margin-top:16px">
+<div class="CD-head"><div class="CD-pip" style="background:#ec4899"></div><span class="CD-title">AI Coaching Insights</span></div>
+<div class="CD-body"><div id="INSIGHTS"></div></div>
+</div>
 
-  </div>
+</div>
 
 </div>
 ```
 
-  </main>
+</main>
 </div>
 
 <script type="text/javascript" data-cfasync="false" data-rocket-loader="false" data-cf-settings="no-rocket">
 var G = {
-  translateOn: false,
-  recognition: null,
-  esRecognition: null,
-  twi: null,
-  idx: 0,
-  suppliers: [
-    {company:"Novacore Electrical",   contact:"Anthony King",    email:"aking@novacore.com",     phone:"704-555-1122", industry:"Electrical", avg:"$9,200",  ach:58, vcc:33},
-    {company:"Atlas Industrial Supply",contact:"Jorge Ramirez",  email:"jramirez@atlasind.com",  phone:"980-555-8877", industry:"Industrial", avg:"$6,200",  ach:74, vcc:18},
-    {company:"Blue Ridge Property",    contact:"Trista Jamieson", email:"tjamieson@blueridge.com",phone:"828-555-2211", industry:"Property",   avg:"$4,100",  ach:69, vcc:22},
-    {company:"Keystone Facility Group",contact:"Mark Ellis",     email:"mellis@keystonefg.com",  phone:"704-555-9981", industry:"Facilities", avg:"$7,300",  ach:66, vcc:25},
-    {company:"Kingstone Mechanical",   contact:"Lisa Warren",    email:"lwarren@kingstone.com",  phone:"919-555-4403", industry:"Mechanical", avg:"$8,100",  ach:63, vcc:29},
-    {company:"KLM Property Services",  contact:"Derrick Cole",   email:"dcole@klmproperty.com",  phone:"980-555-6310", industry:"Property",   avg:"$5,700",  ach:61, vcc:31}
-  ]
+translateOn: false,
+recognition: null,
+esRecognition: null,
+twi: null,
+idx: 0,
+suppliers: [
+{company:"Novacore Electrical", contact:"Anthony King", email:"aking@novacore.com", phone:"704-555-1122", industry:"Electrical", avg:"$9,200", ach:58, vcc:33},
+{company:"Atlas Industrial Supply",contact:"Jorge Ramirez", email:"jramirez@atlasind.com", phone:"980-555-8877", industry:"Industrial", avg:"$6,200", ach:74, vcc:18},
+{company:"Blue Ridge Property", contact:"Trista Jamieson", email:"tjamieson@blueridge.com",phone:"828-555-2211", industry:"Property", avg:"$4,100", ach:69, vcc:22},
+{company:"Keystone Facility Group",contact:"Mark Ellis", email:"mellis@keystonefg.com", phone:"704-555-9981", industry:"Facilities", avg:"$7,300", ach:66, vcc:25},
+{company:"Kingstone Mechanical", contact:"Lisa Warren", email:"lwarren@kingstone.com", phone:"919-555-4403", industry:"Mechanical", avg:"$8,100", ach:63, vcc:29},
+{company:"KLM Property Services", contact:"Derrick Cole", email:"dcole@klmproperty.com", phone:"980-555-6310", industry:"Property", avg:"$5,700", ach:61, vcc:31}
+]
 };
 function $$(id){ return document.getElementById(id); }
 function gh(){ return JSON.parse(localStorage.getItem("pp7") || "[]"); }
@@ -727,1008 +722,79 @@ function hide(el){ el.classList.add("h"); }
 
 // -- LOGIN --
 function doLogin(){
-  var pw = $$("PW").value.trim();
-  if(pw === "demo123"){
-    var lp = $$("LP");
-    lp.style.opacity = "0";
-    lp.style.transition = "opacity .3s";
-    setTimeout(function(){
-      hide(lp);
-      show($$("APP"));
-      show($$("LIVE-BADGE"));
-      show($$("USER-CHIP"));
-      var vt = $$("VIEW-TOGGLE");
-      if(vt){ vt.style.display = "flex"; }
-      $$("SS").value = G.suppliers[0].company;
-      loadS(); renderHist(); updateStats(); renderMgr();
-    }, 280);
-  } else {
-    $$("LP-ERR").textContent = "Wrong password. Try: demo123";
-    $$("PW").style.borderColor = "#dc2626";
-    setTimeout(function(){ $$("PW").style.borderColor = ""; $$("LP-ERR").textContent = ""; }, 2000);
-  }
+var pw = $$("PW").value.trim();
+if(pw === "demo123"){
+var lp = $$("LP");
+hide(lp);
+setTimeout(function(){
+show($$("APP"));
+show($$("LIVE-BADGE"));
+show($$("USER-CHIP"));
+var vt = $$("VIEW-TOGGLE");
+if(vt){ vt.style.display = "flex"; }
+$$("SS").value = G.suppliers[0].company;
+loadS(); renderHist(); updateStats(); renderMgr();
+}, 280);
+} else {
+$$("LP-ERR").textContent = "Wrong password. Try: demo123";
+$$("PW").style.borderColor = "#dc2626";
+setTimeout(function(){ $$("PW").style.borderColor = ""; $$("LP-ERR").textContent = ""; }, 2000);
+}
 }
 
 // -- NAV --
 function showRep(){
-  show($$("RV")); hide($$("MV"));
-  $$("btnRep").classList.add("on"); $$("btnMgr").classList.remove("on");
-  if($$("tbRep")){ $$("tbRep").style.background="#2563eb"; $$("tbRep").style.color="#fff"; $$("tbRep").style.borderColor="#2563eb"; }
-  if($$("tbMgr")){ $$("tbMgr").style.background="#fff"; $$("tbMgr").style.color="#374151"; $$("tbMgr").style.borderColor="#e5e7eb"; }
+show($$("RV")); hide($$("MV"));
+$$("btnRep").classList.add("on"); $$("btnMgr").classList.remove("on");
+if($$("tbRep")){ $$("tbRep").style.background="#2563eb"; $$("tbRep").style.color="#fff"; $$("tbRep").style.borderColor="#2563eb"; }
+if($$("tbMgr")){ $$("tbMgr").style.background="#fff"; $$("tbMgr").style.color="#374151"; $$("tbMgr").style.borderColor="#e5e7eb"; }
 }
 function showMgr(){
-  hide($$("RV")); show($$("MV"));
-  $$("btnMgr").classList.add("on"); $$("btnRep").classList.remove("on");
-  if($$("tbMgr")){ $$("tbMgr").style.background="#2563eb"; $$("tbMgr").style.color="#fff"; $$("tbMgr").style.borderColor="#2563eb"; }
-  if($$("tbRep")){ $$("tbRep").style.background="#fff"; $$("tbRep").style.color="#374151"; $$("tbRep").style.borderColor="#e5e7eb"; }
-  renderMgr();
+hide($$("RV")); show($$("MV"));
+$$("btnMgr").classList.add("on"); $$("btnRep").classList.remove("on");
+if($$("tbMgr")){ $$("tbMgr").style.background="#2563eb"; $$("tbMgr").style.color="#fff"; $$("tbMgr").style.borderColor="#2563eb"; }
+if($$("tbRep")){ $$("tbRep").style.background="#fff"; $$("tbRep").style.color="#374151"; $$("tbRep").style.borderColor="#e5e7eb"; }
+renderMgr();
 }
 
 // -- SEARCH --
 function doSearch(){
-  var q = $$("SS").value.trim().toLowerCase();
-  var sr = $$("SR");
-  if(!q){ hide(sr); sr.innerHTML = ""; return; }
-  var hits = [];
-  for(var i=0; i<G.suppliers.length; i++){
-    var s = G.suppliers[i];
-    if(s.company.toLowerCase().indexOf(q)>=0 || s.contact.toLowerCase().indexOf(q)>=0 || s.email.toLowerCase().indexOf(q)>=0 || s.phone.indexOf(q)>=0){
-      hits.push(i);
-    }
-  }
-  if(!hits.length){ show(sr); sr.innerHTML = '<div class="SR-item"><div class="SR-name" style="color:#9ca3af">No results</div></div>'; return; }
-  var html = "";
-  for(var j=0; j<hits.length; j++){
-    var idx = hits[j]; var s2 = G.suppliers[idx];
-    html += '<div class="SR-item '+(j===0?"on":"")+'" data-i="'+idx+'"><div class="SR-name">'+s2.company+'</div><div class="SR-meta">'+s2.contact+' &middot; '+s2.email+' &middot; '+s2.phone+'</div></div>';
-  }
-  show(sr); sr.innerHTML = html;
-  G.idx = hits[0]; loadS();
+var q = $$("SS").value.trim().toLowerCase();
+var sr = $$("SR");
+if(!q){ hide(sr); sr.innerHTML = ""; return; }
+var hits = [];
+for(var i=0; i<G.suppliers.length; i++){
+var s = G.suppliers[i];
+if(s.company.toLowerCase().indexOf(q)>=0 || s.contact.toLowerCase().indexOf(q)>=0 || s.email.toLowerCase().indexOf(q)>=0 || s.phone.indexOf(q)>=0){
+hits.push(i);
+}
+}
+if(!hits.length){ show(sr); sr.innerHTML = '<div class="SR-item"><div class="SR-name" style="color:#9ca3af">No results</div></div>'; return; }
+var html = "";
+for(var j=0; j<hits.length; j++){
+var idx = hits[j]; var s2 = G.suppliers[idx];
+html += '<div class="SR-item '+(j===0?"on":"")+'" data-i="'+idx+'"><div class="SR-name">'+s2.company+'</div><div class="SR-meta">'+s2.contact+' &middot; '+s2.email+' &middot; '+s2.phone+'</div></div>';
+}
+show(sr); sr.innerHTML = html;
+G.idx = hits[0]; loadS();
 }
 
 function pickS(i){ G.idx = i; $$("SS").value = G.suppliers[i].company; hide($$("SR")); $$("SR").innerHTML = ""; loadS(); }
 
 function loadS(){
-  var s = G.suppliers[G.idx];
-  $$("SI").innerHTML =
-    '<table class="ST">'+
-      '<tr><td>Company</td><td>'+s.company+'</td></tr>'+
-      '<tr><td>Contact</td><td>'+s.contact+'</td></tr>'+
-      '<tr><td>Email</td><td>'+s.email+'</td></tr>'+
-      '<tr><td>Phone</td><td>'+s.phone+'</td></tr>'+
-      '<tr><td>Industry</td><td>'+s.industry+'</td></tr>'+
-      '<tr><td>Avg Invoice</td><td>'+s.avg+'</td></tr>'+
-    '</table>'+
-    '<div class="SCORES">'+
-      '<div class="SC2 SC2-b"><span class="SC2-lbl">ACH Score</span><span class="SC2-val">'+s.ach+'%</span></div>'+
-      '<div class="SC2 SC2-c"><span class="SC2-lbl">VCC Score</span><span class="SC2-val">'+s.vcc+'%</span></div>'+
-    '</div>';
-}
-
-// -- WEB LOOKUP --
-function safeA(v){ return (v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
-
-function doLookup(){
-  var q = $$("WLI").value.trim();
-  if(!q){ $$("WLI").style.borderColor = "#dc2626"; setTimeout(function(){ $$("WLI").style.borderColor = ""; }, 1400); return; }
-  var ws = $$("WLS"), wm = $$("WL-MSG"), wsp = $$("WL-SPIN"), si = $$("SI");
-  ws.className = "LKUP-STATUS load"; show(ws);
-  wm.textContent = "Looking up contact info...";
-  wsp.style.display = "block";
-  si.innerHTML = "";
-  var prompt = "Find contact information for this company: " + q + ". Return ONLY a JSON object with keys: company, contact, title, email, phone, address, industry. Use empty string for unknown fields. No explanation, just the JSON.";
-  fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {"Content-Type":"application/json","anthropic-version":"2023-06-01"},
-    body: JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:350,messages:[{role:"user",content:prompt}]})
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(d){
-    wsp.style.display = "none";
-    if(d.error || !d.content || !d.content[0]){
-      ws.className = "LKUP-STATUS ok"; wm.textContent = "Enter details manually";
-      showManForm(si, q); return;
-    }
-    var raw = d.content[0].text || "";
-    var parsed = parseLookup(raw, q);
-    var ach = Math.floor(Math.random()*30)+55, vcc = Math.floor(Math.random()*20)+15;
-    ws.className = "LKUP-STATUS ok"; wm.textContent = "Found - verify and save";
-    renderLookup(parsed, ach, vcc, si);
-  })
-  .catch(function(){
-    wsp.style.display = "none"; ws.className = "LKUP-STATUS ok";
-    wm.textContent = "Use links below to find info"; showManForm(si, q);
-  });
-}
-
-function parseLookup(raw, q){
-  var fence = String.fromCharCode(96,96,96);
-  raw = raw.split(fence+"json").join("").split(fence).join("").trim();
-  try{ var s=raw.indexOf("{"),e=raw.lastIndexOf("}"); if(s>=0&&e>s){ var p=JSON.parse(raw.slice(s,e+1)); if(!p.company) p.company=q; return p; } }catch(ex){}
-  var em = raw.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
-  var ph = raw.match(/[\(]?\d{3}[\)\.\-\s]?\s?\d{3}[\.\-\s]?\d{4}/);
-  return {company:q,contact:"",title:"",email:em?em[0]:"",phone:ph?ph[0]:"",address:"",industry:""};
-}
-
-function renderLookup(p, ach, vcc, el){
-  var co=p.company||"",ct=p.contact||"",ti=p.title||"",em=p.email||"",ph=p.phone||"",ad=p.address||"",ind=p.industry||"";
-  el.innerHTML =
-    '<div class="WEB-TAG">Result - verify before saving</div>'+
-    '<table class="ST">'+
-      '<tr><td>Company</td><td>'+co+'</td></tr>'+
-      '<tr><td>Contact</td><td>'+ct+(ti?' <span style="color:#6b7280;font-size:13px;">&middot; '+ti+'</span>':'')+'</td></tr>'+
-      '<tr><td>Email</td><td>'+em+'</td></tr>'+
-      '<tr><td>Phone</td><td>'+ph+'</td></tr>'+
-      '<tr><td>Address</td><td>'+ad+'</td></tr>'+
-      '<tr><td>Industry</td><td>'+ind+'</td></tr>'+
-    '</table>'+
-    '<div class="SCORES">'+
-      '<div class="SC2 SC2-b"><span class="SC2-lbl">ACH Score</span><span class="SC2-val">'+ach+'%</span></div>'+
-      '<div class="SC2 SC2-c"><span class="SC2-lbl">VCC Score</span><span class="SC2-val">'+vcc+'%</span></div>'+
-    '</div>'+
-    '<button class="BT BT-blue" style="width:100%;justify-content:center;margin-top:13px" data-co="'+safeA(co)+'" data-ct="'+safeA(ct)+'" data-em="'+safeA(em)+'" data-ph="'+safeA(ph)+'" data-ind="'+safeA(ind)+'" data-ach="'+ach+'" data-vcc="'+vcc+'" id="btnSaveWeb">+ Save to Database</button>'+
-    '<p style="font-size:11.5px;color:#9ca3af;margin-top:7px;text-align:center">AI may not have current data - verify before saving</p>';
-  var sb = $$("btnSaveWeb");
-  if(sb) sb.addEventListener("click", function(){ saveWeb(this); });
-}
-
-function showManForm(el, q){
-  var gUrl = "https://www.google.com/search?q="+encodeURIComponent(q+" accounts payable contact phone");
-  var liUrl = "https://www.linkedin.com/search/results/companies/?keywords="+encodeURIComponent(q);
-  var bbUrl = "https://www.bbb.org/search?find_text="+encodeURIComponent(q);
-  el.innerHTML =
-    '<div class="WEB-TAG">Manual Lookup</div>'+
-    '<p style="font-size:14px;color:#374151;margin-bottom:11px;line-height:1.6">Open a site, find the info, fill in below:</p>'+
-    '<div style="margin-bottom:14px">'+
-      '<a class="SLB" href="'+gUrl+'" target="_blank">&#128269; Google</a>'+
-      '<a class="SLB" href="'+liUrl+'" target="_blank">in LinkedIn</a>'+
-      '<a class="SLB" href="'+bbUrl+'" target="_blank">&#127942; BBB</a>'+
-    '</div>'+
-    '<div class="MAN-FORM">'+
-      '<div class="FLD"><label class="FL">Company</label><input id="mfCo" value="'+safeA(q)+'"></div>'+
-      '<div class="G2">'+
-        '<div class="FLD"><label class="FL">Contact</label><input id="mfCt" placeholder="AP contact name"></div>'+
-        '<div class="FLD"><label class="FL">Phone</label><input id="mfPh" placeholder="555-555-5555"></div>'+
-      '</div>'+
-      '<div class="G2">'+
-        '<div class="FLD"><label class="FL">Email</label><input id="mfEm" placeholder="ap@company.com"></div>'+
-        '<div class="FLD"><label class="FL">Industry</label><input id="mfInd" placeholder="e.g. Electrical"></div>'+
-      '</div>'+
-      '<button class="BT BT-blue" style="width:100%;justify-content:center;margin-top:5px" id="btnManSave">+ Save to Database</button>'+
-    '</div>';
-  var ms = $$("btnManSave");
-  if(ms) ms.addEventListener("click", saveManual);
-}
-
-function saveWeb(btn){
-  var ach = parseInt(btn.getAttribute("data-ach"))||60;
-  var vcc2 = parseInt(btn.getAttribute("data-vcc"))||25;
-  G.suppliers.push({company:btn.getAttribute("data-co")||"New Co",contact:btn.getAttribute("data-ct")||"",email:btn.getAttribute("data-em")||"",phone:btn.getAttribute("data-ph")||"",industry:btn.getAttribute("data-ind")||"General",avg:"$0",ach:ach,vcc:vcc2});
-  G.idx = G.suppliers.length-1;
-  $$("SS").value = G.suppliers[G.idx].company;
-  loadS(); hide($$("WLS")); $$("WLI").value = "";
-}
-
-function saveManual(){
-  var co = ($$("mfCo") && $$("mfCo").value)||"New Co";
-  var ct = ($$("mfCt") && $$("mfCt").value)||"";
-  var ph = ($$("mfPh") && $$("mfPh").value)||"";
-  var em = ($$("mfEm") && $$("mfEm").value)||"";
-  var ind = ($$("mfInd") && $$("mfInd").value)||"General";
-  var ach2 = Math.floor(Math.random()*25)+55, vcc3 = Math.floor(Math.random()*20)+15;
-  G.suppliers.push({company:co,contact:ct,email:em,phone:ph,industry:ind,avg:"$0",ach:ach2,vcc:vcc3});
-  G.idx = G.suppliers.length-1;
-  $$("SS").value = co;
-  loadS(); hide($$("WLS")); $$("WLI").value = "";
-}
-
-// -- LANGUAGE DETECTION --
-// -- LANGUAGE CONFIG --
-var LANGS = {
-  "Spanish":    {code:"es-MX", label:"ES", flag:"MX", name:"Spanish"},
-  "Portuguese": {code:"pt-BR", label:"PT", flag:"BR", name:"Portuguese"},
-  "Mandarin":   {code:"zh-CN", label:"ZH", flag:"CN", name:"Mandarin"},
-  "Hindi":      {code:"hi-IN", label:"HI", flag:"IN", name:"Hindi"},
-  "French":     {code:"fr-FR", label:"FR", flag:"FR", name:"French"},
-  "Arabic":     {code:"ar-SA", label:"AR", flag:"SA", name:"Arabic"},
-  "Vietnamese": {code:"vi-VN", label:"VI", flag:"VN", name:"Vietnamese"},
-  "Korean":     {code:"ko-KR", label:"KO", flag:"KR", name:"Korean"}
-};
-
-// -- DETECT LANGUAGE from text content --
-function detectLang(t){
-  if(!t) return "English";
-  var l = t.toLowerCase();
-  // Check character ranges for script-based languages first
-  var i, code;
-  for(i=0; i<t.length; i++){
-    code = t.charCodeAt(i);
-    if(code >= 0x0900 && code <= 0x097F) return "Hindi";
-    if(code >= 0x0600 && code <= 0x06FF) return "Arabic";
-    if((code >= 0x4E00 && code <= 0x9FFF)||(code >= 0x3400 && code <= 0x4DBF)) return "Mandarin";
-    if(code >= 0xAC00 && code <= 0xD7AF) return "Korean";
-  }
-  // Word-based detection for Latin-script languages
-  var spWords = ["hola","gracias","cheques","tarjeta","tarifas","pago","nosotros","por favor","buenas","cuanto","cuesta","cobran","interesa","tiempo","ahora","precio","usted","dinero","banco"];
-  for(i=0; i<spWords.length; i++){ if(l.indexOf(spWords[i])>=0) return "Spanish"; }
-  var ptWords = ["obrigado","pagamento","dinheiro","quanto","custa","interessa","nao","favor","banco","conta","taxa","agora","voce","entendo","cobran"];
-  for(i=0; i<ptWords.length; i++){ if(l.indexOf(ptWords[i])>=0) return "Portuguese"; }
-  var frWords = ["bonjour","merci","frais","paiement","banque","maintenant","combien","interes","comment","nous","oui","non","pourquoi","besoin","argent","compte"];
-  for(i=0; i<frWords.length; i++){ if(l.indexOf(frWords[i])>=0) return "French"; }
-  var viWords = ["xin","phi","thanh toan","ngan hang","bay gio","bao nhieu","quan tam","khong","vang","tien","chao","cam on"];
-  for(i=0; i<viWords.length; i++){ if(l.indexOf(viWords[i])>=0) return "Vietnamese"; }
-  return "English";
-}
-
-// -- TRANSLATION PANEL UPDATE --
-function toggleTrans(){
-  G.translateOn = !G.translateOn;
-  var tb = $$("TR-BOX");
-  if(G.translateOn){ show(tb); updateTrans(); } else { hide(tb); }
-}
-
-function updateTrans(){
-  var text = $$("OBJ").value.trim();
-  var lang = detectLang(text);
-  var lc = LANGS[lang];
-  // Update language display chip
-  if(lc){
-    $$("mLANG").textContent = lc.flag + " " + lc.label;
-  } else {
-    $$("mLANG").textContent = "EN";
-  }
-  if(!G.translateOn) return;
-  if(!text){ return; }
-
-  // Show detected language badge in panel
-  var detBadge = $$("TR-DET");
-  if(detBadge){
-    detBadge.textContent = lang === "English" ? "Detected: English" : "Detected: " + (lc ? lc.flag + " " + lc.name : lang);
-    detBadge.style.color = lang === "English" ? "#9ca3af" : "#2563eb";
-  }
-
-  // Update Escuchar button label to match language
-  var esMicBtn = $$("btnEsMic");
-  if(esMicBtn && lang !== "English" && lc){
-    esMicBtn.textContent = lc.flag + " Listen in " + lc.name;
-    esMicBtn.setAttribute("data-lang", lc.code);
-  } else if(esMicBtn){
-    esMicBtn.textContent = "Listen";
-    esMicBtn.setAttribute("data-lang", "es-MX");
-  }
-
-  if(lang === "English"){
-    // English supplier -- show English + generate Spanish reply as default
-    $$("trEN").textContent = text;
-    $$("trES").textContent = "Generating reply...";
-    doAITrans(text, lang);
-    return;
-  }
-
-  // Non-English -- set instant local fallback then upgrade with AI
-  var fallbackEN = "[Translating...]";
-  var fallbackReply = "[Generating reply...]";
-
-  // Spanish instant fallbacks
-  if(lang === "Spanish"){
-    fallbackEN = text;
-    fallbackReply = "Entiendo. La tarifa es del 1.2% pero usted recibe su pago 20-30 dias antes de lo normal. La mayoria de proveedores encuentran que vale la pena.";
-  }
-  if(lang === "Portuguese"){
-    fallbackEN = text;
-    fallbackReply = "Entendo. A taxa e de 1,2% mas voce recebe o pagamento 20-30 dias mais cedo do que o normal. A maioria dos fornecedores acha que vale a pena.";
-  }
-  if(lang === "French"){
-    fallbackEN = text;
-    fallbackReply = "Je comprends. Les frais sont de 1,2% mais vous etes paye 20 a 30 jours plus tot que d habitude. La plupart des fournisseurs trouvent que cela en vaut la peine.";
-  }
-  if(lang === "Vietnamese"){
-    fallbackEN = text;
-    fallbackReply = "Toi hieu. Phi la 1,2% nhung ban duoc thanh toan som hon 20-30 ngay so voi binh thuong. Phan lon nha cung cap thay rang dieu nay xung dang.";
-  }
-
-  $$("trEN").textContent = fallbackEN;
-  $$("trES").textContent = fallbackReply;
-
-  // Upgrade with real AI translation
-  doAITrans(text, lang);
-}
-
-function extractLine(text, prefix){
-  var lines = text.split("\n");
-  for(var i=0; i<lines.length; i++){
-    var line = lines[i].trim();
-    if(line.toLowerCase().indexOf(prefix.toLowerCase())===0){
-      return line.slice(prefix.length).trim();
-    }
-  }
-  return "";
-}
-
-function doAITrans(text, lang){
-  var lc = LANGS[lang];
-  var langName = lc ? lc.name : lang;
-  var prompt;
-  if(lang === "English"){
-    prompt = "The supplier said in English: " + JSON.stringify(text) + ". Write a SHORT natural reply (1-2 sentences) for ACH payment enrollment - defend the 1.2% fee by emphasizing they get paid 20-30 days earlier. Pick the most relevant language: Spanish, Portuguese, Mandarin, Hindi, French, Arabic, Vietnamese, or Korean. Format exactly: LANG: [language name] TRANSLATION: [reply in that language] ENGLISH: [english version of reply]";
-  } else {
-    prompt = "The supplier spoke in " + langName + ": " + JSON.stringify(text) + ". Translate what they said to English. Then write a SHORT natural reply (1-2 sentences) in " + langName + " for ACH payment enrollment - 1.2% fee but paid 20-30 days earlier. Do NOT use company name. Format: ENGLISH: [translation] REPLY: [reply in " + langName + "] REPLY_EN: [english version]";
-  }
-
-  fetch("https://api.anthropic.com/v1/messages",{
-    method:"POST",
-    headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01"},
-    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:200,messages:[{role:"user",content:prompt}]})
-  }).then(function(r){ return r.json(); }).then(function(d){
-    if(!d.content||!d.content[0]) return;
-    var raw = d.content[0].text||"";
-    if(lang === "English"){
-        var replyMatch = extractLine(raw, "TRANSLATION:");
-      var enMatch    = extractLine(raw, "ENGLISH:");
-      var langMatch  = extractLine(raw, "LANG:");
-      if(replyMatch) $$("trES").textContent = replyMatch;
-      if(enMatch)    $$("trEN").textContent = enMatch;
-      // Update speak button label
-      if(langMatch && langMatch[1]){
-        var detLang = langMatch[1].trim();
-        var detLC = LANGS[detLang];
-        if(detLC && $$("btnSpkES")) $$("btnSpkES").setAttribute("data-lang", detLC.code);
-      }
-    } else {
-      var enMatch2    = extractLine(raw, "ENGLISH:");
-      var replyMatch2 = extractLine(raw, "REPLY:");
-      if(enMatch2)    $$("trEN").textContent = enMatch2;
-      if(replyMatch2) $$("trES").textContent = replyMatch2;
-      // Update speak button to use correct language
-      if(lc && $$("btnSpkES")) $$("btnSpkES").setAttribute("data-lang", lc.code);
-    }
-  }).catch(function(){});
-}
+var s = G.suppliers[G.idx];
+$$("SI").innerHTML =
+'<table class="ST">'+
+'<tr><td>Company</td><td>'+s.company+'</td></tr>'+
+'<tr><td>Contact</td><td>'+s.contact+'</td></tr>'+
+'<tr><td>Email</td><td>'+s.email+'</td></tr>'+
+'<tr><td>Phone</td><td>'+s.phone+'</td></tr>'+
+'<tr><td>Industry</td><td>'+s.industry+'</td></tr>'+
+'<tr><td>Avg Invoice</td><td>'+s.avg+'</td></tr>'+
+'</table>'+
+'<div class="SCORES">'+
+'<div class="SC2 SC2-b"><span class="SC2-lbl">ACH Score</span><span class="SC2-val">'+s.ach+'%</span></div>'+
+'<div class="SC2 SC2-c"><span class="SC2-lbl">VCC Sco
+...
 
 
-function speakTxt(text, lang){
-  if(!text||text==="--"||!text.trim()) return;
-  var syn = window.speechSynthesis;
-  if(!syn) return;
-  syn.cancel();
-  var u = new SpeechSynthesisUtterance(text);
-  u.lang = lang; u.rate = 0.9; u.volume = 1;
-  var vs = syn.getVoices();
-  var lc = lang.substring(0,2);
-  for(var i=0;i<vs.length;i++){ if(vs[i].lang.indexOf(lc)===0){ u.voice=vs[i]; break; } }
-  var st = $$("trSTAT");
-  if(st){ st.textContent = lang.indexOf("es")===0 ? "Speaking Spanish..." : "Speaking English..."; st.className = "TR-status"; }
-  u.onend = function(){ if(st) st.textContent = ""; };
-  syn.speak(u);
-}
-
-// -- SPANISH MIC --
-function startEsMic(){
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){ alert("Mic not supported in this browser"); return; }
-  var btn = $$("btnEsMic");
-  if(G.esRecognition){ G.esRecognition.stop(); G.esRecognition = null; if(btn) btn.textContent = "Listen"; return; }
-  // Get language from button attribute, default to es-MX
-  var listenLang = (btn && btn.getAttribute("data-lang")) || "es-MX";
-  G.esRecognition = new SR();
-  G.esRecognition.continuous = false;
-  G.esRecognition.interimResults = false;
-  G.esRecognition.lang = listenLang;
-  G.esRecognition.onstart = function(){ if(btn) btn.textContent = "Listening..."; };
-  G.esRecognition.onresult = function(e){
-    var t = e.results[0][0].transcript;
-    $$("OBJ").value = t;
-    // Auto-detect language and update translation
-    if(!G.translateOn) toggleTrans();
-    else updateTrans();
-  };
-  G.esRecognition.onend = function(){
-    G.esRecognition = null;
-    if(btn) btn.textContent = "Listen";
-  };
-  G.esRecognition.onerror = function(){
-    G.esRecognition = null;
-    if(btn) btn.textContent = "Listen";
-  };
-  G.esRecognition.start();
-}
-
-// -- ENGLISH MIC --
-function startMic(){
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){ alert("Mic not supported in this browser"); return; }
-  if(G.recognition) G.recognition.stop();
-  G.recognition = new SR();
-  G.recognition.continuous = true; G.recognition.interimResults = true; G.recognition.lang = "en-US";
-  G.recognition.onstart = function(){ $$("mMIC").textContent="Live"; $$("btnMic").classList.add("rec"); $$("btnMic").textContent="Recording"; };
-  G.recognition.onerror = function(){ $$("mMIC").textContent="Error"; };
-  G.recognition.onend = function(){ $$("mMIC").textContent="Idle"; $$("btnMic").classList.remove("rec"); $$("btnMic").textContent="Start Mic"; };
-  G.recognition.onresult = function(e){
-    var t = e.results[e.results.length-1][0].transcript;
-    $$("OBJ").value = t;
-    updateTrans();
-    clearTimeout(window._vt);
-    window._vt = setTimeout(doGen, 300);
-  };
-  G.recognition.start();
-}
-function stopMic(){ if(G.recognition) G.recognition.stop(); }
-
-// -- SCORING --
-function calcProb(t){
-  var s=70, l=t.toLowerCase(), sp=G.suppliers[G.idx];
-  if(l.indexOf("check")>=0||l.indexOf("cheques")>=0) s-=10;
-  if(l.indexOf("fee")>=0||l.indexOf("tarifas")>=0) s-=15;
-  if(l.indexOf("busy")>=0||l.indexOf("later")>=0) s-=8;
-  if(l.indexOf("accountant")>=0) s-=10;
-  if(l.indexOf("not interested")>=0) s-=18;
-  if(l.indexOf("yes")>=0) s+=20;
-  if(l.indexOf("interested")>=0) s+=15;
-  s += Math.round((sp.ach-sp.vcc)/10);
-  return Math.max(5,Math.min(95,s));
-}
-function getTag(t){
-  var l=t.toLowerCase();
-  if(l.indexOf("check")>=0||l.indexOf("cheques")>=0) return "Payment Method";
-  if(l.indexOf("fee")>=0||l.indexOf("tarifas")>=0) return "Cost";
-  if(l.indexOf("busy")>=0||l.indexOf("later")>=0) return "Timing";
-  if(l.indexOf("accountant")>=0) return "Accounting";
-  if(l.indexOf("not interested")>=0) return "Rejection";
-  return "General";
-}
-function getStrat(t,sc){
-  var tag=getTag(t);
-  if(sc>=80) return "Push Next Step";
-  if(tag==="Cost") return "Reframe Value";
-  if(tag==="Payment Method") return "Speed & Simplicity";
-  if(tag==="Timing") return "Keep It Short";
-  if(tag==="Accounting") return "Lower Friction";
-  if(tag==="Rejection") return "Soften & Re-engage";
-  return "Guide Next Step";
-}
-function getHeat(s){ return s>=80?"Hot":s>=55?"Warm":"Cold"; }
-function getAct(t,sc){
-  var tag=getTag(t);
-  if(sc>=80) return "Ask for setup now";
-  if(tag==="Payment Method") return "Position ACH speed";
-  if(tag==="Cost") return "Reframe: no fees";
-  if(tag==="Timing") return "Short push";
-  if(tag==="Accounting") return "Loop in accounting";
-  if(tag==="Rejection") return "Lower resistance";
-  return "Guide forward";
-}
-function getCoach(t,sc){
-  var s=getStrat(t,sc);
-  if(s==="Push Next Step") return "They sound close. Stop explaining and move to setup.";
-  if(s==="Reframe Value") return "Don't defend cost. Shift to simplicity and speed.";
-  if(s==="Speed & Simplicity") return "Make checks sound slow. Make ACH sound effortless.";
-  if(s==="Keep It Short") return "Shorten your response and hold control of the call.";
-  if(s==="Lower Friction") return "Reduce effort. Offer a single, simple next step.";
-  if(s==="Soften & Re-engage") return "Don't push. Rebuild interest and keep it light.";
-  return "Acknowledge, reframe, and guide forward.";
-}
-function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-// -- Smart objection classifier --
-function hasWord(l, words){
-  for(var w=0; w<words.length; w++){ if(l.indexOf(words[w])>=0) return true; }
-  return false;
-}
-function classifyObjection(t){
-  var l = t.toLowerCase();
-  var lang = detectLang(t);
-  if(lang !== "English") return "foreign";
-  if(hasWord(l,["fee","cost","charge","expensive","price","rate","percent","%","too much","worth it","tarifas","costo","pagar"])) return "fee";
-  if(hasWord(l,["lower","reduce","less","better deal","discount","negotiate","can you do","bring it down","come down","cheaper","go lower"])) return "negotiate";
-  if(hasWord(l,["check","cheque","paper","mail","prefer check","use check"])) return "check";
-  if(hasWord(l,["busy","later","call back","not a good time","right now","another time","not today","too much going on","call me back"])) return "timing";
-  if(hasWord(l,["accountant","controller","cfo","finance","approval","approve","boss","manager","owner","check with","run it by","let me ask","need to ask"])) return "approval";
-  if(hasWord(l,["not interested","dont need","no thanks","pass","not for us","dont want","not looking"])) return "notinterested";
-  if(hasWord(l,["already","we use","we have","set up","current","do it now","doing that","have that"])) return "already";
-  if(hasWord(l,["safe","secure","trust","scam","fraud","hack","data","information","risk"])) return "security";
-  if(hasWord(l,["how does","what is","explain","tell me more","how do","what does","how would"])) return "howworks";
-  return "general";
-}
-
-function getFB(t){
-  var sp = G.suppliers[G.idx];
-  var avgN = parseFloat((sp.avg||"0").replace(/[^0-9.]/g,""))||0;
-  var isHighVol = avgN >= 650000;
-  var type = classifyObjection(t);
-
-  // -- FEE OBJECTION -- defend 1.2%, do NOT mention discount --
-  if(type === "fee"){
-    if(isHighVol) return pick([
-      "At your volume you actually qualify for our 0.75% preferred rate -- that's our best tier. Think of it this way: if your terms are net-30 or net-60, you're already giving the buyer an interest-free loan for that whole time. We flip that. You get paid early and the 0.75% is the only cost.",
-      "Good news -- at your volume we can offer 0.75%. Most suppliers at that level tell us after the first payment they stop thinking about the fee because the cash flow change is so noticeable.",
-      "You qualify for 0.75% based on your volume -- that's our preferred rate. The math usually works out simply: getting paid weeks earlier at 0.75% beats sitting on an invoice waiting on a check to clear."
-    ]);
-    return pick([
-      "The fee is 1.2% -- and I want to be upfront about that. What you're getting in exchange is getting paid significantly earlier than your standard terms. If you're on net-30 or net-60 right now, that's weeks of cash sitting out there that we can put in your account now. For most suppliers the early payment more than offsets the 1.2%.",
-      "That's 1.2% of the invoice -- I won't dance around it. But here's how most suppliers think about it: every invoice you're waiting on is basically a free loan to the buyer. ACH ends that. You get paid early, guaranteed. Most find the cash flow improvement is worth more than 1.2% costs them.",
-      "Fair question. The fee is 1.2%. In exchange you get paid weeks earlier than standard terms and you never chase a check again. What are your current payment terms with this buyer -- net-30? Net-60? Because that gap is what we're closing.",
-      "The 1.2% is real -- and it's there because you're getting something valuable: early payment. If your terms are anything beyond net-15, you're already waiting longer than you have to. We're essentially turning a slow-pay buyer into a fast-pay one for you, and 1.2% is the cost of that."
-    ]);
-  }
-
-  // -- NEGOTIATING -- they want lower, now we do the "let me get it authorized" play --
-  if(type === "negotiate"){
-    return pick([
-      "I hear you. Honestly 1.2% is our standard and it's where I'd start -- but let me see what I can do. I'd need to get authorization from my manager to go below that. Can I put you on a brief hold, or call you right back?",
-      "I appreciate you being straight with me. The 1.2% is where we are right now -- I can't just move off that on my own. Let me reach out internally and see if there's any room. Give me a few minutes and I'll call you right back with an answer.",
-      "I get it. I'm not going to make a promise I can't keep -- I'd need to go back and get that approved. The 1.2% is standard. But if you're serious about moving forward and the rate is the only thing holding you back, let me make a call and see what I can do.",
-      "That's fair to ask. I don't have the ability to just drop the rate -- it's 1.2% and anything below that has to go through approval. Tell you what: if we agree on everything else and the rate is the last piece, I'll get on it right now and come back to you. Does that work?"
-    ]);
-  }
-
-  // -- CHECKS --
-  if(type === "check"){
-    return pick([
-      "Checks work -- no argument. The difference is just timing. Right now you're waiting on a check to be cut, mailed, and clear your bank. With ACH the money is in your account directly -- typically weeks ahead of where you'd be on standard terms. The 1.2% is the trade-off for that speed.",
-      "I get it -- checks are familiar. But think about what happens when one gets delayed or lost. ACH is guaranteed and faster. You always know when it's coming and it's already in your account before a check would even arrive.",
-      "Nothing wrong with checks. But consider this: every time you wait on one, you're giving the buyer extra time with your money. ACH flips that -- you get paid early, consistently, and the 1.2% is the only cost of making that happen.",
-      "Checks are fine until they're slow, lost, or you're waiting on a Friday before a long weekend. ACH is direct, predictable, and early. Most suppliers tell me after the first payment they never want to go back to paper."
-    ]);
-  }
-
-  // -- TIMING --
-  if(type === "timing"){
-    return pick([
-      "No problem. Quick question before I let you go -- do you have an email I can send the details to? That way you have everything in front of you and we can wrap this up in one follow-up.",
-      "Totally understand. I'll be quick -- this is a one-time setup and then you're on early payments permanently. Even two minutes now means every future invoice gets paid faster. When's a better window today?",
-      "Of course. I'll send you a short summary -- the fee, what the payment timeline looks like, and what enrollment takes. Takes about 30 seconds to read. What's the best email?",
-      "No worries at all. Just know that every day on standard terms is time you're waiting to get paid that you don't have to. I'll follow up -- what's the best way to reach you?"
-    ]);
-  }
-
-  // -- APPROVAL --
-  if(type === "approval"){
-    return pick([
-      "Absolutely -- loop them in. I can send a clean one-pager: the 1.2% fee, what the early payment timeline looks like, and what the enrollment actually requires. Most accounting teams sign off pretty quickly once they see it. What's the best email to send it to?",
-      "That's the right call. Send me their email and I'll put together a quick summary they can review. Usually takes accounting about 10 minutes -- it's a straightforward enrollment, no changes to your banking setup.",
-      "Makes sense. I can reach out directly to them if that helps -- just point me in the right direction. The main questions they'll have are about the fee structure and how the payments hit the books. I can answer all of that in one email.",
-      "Smart move. Most controllers actually prefer ACH once they see it -- cleaner reconciliation, no check exceptions to deal with. I'll send something they can review at their own pace. What's the best contact?"
-    ]);
-  }
-
-  // -- NOT INTERESTED --
-  if(type === "notinterested"){
-    return pick([
-      "I respect that. Before I go -- is it the fee specifically, or something else? I just want to make sure I'm not missing something I could actually address.",
-      "Understood. Quick question -- what are your current payment terms with this buyer? Sometimes when people see the timing difference it changes the conversation. If not, no pressure.",
-      "Fair enough. I'd just leave you with this: if your terms are net-30 or longer, there's money sitting out there we could be putting in your account now for 1.2%. If that ever becomes relevant, I'm one call away.",
-      "No problem. Can I ask what the main hesitation is? Just so I understand -- is it the fee, the timing, or something else entirely? I'm not going to push you, I just want to make sure I understand."
-    ]);
-  }
-
-  // -- ALREADY ON ACH --
-  if(type === "already"){
-    return pick([
-      "Good to hear. The question is whether your current setup includes early payment. Our program gets you paid significantly ahead of standard terms -- that's the piece most suppliers aren't getting with a standard ACH setup.",
-      "Great -- so you know how it works. The value we add is the timing. Are you getting paid early right now, or still sitting on net-30, net-60 terms? Because that's exactly what we solve.",
-      "Perfect. So the technical side is already there. This is really just about whether 1.2% to get paid weeks earlier makes sense for your cash flow -- that's the only difference from what you have now.",
-      "Nice. Then this should be an easy conversation. Most standard ACH setups just mirror your existing terms. We accelerate the payment. Same method, just faster money in your account."
-    ]);
-  }
-
-  // -- SECURITY --
-  if(type === "security"){
-    return pick([
-      "Completely valid. ACH runs through the federal banking network -- the same system behind every payroll and direct deposit in the country. It's regulated by NACHA and is actually more secure than a paper check, which can be lost or intercepted.",
-      "Good question. Your banking info is encrypted and processed through a regulated federal network. Honestly a paper check is riskier -- it has your full account number printed on it and can be stolen in the mail.",
-      "ACH has been the backbone of business payments since the 1970s. Every payroll run, utility payment, and tax payment uses the same network. It's one of the most audited payment systems in existence."
-    ]);
-  }
-
-  // -- HOW IT WORKS --
-  if(type === "howworks"){
-    return pick([
-      "Simple version: instead of waiting on a check, payment routes directly to your bank account. You get paid earlier, you know exactly when it's coming, and nothing to cash or wait to clear.",
-      "ACH is a direct bank-to-bank transfer. We enroll your account, and instead of a check being issued and mailed, the funds go straight to your bank. Usually settles in 1-2 business days.",
-      "Think of it like direct deposit for your invoices. The buyer's payment routes straight to your account electronically -- faster, more predictable, and no check handling on your end."
-    ]);
-  }
-
-  // -- SPANISH --
-  if(type === "spanish"){
-    var rES = isHighVol ? "0.75%" : "1.2%";
-    return pick([
-      "Entiendo su preocupacion. Con ACH usted recibe los pagos directamente en su cuenta bancaria, tipicamente 20 a 30 dias antes de lo normal. La tarifa es del "+rES+", pero la mayoria encuentran que el flujo de caja anticipado vale la pena.",
-      "Lo comprendo. La tarifa del "+rES+" existe, pero a cambio recibe su pago semanas antes de lo habitual. Para muchos proveedores eso significa mejor liquidez y menos espera en cada factura.",
-      "Tiene razon en preguntar. Pienselo asi: en lugar de esperar 30 o 60 dias, el dinero llega directamente a su cuenta en dias. El "+rES+" es el costo de ese anticipo, y la mayoria de nuestros proveedores dicen que vale la pena."
-    ]);
-  }
-
-  // -- GENERAL --
-  var rGen = isHighVol ? "0.75%" : "1.2%";
-  return pick([
-    "Here's the straight version: there's a "+rGen+" fee, and in exchange you get paid significantly faster than standard terms -- typically 20-30 days earlier. For most suppliers that early cash flow more than covers the fee.",
-    "The trade-off is simple: "+rGen+" fee, and you stop waiting on checks and get paid early. Whether that math works depends on your current terms. What are you typically sitting on with this buyer?",
-    "I'll be direct: "+rGen+" fee, paid on your side. What you get is early payment -- weeks ahead of standard terms -- and guaranteed delivery. Most suppliers decide it's worth it after the first payment.",
-    "It comes down to this: "+rGen+" to get paid 20-30 days faster and never chase a check again. For a lot of businesses that cash flow improvement is worth more than the fee costs them. Happy to walk through the numbers if that helps."
-  ]);
-}
-
-
-function typewrite(el, txt){
-  if(G.twi){ clearInterval(G.twi); G.twi=null; }
-  el.textContent = "";
-  var i=0, chars=txt.split("");
-  G.twi = setInterval(function(){
-    if(i<chars.length){ el.textContent+=chars[i]; i++; }
-    else { clearInterval(G.twi); G.twi=null; }
-  }, 20);
-}
-
-// -- GENERATE RESPONSE --
-function doGen(){
-  var text = $$("OBJ").value.trim();
-  if(!text) return;
-  if(G.twi){ clearInterval(G.twi); G.twi=null; }
-  var sc=calcProb(text), tag=getTag(text), act=getAct(text,sc), sp=G.suppliers[G.idx];
-  var el=$$("AI-RESP");
-  el.textContent = "Analyzing objection...";
-  updateTrans();
-  $$("cCONF").textContent="90%"; $$("cOBJ").textContent=tag; $$("cACT").textContent=act; $$("cCLOSE").textContent=sc+"%";
-  $$("mSTRAT").textContent=getStrat(text,sc); $$("mHEAT").textContent=getHeat(sc);
-  $$("iCOACH").textContent=getCoach(text,sc);
-  $$("iCRM").textContent=sp.company+": Discussed electronic payment options. Contact: "+sp.contact+". Outcome: "+$$("OUT").value+".";
-  $$("iEMAIL").textContent="Hi "+sp.contact+", thank you for your time. ACH may be a strong fit to help you receive payments faster.";
-  // Determine rate tier based on avg invoice volume
-  var avgNum = parseFloat((sp.avg||"0").replace(/[^0-9.]/g,"")) || 0;
-  var rateTier = "1.2%";
-  var rateNote = "";
-  if(avgNum >= 650000){
-    rateTier = "0.75%";
-    rateNote = "This account qualifies for the 0.75% preferred rate due to high volume (over $650k). Lead with this as a positive - it shows you are giving them your best rate.";
-  } else {
-    rateNote = "Standard rate is 1.2% paid by the supplier. You can negotiate down to 0.95% if they push back on cost - but do NOT open with the discount. Only offer it if they are close to closing and the fee is the sticking point.";
-  }
-  var sysP="You are a real B2B payment enrollment sales rep for PayPilot. Your job is to enroll suppliers onto ACH or VCC electronic payment programs. The supplier DOES pay a fee - that is the objection you need to overcome. CRITICAL FEE STRUCTURE: Base rate is "+rateTier+" of invoice volume (paid by the supplier). "+rateNote+" Your goal is to convince them the trade-off is worth it: they get paid SIGNIFICANTLY FASTER (often 20-30 days faster than net terms), guaranteed payment with no bounced checks, and simplified reconciliation. Early payment cash flow is the main value prop. Give ONE short, natural, conversational reply (2-4 sentences). Address their SPECIFIC concern. IMPORTANT: Do NOT use the company name or contact name in your response - the rep will verify those verbally. Write the response as if speaking naturally without knowing their name yet. DO NOT be robotic or scripted. Industry context: "+sp.industry+", Avg invoice: "+sp.avg+", Objection type: "+tag+".";
-  fetch("https://api.anthropic.com/v1/messages",{
-    method:"POST",
-    headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01"},
-    body:JSON.stringify({
-      model:"claude-sonnet-4-20250514",
-      max_tokens:200,
-      system:sysP,
-      messages:[{role:"user",content:"The supplier just said: \""+text+"\" -- Write your reply now, speaking directly to them:"}]
-    })
-  }).then(function(r){ return r.json(); }).then(function(d){
-    var resp = "";
-    if(d.content && d.content[0] && d.content[0].text){
-      resp = d.content[0].text.trim();
-      // Strip any preamble like "Here's my reply:" 
-      // Strip preamble words
-      var preambles = ["here is my reply:","here's my reply:","my reply:","response:","rep:","sales rep:","here is:","here's:"];
-      var rl = resp.toLowerCase();
-      for(var pi=0; pi<preambles.length; pi++){
-        if(rl.indexOf(preambles[pi])===0){ resp = resp.slice(preambles[pi].length).trim(); break; }
-      }
-    }
-    if(!resp) resp = getFB(text);
-    el.textContent=""; typewrite(el, resp);
-  }).catch(function(){ el.textContent=""; typewrite(el, getFB(text)); });
-}
-
-// -- LOG CALL --
-function logCall(){
-  var h=gh(), sp=G.suppliers[G.idx];
-  h.unshift({supplier:sp.company,objection:$$("OBJ").value.trim(),outcome:$$("OUT").value,enrollment:$$("ENR").value,createdAt:new Date().toLocaleString()});
-  sh(h); renderHist(); updateStats(); renderMgr();
-}
-function markDone(){ $$("ENR").value="Completed"; $$("OUT").value="Converted"; }
-
-// -- RENDER --
-function tagH(o){
-  if(o==="Converted") return '<span class="TAG T-ok">Converted</span>';
-  if(o==="Rejected") return '<span class="TAG T-no">Rejected</span>';
-  if(o==="Follow Up Needed") return '<span class="TAG T-fu">Follow Up</span>';
-  return '<span class="TAG T-pd">Pending</span>';
-}
-
-function renderHist(){
-  var h=gh(), el=$$("HIST");
-  if(!h.length){ el.innerHTML='<p class="MUTED">No calls logged yet.</p>'; return; }
-  var html="";
-  for(var i=0;i<h.length;i++){
-    var x=h[i];
-    html+='<div class="HE"><div class="HE-top"><span class="HE-name">'+x.supplier+'</span>'+tagH(x.outcome)+'</div><div class="HE-date">'+x.createdAt+'</div><div class="HE-obj">'+(x.objection||"--")+'</div></div>';
-  }
-  el.innerHTML=html;
-}
-
-function updateStats(){
-  var h=gh(), calls=h.length, conv=0, tags={};
-  for(var i=0;i<h.length;i++){
-    if(h[i].outcome==="Converted") conv++;
-    var t=getTag(h[i].objection||""); tags[t]=(tags[t]||0)+1;
-  }
-  var rate=calls?Math.round((conv/calls)*100):0;
-  var top="None",tc=0;
-  for(var k in tags){ if(tags[k]>tc){ top=k; tc=tags[k]; } }
-  $$("sLOG").textContent=calls; $$("sCONV").textContent=conv;
-  $$("sRATE").textContent=rate+"%"; $$("sTOP").textContent=top;
-}
-
-function renderMgr(){
-  var hist=gh(), tot=hist.length, won=0, bd={}, outMap={}, enrMap={}, indMap={};
-  for(var i=0;i<hist.length;i++){
-    var x=hist[i];
-    if(x.outcome==="Converted") won++;
-    var t=getTag(x.objection||""); bd[t]=(bd[t]||0)+1;
-    outMap[x.outcome||"Pending"]=(outMap[x.outcome||"Pending"]||0)+1;
-    enrMap[x.enrollment||"Pending"]=(enrMap[x.enrollment||"Pending"]||0)+1;
-    // industry from supplier name match
-    var ind="Other";
-    for(var si=0;si<G.suppliers.length;si++){
-      if(G.suppliers[si].company===x.supplier){ ind=G.suppliers[si].industry; break; }
-    }
-    indMap[ind]=(indMap[ind]||0)+1;
-  }
-  var rate=tot?Math.round((won/tot)*100):0;
-  $$("mCALLS").textContent=tot; $$("mCONV").textContent=won;
-  $$("mRATE").textContent=rate+"%";
-
-  // Top objection
-  var top="None",tc=0;
-  for(var k in bd){ if(bd[k]>tc){ top=k; tc=bd[k]; } }
-  $$("mTOP").textContent=top;
-
-  var noData = '<p class="MUTED" style="padding:8px 0">No calls logged yet. Log calls in Rep View.</p>';
-
-  // -- OBJECTION BREAKDOWN --
-  var keys=Object.keys(bd);
-  if(!keys.length){ $$("OBDWN").innerHTML=noData; }
-  else {
-    keys.sort(function(a,b){ return bd[b]-bd[a]; });
-    var mx=bd[keys[0]], html="";
-    for(var j=0;j<keys.length;j++){
-      var kk=keys[j],vv=bd[kk];
-      html+='<div class="OBJ"><div class="OBJ-lbl">'+kk+'</div><div class="OBJ-trk"><div class="OBJ-fill" style="width:'+Math.round((vv/mx)*100)+'%"></div></div><div class="OBJ-cnt">'+vv+'</div></div>';
-    }
-    $$("OBDWN").innerHTML=html;
-  }
-
-  // -- OUTCOME PIE CHART (canvas) --
-  var cvs = $$("OUT-CHART");
-  var lgd = $$("OUT-LEGEND");
-  var outColors = {"Converted":"#059669","Pending":"#9ca3af","Follow Up Needed":"#d97706","Rejected":"#dc2626"};
-  var outKeys = Object.keys(outMap);
-  if(cvs && outKeys.length){
-    var ctx = cvs.getContext("2d");
-    var W=cvs.width, H=cvs.height, cx=W/2, cy=H/2, R=Math.min(W,H)/2-18;
-    ctx.clearRect(0,0,W,H);
-    var startAngle = -Math.PI/2, total2=0;
-    for(var ok=0;ok<outKeys.length;ok++) total2+=outMap[outKeys[ok]];
-    for(var ok2=0;ok2<outKeys.length;ok2++){
-      var ok2k=outKeys[ok2], ok2v=outMap[ok2k];
-      var slice=(ok2v/total2)*2*Math.PI;
-      ctx.beginPath(); ctx.moveTo(cx,cy);
-      ctx.arc(cx,cy,R,startAngle,startAngle+slice);
-      ctx.closePath();
-      ctx.fillStyle=outColors[ok2k]||"#6b7280"; ctx.fill();
-      ctx.strokeStyle="#fff"; ctx.lineWidth=2; ctx.stroke();
-      startAngle+=slice;
-    }
-    // Center label
-    ctx.fillStyle="#0f172a"; ctx.font="bold 22px Inter,sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillText(tot, cx, cy-8);
-    ctx.fillStyle="#6b7280"; ctx.font="12px Inter,sans-serif";
-    ctx.fillText("calls", cx, cy+12);
-    // Legend
-    var legHtml="";
-    for(var lk=0;lk<outKeys.length;lk++){
-      var lkk=outKeys[lk];
-      legHtml+='<div class="LEG-ITEM"><div class="LEG-DOT" style="background:'+(outColors[lkk]||"#6b7280")+'"></div>'+lkk+' ('+outMap[lkk]+')</div>';
-    }
-    lgd.innerHTML=legHtml;
-  } else if(cvs){
-    var ctx2=cvs.getContext("2d"); ctx2.clearRect(0,0,cvs.width,cvs.height);
-    ctx2.fillStyle="#9ca3af"; ctx2.font="13px Inter,sans-serif"; ctx2.textAlign="center"; ctx2.textBaseline="middle";
-    ctx2.fillText("No data yet", cvs.width/2, cvs.height/2);
-    if(lgd) lgd.innerHTML="";
-  }
-
-  // -- ENROLLMENT FUNNEL --
-  var fEl=$$("FUNNEL");
-  if(fEl){
-    var fStages=[
-      {lbl:"Calls Made", key:null, color:"linear-gradient(90deg,#1d4ed8,#60a5fa)", n:tot},
-      {lbl:"Enrollment Sent", key:"Enrollment Sent", color:"linear-gradient(90deg,#0891b2,#22d3ee)", n:enrMap["Enrollment Sent"]||0},
-      {lbl:"Completed", key:"Completed", color:"linear-gradient(90deg,#059669,#34d399)", n:enrMap["Completed"]||0},
-      {lbl:"Converted", key:null, color:"linear-gradient(90deg,#047857,#10b981)", n:won}
-    ];
-    var fMax=Math.max(tot,1), fHtml="";
-    for(var fi=0;fi<fStages.length;fi++){
-      var fs=fStages[fi], fpct=Math.round((fs.n/fMax)*100);
-      fHtml+='<div class="FUNNEL-ROW">'+
-        '<div class="FUNNEL-LBL">'+fs.lbl+'</div>'+
-        '<div class="FUNNEL-BAR-WRAP"><div class="FUNNEL-BAR" style="width:'+fpct+'%;background:'+fs.color+'">'+
-          (fpct>15?fs.n:'')+'</div></div>'+
-        '<div class="FUNNEL-N">'+(fpct<=15?fs.n:'')+'</div>'+
-      '</div>';
-    }
-    if(!tot) fHtml=noData;
-    fEl.innerHTML=fHtml;
-  }
-
-  // -- INDUSTRY BREAKDOWN --
-  var indEl=$$("IND-BRKDN");
-  if(indEl){
-    var indKeys=Object.keys(indMap);
-    if(!indKeys.length){ indEl.innerHTML=noData; }
-    else {
-      indKeys.sort(function(a,b){ return indMap[b]-indMap[a]; });
-      var indMax=indMap[indKeys[0]], indHtml="";
-      var indColors=["#8b5cf6","#2563eb","#0891b2","#059669","#d97706","#ec4899","#6b7280"];
-      for(var ii=0;ii<indKeys.length;ii++){
-        var ik=indKeys[ii], iv=indMap[ik];
-        indHtml+='<div class="OBJ">'+
-          '<div class="OBJ-lbl">'+ik+'</div>'+
-          '<div class="OBJ-trk"><div class="OBJ-fill" style="width:'+Math.round((iv/indMax)*100)+'%;background:'+indColors[ii%indColors.length]+'"></div></div>'+
-          '<div class="OBJ-cnt">'+iv+'</div>'+
-        '</div>';
-      }
-      indEl.innerHTML=indHtml;
-    }
-  }
-
-  // -- FULL CALL LOG TABLE --
-  var logEl=$$("CALL-LOG");
-  if(logEl){
-    if(!hist.length){ logEl.innerHTML='<tr><td style="padding:20px;color:#9ca3af;font-size:14px">No calls logged yet.</td></tr>'; }
-    else {
-      var tHtml='<thead class="LOG-HDR"><tr><th>Company</th><th>Outcome</th><th>Enrollment</th><th>Objection</th><th>Date/Time</th></tr></thead><tbody>';
-      for(var li=0;li<hist.length;li++){
-        var lx=hist[li];
-        var outStyle=lx.outcome==="Converted"?"color:#059669;font-weight:700":lx.outcome==="Rejected"?"color:#dc2626;font-weight:700":"";
-        tHtml+='<tr class="LOG-ROW">'+
-          '<td style="font-weight:700">'+lx.supplier+'</td>'+
-          '<td><span style="'+outStyle+'">'+lx.outcome+'</span></td>'+
-          '<td>'+lx.enrollment+'</td>'+
-          '<td style="color:#6b7280;font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(lx.objection||"--")+'</td>'+
-          '<td style="color:#9ca3af;font-size:12px;white-space:nowrap">'+lx.createdAt+'</td>'+
-        '</tr>';
-      }
-      tHtml+='</tbody>';
-      logEl.innerHTML=tHtml;
-    }
-  }
-
-  // -- AI COACHING INSIGHTS --
-  var insEl=$$("INSIGHTS");
-  if(insEl){
-    if(!tot){ insEl.innerHTML=noData; }
-    else {
-      var insights=[];
-      var convRate=tot?Math.round((won/tot)*100):0;
-      // Win rate insight
-      if(convRate>=50) insights.push({icon:"&#127881;",cls:"great",title:"Strong conversion rate",body:"You're converting "+convRate+"% of calls. That's above average. Keep focusing on ACH speed and simplicity messaging."});
-      else if(convRate>=25) insights.push({icon:"&#128200;",cls:"",title:"Conversion rate: "+convRate+"%",body:"There's room to grow. Try spending more time on ACH benefits before asking to enroll. Push the 'get paid faster' angle harder."});
-      else insights.push({icon:"&#128337;",cls:"warn",title:"Low conversion rate: "+convRate+"%",body:"Focus on listening more before pitching. Match your response to the specific objection -- use the AI suggestions more aggressively."});
-      // Top objection insight
-      if(top !== "None"){
-        var objTips={"Cost":"Cost objections mean they think ACH costs them money. Clarify there are NO fees to the supplier -- only to the buyer.","Payment Method":"They like checks. Emphasize speed: ACH typically pays 2-5 days faster. Ask when they need funds the most.","Timing":"They're busy. Keep calls under 3 minutes. Lead with a simple yes/no close.","Accounting":"Loop in their accountant early. Offer an email summary they can forward.","Rejection":"Don't push. Ask what would make ACH a fit. Plant a seed and follow up."};
-        insights.push({icon:"&#9888;&#65039;",cls:"warn",title:"Top objection: "+top,body:objTips[top]||"Address this objection directly with the AI response suggestions."});
-      }
-      // Volume insight
-      if(tot>=10) insights.push({icon:"&#128293;",cls:"great",title:tot+" calls logged",body:"Great call volume. Review the outcome distribution to identify which supplier industries are converting best."});
-      else insights.push({icon:"&#128241;",cls:"",title:"Keep building call volume",body:"Log more calls to unlock pattern insights. Aim for 10+ calls to see meaningful trends in your dashboard."});
-      // Enrollment funnel insight
-      var enrSent=enrMap["Enrollment Sent"]||0, enrComp=enrMap["Completed"]||0;
-      if(enrSent>enrComp && enrSent>0) insights.push({icon:"&#128203;",cls:"warn",title:enrSent-enrComp+" enrollment(s) not yet completed",body:"Follow up with suppliers who received enrollment but haven't completed. A quick check-in call often closes these."});
-      var insHtml="";
-      for(var ii2=0;ii2<insights.length;ii2++){
-        var ins=insights[ii2];
-        insHtml+='<div class="INSIGHT-CARD '+ins.cls+'"><div class="INSIGHT-ICON">'+ins.icon+'</div><div class="INSIGHT-TITLE">'+ins.title+'</div><div class="INSIGHT-BODY">'+ins.body+'</div></div>';
-      }
-      insEl.innerHTML=insHtml;
-    }
-  }
-}
-
-// -- WIRE UP ALL EVENTS --
-document.addEventListener("DOMContentLoaded", function(){
-  // Login
-  $$("LP-BTN").addEventListener("click", doLogin);
-  $$("PW").addEventListener("keydown", function(e){ if(e.keyCode===13||e.key==="Enter") doLogin(); });
-  // Nav
-  $$("btnRep").addEventListener("click", showRep);
-  $$("btnMgr").addEventListener("click", showMgr);
-  $$("tbRep").addEventListener("click", showRep);
-  $$("tbMgr").addEventListener("click", showMgr);
-  $$("btnLogout").addEventListener("click", function(){ location.reload(); });
-  // Search
-  $$("SS").addEventListener("input", doSearch);
-  $$("SR").addEventListener("click", function(e){
-    var item = e.target.closest("[data-i]");
-    if(item) pickS(parseInt(item.getAttribute("data-i")));
-  });
-  document.addEventListener("click", function(e){
-    var sr=$$("SR"), ss=$$("SS");
-    if(sr&&!sr.contains(e.target)&&e.target!==ss) hide(sr);
-  });
-  // Web lookup
-  $$("btnFind").addEventListener("click", doLookup);
-  $$("WLI").addEventListener("keydown", function(e){ if(e.keyCode===13||e.key==="Enter") doLookup(); });
-  // Mic & translate
-  $$("btnMic").addEventListener("click", startMic);
-  $$("btnStop").addEventListener("click", stopMic);
-  $$("btnMicStart").addEventListener("click", startMic);
-  $$("btnMicStop").addEventListener("click", stopMic);
-  $$("btnTrans").addEventListener("click", toggleTrans);
-  $$("btnTransToggle").addEventListener("click", toggleTrans);
-  $$("btnEsMic").addEventListener("click", startEsMic);
-  // Speak buttons
-  $$("btnSpkEN").addEventListener("click", function(){ speakTxt($$("trEN").textContent, "en-US"); });
-  $$("btnSpkES").addEventListener("click", function(){
-    var lang = $$("btnSpkES").getAttribute("data-lang") || "es-MX";
-    speakTxt($$("trES").textContent, lang);
-  });
-  // Generate & log
-  $$("btnGen").addEventListener("click", doGen);
-  $$("btnLog").addEventListener("click", logCall);
-  $$("btnMark").addEventListener("click", markDone);
-  $$("btnClearLog").addEventListener("click", function(){
-    if(confirm("Clear all call history? This cannot be undone.")){
-      sh([]); renderHist(); updateStats(); renderMgr();
-    }
-  });
-  // Load voices early
-  if(window.speechSynthesis) window.speechSynthesis.getVoices();
-
-  // Script panel
-  var scriptBox = $$("SCRIPT-BOX");
-  var scriptBtn = $$("btnScript");
-  var scriptText = $$("SCRIPT-TEXT");
-  var scriptSaved = $$("scriptSaved");
-  var scriptSaveTimer = null;
-
-  // Load saved script
-  var savedScript = localStorage.getItem("pp_script");
-  if(savedScript && scriptText) scriptText.value = savedScript;
-
-  if(scriptBtn) scriptBtn.addEventListener("click", function(){
-    if(scriptBox.classList.contains("h")){
-      show(scriptBox);
-      scriptBtn.classList.add("open");
-      scriptBtn.innerHTML = "&#10005; Close Script";
-      if(scriptText) scriptText.focus();
-    } else {
-      hide(scriptBox);
-      scriptBtn.classList.remove("open");
-      scriptBtn.innerHTML = "&#128196; Script";
-    }
-  });
-
-  if($$("btnScriptClose")) $$("btnScriptClose").addEventListener("click", function(){
-    hide(scriptBox);
-    scriptBtn.classList.remove("open");
-    scriptBtn.innerHTML = "&#128196; Script";
-  });
-
-  if($$("btnScriptClear")) $$("btnScriptClear").addEventListener("click", function(){
-    if(confirm("Clear the script? This cannot be undone.")){
-      if(scriptText) scriptText.value = "";
-      localStorage.removeItem("pp_script");
-    }
-  });
-
-  // Auto-save script as they type
-  if(scriptText) scriptText.addEventListener("input", function(){
-    clearTimeout(scriptSaveTimer);
-    scriptSaveTimer = setTimeout(function(){
-      localStorage.setItem("pp_script", scriptText.value);
-      if(scriptSaved){
-        scriptSaved.textContent = "Saved";
-        scriptSaved.classList.add("show");
-        setTimeout(function(){ scriptSaved.classList.remove("show"); }, 2000);
-      }
-    }, 800);
-  });
-});
-</script>
-
-</body>
-</html>
