@@ -367,7 +367,15 @@ body.modal-open{overflow:hidden}
   width:42px; height:42px; border-radius:999px; border:none; cursor:pointer; font-weight:900; background:#f1f5f9;
 }
 .price-note{
-  padding:18px; border-radius:20px; background:linear-gradient(135deg,#eff6ff,#ecfeff); color:#0f172a;
+  padding:20px;
+  border-radius:20px;
+  background:linear-gradient(135deg,#eff6ff,#ecfeff);
+  color:#0f172a;
+  font-size:16px;
+  line-height:1.8;
+}
+.price-note strong{
+  font-size:18px;
 }
 
 @media (max-width: 1120px){
@@ -483,12 +491,12 @@ body.modal-open{overflow:hidden}
         <h3>Starter</h3>
         <div class="price">$99 <small>/ month</small></div>
         <ul>
-          <li>Basic AI objection responses</li>
-          <li>Script library access</li>
+          <li>AI helps write responses to common objections</li>
+          <li>Access to your script library</li>
           <li>Fast response generation</li>
           <li>Email support</li>
         </ul>
-        <button class="btn btn-primary" style="width:100%" onclick="showPricing('starter')">Get Started</button>
+        <button class="btn btn-primary" style="width:100%" onclick="showPricing('starter')">Start Starter</button>
       </div>
 
       <div class="plan featured">
@@ -496,10 +504,10 @@ body.modal-open{overflow:hidden}
         <h3>Pro</h3>
         <div class="price">$399 <small>/ month</small></div>
         <ul>
-          <li>Real-time AI call assistance</li>
-          <li>Advanced rebuttal intelligence</li>
-          <li>Multi-language responses</li>
-          <li>Performance analytics dashboard</li>
+          <li>Real-time AI help during live calls</li>
+          <li>Stronger objection rebuttals</li>
+          <li>Multi-language response support</li>
+          <li>Performance and usage analytics</li>
           <li>Priority support</li>
         </ul>
         <button class="btn btn-primary" style="width:100%" onclick="showPricing('pro')">Upgrade to Pro</button>
@@ -509,12 +517,12 @@ body.modal-open{overflow:hidden}
         <h3>Enterprise</h3>
         <div class="price">Custom <small>pricing</small></div>
         <ul>
-          <li>Custom AI training using your scripts</li>
+          <li>AI trained on your own scripts and workflow</li>
           <li>CRM and workflow integrations</li>
-          <li>Full team rollout and onboarding</li>
+          <li>Team onboarding and rollout support</li>
           <li>Dedicated support</li>
         </ul>
-        <button class="btn btn-primary" style="width:100%" onclick="showPricing('enterprise')">Contact Sales</button>
+        <button class="btn btn-primary" style="width:100%" onclick="showPricing('enterprise')">Talk to Sales</button>
       </div>
     </div>
   </div>
@@ -852,18 +860,25 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
     <div class="modal-head">
       <div>
         <h3 style="margin:0">Choose Your Plan</h3>
-        <div class="subtle">Simple pricing built to help reps move faster and close more.</div>
+        <div class="subtle">Simple monthly pricing for reps and teams.</div>
       </div>
       <button class="close" onclick="hidePricing()">✕</button>
     </div>
 
     <div class="price-note" id="pricingText">
-      Most teams choose <strong>Pro</strong> because it gives real-time AI support during calls, stronger rebuttals, multi-language response support, and full visibility into performance.
+      <strong>Pro</strong> is the best fit for most users.
 
       <br><br>
 
-      If you're just getting started, <strong>Starter</strong> keeps things simple.
-      If you're scaling a team and want customization, <strong>Enterprise</strong> gives you full control.
+      It gives you live AI help during calls, better rebuttals, support for multiple languages, and performance tracking so you can see what is working.
+
+      <br><br>
+
+      <strong>Starter</strong> is best if you want a lower-cost version with basic AI help.
+
+      <br><br>
+
+      <strong>Enterprise</strong> is best for teams that want custom setup, deeper integrations, and AI trained on their own process.
     </div>
 
     <div class="tool-row" style="margin-top:18px">
@@ -920,13 +935,58 @@ function loginDemo(){
 function showPricing(plan){
   const modal=document.getElementById('pricingModal');
   const text=document.getElementById('pricingText');
-  if(plan==='starter') {
-    text.innerHTML = "Starter is built for solo reps or early teams that want clean AI objection help, script access, and a simple entry point without the full analytics stack.";
-  } else if(plan==='enterprise') {
-    text.innerHTML = "Enterprise is for teams that want custom AI training, CRM and workflow integrations, onboarding support, and a more controlled rollout across the organization.";
+
+  if(plan==='starter'){
+    text.innerHTML = `
+      <strong>Starter — $99/month</strong>
+
+      <br><br>
+
+      Best for solo reps or small teams that want simple AI help without paying for the full platform.
+
+      <br><br>
+
+      You get:
+      <br>• AI-generated objection responses
+      <br>• Script library access
+      <br>• Fast response generation
+      <br>• Email support
+    `;
+  } else if(plan==='enterprise'){
+    text.innerHTML = `
+      <strong>Enterprise — Custom Pricing</strong>
+
+      <br><br>
+
+      Best for larger teams that want PayPilot built around their exact workflow.
+
+      <br><br>
+
+      You get:
+      <br>• AI trained on your scripts
+      <br>• CRM and workflow integrations
+      <br>• Team onboarding
+      <br>• Dedicated support
+    `;
   } else {
-    text.innerHTML = "Most teams choose <strong>Pro</strong> because it gives real-time AI support during calls, stronger rebuttals, multi-language response support, and full visibility into performance.<br><br>If you're just getting started, <strong>Starter</strong> keeps things simple. If you're scaling a team and want customization, <strong>Enterprise</strong> gives you full control.";
+    text.innerHTML = `
+      <strong>Pro — $399/month</strong>
+
+      <br><br>
+
+      This is the best option for most users.
+
+      <br><br>
+
+      You get:
+      <br>• Live AI help during calls
+      <br>• Better rebuttals for objections
+      <br>• Multi-language response support
+      <br>• Performance analytics
+      <br>• Priority support
+    `;
   }
+
   modal.style.display='flex';
   document.body.classList.add('modal-open');
 }
@@ -1054,4 +1114,3 @@ function fakeStripe(plan, amount){
 </script>
 </body>
 </html>
-
