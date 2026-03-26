@@ -483,12 +483,12 @@ body.modal-open{overflow:hidden}
         <h3>Starter</h3>
         <div class="price">$99 <small>/ month</small></div>
         <ul>
-          <li>Dashboard access</li>
-          <li>Script library</li>
-          <li>Basic AI reply flow</li>
+          <li>Basic AI objection responses</li>
+          <li>Script library access</li>
+          <li>Fast response generation</li>
           <li>Email support</li>
         </ul>
-        <button class="btn btn-primary" style="width:100%" onclick="showPricing('starter')">Choose Starter</button>
+        <button class="btn btn-primary" style="width:100%" onclick="showPricing('starter')">Get Started</button>
       </div>
 
       <div class="plan featured">
@@ -496,24 +496,25 @@ body.modal-open{overflow:hidden}
         <h3>Pro</h3>
         <div class="price">$399 <small>/ month</small></div>
         <ul>
-          <li>Real-time AI responses</li>
-          <li>8-language mode</li>
-          <li>Advanced analytics</li>
-          <li>Manager dashboard</li>
+          <li>Real-time AI call assistance</li>
+          <li>Advanced rebuttal intelligence</li>
+          <li>Multi-language responses</li>
+          <li>Performance analytics dashboard</li>
+          <li>Priority support</li>
         </ul>
-        <button class="btn btn-primary" style="width:100%" onclick="showPricing('pro')">Choose Pro</button>
+        <button class="btn btn-primary" style="width:100%" onclick="showPricing('pro')">Upgrade to Pro</button>
       </div>
 
       <div class="plan">
         <h3>Enterprise</h3>
         <div class="price">Custom <small>pricing</small></div>
         <ul>
-          <li>Custom AI training</li>
-          <li>CRM integrations</li>
-          <li>Team onboarding</li>
-          <li>Priority support</li>
+          <li>Custom AI training using your scripts</li>
+          <li>CRM and workflow integrations</li>
+          <li>Full team rollout and onboarding</li>
+          <li>Dedicated support</li>
         </ul>
-        <button class="btn btn-primary" style="width:100%" onclick="showPricing('enterprise')">Talk to Sales</button>
+        <button class="btn btn-primary" style="width:100%" onclick="showPricing('enterprise')">Contact Sales</button>
       </div>
     </div>
   </div>
@@ -850,19 +851,24 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
   <div class="modal-box">
     <div class="modal-head">
       <div>
-        <h3 style="margin:0">Get Pricing</h3>
-        <div class="subtle">Choose a plan or use this as your Stripe entry point.</div>
+        <h3 style="margin:0">Choose Your Plan</h3>
+        <div class="subtle">Simple pricing built to help reps move faster and close more.</div>
       </div>
       <button class="close" onclick="hidePricing()">✕</button>
     </div>
 
     <div class="price-note" id="pricingText">
-      Pro is the best fit for most teams: live AI responses, translations, analytics, and manager visibility.
+      Most teams choose <strong>Pro</strong> because it gives real-time AI support during calls, stronger rebuttals, multi-language response support, and full visibility into performance.
+
+      <br><br>
+
+      If you're just getting started, <strong>Starter</strong> keeps things simple.
+      If you're scaling a team and want customization, <strong>Enterprise</strong> gives you full control.
     </div>
 
     <div class="tool-row" style="margin-top:18px">
-      <button class="app-btn blue" onclick="fakeStripe('Pro',399)">Start Pro</button>
-      <button class="app-btn line" onclick="enterApp(); hidePricing();">Open Demo Instead</button>
+      <button class="app-btn blue" onclick="fakeStripe('Pro',399)">Start Pro Plan</button>
+      <button class="app-btn line" onclick="enterApp(); hidePricing();">Try Demo First</button>
     </div>
   </div>
 </div>
@@ -914,9 +920,13 @@ function loginDemo(){
 function showPricing(plan){
   const modal=document.getElementById('pricingModal');
   const text=document.getElementById('pricingText');
-  if(plan==='starter') text.textContent='Starter is built for solo reps who want scripts and faster objection handling without the full analytics stack.';
-  else if(plan==='enterprise') text.textContent='Enterprise is for teams that want rollout support, custom AI training, and deeper integrations.';
-  else text.textContent='Pro is the best fit for most teams: live AI responses, translations, analytics, and manager visibility.';
+  if(plan==='starter') {
+    text.innerHTML = "Starter is built for solo reps or early teams that want clean AI objection help, script access, and a simple entry point without the full analytics stack.";
+  } else if(plan==='enterprise') {
+    text.innerHTML = "Enterprise is for teams that want custom AI training, CRM and workflow integrations, onboarding support, and a more controlled rollout across the organization.";
+  } else {
+    text.innerHTML = "Most teams choose <strong>Pro</strong> because it gives real-time AI support during calls, stronger rebuttals, multi-language response support, and full visibility into performance.<br><br>If you're just getting started, <strong>Starter</strong> keeps things simple. If you're scaling a team and want customization, <strong>Enterprise</strong> gives you full control.";
+  }
   modal.style.display='flex';
   document.body.classList.add('modal-open');
 }
@@ -1044,4 +1054,3 @@ function fakeStripe(plan, amount){
 </script>
 </body>
 </html>
-
