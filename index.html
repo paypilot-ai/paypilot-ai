@@ -20,7 +20,6 @@
   --text:#0f172a;
   --muted:#64748b;
   --blue:#4f7cff;
-  --blue-2:#7aa2ff;
   --cyan:#35d6ff;
   --purple:#8b5cf6;
   --green:#22c55e;
@@ -28,16 +27,14 @@
   --red:#ef4444;
   --shadow:0 20px 60px rgba(2,8,23,.18);
   --shadow-lg:0 40px 100px rgba(2,8,23,.38);
-  --radius:24px;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;font-family:Inter,system-ui,sans-serif;background:#eef4fb;color:var(--text)}
 button,input,textarea,select{font:inherit}
-img{max-width:100%}
 .hidden{display:none!important}
 body.modal-open{overflow:hidden}
 
-/* marketing */
+/* ===== MARKETING ===== */
 #home{
   min-height:100vh;
   color:#fff;
@@ -51,16 +48,16 @@ body.modal-open{overflow:hidden}
 }
 .grid-noise{
   position:absolute; inset:0; pointer-events:none; opacity:.12;
-  background-image: radial-gradient(circle, rgba(255,255,255,.18) 1px, transparent 1px);
-  background-size: 28px 28px;
-  mask-image: linear-gradient(180deg, rgba(0,0,0,.5), transparent 85%);
+  background-image:radial-gradient(circle, rgba(255,255,255,.18) 1px, transparent 1px);
+  background-size:28px 28px;
+  mask-image:linear-gradient(180deg, rgba(0,0,0,.5), transparent 85%);
 }
 .nav{
   position:sticky; top:0; z-index:30;
   display:flex; align-items:center; justify-content:space-between;
   padding:18px 28px;
   background:rgba(6,16,29,.62);
-  backdrop-filter: blur(20px);
+  backdrop-filter:blur(20px);
   border-bottom:1px solid rgba(255,255,255,.08);
 }
 .brand{
@@ -124,6 +121,7 @@ body.modal-open{overflow:hidden}
 }
 .hero-metric strong{display:block; font-size:30px; color:#fff; letter-spacing:-.04em}
 .hero-metric span{font-size:12px; color:rgba(255,255,255,.62); text-transform:uppercase; letter-spacing:.12em; font-weight:700}
+
 .device{
   position:relative;
   padding:18px;
@@ -236,8 +234,10 @@ body.modal-open{overflow:hidden}
   margin-bottom:8px;
 }
 .plan ul{padding-left:18px; color:#475569; line-height:2; margin:18px 0 24px}
+.plan-actions{display:flex; gap:10px; flex-wrap:wrap}
+.plan-actions .btn{flex:1}
 
-/* auth */
+/* ===== AUTH ===== */
 #auth{
   min-height:100vh;
   background:
@@ -268,7 +268,7 @@ body.modal-open{overflow:hidden}
   background:#fff; border-color:#93c5fd; box-shadow:0 0 0 4px rgba(79,124,255,.10);
 }
 
-/* app */
+/* ===== APP ===== */
 #app{display:none; min-height:100vh; background:#eef4fb}
 .shell{display:grid; grid-template-columns:280px 1fr; min-height:100vh}
 .sidebar{
@@ -366,15 +366,42 @@ body.modal-open{overflow:hidden}
 .code{
   white-space:pre-wrap; background:#f8fbff; border-radius:20px; padding:16px; border:1px solid #e2e8f0; color:#334155;
 }
+.plan-only{
+  display:none;
+}
+.plan-banner{
+  margin-bottom:16px;
+  padding:16px 18px;
+  border-radius:20px;
+  background:linear-gradient(135deg,#eff6ff,#f0fdf4);
+  color:#0f172a;
+  font-weight:600;
+}
+.enterprise-panel{
+  padding:18px;
+  border-radius:22px;
+  background:linear-gradient(135deg,#fff7ed,#eff6ff);
+  border:1px solid #fed7aa;
+}
+.enterprise-panel h4{
+  margin:0 0 8px;
+  font-size:18px;
+}
+.enterprise-bullets{
+  margin:0;
+  padding-left:18px;
+  line-height:1.9;
+  color:#475569;
+}
 
-/* modal */
+/* ===== MODAL ===== */
 .modal{
   position:fixed; inset:0; z-index:50;
   background:rgba(2,8,23,.62); backdrop-filter:blur(8px);
   display:none; align-items:center; justify-content:center; padding:20px;
 }
 .modal-box{
-  width:min(580px,100%);
+  width:min(640px,100%);
   background:#fff; color:var(--text);
   border-radius:30px; padding:28px;
   box-shadow:var(--shadow-lg);
@@ -426,7 +453,7 @@ body.modal-open{overflow:hidden}
     <div class="nav-actions">
       <button class="btn btn-ghost" onclick="showPricing()">Get Pricing</button>
       <button class="btn btn-white" onclick="showAuth()">Login</button>
-      <button class="btn btn-primary" onclick="enterApp()">Open Demo</button>
+      <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Open Demo</button>
     </div>
   </div>
 
@@ -437,7 +464,7 @@ body.modal-open{overflow:hidden}
       <p>PayPilot turns live objections into clean rebuttals, faster call control, better scripting, and a product experience that feels premium the second someone opens it.</p>
 
       <div class="hero-actions">
-        <button class="btn btn-primary" onclick="enterApp()">Launch Demo</button>
+        <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Launch Pro Demo</button>
         <button class="btn btn-ghost" onclick="showPricing()">See Plans</button>
       </div>
 
@@ -516,7 +543,10 @@ body.modal-open{overflow:hidden}
           <li>Fast response generation</li>
           <li>Email support</li>
         </ul>
-        <button class="btn btn-primary" style="width:100%" onclick="showPricing('starter')">Start Starter</button>
+        <div class="plan-actions">
+          <button class="btn btn-primary" onclick="showPricing('starter')">View Plan</button>
+          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="enterPlanDemo('starter')">Try Demo</button>
+        </div>
       </div>
 
       <div class="plan featured">
@@ -533,7 +563,10 @@ body.modal-open{overflow:hidden}
           <li>Performance and usage analytics</li>
           <li>Priority support</li>
         </ul>
-        <button class="btn btn-primary" style="width:100%" onclick="showPricing('pro')">Upgrade to Pro</button>
+        <div class="plan-actions">
+          <button class="btn btn-primary" onclick="showPricing('pro')">View Plan</button>
+          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="enterPlanDemo('pro')">Try Demo</button>
+        </div>
       </div>
 
       <div class="plan">
@@ -548,7 +581,10 @@ body.modal-open{overflow:hidden}
           <li>Team onboarding and rollout support</li>
           <li>Dedicated support</li>
         </ul>
-        <button class="btn btn-primary" style="width:100%" onclick="showPricing('enterprise')">Talk to Sales</button>
+        <div class="plan-actions">
+          <button class="btn btn-primary" onclick="showPricing('enterprise')">View Plan</button>
+          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="enterPlanDemo('enterprise')">Try Demo</button>
+        </div>
       </div>
     </div>
   </div>
@@ -572,6 +608,13 @@ body.modal-open{overflow:hidden}
 
     <label class="label">Password</label>
     <input class="input" id="loginPass" type="password" value="demo1234" />
+
+    <label class="label">Demo Plan</label>
+    <select class="select" id="loginPlan">
+      <option value="starter">Starter Demo</option>
+      <option value="pro" selected>Pro Demo</option>
+      <option value="enterprise">Enterprise Demo</option>
+    </select>
 
     <div class="tool-row" style="margin-top:18px">
       <button class="app-btn blue" onclick="loginDemo()">Login</button>
@@ -611,18 +654,20 @@ body.modal-open{overflow:hidden}
         </div>
         <div class="topbar-actions">
           <button class="app-btn line" onclick="goHome()">Home</button>
-          <button class="app-btn soft" onclick="showPricing()">Get Pricing</button>
+          <button class="app-btn soft" onclick="showPricing(currentPlan)">Get Pricing</button>
           <button class="app-btn blue" onclick="jumpToAssist()">Generate Response</button>
         </div>
       </div>
 
       <div class="main">
         <section class="page active" id="dashboard">
+          <div class="plan-banner" id="planBanner">You are viewing the Pro demo.</div>
+
           <div class="grid-4">
-            <div class="card"><div class="subtle">Calls today</div><div class="value">43</div></div>
-            <div class="card"><div class="subtle">Responses generated</div><div class="value">127</div></div>
-            <div class="card"><div class="subtle">Close score</div><div class="value">81%</div></div>
-            <div class="card"><div class="subtle">Active plan</div><div class="value" style="font-size:32px">Pro</div></div>
+            <div class="card"><div class="subtle">Calls today</div><div class="value" id="metricCalls">43</div></div>
+            <div class="card"><div class="subtle">Responses generated</div><div class="value" id="metricResponses">127</div></div>
+            <div class="card"><div class="subtle">Close score</div><div class="value" id="metricClose">81%</div></div>
+            <div class="card"><div class="subtle">Active plan</div><div class="value" style="font-size:32px" id="metricPlan">Pro</div></div>
           </div>
 
           <div class="dashboard-grid">
@@ -646,9 +691,21 @@ body.modal-open{overflow:hidden}
 
               <div class="card">
                 <div class="card-title" style="margin-bottom:12px">Best next step</div>
-                <div class="kpi">
+                <div class="kpi" id="nextStepBox">
                   <strong>Acknowledge → Reframe → Soft close</strong>
                   <div class="subtle" style="margin-top:8px">Start by validating the fee concern, then shift to speed, visibility, and reduced manual effort before asking a soft commitment question.</div>
+                </div>
+              </div>
+
+              <div class="card plan-only" id="enterpriseDashboardCard">
+                <div class="card-title" style="margin-bottom:12px">Enterprise rollout view</div>
+                <div class="enterprise-panel">
+                  <h4>Custom AI training enabled</h4>
+                  <ul class="enterprise-bullets">
+                    <li>Your scripts can be loaded into the assistant</li>
+                    <li>CRM sync and workflow integrations can be added</li>
+                    <li>Role-based access and team rollout can be configured</li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -658,7 +715,7 @@ body.modal-open{overflow:hidden}
                 <div class="card-title" style="margin-bottom:12px">Manager highlights</div>
                 <table class="table">
                   <thead><tr><th>Rep</th><th>Calls</th><th>Reply quality</th><th>Status</th></tr></thead>
-                  <tbody>
+                  <tbody id="managerTable">
                     <tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr>
                     <tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr>
                     <tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>
@@ -668,7 +725,7 @@ body.modal-open{overflow:hidden}
 
               <div class="card">
                 <div class="card-title" style="margin-bottom:12px">Most common objections</div>
-                <div class="script-list">
+                <div class="script-list" id="objectionList">
                   <div class="script-item"><b>Fee pushback</b><span class="subtle">Usually needs value reframing, not pressure.</span></div>
                   <div class="script-item"><b>“We prefer checks”</b><span class="subtle">Best answered with speed + remittance clarity.</span></div>
                   <div class="script-item"><b>Need owner approval</b><span class="subtle">Use an easy-forward explanation and soft close.</span></div>
@@ -725,6 +782,11 @@ body.modal-open{overflow:hidden}
               </div>
             </div>
           </div>
+
+          <div class="card plan-only" id="starterAssistNote" style="margin-top:16px">
+            <div class="card-title" style="margin-bottom:12px">Starter demo note</div>
+            <div class="subtle">Starter keeps things simple. This demo focuses on core objection help and scripts without the advanced analytics or enterprise rollout features.</div>
+          </div>
         </section>
 
         <section class="page" id="scripts">
@@ -768,16 +830,16 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
 
         <section class="page" id="analytics">
           <div class="grid-4">
-            <div class="card"><div class="subtle">Response quality</div><div class="value">89%</div></div>
-            <div class="card"><div class="subtle">Avg. handle time</div><div class="value">4.2m</div></div>
-            <div class="card"><div class="subtle">Objections solved</div><div class="value">67</div></div>
-            <div class="card"><div class="subtle">Rep adoption</div><div class="value">94%</div></div>
+            <div class="card"><div class="subtle">Response quality</div><div class="value" id="analyticsQuality">89%</div></div>
+            <div class="card"><div class="subtle">Avg. handle time</div><div class="value" id="analyticsTime">4.2m</div></div>
+            <div class="card"><div class="subtle">Objections solved</div><div class="value" id="analyticsSolved">67</div></div>
+            <div class="card"><div class="subtle">Rep adoption</div><div class="value" id="analyticsAdoption">94%</div></div>
           </div>
 
           <div class="two" style="margin-top:16px">
             <div class="card">
               <div class="card-title" style="margin-bottom:12px">Coaching Insights</div>
-              <div class="script-list">
+              <div class="script-list" id="insightList">
                 <div class="script-item"><b>What’s working</b> Acknowledge + reframe + soft close is outperforming direct closes.</div>
                 <div class="script-item"><b>What to improve</b> Reps should verify contact info before explaining fee structure.</div>
                 <div class="script-item"><b>AI suggestion</b> Bring the buyer-name reminder earlier in the pitch.</div>
@@ -793,6 +855,11 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
                 </tbody>
               </table>
             </div>
+          </div>
+
+          <div class="card plan-only" id="starterAnalyticsNote" style="margin-top:16px">
+            <div class="card-title" style="margin-bottom:12px">Starter analytics preview</div>
+            <div class="subtle">Starter customers see a simplified analytics snapshot. Full trend reporting and deeper management visibility are shown in the Pro and Enterprise demos.</div>
           </div>
         </section>
 
@@ -820,9 +887,9 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
                 <input class="input" id="profileCompany" value="PayPilot AI" />
                 <label class="label">Default plan</label>
                 <select class="select" id="profilePlan">
-                  <option value="Starter">Starter</option>
-                  <option value="Pro" selected>Pro</option>
-                  <option value="Enterprise">Enterprise</option>
+                  <option value="starter">Starter</option>
+                  <option value="pro" selected>Pro</option>
+                  <option value="enterprise">Enterprise</option>
                 </select>
 
                 <div class="tool-row">
@@ -844,6 +911,7 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
               </div>
               <p class="subtle">Great for solo reps getting started.</p>
               <button class="app-btn blue" onclick="fakeStripe('Starter',99)">Choose Starter</button>
+              <button class="app-btn line" style="margin-top:10px" onclick="enterPlanDemo('starter')">Preview Starter Demo</button>
             </div>
             <div class="card">
               <div class="card-title">Pro</div>
@@ -853,6 +921,7 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
               </div>
               <p class="subtle">Live AI, analytics, and translation.</p>
               <button class="app-btn blue" onclick="fakeStripe('Pro',399)">Choose Pro</button>
+              <button class="app-btn line" style="margin-top:10px" onclick="enterPlanDemo('pro')">Preview Pro Demo</button>
             </div>
             <div class="card">
               <div class="card-title">Enterprise</div>
@@ -862,6 +931,7 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
               </div>
               <p class="subtle">Custom AI training and rollout.</p>
               <button class="app-btn blue" onclick="fakeStripe('Enterprise',0)">Talk to Sales</button>
+              <button class="app-btn line" style="margin-top:10px" onclick="enterPlanDemo('enterprise')">Preview Enterprise Demo</button>
             </div>
           </div>
 
@@ -917,31 +987,135 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
     </div>
 
     <div class="tool-row" style="margin-top:18px">
-      <button class="app-btn blue" onclick="fakeStripe('Pro',399)">Start Pro Plan</button>
-      <button class="app-btn line" onclick="enterApp(); hidePricing();">Try Demo First</button>
+      <button class="app-btn blue" onclick="enterPlanDemo(currentPricingPlan || 'pro'); hidePricing();">Open Selected Demo</button>
+      <button class="app-btn line" onclick="hidePricing()">Close</button>
     </div>
   </div>
 </div>
 
 <script>
-const smartReplies = [
-  {
-    match: ["fee","1.2%","cost","pay a fee","processing fee"],
-    reply: "Totally understandable. A lot of businesses compare the fee to the time spent waiting on checks, dealing with mail delays, and manually reconciling payments. For many suppliers, the speed and payment detail end up being worth more than the processing cost. If that sounds fair, I can walk you through the secure setup now."
+let currentPlan = "pro";
+let currentPricingPlan = "pro";
+
+const planConfigs = {
+  starter: {
+    label: "Starter Plan",
+    planName: "Starter",
+    banner: "You are viewing the Starter demo. This version keeps things simple and focuses on core AI objection help and scripts.",
+    calls: "18",
+    responses: "41",
+    close: "63%",
+    quality: "74%",
+    time: "5.8m",
+    solved: "23",
+    adoption: "61%",
+    nextStepTitle: "Simple objection handling",
+    nextStepBody: "Keep the response short, clear, and easy to say on a live call. Starter is designed for fast help without extra layers.",
+    insights: [
+      ["What’s working", "Simple acknowledge-and-clarify responses work best here."],
+      ["What to improve", "Use the script library more often so the response feels more structured."],
+      ["AI suggestion", "Ask one clean follow-up question instead of stacking too much information."]
+    ],
+    objections: [
+      ["Fee pushback", "Use a simple value explanation without overcomplicating it."],
+      ["Check preference", "Explain speed and remittance clearly and keep it short."],
+      ["Not interested", "Use a soft exit and confirm whether timing is the real issue."]
+    ]
   },
-  {
-    match: ["checks","prefer checks","keep checks"],
-    reply: "No problem at all. A lot of suppliers start there. The biggest advantage of electronic payments is faster delivery and a detailed remittance with every payment, so there’s less guessing and less manual tracking. If you're open to it, I can show you what setup would look like."
+  pro: {
+    label: "Pro Plan",
+    planName: "Pro",
+    banner: "You are viewing the Pro demo. This is the main upgraded workspace with live assist, stronger rebuttals, and fuller analytics.",
+    calls: "43",
+    responses: "127",
+    close: "81%",
+    quality: "89%",
+    time: "4.2m",
+    solved: "67",
+    adoption: "94%",
+    nextStepTitle: "Acknowledge → Reframe → Soft close",
+    nextStepBody: "Start by validating the fee concern, then shift to speed, visibility, and reduced manual effort before asking a soft commitment question.",
+    insights: [
+      ["What’s working", "Acknowledge + reframe + soft close is outperforming direct closes."],
+      ["What to improve", "Reps should verify contact info before explaining fee structure."],
+      ["AI suggestion", "Bring the buyer-name reminder earlier in the pitch."]
+    ],
+    objections: [
+      ["Fee pushback", "Usually needs value reframing, not pressure."],
+      ["We prefer checks", "Best answered with speed + remittance clarity."],
+      ["Need owner approval", "Use an easy-forward explanation and soft close."]
+    ]
   },
-  {
-    match: ["not interested","no thanks","dont want it","don't want it"],
-    reply: "I understand. Before I let you go, let me just make sure your payment information is current so there aren’t any delays moving forward. And if speed ever becomes a bigger priority, this option will still be available."
-  },
-  {
-    match: ["owner","manager","need approval","boss"],
-    reply: "That makes sense. What usually helps is giving them a quick summary: payments arrive faster, remittance comes with every payment, and it cuts down on manual check handling. If you’d like, I can send over the secure setup steps so it’s easy for them to review."
+  enterprise: {
+    label: "Enterprise Plan",
+    planName: "Enterprise",
+    banner: "You are viewing the Enterprise demo. This version highlights customization, rollout support, training, and deeper integrations.",
+    calls: "112",
+    responses: "318",
+    close: "88%",
+    quality: "94%",
+    time: "3.7m",
+    solved: "146",
+    adoption: "98%",
+    nextStepTitle: "Coach + personalize + roll out at scale",
+    nextStepBody: "Enterprise focuses on repeatable team performance, custom training, and better AI guidance built around your real workflow.",
+    insights: [
+      ["What’s working", "Custom scripts and structured rollout are improving consistency across reps."],
+      ["What to improve", "Use plan-specific training paths for different rep levels."],
+      ["AI suggestion", "Connect CRM context so the assistant can personalize recommendations further."]
+    ],
+    objections: [
+      ["Security concerns", "Lead with process control, verification, and rollout safeguards."],
+      ["Workflow change resistance", "Frame the change around reduced manual effort and consistency."],
+      ["Decision-maker concern", "Use summary language built for internal forwarding and approvals."]
+    ]
   }
-];
+};
+
+const smartReplies = {
+  starter: [
+    {
+      match: ["fee","1.2%","cost","pay a fee","processing fee"],
+      reply: "Totally understand. Most suppliers compare the fee to the time saved from faster payments and less manual check handling. If it helps, I can keep the explanation simple."
+    },
+    {
+      match: ["checks","prefer checks","keep checks"],
+      reply: "That makes sense. The biggest reason people switch is usually speed and better payment detail, not because checks never work."
+    }
+  ],
+  pro: [
+    {
+      match: ["fee","1.2%","cost","pay a fee","processing fee"],
+      reply: "Totally understandable. A lot of businesses compare the fee to the time spent waiting on checks, dealing with mail delays, and manually reconciling payments. For many suppliers, the speed and payment detail end up being worth more than the processing cost. If that sounds fair, I can walk you through the secure setup now."
+    },
+    {
+      match: ["checks","prefer checks","keep checks"],
+      reply: "No problem at all. A lot of suppliers start there. The biggest advantage of electronic payments is faster delivery and a detailed remittance with every payment, so there’s less guessing and less manual tracking. If you're open to it, I can show you what setup would look like."
+    },
+    {
+      match: ["not interested","no thanks","dont want it","don't want it"],
+      reply: "I understand. Before I let you go, let me just make sure your payment information is current so there aren’t any delays moving forward. And if speed ever becomes a bigger priority, this option will still be available."
+    },
+    {
+      match: ["owner","manager","need approval","boss"],
+      reply: "That makes sense. What usually helps is giving them a quick summary: payments arrive faster, remittance comes with every payment, and it cuts down on manual check handling. If you’d like, I can send over the secure setup steps so it’s easy for them to review."
+    }
+  ],
+  enterprise: [
+    {
+      match: ["fee","1.2%","cost","pay a fee","processing fee"],
+      reply: "That’s a fair concern. At the enterprise level, the conversation is usually about total operational efficiency, payment visibility, and removing manual follow-up work across the team. If the process saves enough time and increases consistency, the value usually becomes much easier to justify."
+    },
+    {
+      match: ["security","scam","fraud","bank information"],
+      reply: "Completely fair. Enterprise teams usually need clear process control, secure enrollment, and visibility into how information is handled. That’s exactly where rollout structure and verification steps matter most."
+    },
+    {
+      match: ["workflow","change","training","used to checks"],
+      reply: "I understand. The best enterprise rollouts keep change minimal and focus only on the parts of the workflow that reduce manual effort and improve consistency. If that’s important, we’d map it around your current process."
+    }
+  ]
+};
 
 function goHome(){
   document.getElementById('home').style.display='block';
@@ -950,28 +1124,98 @@ function goHome(){
   hidePricing();
   window.scrollTo({top:0,behavior:'smooth'});
 }
+
 function showAuth(){
   document.getElementById('home').style.display='none';
   document.getElementById('auth').classList.remove('hidden');
   document.getElementById('app').style.display='none';
 }
-function enterApp(){
+
+function loginDemo(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const plan = document.getElementById('loginPlan').value;
+  if(!email || !pass){
+    alert('Enter an email and password.');
+    return;
+  }
+  enterPlanDemo(plan);
+}
+
+function enterPlanDemo(plan){
+  currentPlan = plan || "pro";
   document.getElementById('home').style.display='none';
   document.getElementById('auth').classList.add('hidden');
   document.getElementById('app').style.display='block';
   hidePricing();
+  applyPlanDemo(currentPlan);
 }
-function loginDemo(){
-  const email=document.getElementById('loginEmail').value.trim();
-  const pass=document.getElementById('loginPass').value.trim();
-  if(!email || !pass){ alert('Enter an email and password.'); return; }
-  enterApp();
-}
-function showPricing(plan){
-  const modal=document.getElementById('pricingModal');
-  const text=document.getElementById('pricingText');
 
-  if(plan==='starter'){
+function applyPlanDemo(plan){
+  const cfg = planConfigs[plan] || planConfigs.pro;
+
+  document.getElementById('planPill').textContent = cfg.label;
+  document.getElementById('metricPlan').textContent = cfg.planName;
+  document.getElementById('metricCalls').textContent = cfg.calls;
+  document.getElementById('metricResponses').textContent = cfg.responses;
+  document.getElementById('metricClose').textContent = cfg.close;
+  document.getElementById('analyticsQuality').textContent = cfg.quality;
+  document.getElementById('analyticsTime').textContent = cfg.time;
+  document.getElementById('analyticsSolved').textContent = cfg.solved;
+  document.getElementById('analyticsAdoption').textContent = cfg.adoption;
+  document.getElementById('planBanner').textContent = cfg.banner;
+
+  document.getElementById('nextStepBox').innerHTML = `
+    <strong>${cfg.nextStepTitle}</strong>
+    <div class="subtle" style="margin-top:8px">${cfg.nextStepBody}</div>
+  `;
+
+  const insightList = document.getElementById('insightList');
+  insightList.innerHTML = cfg.insights.map(i => `
+    <div class="script-item"><b>${i[0]}</b> ${i[1]}</div>
+  `).join('');
+
+  const objectionList = document.getElementById('objectionList');
+  objectionList.innerHTML = cfg.objections.map(o => `
+    <div class="script-item"><b>${o[0]}</b><span class="subtle">${o[1]}</span></div>
+  `).join('');
+
+  const managerTable = document.getElementById('managerTable');
+  if(plan === 'starter'){
+    managerTable.innerHTML = `
+      <tr><td>Sean</td><td>18</td><td>74%</td><td>⚡ Building</td></tr>
+      <tr><td>Alex</td><td>12</td><td>69%</td><td>↗ Learning</td></tr>
+      <tr><td>Tori</td><td>9</td><td>71%</td><td>✅ Steady</td></tr>
+    `;
+  } else if(plan === 'enterprise'){
+    managerTable.innerHTML = `
+      <tr><td>Sean</td><td>112</td><td>95%</td><td>🔥 Elite</td></tr>
+      <tr><td>Cory</td><td>98</td><td>91%</td><td>✅ Strong</td></tr>
+      <tr><td>Jess</td><td>87</td><td>89%</td><td>↗ Growing</td></tr>
+    `;
+  } else {
+    managerTable.innerHTML = `
+      <tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr>
+      <tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr>
+      <tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>
+    `;
+  }
+
+  document.getElementById('starterAssistNote').style.display = plan === 'starter' ? 'block' : 'none';
+  document.getElementById('starterAnalyticsNote').style.display = plan === 'starter' ? 'block' : 'none';
+  document.getElementById('enterpriseDashboardCard').style.display = plan === 'enterprise' ? 'block' : 'none';
+
+  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
+  showPage('dashboard');
+}
+
+function showPricing(plan){
+  currentPricingPlan = plan || "pro";
+  const modal = document.getElementById('pricingModal');
+  const text = document.getElementById('pricingText');
+
+  if(currentPricingPlan === 'starter'){
     text.innerHTML = `
       <strong>Starter — $99/month</strong>
 
@@ -986,8 +1230,15 @@ function showPricing(plan){
       <br>• Script library access
       <br>• Fast response generation
       <br>• Email support
+
+      <br><br>
+
+      Demo includes:
+      <br>• Simplified dashboard
+      <br>• Core AI response demo
+      <br>• Basic analytics preview
     `;
-  } else if(plan==='enterprise'){
+  } else if(currentPricingPlan === 'enterprise'){
     text.innerHTML = `
       <strong>Enterprise — Custom Pricing</strong>
 
@@ -1002,6 +1253,13 @@ function showPricing(plan){
       <br>• CRM and workflow integrations
       <br>• Team onboarding
       <br>• Dedicated support
+
+      <br><br>
+
+      Demo includes:
+      <br>• Enterprise dashboard view
+      <br>• Rollout and training panel
+      <br>• Enterprise-style analytics
     `;
   } else {
     text.innerHTML = `
@@ -1019,20 +1277,31 @@ function showPricing(plan){
       <br>• Multi-language response support
       <br>• Performance analytics
       <br>• Priority support
+
+      <br><br>
+
+      Demo includes:
+      <br>• Full upgraded workspace
+      <br>• Live assist view
+      <br>• Full analytics layout
     `;
   }
 
   modal.style.display='flex';
   document.body.classList.add('modal-open');
 }
+
 function hidePricing(){
   document.getElementById('pricingModal').style.display='none';
   document.body.classList.remove('modal-open');
 }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') hidePricing(); });
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') hidePricing();
+});
 
 function showPage(id, el){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById('pageTitle').textContent = ({
     dashboard:'Dashboard',
@@ -1042,104 +1311,141 @@ function showPage(id, el){
     settings:'Settings',
     billing:'Billing'
   })[id] || id;
+
   if(el){
-    document.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
   }
 }
+
 function jumpToAssist(){
   document.querySelectorAll('.side-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.page==='assist');
   });
   showPage('assist');
 }
+
 function fillExample(){
-  document.getElementById('quickObjection').value = "I don't want to pay 1.2% to get my own money.";
-}
-function loadFeeExample(){
-  document.getElementById('assistInput').value = "I don't want to pay a fee just to get my payment faster.";
-}
-function findReply(text){
-  const lower=text.toLowerCase();
-  for(const item of smartReplies){
-    if(item.match.some(m=>lower.includes(m))) return item.reply;
+  if(currentPlan === 'enterprise'){
+    document.getElementById('quickObjection').value = "We are concerned about security, process change, and team rollout.";
+  } else {
+    document.getElementById('quickObjection').value = "I don't want to pay 1.2% to get my own money.";
   }
+}
+
+function loadFeeExample(){
+  if(currentPlan === 'enterprise'){
+    document.getElementById('assistInput').value = "This sounds like too much process change for our team.";
+  } else {
+    document.getElementById('assistInput').value = "I don't want to pay a fee just to get my payment faster.";
+  }
+}
+
+function findReply(text){
+  const lower = text.toLowerCase();
+  const seeds = smartReplies[currentPlan] || smartReplies.pro;
+  for(const item of seeds){
+    if(item.match.some(m => lower.includes(m))) return item.reply;
+  }
+
+  if(currentPlan === 'starter'){
+    return "Got it. The simplest way to handle that is to keep the response clear, short, and focused on speed and less manual work.";
+  }
+  if(currentPlan === 'enterprise'){
+    return "That makes sense. At the enterprise level, the conversation usually needs to connect process control, rollout simplicity, and measurable operational value.";
+  }
+
   return "Got it. A lot of suppliers ask that at first. Usually the conversation comes down to speed, payment visibility, and removing manual check handling. If it helps, I can walk through how the setup works in a minute or two.";
 }
+
 function typeText(el, text){
-  el.textContent='';
-  let i=0;
-  const timer=setInterval(()=>{
+  el.textContent = '';
+  let i = 0;
+  const timer = setInterval(()=>{
     el.textContent += text.charAt(i);
     i++;
-    if(i>=text.length) clearInterval(timer);
+    if(i >= text.length) clearInterval(timer);
   }, 10);
 }
+
 function generateResponse(inputId, outputId){
-  const text=document.getElementById(inputId).value.trim();
-  if(!text){ alert('Type an objection first.'); return; }
-  const output=document.getElementById(outputId);
-  const tone=document.getElementById('toneSelect') ? document.getElementById('toneSelect').value : 'Confident';
-  const language=document.getElementById('langSelect') ? document.getElementById('langSelect').value : 'English';
-  let reply=findReply(text);
-  if(tone==='Warm') reply='Absolutely, I understand. ' + reply;
-  if(tone==='Direct') reply=reply.replace('Usually','Really');
-  if(language!=='English') reply += " (" + language + " mode ready)";
+  const text = document.getElementById(inputId).value.trim();
+  if(!text){
+    alert('Type an objection first.');
+    return;
+  }
+  const output = document.getElementById(outputId);
+  const tone = document.getElementById('toneSelect') ? document.getElementById('toneSelect').value : 'Confident';
+  const language = document.getElementById('langSelect') ? document.getElementById('langSelect').value : 'English';
+
+  let reply = findReply(text);
+
+  if(tone === 'Warm') reply = 'Absolutely, I understand. ' + reply;
+  if(tone === 'Direct') reply = reply.replace('Usually', 'Really').replace('usually', 'really');
+  if(language !== 'English') reply += " (" + language + " mode ready)";
   typeText(output, reply);
 }
+
 function translateResponse(){
-  const box=document.getElementById('assistResponse');
-  const lang=document.getElementById('langSelect').value;
+  const box = document.getElementById('assistResponse');
+  const lang = document.getElementById('langSelect').value;
   if(!box.textContent || box.textContent.includes('Paste an objection')){
     alert('Generate a response first.');
     return;
   }
   box.textContent = "Translated for " + lang + ": " + box.textContent;
 }
+
 function copyAssist(){
-  const txt=document.getElementById('assistResponse').textContent;
+  const txt = document.getElementById('assistResponse').textContent;
   navigator.clipboard.writeText(txt);
   alert('Response copied.');
 }
+
 function saveToHistory(){
-  const txt=document.getElementById('assistResponse').textContent;
+  const txt = document.getElementById('assistResponse').textContent;
   if(!txt || txt.includes('Paste an objection')){
     alert('Generate a response first.');
     return;
   }
-  const tbody=document.getElementById('historyTable');
-  const tr=document.createElement('tr');
-  tr.innerHTML='<td>Now</td><td>Saved AI reply</td><td>Saved</td>';
+  const tbody = document.getElementById('historyTable');
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td>Now</td><td>Saved AI reply</td><td>Saved</td>';
   tbody.prepend(tr);
   alert('Saved to history.');
 }
+
 function saveScript(){
-  const name=document.getElementById('scriptName').value.trim() || 'Custom Script';
+  const name = document.getElementById('scriptName').value.trim() || 'Custom Script';
   document.getElementById('scriptSavedNote').textContent = name + ' saved.';
 }
+
 function resetScript(){
-  document.getElementById('scriptName').value='';
-  document.getElementById('scriptBody').value=`Good morning / afternoon, is this [Supplier Name]?
+  document.getElementById('scriptName').value = '';
+  document.getElementById('scriptBody').value = `Good morning / afternoon, is this [Supplier Name]?
 
 My name is [Your Name], and I’m calling from [Company] on a recorded line.
 
 I’m reaching out because we process payments to you on behalf of [Client Name], and it looks like there was a request to get you set up for enhanced direct deposit.`;
-  document.getElementById('scriptSavedNote').textContent='';
+  document.getElementById('scriptSavedNote').textContent = '';
 }
+
 function saveSettings(){
-  const name=document.getElementById('profileName').value.trim() || 'User';
-  const plan=document.getElementById('profilePlan').value;
-  document.getElementById('profileNameView').textContent=name;
-  document.getElementById('avatarBox').textContent=name.charAt(0).toUpperCase();
-  document.getElementById('planPill').textContent=plan + ' Plan';
+  const name = document.getElementById('profileName').value.trim() || 'User';
+  const plan = document.getElementById('profilePlan').value;
+  document.getElementById('profileNameView').textContent = name;
+  document.getElementById('avatarBox').textContent = name.charAt(0).toUpperCase();
+  enterPlanDemo(plan);
   alert('Settings saved.');
 }
+
 function resetSettings(){
-  document.getElementById('profileName').value='Sean';
-  document.getElementById('profileBio').value='Charismatic sales rep using AI to move faster on live calls.';
-  document.getElementById('profileCompany').value='PayPilot AI';
-  document.getElementById('profilePlan').value='Pro';
+  document.getElementById('profileName').value = 'Sean';
+  document.getElementById('profileBio').value = 'Charismatic sales rep using AI to move faster on live calls.';
+  document.getElementById('profileCompany').value = 'PayPilot AI';
+  document.getElementById('profilePlan').value = currentPlan;
 }
+
 function fakeStripe(plan, amount){
   const msg = amount > 0
     ? 'This is where Stripe checkout would open for ' + plan + ' ($' + amount + '/month).'
