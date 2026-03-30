@@ -157,7 +157,7 @@ body.modal-open{overflow:hidden}
 .mini-card{
   background:#fff; border-radius:20px; padding:16px; box-shadow:var(--shadow);
 }
-.mini-card b{font-size:26px; letter-spacing:-.04em}
+.mini-card b{font-size:26px; letter-spacing:-.04em; color:#0f172a}
 .mini-card span{display:block; font-size:12px; text-transform:uppercase; letter-spacing:.10em; color:#64748b; font-weight:700}
 .mini-ai{
   border-radius:24px; padding:22px;
@@ -205,8 +205,10 @@ body.modal-open{overflow:hidden}
 }
 .pricing-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:20px}
 .plan{
-  background:#fff; color:var(--text); border-radius:30px; padding:30px; box-shadow:var(--shadow); position:relative;
+  background:#fff; color:#0f172a; border-radius:30px; padding:30px; box-shadow:var(--shadow); position:relative;
 }
+.plan h3,.plan p,.plan li{color:#0f172a}
+.plan ul{color:#475569}
 .plan.featured{
   transform:translateY(-8px);
   border:2px solid rgba(79,124,255,.18);
@@ -831,16 +833,11 @@ body.modal-open{overflow:hidden}
         <!-- LIVE ASSIST -->
         <section class="page" id="assist">
 
-          <!-- TWILIO CALL STATUS PANEL — wire this to real Twilio in production -->
-          <div class="call-panel" id="callPanel">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:10px">
-              <h4>📞 Twilio Call Status</h4>
-              <div class="call-status idle" id="callStatus">No active call</div>
-            </div>
-            <div class="subtle" id="callInfo">When a live call is connected via Twilio, caller info and transcription will appear here automatically.</div>
-            <div class="tool-row" style="margin-top:10px">
-              <button class="app-btn soft" onclick="simulateCall()">Simulate live call</button>
-              <button class="app-btn line" onclick="endCall()">End call</button>
+          <!-- LIVE TRANSCRIPTION PANEL -->
+          <div class="call-panel" id="callPanel" style="padding:14px 20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+              <div class="subtle" id="callInfo">Click the mic and PayPilot will start listening. Responses generate automatically.</div>
+              <div class="call-status idle" id="callStatus">Mic off</div>
             </div>
           </div>
 
@@ -851,7 +848,7 @@ body.modal-open{overflow:hidden}
               <div class="mic-wrap">
                 <textarea class="textarea" id="assistInput" placeholder="Type the supplier objection here..." style="min-height:110px"></textarea>
                 <div>
-                  <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Microphone (wire to Twilio for live use)">🎙️</button>
+                  <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Start PayPilot live listening">🎙️</button>
                   <div class="mic-hint" id="micHint">Mic</div>
                 </div>
               </div>
@@ -1602,59 +1599,142 @@ function fakeStripe(plan, amount){
 }
 
 // ============================================================
-// TWILIO SIMULATION PANEL
-// ============================================================
-function simulateCall(){
-  callActive = true;
-  document.getElementById('callStatus').className = 'call-status live';
-  document.getElementById('callStatus').textContent = 'Call in progress';
-  document.getElementById('callInfo').textContent = 'Caller: (555) 291-4400 — Acme Supplies · Transcribing...';
-  // Simulate transcription arriving after 2s
-  setTimeout(()=>{
-    if(!callActive) return;
-    const objection = "I really don't see why I should pay a fee to get my own money back.";
-    document.getElementById('assistInput').value = objection;
-    document.getElementById('callInfo').textContent = 'Transcribed: "' + objection + '"';
-    toast('Transcription received — generating response...');
-    setTimeout(()=>{
-      if(!callActive) return;
-      generateResponse('assistInput','assistResponse');
-    }, 600);
-  }, 2000);
-}
-
-function endCall(){
-  callActive = false;
-  document.getElementById('callStatus').className = 'call-status idle';
-  document.getElementById('callStatus').textContent = 'No active call';
-  document.getElementById('callInfo').textContent = 'When a live call is connected via Twilio, caller info and transcription will appear here automatically.';
-}
-
-// ============================================================
-// MIC BUTTON (UI only — wire to Twilio STT in production)
+// LIVE TRANSCRIPTION
 // ============================================================
 let micActive = false;
-let micTimer;
-function toggleMic(){
-  micActive = !micActive;
+let deepgramSocket = null;
+let mediaStream = null;
+let audioProcessor = null;
+let audioContext = null;
+let dgKey = ''; // Loaded securely from server at runtime
+let finalTranscriptBuffer = '';
+let autoGenTimer = null;
+
+async function toggleMic(){
+  if(micActive){
+    stopDeepgram();
+  } else {
+    await startDeepgram();
+  }
+}
+
+async function startDeepgram(){
+  try {
+    // Fetch key securely from backend
+    if(!dgKey){
+      const resp = await fetch('/api/deepgram-token');
+      if(!resp.ok){ toast('Could not connect to server. Try again.'); return; }
+      const data = await resp.json();
+      dgKey = data.key;
+    }
+
+    // Request mic access — listens to speaker output if rep uses headset/speakerphone
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch(e){
+    toast('Mic access denied. Allow mic in browser settings.');
+    return;
+  }
+
+  // Open streaming connection
+  deepgramSocket = new WebSocket(
+    'wss://api.deepgram.com/v1/listen?language=en-US&punctuate=true&interim_results=true&endpointing=400',
+    ['token', dgKey]
+  );
+
+  deepgramSocket.onopen = () => {
+    micActive = true;
+    setMicUI(true);
+    toast('PayPilot is listening — speak naturally.');
+
+    // Stream mic audio
+    audioContext = new AudioContext({ sampleRate: 16000 });
+    const source = audioContext.createMediaStreamSource(mediaStream);
+    audioProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+
+    source.connect(audioProcessor);
+    audioProcessor.connect(audioContext.destination);
+
+    audioProcessor.onaudioprocess = (e) => {
+      if(!deepgramSocket || deepgramSocket.readyState !== WebSocket.OPEN) return;
+      const float32 = e.inputBuffer.getChannelData(0);
+      // Convert float32 to int16
+      const int16 = new Int16Array(float32.length);
+      for(let i = 0; i < float32.length; i++){
+        int16[i] = Math.max(-32768, Math.min(32767, float32[i] * 32768));
+      }
+      deepgramSocket.send(int16.buffer);
+    };
+  };
+
+  deepgramSocket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    const transcript = data?.channel?.alternatives?.[0]?.transcript;
+    if(!transcript) return;
+
+    const isFinal = data.is_final;
+    const inputBox = document.getElementById('assistInput');
+
+    if(isFinal && transcript.trim()){
+      // Append final transcript
+      finalTranscriptBuffer = (finalTranscriptBuffer + ' ' + transcript).trim();
+      inputBox.value = finalTranscriptBuffer;
+      document.getElementById('callInfo').textContent = 'Heard: "' + finalTranscriptBuffer + '"';
+
+      // Auto-generate response after short pause (debounced)
+      clearTimeout(autoGenTimer);
+      autoGenTimer = setTimeout(() => {
+        if(finalTranscriptBuffer.trim()){
+          generateResponse('assistInput', 'assistResponse');
+          finalTranscriptBuffer = ''; // reset for next objection
+        }
+      }, 900);
+
+    } else if(!isFinal && transcript.trim()){
+      // Show interim transcript live as supplier speaks
+      inputBox.value = (finalTranscriptBuffer + ' ' + transcript).trim();
+    }
+  };
+
+  deepgramSocket.onerror = () => {
+    toast('Connection error. Please try again.');
+    stopDeepgram();
+  };
+
+  deepgramSocket.onclose = () => {
+    if(micActive) stopDeepgram();
+  };
+}
+
+function stopDeepgram(){
+  micActive = false;
+  setMicUI(false);
+  clearTimeout(autoGenTimer);
+
+  if(audioProcessor){ audioProcessor.disconnect(); audioProcessor = null; }
+  if(audioContext){ audioContext.close(); audioContext = null; }
+  if(mediaStream){ mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+  if(deepgramSocket){ deepgramSocket.close(); deepgramSocket = null; }
+
+  document.getElementById('callInfo').textContent = 'Mic stopped. Click the mic button to listen again.';
+  toast('Mic stopped.');
+}
+
+function setMicUI(active){
   const btn = document.getElementById('micBtn');
   const hint = document.getElementById('micHint');
-  if(micActive){
+  const status = document.getElementById('callStatus');
+  if(active){
     btn.classList.add('active');
     hint.textContent = 'Live';
     hint.style.color = '#ef4444';
-    toast('Mic active — wire to Twilio STT to transcribe live calls.');
-    // Simulate a transcription arriving after 3s (remove in production)
-    micTimer = setTimeout(()=>{
-      if(!micActive) return;
-      document.getElementById('assistInput').value = "I don't want to pay a fee just to get my own money faster.";
-      toast('Transcription received.');
-    }, 3000);
+    status.className = 'call-status live';
+    status.textContent = 'Listening live';
   } else {
     btn.classList.remove('active');
     hint.textContent = 'Mic';
     hint.style.color = '';
-    clearTimeout(micTimer);
+    status.className = 'call-status idle';
+    status.textContent = 'Mic off';
   }
 }
 
