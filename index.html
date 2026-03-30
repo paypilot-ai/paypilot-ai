@@ -1478,47 +1478,83 @@ function typeText(el, text){
   }, 10);
 }
 
-function generateResponse(inputId, outputId){
+async function generateResponse(inputId, outputId){
   const text = document.getElementById(inputId).value.trim();
-  if(!text){
-    toast('Type an objection first.');
-    return;
-  }
+  if(!text){ toast('Type an objection first.'); return; }
+
   const output = document.getElementById(outputId);
   const tone = document.getElementById('toneSelect') ? document.getElementById('toneSelect').value : 'Confident';
   const language = document.getElementById('langSelect') ? document.getElementById('langSelect').value : 'English';
 
-  // ── TWILIO + REAL AI HOOK ──────────────────────────────────
-  // When Twilio is connected, replace the block below with:
-  //   const res = await fetch('/api/generate-response', {
-  //     method: 'POST',
-  //     headers: {'Content-Type':'application/json'},
-  //     body: JSON.stringify({ objection: text, tone, language, plan: currentPlan })
-  //   });
-  //   const { reply } = await res.json();
-  //   typeText(output, reply);
-  // ─────────────────────────────────────────────────────────────
+  output.classList.add('loading');
+  output.textContent = 'Generating…';
 
-  let reply = findReply(text);
-  if(tone === 'Warm') reply = 'Absolutely, I understand. ' + reply;
-  if(tone === 'Direct') reply = reply.replace(/usually/gi, 'really');
-  if(language !== 'English') reply += ` (${language} translation ready — connect language API to activate)`;
-  typeText(output, reply);
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `You are PayPilot AI, a real-time sales coach for payment reps on live calls with suppliers.
+
+A supplier just said: "${text}"
+
+Respond with a single, natural, ready-to-say rebuttal. Tone: ${tone}. Language: ${language}.
+${language !== 'English' ? `Respond entirely in ${language}.` : ''}
+Plan context: ${currentPlan} (${currentPlan === 'starter' ? 'keep it short and simple' : currentPlan === 'enterprise' ? 'focus on operational value and scale' : 'confident, value-focused, smooth close'}).
+
+Return ONLY the rebuttal text. No labels, no quotes, no explanation.`
+        }]
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text?.trim() || 'Could not generate a response. Please try again.';
+    lastGeneratedText = reply;
+    typeText(output, reply);
+  } catch(err) {
+    output.classList.remove('loading');
+    output.textContent = 'Connection error. Check your network and try again.';
+  }
 }
 
 // ============================================================
-// TRANSLATE — replaces, doesn't stack
+// TRANSLATE — real Claude API translation
 // ============================================================
-function translateResponse(){
+async function translateResponse(){
   const box = document.getElementById('assistResponse');
   const lang = document.getElementById('langSelect').value;
-  if(!lastGeneratedText){
-    toast('Generate a response first.');
-    return;
+
+  if(lang === 'English'){ toast('Already in English. Select a different language first.'); return; }
+  if(!lastGeneratedText){ toast('Generate a response first.'); return; }
+
+  box.classList.add('loading');
+  box.textContent = `Translating to ${lang}…`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Translate the following sales rebuttal into ${lang}. Keep the same tone and natural spoken style. Return ONLY the translated text, nothing else.\n\n"${lastGeneratedText}"`
+        }]
+      })
+    });
+    const data = await res.json();
+    const translated = data.content?.[0]?.text?.trim() || 'Translation failed. Please try again.';
+    typeText(box, translated);
+    toast(`Translated to ${lang}.`);
+  } catch(err) {
+    box.classList.remove('loading');
+    box.textContent = lastGeneratedText;
+    toast('Translation error. Check your network.');
   }
-  // In production: call your translation API here with lastGeneratedText
-  box.textContent = `[${lang}] ` + lastGeneratedText + ` — (translation API ready to wire in)`;
-  toast('Translation simulated. Wire language API to go live.');
 }
 
 // ============================================================
