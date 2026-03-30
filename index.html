@@ -182,7 +182,7 @@ body.modal-open{overflow:hidden}
 .section-head p{
   margin:0; color:rgba(255,255,255,.68); font-size:18px; line-height:1.8;
 }
-.feature-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+.feature-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:52px}
 .feature{
   padding:26px; border-radius:28px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09);
   position:relative; overflow:hidden;
@@ -199,6 +199,10 @@ body.modal-open{overflow:hidden}
 .feature h3{margin:0 0 10px; color:#fff}
 .feature p{margin:0; color:rgba(255,255,255,.68); line-height:1.8}
 
+/* Pricing section on marketing page */
+.pricing-label{
+  font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.14em; color:rgba(255,255,255,.52); margin-bottom:20px;
+}
 .pricing-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:20px}
 .plan{
   background:#fff; color:var(--text); border-radius:30px; padding:30px; box-shadow:var(--shadow); position:relative;
@@ -342,6 +346,13 @@ body.modal-open{overflow:hidden}
 .ai-response{
   min-height:110px; font-size:22px; line-height:1.75;
 }
+/* Loading state for AI responses */
+.ai-response.loading{
+  opacity:.6;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.6} 50%{opacity:.35}}
+
 .tool-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
 .table{width:100%; border-collapse:collapse}
 .table th,.table td{padding:12px 10px; border-bottom:1px solid #edf2f7; text-align:left; font-size:14px}
@@ -364,10 +375,7 @@ body.modal-open{overflow:hidden}
 .settings-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px}
 .billing-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
 .code{
-  white-space:pre-wrap; background:#f8fbff; border-radius:20px; padding:16px; border:1px solid #e2e8f0; color:#334155;
-}
-.plan-only{
-  display:none;
+  white-space:pre-wrap; background:#f8fbff; border-radius:20px; padding:16px; border:1px solid #e2e8f0; color:#334155; font-family:monospace; font-size:13px;
 }
 .plan-banner{
   margin-bottom:16px;
@@ -394,12 +402,63 @@ body.modal-open{overflow:hidden}
   color:#475569;
 }
 
+/* ===== TWILIO CALL PANEL ===== */
+.call-panel{
+  padding:20px;
+  border-radius:22px;
+  background:linear-gradient(135deg,#f0fdf4,#ecfeff);
+  border:1px solid #bbf7d0;
+  margin-bottom:16px;
+}
+.call-panel h4{margin:0 0 8px; color:#064e3b; font-size:16px}
+.call-status{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+}
+.call-status.idle{background:#f1f5f9; color:#475569}
+.call-status.live{background:#dcfce7; color:#166534}
+.call-status.live::before{
+  content:""; width:8px; height:8px; border-radius:50%; background:#22c55e;
+  animation:blink 1s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1} 50%{opacity:.3}}
+
+/* ===== MIC BUTTON ===== */
+.mic-wrap{
+  position:relative; display:flex; align-items:center; gap:12px; margin-bottom:4px;
+}
+.mic-wrap .textarea{flex:1; margin-bottom:0}
+.mic-btn{
+  flex-shrink:0;
+  width:52px; height:52px; border-radius:50%; border:none; cursor:pointer;
+  background:linear-gradient(135deg,#e2e8f0,#f1f5f9);
+  color:#64748b; font-size:20px;
+  display:grid; place-items:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
+  transition:.2s ease;
+  align-self:flex-end; margin-bottom:2px;
+}
+.mic-btn:hover{background:linear-gradient(135deg,#dbeafe,#eff6ff); color:#2563eb; transform:scale(1.06)}
+.mic-btn.active{
+  background:linear-gradient(135deg,#ef4444,#f97316);
+  color:#fff;
+  box-shadow:0 0 0 0 rgba(239,68,68,.5);
+  animation:mic-pulse 1.4s ease-out infinite;
+}
+@keyframes mic-pulse{
+  0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}
+  70%{box-shadow:0 0 0 14px rgba(239,68,68,0)}
+  100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}
+}
+.mic-hint{font-size:11px; color:#94a3b8; font-weight:700; letter-spacing:.06em; text-align:center; margin-top:4px}
+
 /* ===== MODAL ===== */
 .modal{
   position:fixed; inset:0; z-index:50;
   background:rgba(2,8,23,.62); backdrop-filter:blur(8px);
   display:none; align-items:center; justify-content:center; padding:20px;
 }
+.modal.open{display:flex}
 .modal-box{
   width:min(640px,100%);
   background:#fff; color:var(--text);
@@ -422,6 +481,15 @@ body.modal-open{overflow:hidden}
   font-size:18px;
 }
 
+/* Toast notification */
+.toast{
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(120px);
+  background:#0f172a; color:#fff; padding:14px 22px; border-radius:999px;
+  font-size:14px; font-weight:700; z-index:100; transition:.28s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
 @media (max-width: 1120px){
   .hero,.dashboard-grid,.two,.settings-grid,.billing-grid,.pricing-grid{grid-template-columns:1fr}
   .feature-grid,.grid-4,.hero-metrics{grid-template-columns:1fr 1fr}
@@ -438,6 +506,9 @@ body.modal-open{overflow:hidden}
 </style>
 </head>
 <body>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
 
 <div id="home">
   <div class="grid-noise"></div>
@@ -498,7 +569,7 @@ body.modal-open{overflow:hidden}
             </div>
             <div class="mini-ai">
               <div class="mini-badge">Live objection analysis</div>
-              <p>“Totally understandable. Most suppliers compare the fee to time lost chasing checks, handling mail delays, and manual reconciliation.”</p>
+              <p>"Totally understandable. Most suppliers compare the fee to time lost chasing checks, handling mail delays, and manual reconciliation."</p>
             </div>
           </div>
         </div>
@@ -530,6 +601,8 @@ body.modal-open{overflow:hidden}
       </div>
     </div>
 
+    <div class="pricing-label">Simple, transparent pricing</div>
+
     <div class="pricing-grid">
       <div class="plan">
         <h3>Starter</h3>
@@ -545,7 +618,7 @@ body.modal-open{overflow:hidden}
         </ul>
         <div class="plan-actions">
           <button class="btn btn-primary" onclick="showPricing('starter')">View Plan</button>
-          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="enterPlanDemo('starter')">Try Demo</button>
+          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="showAuth('starter')">Try Demo</button>
         </div>
       </div>
 
@@ -565,7 +638,7 @@ body.modal-open{overflow:hidden}
         </ul>
         <div class="plan-actions">
           <button class="btn btn-primary" onclick="showPricing('pro')">View Plan</button>
-          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="enterPlanDemo('pro')">Try Demo</button>
+          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="showAuth('pro')">Try Demo</button>
         </div>
       </div>
 
@@ -583,13 +656,29 @@ body.modal-open{overflow:hidden}
         </ul>
         <div class="plan-actions">
           <button class="btn btn-primary" onclick="showPricing('enterprise')">View Plan</button>
-          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="enterPlanDemo('enterprise')">Try Demo</button>
+          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="showAuth('enterprise')">Try Demo</button>
+        </div>
+      </div>
+    </div><!-- /.pricing-grid -->
+
+    <!-- HOME BILLING BANNER -->
+    <div style="padding-bottom:84px;">
+      <div style="border-radius:34px; background:linear-gradient(135deg, rgba(79,124,255,.14), rgba(53,214,255,.08)); border:1px solid rgba(255,255,255,.10); padding:42px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:28px;">
+        <div>
+          <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.16em; color:rgba(255,255,255,.52); margin-bottom:12px;">Simple billing. No surprises.</div>
+          <h3 style="margin:0 0 10px; font-family:'Playfair Display',serif; font-size:38px; color:#fff; letter-spacing:-.04em; line-height:1.1;">Start with a free demo.<br>Pay when you're ready.</h3>
+          <p style="margin:0; color:rgba(255,255,255,.68); font-size:16px; line-height:1.8; max-width:520px;">No credit card required to try the demo. Starter is $99/mo, Pro is $399/mo, and Enterprise is custom. Cancel anytime.</p>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px; min-width:200px;">
+          <button class="btn btn-primary" style="font-size:16px; padding:16px 28px;" onclick="showAuth('pro')">Start free demo</button>
+          <button class="btn btn-ghost" style="font-size:15px; padding:14px 22px;" onclick="showPricing()">Compare plans</button>
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </div><!-- /.section -->
+</div><!-- /#home -->
 
+<!-- ===== AUTH ===== -->
 <div id="auth" class="hidden">
   <div class="auth-card">
     <div class="brand" onclick="goHome()" style="color:#0f172a;margin-bottom:18px">
@@ -601,7 +690,7 @@ body.modal-open{overflow:hidden}
     </div>
 
     <h2 class="auth-title">Welcome back</h2>
-    <p class="note">This is your premium login screen. It is demo-wired now and ready for real auth later.</p>
+    <p class="note">Demo login — ready for real auth integration later.</p>
 
     <label class="label">Email</label>
     <input class="input" id="loginEmail" value="demo@paypilot.ai" />
@@ -623,6 +712,7 @@ body.modal-open{overflow:hidden}
   </div>
 </div>
 
+<!-- ===== APP ===== -->
 <div id="app">
   <div class="shell">
     <aside class="sidebar">
@@ -660,6 +750,8 @@ body.modal-open{overflow:hidden}
       </div>
 
       <div class="main">
+
+        <!-- DASHBOARD -->
         <section class="page active" id="dashboard">
           <div class="plan-banner" id="planBanner">You are viewing the Pro demo.</div>
 
@@ -697,7 +789,8 @@ body.modal-open{overflow:hidden}
                 </div>
               </div>
 
-              <div class="card plan-only" id="enterpriseDashboardCard">
+              <!-- Enterprise-only card -->
+              <div class="card" id="enterpriseDashboardCard" style="display:none">
                 <div class="card-title" style="margin-bottom:12px">Enterprise rollout view</div>
                 <div class="enterprise-panel">
                   <h4>Custom AI training enabled</h4>
@@ -727,7 +820,7 @@ body.modal-open{overflow:hidden}
                 <div class="card-title" style="margin-bottom:12px">Most common objections</div>
                 <div class="script-list" id="objectionList">
                   <div class="script-item"><b>Fee pushback</b><span class="subtle">Usually needs value reframing, not pressure.</span></div>
-                  <div class="script-item"><b>“We prefer checks”</b><span class="subtle">Best answered with speed + remittance clarity.</span></div>
+                  <div class="script-item"><b>"We prefer checks"</b><span class="subtle">Best answered with speed + remittance clarity.</span></div>
                   <div class="script-item"><b>Need owner approval</b><span class="subtle">Use an easy-forward explanation and soft close.</span></div>
                 </div>
               </div>
@@ -735,12 +828,33 @@ body.modal-open{overflow:hidden}
           </div>
         </section>
 
+        <!-- LIVE ASSIST -->
         <section class="page" id="assist">
+
+          <!-- TWILIO CALL STATUS PANEL — wire this to real Twilio in production -->
+          <div class="call-panel" id="callPanel">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:10px">
+              <h4>📞 Twilio Call Status</h4>
+              <div class="call-status idle" id="callStatus">No active call</div>
+            </div>
+            <div class="subtle" id="callInfo">When a live call is connected via Twilio, caller info and transcription will appear here automatically.</div>
+            <div class="tool-row" style="margin-top:10px">
+              <button class="app-btn soft" onclick="simulateCall()">Simulate live call</button>
+              <button class="app-btn line" onclick="endCall()">End call</button>
+            </div>
+          </div>
+
           <div class="two">
             <div class="card">
               <div class="card-title">Live Assist</div>
-              <label class="label">Paste the objection</label>
-              <textarea class="textarea" id="assistInput" placeholder="Type the supplier objection here..."></textarea>
+              <label class="label">Paste or type the objection</label>
+              <div class="mic-wrap">
+                <textarea class="textarea" id="assistInput" placeholder="Type the supplier objection here..." style="min-height:110px"></textarea>
+                <div>
+                  <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Microphone (wire to Twilio for live use)">🎙️</button>
+                  <div class="mic-hint" id="micHint">Mic</div>
+                </div>
+              </div>
 
               <div class="two" style="margin-top:14px">
                 <div>
@@ -783,12 +897,14 @@ body.modal-open{overflow:hidden}
             </div>
           </div>
 
-          <div class="card plan-only" id="starterAssistNote" style="margin-top:16px">
+          <!-- Starter-only note -->
+          <div class="card" id="starterAssistNote" style="display:none; margin-top:16px">
             <div class="card-title" style="margin-bottom:12px">Starter demo note</div>
             <div class="subtle">Starter keeps things simple. This demo focuses on core objection help and scripts without the advanced analytics or enterprise rollout features.</div>
           </div>
         </section>
 
+        <!-- SCRIPTS -->
         <section class="page" id="scripts">
           <div class="two">
             <div class="card">
@@ -796,11 +912,11 @@ body.modal-open{overflow:hidden}
               <div class="script-list">
                 <div class="script-item">
                   <b>Opening Script</b>
-                  Good morning / afternoon, is this [Supplier Name]? My name is [Your Name] and I’m calling from [Company] on a recorded line...
+                  Good morning / afternoon, is this [Supplier Name]? My name is [Your Name] and I'm calling from [Company] on a recorded line...
                 </div>
                 <div class="script-item">
                   <b>Gatekeeper Script</b>
-                  I’m calling on behalf of [Buyer Name], who you may know as [Service Location]. They’ve partnered with us to help automate accounts payable...
+                  I'm calling on behalf of [Buyer Name], who you may know as [Service Location]. They've partnered with us to help automate accounts payable...
                 </div>
                 <div class="script-item">
                   <b>Fee Rebuttal</b>
@@ -816,9 +932,9 @@ body.modal-open{overflow:hidden}
               <label class="label">Script content</label>
               <textarea class="textarea" id="scriptBody">Good morning / afternoon, is this [Supplier Name]?
 
-My name is [Your Name], and I’m calling from [Company] on a recorded line.
+My name is [Your Name], and I'm calling from [Company] on a recorded line.
 
-I’m reaching out because we process payments to you on behalf of [Client Name], and it looks like there was a request to get you set up for enhanced direct deposit.</textarea>
+I'm reaching out because we process payments to you on behalf of [Client Name], and it looks like there was a request to get you set up for enhanced direct deposit.</textarea>
               <div class="tool-row">
                 <button class="app-btn blue" onclick="saveScript()">Save script</button>
                 <button class="app-btn line" onclick="resetScript()">Reset</button>
@@ -828,6 +944,7 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
           </div>
         </section>
 
+        <!-- ANALYTICS -->
         <section class="page" id="analytics">
           <div class="grid-4">
             <div class="card"><div class="subtle">Response quality</div><div class="value" id="analyticsQuality">89%</div></div>
@@ -840,7 +957,7 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
             <div class="card">
               <div class="card-title" style="margin-bottom:12px">Coaching Insights</div>
               <div class="script-list" id="insightList">
-                <div class="script-item"><b>What’s working</b> Acknowledge + reframe + soft close is outperforming direct closes.</div>
+                <div class="script-item"><b>What's working</b> Acknowledge + reframe + soft close is outperforming direct closes.</div>
                 <div class="script-item"><b>What to improve</b> Reps should verify contact info before explaining fee structure.</div>
                 <div class="script-item"><b>AI suggestion</b> Bring the buyer-name reminder earlier in the pitch.</div>
               </div>
@@ -848,7 +965,7 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
             <div class="card">
               <div class="card-title" style="margin-bottom:12px">Saved response history</div>
               <table class="table">
-                <thead><tr><th>Date</th><th>Topic</th><th>Status</th></tr></thead>
+                <thead><tr><th>Date</th><th>Objection</th><th>Status</th></tr></thead>
                 <tbody id="historyTable">
                   <tr><td>Today</td><td>Fee objection</td><td>Saved</td></tr>
                   <tr><td>Today</td><td>Check preference</td><td>Saved</td></tr>
@@ -857,12 +974,14 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
             </div>
           </div>
 
-          <div class="card plan-only" id="starterAnalyticsNote" style="margin-top:16px">
+          <!-- Starter-only note -->
+          <div class="card" id="starterAnalyticsNote" style="display:none; margin-top:16px">
             <div class="card-title" style="margin-bottom:12px">Starter analytics preview</div>
             <div class="subtle">Starter customers see a simplified analytics snapshot. Full trend reporting and deeper management visibility are shown in the Pro and Enterprise demos.</div>
           </div>
         </section>
 
+        <!-- SETTINGS -->
         <section class="page" id="settings">
           <div class="card">
             <div class="card-title" style="margin-bottom:16px">Settings</div>
@@ -901,6 +1020,7 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
           </div>
         </section>
 
+        <!-- BILLING -->
         <section class="page" id="billing">
           <div class="billing-grid">
             <div class="card">
@@ -935,31 +1055,21 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
             </div>
           </div>
 
-          <div class="two" style="margin-top:16px">
-            <div class="card">
-              <div class="card-title" style="margin-bottom:12px">Stripe wiring</div>
-              <div class="code">POST /api/create-checkout-session
-{
-  "plan": "Pro",
-  "price": 399
-}</div>
-            </div>
-            <div class="card">
-              <div class="card-title" style="margin-bottom:12px">AI wiring</div>
-              <div class="code">POST /api/generate-response
-{
-  "objection": "...",
-  "tone": "Confident",
-  "language": "English"
-}</div>
+          <div class="card" style="margin-top:16px">
+            <div class="card-title" style="margin-bottom:10px">Your current plan</div>
+            <div class="kpi" id="billingCurrentPlan">
+              <strong id="billingPlanName">Pro</strong>
+              <div class="subtle" style="margin-top:6px">You are on the Pro plan. To upgrade or change your plan, choose an option above.</div>
             </div>
           </div>
         </section>
+
       </div>
     </main>
   </div>
 </div>
 
+<!-- PRICING MODAL -->
 <div class="modal" id="pricingModal">
   <div class="modal-box">
     <div class="modal-head">
@@ -994,25 +1104,28 @@ I’m reaching out because we process payments to you on behalf of [Client Name]
 </div>
 
 <script>
+// ============================================================
+// STATE
+// ============================================================
 let currentPlan = "pro";
 let currentPricingPlan = "pro";
+let callActive = false;
+let lastGeneratedText = ""; // track last response text for translate
 
+// ============================================================
+// PLAN CONFIGS
+// ============================================================
 const planConfigs = {
   starter: {
     label: "Starter Plan",
     planName: "Starter",
     banner: "You are viewing the Starter demo. This version keeps things simple and focuses on core AI objection help and scripts.",
-    calls: "18",
-    responses: "41",
-    close: "63%",
-    quality: "74%",
-    time: "5.8m",
-    solved: "23",
-    adoption: "61%",
+    calls: "18", responses: "41", close: "63%",
+    quality: "74%", time: "5.8m", solved: "23", adoption: "61%",
     nextStepTitle: "Simple objection handling",
     nextStepBody: "Keep the response short, clear, and easy to say on a live call. Starter is designed for fast help without extra layers.",
     insights: [
-      ["What’s working", "Simple acknowledge-and-clarify responses work best here."],
+      ["What's working", "Simple acknowledge-and-clarify responses work best here."],
       ["What to improve", "Use the script library more often so the response feels more structured."],
       ["AI suggestion", "Ask one clean follow-up question instead of stacking too much information."]
     ],
@@ -1026,17 +1139,12 @@ const planConfigs = {
     label: "Pro Plan",
     planName: "Pro",
     banner: "You are viewing the Pro demo. This is the main upgraded workspace with live assist, stronger rebuttals, and fuller analytics.",
-    calls: "43",
-    responses: "127",
-    close: "81%",
-    quality: "89%",
-    time: "4.2m",
-    solved: "67",
-    adoption: "94%",
+    calls: "43", responses: "127", close: "81%",
+    quality: "89%", time: "4.2m", solved: "67", adoption: "94%",
     nextStepTitle: "Acknowledge → Reframe → Soft close",
     nextStepBody: "Start by validating the fee concern, then shift to speed, visibility, and reduced manual effort before asking a soft commitment question.",
     insights: [
-      ["What’s working", "Acknowledge + reframe + soft close is outperforming direct closes."],
+      ["What's working", "Acknowledge + reframe + soft close is outperforming direct closes."],
       ["What to improve", "Reps should verify contact info before explaining fee structure."],
       ["AI suggestion", "Bring the buyer-name reminder earlier in the pitch."]
     ],
@@ -1050,17 +1158,12 @@ const planConfigs = {
     label: "Enterprise Plan",
     planName: "Enterprise",
     banner: "You are viewing the Enterprise demo. This version highlights customization, rollout support, training, and deeper integrations.",
-    calls: "112",
-    responses: "318",
-    close: "88%",
-    quality: "94%",
-    time: "3.7m",
-    solved: "146",
-    adoption: "98%",
+    calls: "112", responses: "318", close: "88%",
+    quality: "94%", time: "3.7m", solved: "146", adoption: "98%",
     nextStepTitle: "Coach + personalize + roll out at scale",
     nextStepBody: "Enterprise focuses on repeatable team performance, custom training, and better AI guidance built around your real workflow.",
     insights: [
-      ["What’s working", "Custom scripts and structured rollout are improving consistency across reps."],
+      ["What's working", "Custom scripts and structured rollout are improving consistency across reps."],
       ["What to improve", "Use plan-specific training paths for different rep levels."],
       ["AI suggestion", "Connect CRM context so the assistant can personalize recommendations further."]
     ],
@@ -1072,6 +1175,9 @@ const planConfigs = {
   }
 };
 
+// ============================================================
+// SMART REPLIES (demo fallback — replace with real AI in prod)
+// ============================================================
 const smartReplies = {
   starter: [
     {
@@ -1090,33 +1196,36 @@ const smartReplies = {
     },
     {
       match: ["checks","prefer checks","keep checks"],
-      reply: "No problem at all. A lot of suppliers start there. The biggest advantage of electronic payments is faster delivery and a detailed remittance with every payment, so there’s less guessing and less manual tracking. If you're open to it, I can show you what setup would look like."
+      reply: "No problem at all. A lot of suppliers start there. The biggest advantage of electronic payments is faster delivery and a detailed remittance with every payment, so there's less guessing and less manual tracking. If you're open to it, I can show you what setup would look like."
     },
     {
       match: ["not interested","no thanks","dont want it","don't want it"],
-      reply: "I understand. Before I let you go, let me just make sure your payment information is current so there aren’t any delays moving forward. And if speed ever becomes a bigger priority, this option will still be available."
+      reply: "I understand. Before I let you go, let me just make sure your payment information is current so there aren't any delays moving forward. And if speed ever becomes a bigger priority, this option will still be available."
     },
     {
       match: ["owner","manager","need approval","boss"],
-      reply: "That makes sense. What usually helps is giving them a quick summary: payments arrive faster, remittance comes with every payment, and it cuts down on manual check handling. If you’d like, I can send over the secure setup steps so it’s easy for them to review."
+      reply: "That makes sense. What usually helps is giving them a quick summary: payments arrive faster, remittance comes with every payment, and it cuts down on manual check handling. If you'd like, I can send over the secure setup steps so it's easy for them to review."
     }
   ],
   enterprise: [
     {
       match: ["fee","1.2%","cost","pay a fee","processing fee"],
-      reply: "That’s a fair concern. At the enterprise level, the conversation is usually about total operational efficiency, payment visibility, and removing manual follow-up work across the team. If the process saves enough time and increases consistency, the value usually becomes much easier to justify."
+      reply: "That's a fair concern. At the enterprise level, the conversation is usually about total operational efficiency, payment visibility, and removing manual follow-up work across the team. If the process saves enough time and increases consistency, the value usually becomes much easier to justify."
     },
     {
       match: ["security","scam","fraud","bank information"],
-      reply: "Completely fair. Enterprise teams usually need clear process control, secure enrollment, and visibility into how information is handled. That’s exactly where rollout structure and verification steps matter most."
+      reply: "Completely fair. Enterprise teams usually need clear process control, secure enrollment, and visibility into how information is handled. That's exactly where rollout structure and verification steps matter most."
     },
     {
       match: ["workflow","change","training","used to checks"],
-      reply: "I understand. The best enterprise rollouts keep change minimal and focus only on the parts of the workflow that reduce manual effort and improve consistency. If that’s important, we’d map it around your current process."
+      reply: "I understand. The best enterprise rollouts keep change minimal and focus only on the parts of the workflow that reduce manual effort and improve consistency. If that's important, we'd map it around your current process."
     }
   ]
 };
 
+// ============================================================
+// NAVIGATION
+// ============================================================
 function goHome(){
   document.getElementById('home').style.display='block';
   document.getElementById('auth').classList.add('hidden');
@@ -1125,10 +1234,15 @@ function goHome(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function showAuth(){
+function showAuth(plan){
   document.getElementById('home').style.display='none';
   document.getElementById('auth').classList.remove('hidden');
   document.getElementById('app').style.display='none';
+  // Pre-select the plan in the auth dropdown if provided
+  if(plan){
+    const sel = document.getElementById('loginPlan');
+    if(sel) sel.value = plan;
+  }
 }
 
 function loginDemo(){
@@ -1136,7 +1250,7 @@ function loginDemo(){
   const pass = document.getElementById('loginPass').value.trim();
   const plan = document.getElementById('loginPlan').value;
   if(!email || !pass){
-    alert('Enter an email and password.');
+    toast('Enter an email and password.');
     return;
   }
   enterPlanDemo(plan);
@@ -1201,104 +1315,29 @@ function applyPlanDemo(plan){
     `;
   }
 
+  // Sync billing current plan display
+  const billingPlanName = document.getElementById('billingPlanName');
+  if(billingPlanName) billingPlanName.textContent = cfg.planName;
+  const billingCurrentPlan = document.getElementById('billingCurrentPlan');
+  if(billingCurrentPlan){
+    billingCurrentPlan.querySelector('.subtle').textContent =
+      `You are on the ${cfg.planName} plan. To upgrade or change your plan, choose an option above.`;
+  }
+
+  // Plan-conditional UI
   document.getElementById('starterAssistNote').style.display = plan === 'starter' ? 'block' : 'none';
   document.getElementById('starterAnalyticsNote').style.display = plan === 'starter' ? 'block' : 'none';
   document.getElementById('enterpriseDashboardCard').style.display = plan === 'enterprise' ? 'block' : 'none';
 
+  // Sync settings plan selector with current plan
+  const profilePlan = document.getElementById('profilePlan');
+  if(profilePlan) profilePlan.value = plan;
+
+  // Reset to dashboard
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
   showPage('dashboard');
 }
-
-function showPricing(plan){
-  currentPricingPlan = plan || "pro";
-  const modal = document.getElementById('pricingModal');
-  const text = document.getElementById('pricingText');
-
-  if(currentPricingPlan === 'starter'){
-    text.innerHTML = `
-      <strong>Starter — $99/month</strong>
-
-      <br><br>
-
-      Best for solo reps or small teams that want simple AI help without paying for the full platform.
-
-      <br><br>
-
-      You get:
-      <br>• AI-generated objection responses
-      <br>• Script library access
-      <br>• Fast response generation
-      <br>• Email support
-
-      <br><br>
-
-      Demo includes:
-      <br>• Simplified dashboard
-      <br>• Core AI response demo
-      <br>• Basic analytics preview
-    `;
-  } else if(currentPricingPlan === 'enterprise'){
-    text.innerHTML = `
-      <strong>Enterprise — Custom Pricing</strong>
-
-      <br><br>
-
-      Best for larger teams that want PayPilot built around their exact workflow.
-
-      <br><br>
-
-      You get:
-      <br>• AI trained on your scripts
-      <br>• CRM and workflow integrations
-      <br>• Team onboarding
-      <br>• Dedicated support
-
-      <br><br>
-
-      Demo includes:
-      <br>• Enterprise dashboard view
-      <br>• Rollout and training panel
-      <br>• Enterprise-style analytics
-    `;
-  } else {
-    text.innerHTML = `
-      <strong>Pro — $399/month</strong>
-
-      <br><br>
-
-      This is the best option for most users.
-
-      <br><br>
-
-      You get:
-      <br>• Live AI help during calls
-      <br>• Better rebuttals for objections
-      <br>• Multi-language response support
-      <br>• Performance analytics
-      <br>• Priority support
-
-      <br><br>
-
-      Demo includes:
-      <br>• Full upgraded workspace
-      <br>• Live assist view
-      <br>• Full analytics layout
-    `;
-  }
-
-  modal.style.display='flex';
-  document.body.classList.add('modal-open');
-}
-
-function hidePricing(){
-  document.getElementById('pricingModal').style.display='none';
-  document.body.classList.remove('modal-open');
-}
-
-document.addEventListener('keydown', e => {
-  if(e.key === 'Escape') hidePricing();
-});
 
 function showPage(id, el){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1325,118 +1364,219 @@ function jumpToAssist(){
   showPage('assist');
 }
 
-function fillExample(){
-  if(currentPlan === 'enterprise'){
-    document.getElementById('quickObjection').value = "We are concerned about security, process change, and team rollout.";
+// ============================================================
+// PRICING MODAL — using CSS class toggle instead of inline style
+// ============================================================
+function showPricing(plan){
+  currentPricingPlan = plan || currentPlan || "pro";
+  const text = document.getElementById('pricingText');
+
+  if(currentPricingPlan === 'starter'){
+    text.innerHTML = `
+      <strong>Starter — $99/month</strong><br><br>
+      Best for solo reps or small teams that want simple AI help without paying for the full platform.<br><br>
+      You get:<br>
+      • AI-generated objection responses<br>
+      • Script library access<br>
+      • Fast response generation<br>
+      • Email support<br><br>
+      Demo includes:<br>
+      • Simplified dashboard<br>
+      • Core AI response demo<br>
+      • Basic analytics preview
+    `;
+  } else if(currentPricingPlan === 'enterprise'){
+    text.innerHTML = `
+      <strong>Enterprise — Custom Pricing</strong><br><br>
+      Best for larger teams that want PayPilot built around their exact workflow.<br><br>
+      You get:<br>
+      • AI trained on your scripts<br>
+      • CRM and workflow integrations<br>
+      • Team onboarding<br>
+      • Dedicated support<br><br>
+      Demo includes:<br>
+      • Enterprise dashboard view<br>
+      • Rollout and training panel<br>
+      • Enterprise-style analytics
+    `;
   } else {
-    document.getElementById('quickObjection').value = "I don't want to pay 1.2% to get my own money.";
+    text.innerHTML = `
+      <strong>Pro — $399/month</strong><br><br>
+      This is the best option for most users.<br><br>
+      You get:<br>
+      • Live AI help during calls<br>
+      • Better rebuttals for objections<br>
+      • Multi-language response support<br>
+      • Performance analytics<br>
+      • Priority support<br><br>
+      Demo includes:<br>
+      • Full upgraded workspace<br>
+      • Live assist view<br>
+      • Full analytics layout
+    `;
   }
+
+  document.getElementById('pricingModal').classList.add('open');
+  document.body.classList.add('modal-open');
+}
+
+function hidePricing(){
+  document.getElementById('pricingModal').classList.remove('open');
+  document.body.classList.remove('modal-open');
+}
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') hidePricing();
+});
+
+// ============================================================
+// EXAMPLE FILLERS
+// ============================================================
+function fillExample(){
+  document.getElementById('quickObjection').value = currentPlan === 'enterprise'
+    ? "We are concerned about security, process change, and team rollout."
+    : "I don't want to pay 1.2% to get my own money.";
 }
 
 function loadFeeExample(){
-  if(currentPlan === 'enterprise'){
-    document.getElementById('assistInput').value = "This sounds like too much process change for our team.";
-  } else {
-    document.getElementById('assistInput').value = "I don't want to pay a fee just to get my payment faster.";
-  }
+  document.getElementById('assistInput').value = currentPlan === 'enterprise'
+    ? "This sounds like too much process change for our team."
+    : "I don't want to pay a fee just to get my payment faster.";
 }
 
+// ============================================================
+// RESPONSE GENERATION
+// (In production: swap findReply() with a real API call)
+// ============================================================
 function findReply(text){
   const lower = text.toLowerCase();
   const seeds = smartReplies[currentPlan] || smartReplies.pro;
   for(const item of seeds){
     if(item.match.some(m => lower.includes(m))) return item.reply;
   }
-
   if(currentPlan === 'starter'){
     return "Got it. The simplest way to handle that is to keep the response clear, short, and focused on speed and less manual work.";
   }
   if(currentPlan === 'enterprise'){
     return "That makes sense. At the enterprise level, the conversation usually needs to connect process control, rollout simplicity, and measurable operational value.";
   }
-
   return "Got it. A lot of suppliers ask that at first. Usually the conversation comes down to speed, payment visibility, and removing manual check handling. If it helps, I can walk through how the setup works in a minute or two.";
 }
 
 function typeText(el, text){
+  el.classList.add('loading');
   el.textContent = '';
+  lastGeneratedText = text; // store clean version before typing starts
   let i = 0;
   const timer = setInterval(()=>{
     el.textContent += text.charAt(i);
     i++;
-    if(i >= text.length) clearInterval(timer);
+    if(i >= text.length){
+      clearInterval(timer);
+      el.classList.remove('loading');
+    }
   }, 10);
 }
 
 function generateResponse(inputId, outputId){
   const text = document.getElementById(inputId).value.trim();
   if(!text){
-    alert('Type an objection first.');
+    toast('Type an objection first.');
     return;
   }
   const output = document.getElementById(outputId);
   const tone = document.getElementById('toneSelect') ? document.getElementById('toneSelect').value : 'Confident';
   const language = document.getElementById('langSelect') ? document.getElementById('langSelect').value : 'English';
 
-  let reply = findReply(text);
+  // ── TWILIO + REAL AI HOOK ──────────────────────────────────
+  // When Twilio is connected, replace the block below with:
+  //   const res = await fetch('/api/generate-response', {
+  //     method: 'POST',
+  //     headers: {'Content-Type':'application/json'},
+  //     body: JSON.stringify({ objection: text, tone, language, plan: currentPlan })
+  //   });
+  //   const { reply } = await res.json();
+  //   typeText(output, reply);
+  // ─────────────────────────────────────────────────────────────
 
+  let reply = findReply(text);
   if(tone === 'Warm') reply = 'Absolutely, I understand. ' + reply;
-  if(tone === 'Direct') reply = reply.replace('Usually', 'Really').replace('usually', 'really');
-  if(language !== 'English') reply += " (" + language + " mode ready)";
+  if(tone === 'Direct') reply = reply.replace(/usually/gi, 'really');
+  if(language !== 'English') reply += ` (${language} translation ready — connect language API to activate)`;
   typeText(output, reply);
 }
 
+// ============================================================
+// TRANSLATE — replaces, doesn't stack
+// ============================================================
 function translateResponse(){
   const box = document.getElementById('assistResponse');
   const lang = document.getElementById('langSelect').value;
-  if(!box.textContent || box.textContent.includes('Paste an objection')){
-    alert('Generate a response first.');
+  if(!lastGeneratedText){
+    toast('Generate a response first.');
     return;
   }
-  box.textContent = "Translated for " + lang + ": " + box.textContent;
+  // In production: call your translation API here with lastGeneratedText
+  box.textContent = `[${lang}] ` + lastGeneratedText + ` — (translation API ready to wire in)`;
+  toast('Translation simulated. Wire language API to go live.');
 }
 
+// ============================================================
+// COPY + HISTORY
+// ============================================================
 function copyAssist(){
   const txt = document.getElementById('assistResponse').textContent;
-  navigator.clipboard.writeText(txt);
-  alert('Response copied.');
+  if(!txt || txt.includes('Paste an objection')){
+    toast('Generate a response first.');
+    return;
+  }
+  navigator.clipboard.writeText(txt).then(()=> toast('Response copied.'));
 }
 
 function saveToHistory(){
   const txt = document.getElementById('assistResponse').textContent;
+  const objection = document.getElementById('assistInput').value.trim() || 'Objection';
   if(!txt || txt.includes('Paste an objection')){
-    alert('Generate a response first.');
+    toast('Generate a response first.');
     return;
   }
   const tbody = document.getElementById('historyTable');
   const tr = document.createElement('tr');
-  tr.innerHTML = '<td>Now</td><td>Saved AI reply</td><td>Saved</td>';
+  const shortObjection = objection.length > 40 ? objection.substring(0,40)+'…' : objection;
+  tr.innerHTML = `<td>Now</td><td>${shortObjection}</td><td>Saved</td>`;
   tbody.prepend(tr);
-  alert('Saved to history.');
+  toast('Saved to history.');
 }
 
+// ============================================================
+// SCRIPTS
+// ============================================================
 function saveScript(){
   const name = document.getElementById('scriptName').value.trim() || 'Custom Script';
   document.getElementById('scriptSavedNote').textContent = name + ' saved.';
+  toast(name + ' saved.');
 }
 
 function resetScript(){
   document.getElementById('scriptName').value = '';
   document.getElementById('scriptBody').value = `Good morning / afternoon, is this [Supplier Name]?
 
-My name is [Your Name], and I’m calling from [Company] on a recorded line.
+My name is [Your Name], and I'm calling from [Company] on a recorded line.
 
-I’m reaching out because we process payments to you on behalf of [Client Name], and it looks like there was a request to get you set up for enhanced direct deposit.`;
+I'm reaching out because we process payments to you on behalf of [Client Name], and it looks like there was a request to get you set up for enhanced direct deposit.`;
   document.getElementById('scriptSavedNote').textContent = '';
 }
 
+// ============================================================
+// SETTINGS
+// ============================================================
 function saveSettings(){
   const name = document.getElementById('profileName').value.trim() || 'User';
   const plan = document.getElementById('profilePlan').value;
   document.getElementById('profileNameView').textContent = name;
   document.getElementById('avatarBox').textContent = name.charAt(0).toUpperCase();
   enterPlanDemo(plan);
-  alert('Settings saved.');
+  toast('Settings saved.');
 }
 
 function resetSettings(){
@@ -1446,11 +1586,85 @@ function resetSettings(){
   document.getElementById('profilePlan').value = currentPlan;
 }
 
+// ============================================================
+// BILLING / STRIPE STUB
+// ============================================================
 function fakeStripe(plan, amount){
+  // In production: open Stripe Checkout here
+  // window.location.href = '/api/create-checkout-session?plan=' + plan;
   const msg = amount > 0
-    ? 'This is where Stripe checkout would open for ' + plan + ' ($' + amount + '/month).'
-    : 'This would route to your enterprise sales form.';
-  alert(msg);
+    ? `Stripe checkout for ${plan} ($${amount}/mo) — ready to wire in.`
+    : `Enterprise sales form — ready to wire in.`;
+  toast(msg);
+}
+
+// ============================================================
+// TWILIO SIMULATION PANEL
+// ============================================================
+function simulateCall(){
+  callActive = true;
+  document.getElementById('callStatus').className = 'call-status live';
+  document.getElementById('callStatus').textContent = 'Call in progress';
+  document.getElementById('callInfo').textContent = 'Caller: (555) 291-4400 — Acme Supplies · Transcribing...';
+  // Simulate transcription arriving after 2s
+  setTimeout(()=>{
+    if(!callActive) return;
+    const objection = "I really don't see why I should pay a fee to get my own money back.";
+    document.getElementById('assistInput').value = objection;
+    document.getElementById('callInfo').textContent = 'Transcribed: "' + objection + '"';
+    toast('Transcription received — generating response...');
+    setTimeout(()=>{
+      if(!callActive) return;
+      generateResponse('assistInput','assistResponse');
+    }, 600);
+  }, 2000);
+}
+
+function endCall(){
+  callActive = false;
+  document.getElementById('callStatus').className = 'call-status idle';
+  document.getElementById('callStatus').textContent = 'No active call';
+  document.getElementById('callInfo').textContent = 'When a live call is connected via Twilio, caller info and transcription will appear here automatically.';
+}
+
+// ============================================================
+// MIC BUTTON (UI only — wire to Twilio STT in production)
+// ============================================================
+let micActive = false;
+let micTimer;
+function toggleMic(){
+  micActive = !micActive;
+  const btn = document.getElementById('micBtn');
+  const hint = document.getElementById('micHint');
+  if(micActive){
+    btn.classList.add('active');
+    hint.textContent = 'Live';
+    hint.style.color = '#ef4444';
+    toast('Mic active — wire to Twilio STT to transcribe live calls.');
+    // Simulate a transcription arriving after 3s (remove in production)
+    micTimer = setTimeout(()=>{
+      if(!micActive) return;
+      document.getElementById('assistInput').value = "I don't want to pay a fee just to get my own money faster.";
+      toast('Transcription received.');
+    }, 3000);
+  } else {
+    btn.classList.remove('active');
+    hint.textContent = 'Mic';
+    hint.style.color = '';
+    clearTimeout(micTimer);
+  }
+}
+
+// ============================================================
+// TOAST UTILITY (replaces all alert() calls)
+// ============================================================
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.classList.remove('show'), 2800);
 }
 </script>
 </body>
