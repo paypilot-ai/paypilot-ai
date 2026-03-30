@@ -1619,19 +1619,24 @@ async function toggleMic(){
 }
 
 async function startDeepgram(){
-  try {
-    // Fetch key securely from backend
-    if(!dgKey){
+  // Fetch key securely from backend
+  if(!dgKey){
+    try {
       const resp = await fetch('/api/deepgram-token');
       if(!resp.ok){ toast('Could not connect to server. Try again.'); return; }
       const data = await resp.json();
       dgKey = data.key;
+    } catch(e){
+      toast('Could not reach server. Check your connection.');
+      return;
     }
+  }
 
-    // Request mic access — listens to speaker output if rep uses headset/speakerphone
+  // Request mic access
+  try {
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   } catch(e){
-    toast('Mic access denied. Allow mic in browser settings.');
+    toast('Mic access denied. Allow mic in your browser settings.');
     return;
   }
 
