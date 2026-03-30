@@ -1685,6 +1685,9 @@ async function startDeepgram(){
         if(finalTranscriptBuffer.trim()){
           generateResponse('assistInput', 'assistResponse');
           finalTranscriptBuffer = '';
+          // Clear objection box so it's ready for the next one
+          document.getElementById('assistInput').value = '';
+          document.getElementById('callInfo').textContent = 'Ready for next objection...';
         }
       }, 1500);
 
