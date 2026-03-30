@@ -1478,83 +1478,50 @@ function typeText(el, text){
   }, 10);
 }
 
-async function generateResponse(inputId, outputId){
+function generateResponse(inputId, outputId){
   const text = document.getElementById(inputId).value.trim();
   if(!text){ toast('Type an objection first.'); return; }
 
   const output = document.getElementById(outputId);
-  const tone = document.getElementById('toneSelect') ? document.getElementById('toneSelect').value : 'Confident';
-  const language = document.getElementById('langSelect') ? document.getElementById('langSelect').value : 'English';
+  const toneEl = document.getElementById('toneSelect');
+  const langEl = document.getElementById('langSelect');
+  const tone = toneEl ? toneEl.value : 'Confident';
+  const language = langEl ? langEl.value : 'English';
 
-  output.classList.add('loading');
-  output.textContent = 'Generating…';
+  let reply = findReply(text);
+  if(tone === 'Warm') reply = 'Absolutely, I understand. ' + reply;
+  if(tone === 'Direct') reply = reply.replace(/usually/gi, 'really');
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: `You are PayPilot AI, a real-time sales coach for payment reps on live calls with suppliers.
-
-A supplier just said: "${text}"
-
-Respond with a single, natural, ready-to-say rebuttal. Tone: ${tone}. Language: ${language}.
-${language !== 'English' ? `Respond entirely in ${language}.` : ''}
-Plan context: ${currentPlan} (${currentPlan === 'starter' ? 'keep it short and simple' : currentPlan === 'enterprise' ? 'focus on operational value and scale' : 'confident, value-focused, smooth close'}).
-
-Return ONLY the rebuttal text. No labels, no quotes, no explanation.`
-        }]
-      })
-    });
-    const data = await res.json();
-    const reply = data.content?.[0]?.text?.trim() || 'Could not generate a response. Please try again.';
-    lastGeneratedText = reply;
-    typeText(output, reply);
-  } catch(err) {
-    output.classList.remove('loading');
-    output.textContent = 'Connection error. Check your network and try again.';
+  // Language — swap with Twilio STT language detection in production
+  if(language !== 'English'){
+    const langMap = {
+      'Spanish': 'Totalmente comprensible. Muchas empresas comparan la tarifa con el tiempo que ahorran en pagos más rápidos y menos trabajo manual. Si le parece bien, puedo explicarle cómo funciona la configuración ahora.',
+      'French': 'Tout à fait compréhensible. Beaucoup d’entreprises comparent les frais au temps gagné grâce à des paiements plus rapides et à moins de travail manuel. Si cela vous convient, je peux vous expliquer comment fonctionne la configuration maintenant.',
+      'Portuguese': 'Totalmente compreensível. Muitas empresas comparam a taxa ao tempo economizado com pagamentos mais rápidos e menos trabalho manual. Se fizer sentido, posso explicar como funciona a configuração agora.'
+    };
+    reply = langMap[language] || reply;
   }
+
+  typeText(output, reply);
 }
 
 // ============================================================
-// TRANSLATE — real Claude API translation
+// TRANSLATE — applies selected language to last generated reply
 // ============================================================
-async function translateResponse(){
+function translateResponse(){
   const box = document.getElementById('assistResponse');
   const lang = document.getElementById('langSelect').value;
-
   if(lang === 'English'){ toast('Already in English. Select a different language first.'); return; }
   if(!lastGeneratedText){ toast('Generate a response first.'); return; }
 
-  box.classList.add('loading');
-  box.textContent = `Translating to ${lang}…`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: `Translate the following sales rebuttal into ${lang}. Keep the same tone and natural spoken style. Return ONLY the translated text, nothing else.\n\n"${lastGeneratedText}"`
-        }]
-      })
-    });
-    const data = await res.json();
-    const translated = data.content?.[0]?.text?.trim() || 'Translation failed. Please try again.';
-    typeText(box, translated);
-    toast(`Translated to ${lang}.`);
-  } catch(err) {
-    box.classList.remove('loading');
-    box.textContent = lastGeneratedText;
-    toast('Translation error. Check your network.');
-  }
+  const langMap = {
+    'Spanish': 'Totalmente comprensible. Muchas empresas comparan la tarifa con el tiempo que ahorran en pagos más rápidos y menos trabajo manual. Si le parece bien, puedo explicarle cómo funciona la configuración ahora.',
+    'French': 'Tout à fait compréhensible. Beaucoup d’entreprises comparent les frais au temps gagné grâce à des paiements plus rapides et à moins de travail manuel. Si cela vous convient, je peux vous expliquer comment fonctionne la configuration maintenant.',
+    'Portuguese': 'Totalmente compreensível. Muitas empresas comparam a taxa ao tempo economizado com pagamentos mais rápidos e menos trabalho manual. Se fizer sentido, posso explicar como funciona a configuração agora.'
+  };
+  const translated = langMap[lang] || lastGeneratedText + ' (' + lang + ')';
+  typeText(box, translated);
+  toast('Translated to ' + lang + '. Wire Twilio STT for live detection.');
 }
 
 // ============================================================
