@@ -1667,39 +1667,29 @@ async function startDeepgram(){
   deepgramSocket.onmessage = (event) => {
     const data = JSON.parse(event.data);
 
-    // Handle utterance end event — fires when speaker stops talking
-    if(data.type === 'UtteranceEnd'){
-      if(finalTranscriptBuffer.trim()){
-        clearTimeout(autoGenTimer);
-        generateResponse('assistInput', 'assistResponse');
-        finalTranscriptBuffer = '';
-      }
-      return;
-    }
-
     const transcript = data?.channel?.alternatives?.[0]?.transcript;
     if(!transcript || !transcript.trim()) return;
 
-    const isSpeechFinal = data.speech_final;
+    const isFinal = data.is_final;
     const inputBox = document.getElementById('assistInput');
 
-    if(isSpeechFinal){
-      // Full sentence confirmed — append to buffer
+    if(isFinal){
+      // Confirmed transcript — update box and fire response
       finalTranscriptBuffer = (finalTranscriptBuffer + ' ' + transcript).trim();
       inputBox.value = finalTranscriptBuffer;
       document.getElementById('callInfo').textContent = 'Heard: "' + finalTranscriptBuffer + '"';
 
-      // Auto-generate after pause — debounced so fast sentences accumulate
+      // Debounce — wait 1.5s of silence then generate
       clearTimeout(autoGenTimer);
       autoGenTimer = setTimeout(() => {
         if(finalTranscriptBuffer.trim()){
           generateResponse('assistInput', 'assistResponse');
           finalTranscriptBuffer = '';
         }
-      }, 1800);
+      }, 1500);
 
     } else {
-      // Show live interim words as supplier speaks
+      // Show words live as supplier speaks
       inputBox.value = (finalTranscriptBuffer + ' ' + transcript).trim();
     }
   };
