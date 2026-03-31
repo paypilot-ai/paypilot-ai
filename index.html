@@ -890,6 +890,7 @@ body.modal-open{overflow:hidden}
               <div class="tool-row" style="margin-top:14px">
                 <button class="app-btn line" onclick="copyAssist()">Copy</button>
                 <button class="app-btn line" onclick="saveToHistory()">Save</button>
+                <button class="app-btn line" id="speakBtn" onclick="speakResponse()">🔊 Speak</button>
               </div>
             </div>
           </div>
@@ -1741,6 +1742,52 @@ function setMicUI(active){
     status.className = 'call-status idle';
     status.textContent = 'Mic off';
   }
+}
+
+// ============================================================
+// SPEAKER — reads AI response aloud in selected language
+// ============================================================
+let currentUtterance = null;
+
+function speakResponse(){
+  const txt = document.getElementById('assistResponse').textContent;
+  if(!txt || txt.includes('Paste an objection')){
+    toast('Generate a response first.');
+    return;
+  }
+
+  // If already speaking, stop it
+  if(window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel();
+    document.getElementById('speakBtn').textContent = '🔊 Speak';
+    return;
+  }
+
+  const lang = document.getElementById('langSelect') ? document.getElementById('langSelect').value : 'English';
+  const langCodes = {
+    'English': 'en-US',
+    'Spanish': 'es-ES',
+    'French': 'fr-FR',
+    'Portuguese': 'pt-BR'
+  };
+
+  const utterance = new SpeechSynthesisUtterance(txt);
+  utterance.lang = langCodes[lang] || 'en-US';
+  utterance.rate = 0.92;
+  utterance.pitch = 1;
+
+  utterance.onstart = () => {
+    document.getElementById('speakBtn').textContent = '⏹ Stop';
+  };
+  utterance.onend = () => {
+    document.getElementById('speakBtn').textContent = '🔊 Speak';
+  };
+  utterance.onerror = () => {
+    document.getElementById('speakBtn').textContent = '🔊 Speak';
+  };
+
+  currentUtterance = utterance;
+  window.speechSynthesis.speak(utterance);
 }
 
 // ============================================================
