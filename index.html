@@ -425,6 +425,37 @@ body.modal-open{overflow:hidden}
 }
 @keyframes blink{0%,100%{opacity:1} 50%{opacity:.3}}
 
+/* ===== OBJECTION TAG ===== */
+.objection-tag{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 12px; border-radius:999px; font-size:11px; font-weight:800;
+  letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px;
+  background:rgba(255,255,255,.10); color:rgba(255,255,255,.8);
+  border:1px solid rgba(255,255,255,.15);
+}
+/* ===== FEEDBACK BUTTONS ===== */
+.feedback-row{display:flex; align-items:center; gap:8px; margin-top:10px}
+.feedback-btn{
+  width:36px; height:36px; border-radius:50%; border:1.5px solid #dbe4ef;
+  background:#fff; cursor:pointer; font-size:16px; display:grid; place-items:center;
+  transition:.15s ease;
+}
+.feedback-btn:hover{transform:scale(1.12)}
+.feedback-btn.selected-up{background:#dcfce7; border-color:#22c55e}
+.feedback-btn.selected-down{background:#fee2e2; border-color:#ef4444}
+.feedback-label{font-size:12px; color:#94a3b8; font-weight:600}
+/* ===== MEMORY PANEL ===== */
+.memory-panel{
+  margin-top:14px; padding:14px 16px; border-radius:20px;
+  background:#f8fbff; border:1px solid #e2e8f0;
+}
+.memory-panel h5{margin:0 0 8px; font-size:12px; text-transform:uppercase; letter-spacing:.10em; color:#94a3b8; font-weight:800}
+.memory-item{
+  font-size:13px; color:#475569; padding:6px 0; border-bottom:1px solid #f1f5f9; line-height:1.5;
+}
+.memory-item:last-child{border-bottom:none}
+.memory-item strong{color:#0f172a}
+
 /* ===== MIC BUTTON ===== */
 .mic-wrap{
   position:relative; display:flex; align-items:center; gap:12px; margin-bottom:4px;
@@ -883,6 +914,9 @@ body.modal-open{overflow:hidden}
 
             <div class="card">
               <div class="card-title" style="margin-bottom:12px">AI Response</div>
+              <div id="objectionTag" style="display:none">
+                <span class="objection-tag" id="objectionTagText">Detecting...</span>
+              </div>
               <div class="ai-panel">
                 <div class="ai-badge">Live rebuttal</div>
                 <div class="ai-response" id="assistResponse">Paste an objection and click Generate response.</div>
@@ -891,6 +925,18 @@ body.modal-open{overflow:hidden}
                 <button class="app-btn line" onclick="copyAssist()">Copy</button>
                 <button class="app-btn line" onclick="saveToHistory()">Save</button>
                 <button class="app-btn line" id="speakBtn" onclick="speakResponse()">🔊 Speak</button>
+                <button class="app-btn line" onclick="submitFeedback('up')" title="This response was helpful">👍</button>
+                <button class="app-btn line" onclick="submitFeedback('down')" title="This response needs work">👎</button>
+                <button class="app-btn soft" onclick="clearCallMemory()" title="Start fresh for next call">New Call</button>
+              </div>
+              <div class="feedback-row">
+                <button class="feedback-btn" id="thumbsUp" onclick="submitFeedback('up')" title="This worked">👍</button>
+                <button class="feedback-btn" id="thumbsDown" onclick="submitFeedback('down')" title="This didn't work">👎</button>
+                <span class="feedback-label" id="feedbackLabel">Was this helpful?</span>
+              </div>
+              <div class="memory-panel" id="memoryPanel" style="display:none">
+                <h5>📋 Call memory</h5>
+                <div id="memoryList"></div>
               </div>
             </div>
           </div>
@@ -1243,14 +1289,30 @@ function showAuth(plan){
   }
 }
 
+// ── MASTER CREDENTIALS — change these to your real login ──
+const MASTER_EMAIL = 'sean@paypilot.ai';
+const MASTER_PASS  = 'PayPilot2024!';
+
 function loginDemo(){
   const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPass').value.trim();
-  const plan = document.getElementById('loginPlan').value;
+  const pass  = document.getElementById('loginPass').value.trim();
+  const plan  = document.getElementById('loginPlan').value;
+
   if(!email || !pass){
     toast('Enter an email and password.');
     return;
   }
+
+  // Master login — full real app
+  if(email === MASTER_EMAIL && pass === MASTER_PASS){
+    enterPlanDemo('pro');
+    document.getElementById('planPill').textContent = 'Live — Pro';
+    document.getElementById('planBanner').textContent = 'You are logged in as the account owner.';
+    toast('Welcome back, Sean.');
+    return;
+  }
+
+  // Demo login — anyone else
   enterPlanDemo(plan);
 }
 
@@ -1443,28 +1505,87 @@ function loadFeeExample(){
 }
 
 // ============================================================
-// RESPONSE GENERATION
-// (In production: swap findReply() with a real API call)
+// SCRIPT LIBRARY — injected into every AI prompt
 // ============================================================
-function findReply(text){
-  const lower = text.toLowerCase();
-  const seeds = smartReplies[currentPlan] || smartReplies.pro;
-  for(const item of seeds){
-    if(item.match.some(m => lower.includes(m))) return item.reply;
-  }
-  if(currentPlan === 'starter'){
-    return "Got it. The simplest way to handle that is to keep the response clear, short, and focused on speed and less manual work.";
-  }
-  if(currentPlan === 'enterprise'){
-    return "That makes sense. At the enterprise level, the conversation usually needs to connect process control, rollout simplicity, and measurable operational value.";
-  }
-  return "Got it. A lot of suppliers ask that at first. Usually the conversation comes down to speed, payment visibility, and removing manual check handling. If it helps, I can walk through how the setup works in a minute or two.";
+const scriptLibrary = {
+  opening: `Good morning / afternoon, is this [Supplier Name]? My name is [Your Name], and I'm calling from [Company] on a recorded line. I'm reaching out because we process payments to you on behalf of [Client Name], and it looks like there was a request to get you set up for enhanced direct deposit.`,
+  gatekeeper: `I'm calling on behalf of [Buyer Name], who you may know as [Service Location]. They've partnered with us to help automate accounts payable. I just need about two minutes with whoever handles your incoming payments.`,
+  feeRebuttal: `Totally understandable. Most businesses compare the fee to the time spent tracking checks, delays in the mail, and manual reconciliation. A lot of suppliers find the speed and payment detail end up being worth more than the processing cost. If that sounds fair, I can walk you through the secure setup now — it only takes a couple of minutes.`,
+  notInterested: `I understand. Before I let you go, let me just make sure your payment information is current so there aren't any delays on your next payment. And if speed ever becomes a priority down the road, this option will still be available.`,
+  ownerApproval: `That makes total sense. What usually helps is giving them a quick summary: payments arrive faster, a detailed remittance comes with every payment, and it cuts down on manual check handling. I can send over the secure setup steps so it's easy for them to review.`,
+  checkPreference: `No problem at all. A lot of suppliers start there. The biggest advantage of electronic payments is faster delivery and a detailed remittance with every payment — so there's less guessing and less manual tracking. If you're open to it, I can show you what the setup looks like.`
+};
+
+// ============================================================
+// CONVERSATION MEMORY — tracks current call + history
+// ============================================================
+let conversationMemory = [];       // current call turns
+let sessionHistory = [];           // across calls this session
+let objectionCounts = {};          // tracks objection frequency
+let feedbackLog = [];              // thumbs up/down tracking
+
+function detectObjectionType(text){
+  const t = text.toLowerCase();
+  if(t.match(/fee|1\.2%|cost|pay a fee|processing fee|charge/)) return 'fee';
+  if(t.match(/check|cheque|mail|prefer check/)) return 'check_preference';
+  if(t.match(/not interested|no thank|don't want|dont want/)) return 'not_interested';
+  if(t.match(/owner|manager|boss|approval|need to ask/)) return 'owner_approval';
+  if(t.match(/security|scam|fraud|bank info|routing/)) return 'security';
+  if(t.match(/too busy|call back|bad time|not a good time/)) return 'timing';
+  if(t.match(/already|have a system|using something/)) return 'already_has_solution';
+  return 'general';
 }
 
+function buildSystemPrompt(tone, language, objectionType){
+  const planContext = {
+    starter: 'Keep responses short, clear, and simple. One or two sentences max.',
+    pro: 'Give confident, value-focused responses with a smooth soft close.',
+    enterprise: 'Focus on operational efficiency, team rollout, and measurable business value.'
+  }[currentPlan] || 'Give confident, value-focused responses.';
+
+  const langInstruction = language !== 'English'
+    ? `IMPORTANT: Respond entirely in ${language}. Do not use English at all.`
+    : 'Respond in English.';
+
+  const toneGuide = {
+    'Confident': 'Be direct, assured, and professional.',
+    'Warm': 'Be empathetic and understanding before pivoting to value.',
+    'Direct': 'Get straight to the point with no filler.',
+    'Calm': 'Stay measured, patient, and reassuring.'
+  }[tone] || 'Be professional and confident.';
+
+  return `You are PayPilot AI, an elite real-time sales coach helping payment reps handle live supplier calls.
+
+TONE: ${toneGuide}
+PLAN CONTEXT: ${planContext}
+LANGUAGE: ${langInstruction}
+
+YOUR SCRIPT LIBRARY (use these as your foundation):
+- Opening: ${scriptLibrary.opening}
+- Gatekeeper: ${scriptLibrary.gatekeeper}
+- Fee Rebuttal: ${scriptLibrary.feeRebuttal}
+- Not Interested: ${scriptLibrary.notInterested}
+- Owner Approval: ${scriptLibrary.ownerApproval}
+- Check Preference: ${scriptLibrary.checkPreference}
+
+OBJECTION TYPE DETECTED: ${objectionType}
+
+RULES:
+1. Return ONLY the spoken rebuttal — no labels, no quotes, no explanation
+2. Sound natural and human, like a real sales rep talking on the phone
+3. Keep it concise — 2-4 sentences maximum
+4. Always end with either a soft close or a next step
+5. Use the script library as your foundation but make it feel natural, not robotic
+6. If there is conversation history, acknowledge what was already discussed`;
+}
+
+// ============================================================
+// TYPETEXT
+// ============================================================
 function typeText(el, text){
   el.classList.add('loading');
   el.textContent = '';
-  lastGeneratedText = text; // store clean version before typing starts
+  lastGeneratedText = text;
   let i = 0;
   const timer = setInterval(()=>{
     el.textContent += text.charAt(i);
@@ -1476,7 +1597,10 @@ function typeText(el, text){
   }, 10);
 }
 
-function generateResponse(inputId, outputId){
+// ============================================================
+// GENERATE RESPONSE — real OpenAI via secure backend
+// ============================================================
+async function generateResponse(inputId, outputId){
   const text = document.getElementById(inputId).value.trim();
   if(!text){ toast('Type an objection first.'); return; }
 
@@ -1486,40 +1610,134 @@ function generateResponse(inputId, outputId){
   const tone = toneEl ? toneEl.value : 'Confident';
   const language = langEl ? langEl.value : 'English';
 
-  let reply = findReply(text);
-  if(tone === 'Warm') reply = 'Absolutely, I understand. ' + reply;
-  if(tone === 'Direct') reply = reply.replace(/usually/gi, 'really');
+  // Detect objection type
+  const objectionType = detectObjectionType(text);
+  objectionCounts[objectionType] = (objectionCounts[objectionType] || 0) + 1;
 
-  // Language — swap with Twilio STT language detection in production
-  if(language !== 'English'){
-    const langMap = {
-      'Spanish': 'Totalmente comprensible. Muchas empresas comparan la tarifa con el tiempo que ahorran en pagos más rápidos y menos trabajo manual. Si le parece bien, puedo explicarle cómo funciona la configuración ahora.',
-      'French': 'Tout à fait compréhensible. Beaucoup d’entreprises comparent les frais au temps gagné grâce à des paiements plus rapides et à moins de travail manuel. Si cela vous convient, je peux vous expliquer comment fonctionne la configuration maintenant.',
-      'Portuguese': 'Totalmente compreensível. Muitas empresas comparam a taxa ao tempo economizado com pagamentos mais rápidos e menos trabalho manual. Se fizer sentido, posso explicar como funciona a configuração agora.'
-    };
-    reply = langMap[language] || reply;
+  // Show generating state
+  output.classList.add('loading');
+  output.textContent = 'Generating...';
+
+  // Add to conversation memory
+  conversationMemory.push({ role: 'user', content: `Supplier said: "${text}"` });
+
+  // Build messages array with system prompt + memory
+  const systemPrompt = buildSystemPrompt(tone, language, objectionType);
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...conversationMemory.slice(-6) // last 3 exchanges for context
+  ];
+
+  try {
+    const resp = await fetch('/api/generate-response', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages })
+    });
+
+    const data = await resp.json();
+    if(!resp.ok){ throw new Error(data.error || 'Server error'); }
+    const reply = data.reply || 'Could not generate a response. Please try again.';
+
+    // Store reply in memory
+    conversationMemory.push({ role: 'assistant', content: reply });
+    sessionHistory.push({ objection: text, reply, type: objectionType, tone, language, time: new Date().toLocaleTimeString() });
+
+    lastGeneratedText = reply;
+    typeText(output, reply);
+
+    // Update objection insights in analytics
+    updateObjectionInsights();
+
+  } catch(e){
+    output.classList.remove('loading');
+    output.textContent = 'Connection error. Please try again.';
+    toast('Could not reach server. Check your connection.');
   }
-
-  typeText(output, reply);
 }
 
 // ============================================================
-// TRANSLATE — applies selected language to last generated reply
+// TRANSLATE — real OpenAI translation via backend
 // ============================================================
-function translateResponse(){
+async function translateResponse(){
   const box = document.getElementById('assistResponse');
   const lang = document.getElementById('langSelect').value;
-  if(lang === 'English'){ toast('Already in English. Select a different language first.'); return; }
+  if(lang === 'English'){ toast('Select a language first.'); return; }
   if(!lastGeneratedText){ toast('Generate a response first.'); return; }
 
-  const langMap = {
-    'Spanish': 'Totalmente comprensible. Muchas empresas comparan la tarifa con el tiempo que ahorran en pagos más rápidos y menos trabajo manual. Si le parece bien, puedo explicarle cómo funciona la configuración ahora.',
-    'French': 'Tout à fait compréhensible. Beaucoup d’entreprises comparent les frais au temps gagné grâce à des paiements plus rapides et à moins de travail manuel. Si cela vous convient, je peux vous expliquer comment fonctionne la configuration maintenant.',
-    'Portuguese': 'Totalmente compreensível. Muitas empresas comparam a taxa ao tempo economizado com pagamentos mais rápidos e menos trabalho manual. Se fizer sentido, posso explicar como funciona a configuração agora.'
+  box.classList.add('loading');
+  box.textContent = 'Translating...';
+
+  const messages = [
+    { role: 'system', content: `You are a professional translator. Translate the following sales rebuttal into ${lang}. Keep the same natural, spoken tone. Return ONLY the translated text — no explanation, no labels.` },
+    { role: 'user', content: lastGeneratedText }
+  ];
+
+  try {
+    const resp = await fetch('/api/generate-response', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages })
+    });
+    const data = await resp.json();
+    const translated = data.reply || lastGeneratedText;
+    typeText(box, translated);
+    toast('Translated to ' + lang + '.');
+  } catch(e){
+    box.classList.remove('loading');
+    box.textContent = lastGeneratedText;
+    toast('Translation error. Try again.');
+  }
+}
+
+// ============================================================
+// FEEDBACK TRACKING — thumbs up / down on responses
+// ============================================================
+function submitFeedback(type){
+  const last = sessionHistory[sessionHistory.length - 1];
+  if(!last){ toast('No response to rate yet.'); return; }
+  last.feedback = type;
+  feedbackLog.push({ ...last, feedback: type });
+  toast(type === 'up' ? '👍 Noted — response marked helpful.' : '👎 Noted — will improve.');
+  updateObjectionInsights();
+}
+
+// ============================================================
+// UPDATE ANALYTICS WITH LIVE OBJECTION DATA
+// ============================================================
+function updateObjectionInsights(){
+  const objList = document.getElementById('objectionList');
+  if(!objList) return;
+
+  const typeLabels = {
+    fee: 'Fee pushback',
+    check_preference: 'Check preference',
+    not_interested: 'Not interested',
+    owner_approval: 'Needs owner approval',
+    security: 'Security concern',
+    timing: 'Bad timing',
+    already_has_solution: 'Already has a system',
+    general: 'General objection'
   };
-  const translated = langMap[lang] || lastGeneratedText + ' (' + lang + ')';
-  typeText(box, translated);
-  toast('Translated to ' + lang + '. Wire Twilio STT for live detection.');
+
+  const sorted = Object.entries(objectionCounts)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 3);
+
+  if(sorted.length > 0){
+    objList.innerHTML = sorted.map(([type, count]) => `
+      <div class="script-item">
+        <b>${typeLabels[type] || type}</b>
+        <span class="subtle">Came up ${count} time${count > 1 ? 's' : ''} this session.</span>
+      </div>
+    `).join('');
+  }
+}
+
+// Clear memory when starting a new call
+function clearCallMemory(){
+  conversationMemory = [];
+  toast('Call memory cleared. Ready for next call.');
 }
 
 // ============================================================
