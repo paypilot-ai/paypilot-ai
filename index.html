@@ -661,7 +661,7 @@ let currentPlan = "pro";
 let currentPricingPlan = "pro";
 let callActive = false;
 let lastGeneratedText = "";
-let anthropicApiKey = "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";
+let anthropicApiKey = "backend";
 
 // ============================================================
 // API KEY MANAGEMENT
@@ -669,7 +669,7 @@ let anthropicApiKey = "sk-ant-api03-cXXHzn_MVzqFbLB_giFT0XNkkCjOnKkhCwfTgbf7lsL9
 function handleApiKeyInput(){
   const val = document.getElementById('apiKeyInput').value.trim();
   const status = document.getElementById('apiKeyStatus');
-  if(val.startsWith(sk-ant-sk-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) && val.length > 20){
+  if(val.startsWith('sk-ant-') && val.length > 20){
     status.textContent = 'Ready';
     status.className = 'api-key-status set';
   } else {
@@ -921,17 +921,14 @@ async function generateResponse(inputId,outputId){
   ];
 
   try {
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch('/api/generate-response',{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'x-api-key':anthropicApiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
       },
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:300,
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:150,
         system:systemPrompt,
         messages:messages
       })
@@ -939,11 +936,11 @@ async function generateResponse(inputId,outputId){
 
     if(!resp.ok){
       const err=await resp.json();
-      throw new Error(err.error?.message||'API error '+resp.status);
+      throw new Error(err.error||'API error '+resp.status);
     }
 
     const data=await resp.json();
-    const reply=data.content?.[0]?.text||'Could not generate a response. Please try again.';
+    const reply=data.reply||'Could not generate a response. Please try again.';
 
     conversationMemory.push({role:'assistant',content:reply});
     sessionHistory.push({objection:text,reply,type:objectionType,tone,language,time:new Date().toLocaleTimeString()});
@@ -973,23 +970,20 @@ async function translateResponse(){
   box.textContent='Translating...';
 
   try {
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch('/api/generate-response',{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'x-api-key':anthropicApiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
       },
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:300,
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:150,
         system:`You are a professional translator. Translate the following sales rebuttal into ${lang}. Keep the same natural, spoken tone. Return ONLY the translated text — no explanation, no labels.`,
         messages:[{role:'user',content:lastGeneratedText}]
       })
     });
     const data=await resp.json();
-    const translated=data.content?.[0]?.text||lastGeneratedText;
+    const translated=data.reply||lastGeneratedText;
     typeText(box,translated);
     toast('Translated to '+lang+'.');
   } catch(e){
