@@ -9,24 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#07111f;
-  --bg2:#0b1830;
-  --bg3:#0e2242;
-  --panel:rgba(255,255,255,.06);
-  --panel-2:rgba(255,255,255,.09);
-  --line:rgba(255,255,255,.10);
-  --line-soft:rgba(15,23,42,.08);
-  --card:#ffffff;
-  --text:#0f172a;
-  --muted:#64748b;
-  --blue:#4f7cff;
-  --cyan:#35d6ff;
-  --purple:#8b5cf6;
-  --green:#22c55e;
-  --gold:#f59e0b;
-  --red:#ef4444;
-  --shadow:0 20px 60px rgba(2,8,23,.18);
-  --shadow-lg:0 40px 100px rgba(2,8,23,.38);
+  --bg:#07111f;--bg2:#0b1830;--bg3:#0e2242;--panel:rgba(255,255,255,.06);--panel-2:rgba(255,255,255,.09);
+  --line:rgba(255,255,255,.10);--line-soft:rgba(15,23,42,.08);--card:#ffffff;--text:#0f172a;--muted:#64748b;
+  --blue:#4f7cff;--cyan:#35d6ff;--purple:#8b5cf6;--green:#22c55e;--gold:#f59e0b;--red:#ef4444;
+  --shadow:0 20px 60px rgba(2,8,23,.18);--shadow-lg:0 40px 100px rgba(2,8,23,.38);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;font-family:Inter,system-ui,sans-serif;background:#eef4fb;color:var(--text)}
@@ -34,525 +20,210 @@ button,input,textarea,select{font:inherit}
 .hidden{display:none!important}
 body.modal-open{overflow:hidden}
 
-/* ===== MARKETING ===== */
 #home{
-  min-height:100vh;
-  color:#fff;
-  background:
-    radial-gradient(circle at 12% 18%, rgba(79,124,255,.22), transparent 22%),
-    radial-gradient(circle at 85% 20%, rgba(53,214,255,.16), transparent 20%),
-    radial-gradient(circle at 50% 80%, rgba(139,92,246,.15), transparent 24%),
-    linear-gradient(180deg, #06101d 0%, #0b1730 48%, #102345 100%);
-  position:relative;
-  overflow:hidden;
+  min-height:100vh;color:#fff;
+  background:radial-gradient(circle at 12% 18%,rgba(79,124,255,.22),transparent 22%),radial-gradient(circle at 85% 20%,rgba(53,214,255,.16),transparent 20%),radial-gradient(circle at 50% 80%,rgba(139,92,246,.15),transparent 24%),linear-gradient(180deg,#06101d 0%,#0b1730 48%,#102345 100%);
+  position:relative;overflow:hidden;
 }
-.grid-noise{
-  position:absolute; inset:0; pointer-events:none; opacity:.12;
-  background-image:radial-gradient(circle, rgba(255,255,255,.18) 1px, transparent 1px);
-  background-size:28px 28px;
-  mask-image:linear-gradient(180deg, rgba(0,0,0,.5), transparent 85%);
-}
-.nav{
-  position:sticky; top:0; z-index:30;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:18px 28px;
-  background:rgba(6,16,29,.62);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-.brand{
-  display:flex; align-items:center; gap:14px; cursor:pointer;
-}
-.brand-badge{
-  width:46px; height:46px; border-radius:16px;
-  background:linear-gradient(135deg,var(--blue),var(--cyan));
-  display:grid; place-items:center; color:#fff; font-weight:800; font-size:18px;
-  box-shadow:0 16px 40px rgba(53,214,255,.24);
-}
-.brand-name{font-weight:800; letter-spacing:-.04em; font-size:20px}
-.brand-sub{font-size:11px; text-transform:uppercase; letter-spacing:.18em; color:rgba(255,255,255,.52); font-weight:700}
-.nav-actions{display:flex; gap:10px; flex-wrap:wrap}
-.btn{
-  border:none; cursor:pointer; border-radius:16px;
-  padding:13px 18px; font-weight:700; transition:.18s ease;
-}
+.grid-noise{position:absolute;inset:0;pointer-events:none;opacity:.12;background-image:radial-gradient(circle,rgba(255,255,255,.18) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(180deg,rgba(0,0,0,.5),transparent 85%)}
+.nav{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:rgba(6,16,29,.62);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.08)}
+.brand{display:flex;align-items:center;gap:14px;cursor:pointer}
+.brand-badge{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;box-shadow:0 16px 40px rgba(53,214,255,.24)}
+.brand-name{font-weight:800;letter-spacing:-.04em;font-size:20px}
+.brand-sub{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.52);font-weight:700}
+.nav-actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:none;cursor:pointer;border-radius:16px;padding:13px 18px;font-weight:700;transition:.18s ease}
 .btn:hover{transform:translateY(-1px)}
-.btn-primary{
-  color:#fff;
-  background:linear-gradient(135deg,var(--blue),var(--cyan));
-  box-shadow:0 16px 36px rgba(79,124,255,.28);
-}
-.btn-ghost{
-  color:#fff; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
-}
-.btn-white{
-  color:#081223; background:#fff;
-}
-.hero{
-  max-width:1280px; margin:0 auto; padding:72px 28px 88px;
-  display:grid; grid-template-columns:1.08fr .92fr; gap:30px; align-items:center;
-}
-.eyebrow{
-  display:inline-flex; align-items:center; gap:10px; padding:9px 14px; border-radius:999px;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
-  font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#dbeafe;
-}
-.eyebrow::before{
-  content:""; width:9px; height:9px; border-radius:50%; background:var(--cyan);
-  box-shadow:0 0 0 6px rgba(53,214,255,.12);
-}
-.hero h1{
-  margin:20px 0 18px;
-  font-family:"Playfair Display",serif;
-  font-size:clamp(52px, 7vw, 88px);
-  line-height:.95; letter-spacing:-.04em; font-weight:700;
-}
-.hero h1 span{
-  background:linear-gradient(135deg,#fff, #9fe7ff);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-}
-.hero p{
-  margin:0 0 28px; font-size:18px; line-height:1.85; color:rgba(255,255,255,.72); max-width:700px;
-}
-.hero-actions{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:34px}
-.hero-metrics{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
-.hero-metric{
-  padding:20px; border-radius:22px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08);
-}
-.hero-metric strong{display:block; font-size:30px; color:#fff; letter-spacing:-.04em}
-.hero-metric span{font-size:12px; color:rgba(255,255,255,.62); text-transform:uppercase; letter-spacing:.12em; font-weight:700}
-
-.device{
-  position:relative;
-  padding:18px;
-  border-radius:34px;
-  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
-  border:1px solid rgba(255,255,255,.12);
-  box-shadow:var(--shadow-lg);
-}
-.device-glow{
-  position:absolute; inset:auto -40px -50px auto; width:220px; height:220px; border-radius:50%;
-  background:radial-gradient(circle, rgba(53,214,255,.35), transparent 70%);
-  filter:blur(20px); pointer-events:none;
-}
-.device-screen{
-  background:#f6faff; border-radius:26px; overflow:hidden; min-height:560px;
-  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
-}
-.device-top{
-  display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:#fff; border-bottom:1px solid #edf2f8;
-}
-.dot-wrap{display:flex; gap:8px}
-.dot{width:10px; height:10px; border-radius:50%; background:#d1d5db}
-.device-main{display:grid; grid-template-columns:220px 1fr; min-height:508px}
-.device-side{
-  background:linear-gradient(180deg,#081426,#102445); color:#fff; padding:18px;
-}
-.device-side .item{
-  border-radius:16px; padding:12px 14px; margin-bottom:8px; font-weight:700; color:rgba(255,255,255,.78); border:1px solid transparent;
-}
-.device-side .item.active{background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.10)}
-.device-content{padding:18px; background:#f4f9ff}
-.mini-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:12px}
-.mini-card{
-  background:#fff; border-radius:20px; padding:16px; box-shadow:var(--shadow);
-}
-.mini-card b{font-size:26px; letter-spacing:-.04em; color:#0f172a}
-.mini-card span{display:block; font-size:12px; text-transform:uppercase; letter-spacing:.10em; color:#64748b; font-weight:700}
-.mini-ai{
-  border-radius:24px; padding:22px;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(79,124,255,.25), transparent 30%),
-    linear-gradient(135deg,#07111f, #12315d 70%);
-  color:#fff;
-}
-.mini-badge{
-  display:inline-flex; padding:8px 12px; border-radius:999px; background:rgba(255,255,255,.08);
-  font-size:11px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; margin-bottom:14px;
-}
-.mini-ai p{margin:0; font-size:20px; line-height:1.7; color:rgba(255,255,255,.94)}
-
-.section{
-  max-width:1280px; margin:0 auto; padding:0 28px 84px;
-}
-.section-head{max-width:760px; margin-bottom:34px}
-.section-head h2{
-  font-family:"Playfair Display",serif; font-size:54px; line-height:1.02; margin:0 0 14px; color:#fff; letter-spacing:-.04em;
-}
-.section-head p{
-  margin:0; color:rgba(255,255,255,.68); font-size:18px; line-height:1.8;
-}
-.feature-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:52px}
-.feature{
-  padding:26px; border-radius:28px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09);
-  position:relative; overflow:hidden;
-}
-.feature::after{
-  content:""; position:absolute; inset:auto auto -40px -20px; width:140px; height:140px; border-radius:50%;
-  background:radial-gradient(circle, rgba(79,124,255,.12), transparent 70%);
-}
-.feature-icon{
-  width:54px; height:54px; border-radius:18px; display:grid; place-items:center; margin-bottom:16px;
-  background:linear-gradient(135deg, rgba(79,124,255,.28), rgba(53,214,255,.18));
-  border:1px solid rgba(255,255,255,.12); font-size:22px;
-}
-.feature h3{margin:0 0 10px; color:#fff}
-.feature p{margin:0; color:rgba(255,255,255,.68); line-height:1.8}
-
-/* Pricing section on marketing page */
-.pricing-label{
-  font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.14em; color:rgba(255,255,255,.52); margin-bottom:20px;
-}
-.pricing-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:20px}
-.plan{
-  background:#fff; color:#0f172a; border-radius:30px; padding:30px; box-shadow:var(--shadow); position:relative;
-}
+.btn-primary{color:#fff;background:linear-gradient(135deg,var(--blue),var(--cyan));box-shadow:0 16px 36px rgba(79,124,255,.28)}
+.btn-ghost{color:#fff;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+.btn-white{color:#081223;background:#fff}
+.hero{max-width:1280px;margin:0 auto;padding:72px 28px 88px;display:grid;grid-template-columns:1.08fr .92fr;gap:30px;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;padding:9px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#dbeafe}
+.eyebrow::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 6px rgba(53,214,255,.12)}
+.hero h1{margin:20px 0 18px;font-family:"Playfair Display",serif;font-size:clamp(52px,7vw,88px);line-height:.95;letter-spacing:-.04em;font-weight:700}
+.hero h1 span{background:linear-gradient(135deg,#fff,#9fe7ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{margin:0 0 28px;font-size:18px;line-height:1.85;color:rgba(255,255,255,.72);max-width:700px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:34px}
+.hero-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.hero-metric{padding:20px;border-radius:22px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+.hero-metric strong{display:block;font-size:30px;color:#fff;letter-spacing:-.04em}
+.hero-metric span{font-size:12px;color:rgba(255,255,255,.62);text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+.device{position:relative;padding:18px;border-radius:34px;background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.12);box-shadow:var(--shadow-lg)}
+.device-glow{position:absolute;inset:auto -40px -50px auto;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(53,214,255,.35),transparent 70%);filter:blur(20px);pointer-events:none}
+.device-screen{background:#f6faff;border-radius:26px;overflow:hidden;min-height:560px;box-shadow:inset 0 0 0 1px rgba(15,23,42,.06)}
+.device-top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#fff;border-bottom:1px solid #edf2f8}
+.dot-wrap{display:flex;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;background:#d1d5db}
+.device-main{display:grid;grid-template-columns:220px 1fr;min-height:508px}
+.device-side{background:linear-gradient(180deg,#081426,#102445);color:#fff;padding:18px}
+.device-side .item{border-radius:16px;padding:12px 14px;margin-bottom:8px;font-weight:700;color:rgba(255,255,255,.78);border:1px solid transparent}
+.device-side .item.active{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.10)}
+.device-content{padding:18px;background:#f4f9ff}
+.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+.mini-card{background:#fff;border-radius:20px;padding:16px;box-shadow:var(--shadow)}
+.mini-card b{font-size:26px;letter-spacing:-.04em;color:#0f172a}
+.mini-card span{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.10em;color:#64748b;font-weight:700}
+.mini-ai{border-radius:24px;padding:22px;background:radial-gradient(circle at 20% 20%,rgba(79,124,255,.25),transparent 30%),linear-gradient(135deg,#07111f,#12315d 70%);color:#fff}
+.mini-badge{display:inline-flex;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.08);font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:800;margin-bottom:14px}
+.mini-ai p{margin:0;font-size:20px;line-height:1.7;color:rgba(255,255,255,.94)}
+.section{max-width:1280px;margin:0 auto;padding:0 28px 84px}
+.section-head{max-width:760px;margin-bottom:34px}
+.section-head h2{font-family:"Playfair Display",serif;font-size:54px;line-height:1.02;margin:0 0 14px;color:#fff;letter-spacing:-.04em}
+.section-head p{margin:0;color:rgba(255,255,255,.68);font-size:18px;line-height:1.8}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:52px}
+.feature{padding:26px;border-radius:28px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);position:relative;overflow:hidden}
+.feature::after{content:"";position:absolute;inset:auto auto -40px -20px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(79,124,255,.12),transparent 70%)}
+.feature-icon{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;margin-bottom:16px;background:linear-gradient(135deg,rgba(79,124,255,.28),rgba(53,214,255,.18));border:1px solid rgba(255,255,255,.12);font-size:22px}
+.feature h3{margin:0 0 10px;color:#fff}
+.feature p{margin:0;color:rgba(255,255,255,.68);line-height:1.8}
+.pricing-label{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.52);margin-bottom:20px}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:20px}
+.plan{background:#fff;color:#0f172a;border-radius:30px;padding:30px;box-shadow:var(--shadow);position:relative}
 .plan h3,.plan p,.plan li{color:#0f172a}
 .plan ul{color:#475569}
-.plan.featured{
-  transform:translateY(-8px);
-  border:2px solid rgba(79,124,255,.18);
-}
-.plan-tag{
-  position:absolute; top:-13px; left:26px;
-  padding:8px 13px; border-radius:999px;
-  background:linear-gradient(135deg,var(--blue),var(--cyan)); color:#fff;
-  font-size:11px; letter-spacing:.12em; font-weight:800; text-transform:uppercase;
-}
-.plan h3{margin:0 0 14px; font-size:26px; font-weight:800; color:#0f172a}
-.price{
-  display:flex;
-  align-items:flex-end;
-  gap:12px;
-  margin-bottom:18px;
-  line-height:1;
-}
-.price strong{
-  font-size:58px;
-  font-weight:800;
-  letter-spacing:-.06em;
-  color:#0f172a;
-}
-.price span{
-  font-size:20px;
-  font-weight:700;
-  color:#334155;
-  margin-bottom:8px;
-}
-.plan ul{padding-left:18px; color:#475569; line-height:2; margin:18px 0 24px}
-.plan-actions{display:flex; gap:10px; flex-wrap:wrap}
+.plan.featured{transform:translateY(-8px);border:2px solid rgba(79,124,255,.18)}
+.plan-tag{position:absolute;top:-13px;left:26px;padding:8px 13px;border-radius:999px;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-size:11px;letter-spacing:.12em;font-weight:800;text-transform:uppercase}
+.plan h3{margin:0 0 14px;font-size:26px;font-weight:800;color:#0f172a}
+.price{display:flex;align-items:flex-end;gap:12px;margin-bottom:18px;line-height:1}
+.price strong{font-size:58px;font-weight:800;letter-spacing:-.06em;color:#0f172a}
+.price span{font-size:20px;font-weight:700;color:#334155;margin-bottom:8px}
+.plan ul{padding-left:18px;color:#475569;line-height:2;margin:18px 0 24px}
+.plan-actions{display:flex;gap:10px;flex-wrap:wrap}
 .plan-actions .btn{flex:1}
 
-/* ===== AUTH ===== */
-#auth{
-  min-height:100vh;
-  background:
-    radial-gradient(circle at 14% 18%, rgba(79,124,255,.20), transparent 20%),
-    radial-gradient(circle at 84% 18%, rgba(53,214,255,.18), transparent 18%),
-    linear-gradient(180deg, #06101d 0%, #0b1730 100%);
-  display:grid; place-items:center; padding:26px;
+/* API KEY SETUP */
+.api-setup{
+  background:linear-gradient(135deg,#eff6ff,#f0fdf4);
+  border:1.5px solid #93c5fd;
+  border-radius:22px;
+  padding:20px 22px;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
 }
-.auth-card{
-  width:min(490px,100%);
-  padding:32px;
-  border-radius:34px;
-  background:#fff;
-  box-shadow:var(--shadow-lg);
+.api-setup input{
+  flex:1;min-width:220px;border-radius:14px;border:1.5px solid #bfdbfe;background:#fff;
+  padding:11px 14px;outline:none;font-size:14px;font-family:monospace;
 }
-.auth-title{font-family:"Playfair Display",serif; font-size:44px; margin:0 0 8px; letter-spacing:-.04em}
-.note{color:#64748b; line-height:1.75; font-size:14px}
-.label{
-  display:block; margin:16px 0 8px; font-size:11px; color:#64748b;
-  text-transform:uppercase; letter-spacing:.12em; font-weight:800;
-}
-.input,.textarea,.select{
-  width:100%; border-radius:18px; border:1.5px solid #dbe4ef; background:#f8fbff; color:var(--text);
-  padding:14px 15px; outline:none; transition:.16s ease;
-}
-.textarea{min-height:130px; resize:vertical}
-.input:focus,.textarea:focus,.select:focus{
-  background:#fff; border-color:#93c5fd; box-shadow:0 0 0 4px rgba(79,124,255,.10);
-}
+.api-setup input:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(79,124,255,.12)}
+.api-key-status{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px}
+.api-key-status.set{background:#dcfce7;color:#166534}
+.api-key-status.unset{background:#fee2e2;color:#991b1b}
 
-/* ===== APP ===== */
-#app{display:none; min-height:100vh; background:#eef4fb}
-.shell{display:grid; grid-template-columns:280px 1fr; min-height:100vh}
-.sidebar{
-  position:sticky; top:0; height:100vh; overflow:auto;
-  background:linear-gradient(180deg,#07111f 0%, #0d1f3b 100%); color:#fff; padding:22px 16px;
-}
-.sidebar .side-group{
-  margin:18px 10px 8px; font-size:11px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:rgba(255,255,255,.38);
-}
-.side-btn{
-  width:100%; display:flex; align-items:center; gap:12px; border:none; text-align:left;
-  background:transparent; color:rgba(255,255,255,.82); padding:14px 15px; border-radius:18px; cursor:pointer; font-weight:700;
-  margin:5px 0; border:1px solid transparent;
-}
-.side-btn.active{
-  background:linear-gradient(135deg, rgba(79,124,255,.32), rgba(53,214,255,.12));
-  border-color:rgba(255,255,255,.08); color:#fff;
-}
+#auth{min-height:100vh;background:radial-gradient(circle at 14% 18%,rgba(79,124,255,.20),transparent 20%),radial-gradient(circle at 84% 18%,rgba(53,214,255,.18),transparent 18%),linear-gradient(180deg,#06101d 0%,#0b1730 100%);display:grid;place-items:center;padding:26px}
+.auth-card{width:min(490px,100%);padding:32px;border-radius:34px;background:#fff;box-shadow:var(--shadow-lg)}
+.auth-title{font-family:"Playfair Display",serif;font-size:44px;margin:0 0 8px;letter-spacing:-.04em}
+.note{color:#64748b;line-height:1.75;font-size:14px}
+.label{display:block;margin:16px 0 8px;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.12em;font-weight:800}
+.input,.textarea,.select{width:100%;border-radius:18px;border:1.5px solid #dbe4ef;background:#f8fbff;color:var(--text);padding:14px 15px;outline:none;transition:.16s ease}
+.textarea{min-height:130px;resize:vertical}
+.input:focus,.textarea:focus,.select:focus{background:#fff;border-color:#93c5fd;box-shadow:0 0 0 4px rgba(79,124,255,.10)}
+
+#app{display:none;min-height:100vh;background:#eef4fb}
+.shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;overflow:auto;background:linear-gradient(180deg,#07111f 0%,#0d1f3b 100%);color:#fff;padding:22px 16px}
+.sidebar .side-group{margin:18px 10px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;color:rgba(255,255,255,.38)}
+.side-btn{width:100%;display:flex;align-items:center;gap:12px;border:none;text-align:left;background:transparent;color:rgba(255,255,255,.82);padding:14px 15px;border-radius:18px;cursor:pointer;font-weight:700;margin:5px 0;border:1px solid transparent}
+.side-btn.active{background:linear-gradient(135deg,rgba(79,124,255,.32),rgba(53,214,255,.12));border-color:rgba(255,255,255,.08);color:#fff}
 .side-btn:hover{background:rgba(255,255,255,.08)}
 .content{min-width:0}
-.topbar{
-  position:sticky; top:0; z-index:15;
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:16px 22px;
-  background:rgba(255,255,255,.82); backdrop-filter:blur(18px);
-  border-bottom:1px solid #e2e8f0;
-}
-.topbar-left{display:flex; align-items:center; gap:12px; flex-wrap:wrap}
-.page-title{font-size:22px; font-weight:800; letter-spacing:-.04em}
-.pill{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:8px 12px; border-radius:999px; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
-}
-.pill.live{background:#dcfce7; color:#166534}
-.pill.plan{background:#dbeafe; color:#1d4ed8}
-.topbar-actions{display:flex; gap:10px; flex-wrap:wrap}
-.app-btn{
-  border:none; cursor:pointer; border-radius:16px; padding:12px 16px; font-weight:800; transition:.18s ease;
-}
+.topbar{position:sticky;top:0;z-index:15;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;background:rgba(255,255,255,.82);backdrop-filter:blur(18px);border-bottom:1px solid #e2e8f0}
+.topbar-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-.04em}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.pill.live{background:#dcfce7;color:#166534}
+.pill.plan{background:#dbeafe;color:#1d4ed8}
+.topbar-actions{display:flex;gap:10px;flex-wrap:wrap}
+.app-btn{border:none;cursor:pointer;border-radius:16px;padding:12px 16px;font-weight:800;transition:.18s ease}
 .app-btn:hover{transform:translateY(-1px)}
-.app-btn.blue{background:linear-gradient(135deg,var(--blue),var(--cyan)); color:#fff; box-shadow:0 14px 30px rgba(79,124,255,.20)}
-.app-btn.soft{background:#eef4ff; color:#1d4ed8}
-.app-btn.line{background:#fff; color:#334155; border:1.5px solid #dbe4ef}
+.app-btn.blue{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;box-shadow:0 14px 30px rgba(79,124,255,.20)}
+.app-btn.soft{background:#eef4ff;color:#1d4ed8}
+.app-btn.line{background:#fff;color:#334155;border:1.5px solid #dbe4ef}
 .main{padding:22px}
 .page{display:none}
 .page.active{display:block}
-.grid-4{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
-.card{
-  background:#fff; border-radius:28px; padding:22px; box-shadow:var(--shadow);
-  border:1px solid rgba(15,23,42,.04);
-}
-.card-head{
-  display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;
-}
-.card-title{font-size:20px; font-weight:800; letter-spacing:-.03em}
-.value{font-size:46px; font-weight:800; letter-spacing:-.06em}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:#fff;border-radius:28px;padding:22px;box-shadow:var(--shadow);border:1px solid rgba(15,23,42,.04)}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.card-title{font-size:20px;font-weight:800;letter-spacing:-.03em}
+.value{font-size:46px;font-weight:800;letter-spacing:-.06em}
 .subtle{color:#64748b}
-.dashboard-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:16px; margin-top:16px}
-.stack{display:grid; gap:16px}
-.ai-panel{
-  border-radius:28px; padding:24px;
-  background:
-    radial-gradient(circle at 14% 18%, rgba(79,124,255,.18), transparent 24%),
-    linear-gradient(135deg,#07111f, #14345f 74%);
-  color:#fff;
-}
-.ai-badge{
-  display:inline-flex; padding:8px 12px; border-radius:999px; background:rgba(255,255,255,.08);
-  font-size:11px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; margin-bottom:14px;
-}
-.ai-response{
-  min-height:110px; font-size:22px; line-height:1.75;
-}
-/* Loading state for AI responses */
-.ai-response.loading{
-  opacity:.6;
-  animation: pulse 1.2s ease-in-out infinite;
-}
-@keyframes pulse{0%,100%{opacity:.6} 50%{opacity:.35}}
-
-.tool-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
-.table{width:100%; border-collapse:collapse}
-.table th,.table td{padding:12px 10px; border-bottom:1px solid #edf2f7; text-align:left; font-size:14px}
-.table th{font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:.08em}
-.script-list{display:grid; gap:12px}
-.script-item{
-  padding:18px; border-radius:20px; background:#f8fbff; border:1px solid #e2e8f0;
-}
-.script-item b{display:block; margin-bottom:8px}
-.two{display:grid; grid-template-columns:1fr 1fr; gap:16px}
-.kpi{
-  padding:18px; border-radius:22px; background:linear-gradient(135deg,#eff6ff,#f0fdf4);
-  color:#0f172a;
-}
-.avatar{
-  width:88px; height:88px; border-radius:28px; display:grid; place-items:center;
-  background:linear-gradient(135deg,var(--blue),var(--purple)); color:#fff; font-size:30px; font-weight:800;
-  box-shadow:0 16px 34px rgba(79,124,255,.22);
-}
-.settings-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px}
-.billing-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
-.code{
-  white-space:pre-wrap; background:#f8fbff; border-radius:20px; padding:16px; border:1px solid #e2e8f0; color:#334155; font-family:monospace; font-size:13px;
-}
-.plan-banner{
-  margin-bottom:16px;
-  padding:16px 18px;
-  border-radius:20px;
-  background:linear-gradient(135deg,#eff6ff,#f0fdf4);
-  color:#0f172a;
-  font-weight:600;
-}
-.enterprise-panel{
-  padding:18px;
-  border-radius:22px;
-  background:linear-gradient(135deg,#fff7ed,#eff6ff);
-  border:1px solid #fed7aa;
-}
-.enterprise-panel h4{
-  margin:0 0 8px;
-  font-size:18px;
-}
-.enterprise-bullets{
-  margin:0;
-  padding-left:18px;
-  line-height:1.9;
-  color:#475569;
-}
-
-/* ===== TWILIO CALL PANEL ===== */
-.call-panel{
-  padding:20px;
-  border-radius:22px;
-  background:linear-gradient(135deg,#f0fdf4,#ecfeff);
-  border:1px solid #bbf7d0;
-  margin-bottom:16px;
-}
-.call-panel h4{margin:0 0 8px; color:#064e3b; font-size:16px}
-.call-status{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
-}
-.call-status.idle{background:#f1f5f9; color:#475569}
-.call-status.live{background:#dcfce7; color:#166534}
-.call-status.live::before{
-  content:""; width:8px; height:8px; border-radius:50%; background:#22c55e;
-  animation:blink 1s ease-in-out infinite;
-}
-@keyframes blink{0%,100%{opacity:1} 50%{opacity:.3}}
-
-/* ===== OBJECTION TAG ===== */
-.objection-tag{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:5px 12px; border-radius:999px; font-size:11px; font-weight:800;
-  letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px;
-  background:rgba(255,255,255,.10); color:rgba(255,255,255,.8);
-  border:1px solid rgba(255,255,255,.15);
-}
-/* ===== FEEDBACK BUTTONS ===== */
-.feedback-row{display:flex; align-items:center; gap:8px; margin-top:10px}
-.feedback-btn{
-  width:36px; height:36px; border-radius:50%; border:1.5px solid #dbe4ef;
-  background:#fff; cursor:pointer; font-size:16px; display:grid; place-items:center;
-  transition:.15s ease;
-}
+.dashboard-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:16px}
+.stack{display:grid;gap:16px}
+.ai-panel{border-radius:28px;padding:24px;background:radial-gradient(circle at 14% 18%,rgba(79,124,255,.18),transparent 24%),linear-gradient(135deg,#07111f,#14345f 74%);color:#fff}
+.ai-badge{display:inline-flex;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.08);font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:800;margin-bottom:14px}
+.ai-response{min-height:110px;font-size:22px;line-height:1.75}
+.ai-response.loading{opacity:.6;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:.35}}
+.tool-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:12px 10px;border-bottom:1px solid #edf2f7;text-align:left;font-size:14px}
+.table th{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.08em}
+.script-list{display:grid;gap:12px}
+.script-item{padding:18px;border-radius:20px;background:#f8fbff;border:1px solid #e2e8f0}
+.script-item b{display:block;margin-bottom:8px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.kpi{padding:18px;border-radius:22px;background:linear-gradient(135deg,#eff6ff,#f0fdf4);color:#0f172a}
+.avatar{width:88px;height:88px;border-radius:28px;display:grid;place-items:center;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-size:30px;font-weight:800;box-shadow:0 16px 34px rgba(79,124,255,.22)}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.billing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.plan-banner{margin-bottom:16px;padding:16px 18px;border-radius:20px;background:linear-gradient(135deg,#eff6ff,#f0fdf4);color:#0f172a;font-weight:600}
+.enterprise-panel{padding:18px;border-radius:22px;background:linear-gradient(135deg,#fff7ed,#eff6ff);border:1px solid #fed7aa}
+.enterprise-panel h4{margin:0 0 8px;font-size:18px}
+.enterprise-bullets{margin:0;padding-left:18px;line-height:1.9;color:#475569}
+.call-panel{padding:20px;border-radius:22px;background:linear-gradient(135deg,#f0fdf4,#ecfeff);border:1px solid #bbf7d0;margin-bottom:16px}
+.call-panel h4{margin:0 0 8px;color:#064e3b;font-size:16px}
+.call-status{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.call-status.idle{background:#f1f5f9;color:#475569}
+.call-status.live{background:#dcfce7;color:#166534}
+.call-status.live::before{content:"";width:8px;height:8px;border-radius:50%;background:#22c55e;animation:blink 1s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.objection-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;background:rgba(255,255,255,.10);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15)}
+.feedback-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+.feedback-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid #dbe4ef;background:#fff;cursor:pointer;font-size:16px;display:grid;place-items:center;transition:.15s ease}
 .feedback-btn:hover{transform:scale(1.12)}
-.feedback-btn.selected-up{background:#dcfce7; border-color:#22c55e}
-.feedback-btn.selected-down{background:#fee2e2; border-color:#ef4444}
-.feedback-label{font-size:12px; color:#94a3b8; font-weight:600}
-/* ===== MEMORY PANEL ===== */
-.memory-panel{
-  margin-top:14px; padding:14px 16px; border-radius:20px;
-  background:#f8fbff; border:1px solid #e2e8f0;
-}
-.memory-panel h5{margin:0 0 8px; font-size:12px; text-transform:uppercase; letter-spacing:.10em; color:#94a3b8; font-weight:800}
-.memory-item{
-  font-size:13px; color:#475569; padding:6px 0; border-bottom:1px solid #f1f5f9; line-height:1.5;
-}
+.feedback-btn.selected-up{background:#dcfce7;border-color:#22c55e}
+.feedback-btn.selected-down{background:#fee2e2;border-color:#ef4444}
+.feedback-label{font-size:12px;color:#94a3b8;font-weight:600}
+.memory-panel{margin-top:14px;padding:14px 16px;border-radius:20px;background:#f8fbff;border:1px solid #e2e8f0}
+.memory-panel h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.10em;color:#94a3b8;font-weight:800}
+.memory-item{font-size:13px;color:#475569;padding:6px 0;border-bottom:1px solid #f1f5f9;line-height:1.5}
 .memory-item:last-child{border-bottom:none}
 .memory-item strong{color:#0f172a}
-
-/* ===== MIC BUTTON ===== */
-.mic-wrap{
-  position:relative; display:flex; align-items:center; gap:12px; margin-bottom:4px;
-}
-.mic-wrap .textarea{flex:1; margin-bottom:0}
-.mic-btn{
-  flex-shrink:0;
-  width:52px; height:52px; border-radius:50%; border:none; cursor:pointer;
-  background:linear-gradient(135deg,#e2e8f0,#f1f5f9);
-  color:#64748b; font-size:20px;
-  display:grid; place-items:center;
-  box-shadow:0 4px 14px rgba(0,0,0,.08);
-  transition:.2s ease;
-  align-self:flex-end; margin-bottom:2px;
-}
-.mic-btn:hover{background:linear-gradient(135deg,#dbeafe,#eff6ff); color:#2563eb; transform:scale(1.06)}
-.mic-btn.active{
-  background:linear-gradient(135deg,#ef4444,#f97316);
-  color:#fff;
-  box-shadow:0 0 0 0 rgba(239,68,68,.5);
-  animation:mic-pulse 1.4s ease-out infinite;
-}
-@keyframes mic-pulse{
-  0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}
-  70%{box-shadow:0 0 0 14px rgba(239,68,68,0)}
-  100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}
-}
-.mic-hint{font-size:11px; color:#94a3b8; font-weight:700; letter-spacing:.06em; text-align:center; margin-top:4px}
-
-/* ===== MODAL ===== */
-.modal{
-  position:fixed; inset:0; z-index:50;
-  background:rgba(2,8,23,.62); backdrop-filter:blur(8px);
-  display:none; align-items:center; justify-content:center; padding:20px;
-}
+.mic-wrap{position:relative;display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.mic-wrap .textarea{flex:1;margin-bottom:0}
+.mic-btn{flex-shrink:0;width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(135deg,#e2e8f0,#f1f5f9);color:#64748b;font-size:20px;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.08);transition:.2s ease;align-self:flex-end;margin-bottom:2px}
+.mic-btn:hover{background:linear-gradient(135deg,#dbeafe,#eff6ff);color:#2563eb;transform:scale(1.06)}
+.mic-btn.active{background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;box-shadow:0 0 0 0 rgba(239,68,68,.5);animation:mic-pulse 1.4s ease-out infinite}
+@keyframes mic-pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 14px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.mic-hint{font-size:11px;color:#94a3b8;font-weight:700;letter-spacing:.06em;text-align:center;margin-top:4px}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(2,8,23,.62);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
 .modal.open{display:flex}
-.modal-box{
-  width:min(640px,100%);
-  background:#fff; color:var(--text);
-  border-radius:30px; padding:28px;
-  box-shadow:var(--shadow-lg);
-}
-.modal-head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px}
-.close{
-  width:42px; height:42px; border-radius:999px; border:none; cursor:pointer; font-weight:900; background:#f1f5f9;
-}
-.price-note{
-  padding:20px;
-  border-radius:20px;
-  background:linear-gradient(135deg,#eff6ff,#ecfeff);
-  color:#0f172a;
-  font-size:16px;
-  line-height:1.8;
-}
-.price-note strong{
-  font-size:18px;
-}
-
-/* Toast notification */
-.toast{
-  position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(120px);
-  background:#0f172a; color:#fff; padding:14px 22px; border-radius:999px;
-  font-size:14px; font-weight:700; z-index:100; transition:.28s cubic-bezier(.34,1.56,.64,1);
-  pointer-events:none;
-}
+.modal-box{width:min(640px,100%);background:#fff;color:var(--text);border-radius:30px;padding:28px;box-shadow:var(--shadow-lg)}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.close{width:42px;height:42px;border-radius:999px;border:none;cursor:pointer;font-weight:900;background:#f1f5f9}
+.price-note{padding:20px;border-radius:20px;background:linear-gradient(135deg,#eff6ff,#ecfeff);color:#0f172a;font-size:16px;line-height:1.8}
+.price-note strong{font-size:18px}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(120px);background:#0f172a;color:#fff;padding:14px 22px;border-radius:999px;font-size:14px;font-weight:700;z-index:100;transition:.28s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
-@media (max-width: 1120px){
-  .hero,.dashboard-grid,.two,.settings-grid,.billing-grid,.pricing-grid{grid-template-columns:1fr}
-  .feature-grid,.grid-4,.hero-metrics{grid-template-columns:1fr 1fr}
-}
-@media (max-width: 840px){
-  .hero,.shell,.feature-grid,.grid-4,.hero-metrics{grid-template-columns:1fr}
-  .device-main{grid-template-columns:1fr}
-  .device-side,.sidebar{display:none}
-  .nav,.topbar{padding:16px}
-  .hero{padding:46px 18px 64px}
-  .section{padding:0 18px 64px}
-  .main{padding:14px}
-}
+@media(max-width:1120px){.hero,.dashboard-grid,.two,.settings-grid,.billing-grid,.pricing-grid{grid-template-columns:1fr}.feature-grid,.grid-4,.hero-metrics{grid-template-columns:1fr 1fr}}
+@media(max-width:840px){.hero,.shell,.feature-grid,.grid-4,.hero-metrics{grid-template-columns:1fr}.device-main{grid-template-columns:1fr}.device-side,.sidebar{display:none}.nav,.topbar{padding:16px}.hero{padding:46px 18px 64px}.section{padding:0 18px 64px}.main{padding:14px}}
 </style>
 </head>
 <body>
 
-<!-- Toast notification -->
 <div class="toast" id="toast"></div>
 
+<!-- HOME -->
 <div id="home">
   <div class="grid-noise"></div>
-
   <div class="nav">
     <div class="brand" onclick="goHome()">
       <div class="brand-badge">P</div>
-      <div>
-        <div class="brand-name">PayPilot AI</div>
-        <div class="brand-sub">Close more. Faster.</div>
-      </div>
+      <div><div class="brand-name">PayPilot AI</div><div class="brand-sub">Close more. Faster.</div></div>
     </div>
     <div class="nav-actions">
       <button class="btn btn-ghost" onclick="showPricing()">Get Pricing</button>
@@ -566,33 +237,23 @@ body.modal-open{overflow:hidden}
       <div class="eyebrow">Real-time sales intelligence</div>
       <h1>AI that feels like a <span>closer in your ear.</span></h1>
       <p>PayPilot turns live objections into clean rebuttals, faster call control, better scripting, and a product experience that feels premium the second someone opens it.</p>
-
       <div class="hero-actions">
         <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Launch Pro Demo</button>
         <button class="btn btn-ghost" onclick="showPricing()">See Plans</button>
       </div>
-
       <div class="hero-metrics">
         <div class="hero-metric"><strong>+31%</strong><span>Reply quality</span></div>
         <div class="hero-metric"><strong>8</strong><span>Languages</span></div>
         <div class="hero-metric"><strong>24/7</strong><span>AI support</span></div>
       </div>
     </div>
-
     <div class="device">
       <div class="device-glow"></div>
       <div class="device-screen">
-        <div class="device-top">
-          <div class="dot-wrap"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-          <strong>PayPilot Workspace</strong>
-        </div>
+        <div class="device-top"><div class="dot-wrap"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><strong>PayPilot Workspace</strong></div>
         <div class="device-main">
           <div class="device-side">
-            <div class="item active">Dashboard</div>
-            <div class="item">Live Assist</div>
-            <div class="item">Scripts</div>
-            <div class="item">Analytics</div>
-            <div class="item">Billing</div>
+            <div class="item active">Dashboard</div><div class="item">Live Assist</div><div class="item">Scripts</div><div class="item">Analytics</div><div class="item">Billing</div>
           </div>
           <div class="device-content">
             <div class="mini-grid">
@@ -615,129 +276,66 @@ body.modal-open{overflow:hidden}
       <h2>Built like a premium SaaS, not a rough internal tool.</h2>
       <p>This UI is upgraded for perception and sales. It feels modern, premium, and high-value while still staying simple enough to wire into real AI and payments next.</p>
     </div>
-
     <div class="feature-grid">
-      <div class="feature">
-        <div class="feature-icon">🤖</div>
-        <h3>Live AI rebuttals</h3>
-        <p>Paste a real objection and get a response that sounds ready for a live phone conversation, not like robotic generated copy.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">📜</div>
-        <h3>Script control</h3>
-        <p>Keep opening lines, gatekeeper talk tracks, fee rebuttals, and custom scripts inside a clean workspace reps can actually use fast.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">📊</div>
-        <h3>Manager analytics</h3>
-        <p>Show objection trends, response quality, and rep performance in a layout that looks like a real software company built it.</p>
-      </div>
+      <div class="feature"><div class="feature-icon">🤖</div><h3>Live AI rebuttals</h3><p>Paste a real objection and get a response that sounds ready for a live phone conversation, not like robotic generated copy.</p></div>
+      <div class="feature"><div class="feature-icon">📜</div><h3>Script control</h3><p>Keep opening lines, gatekeeper talk tracks, fee rebuttals, and custom scripts inside a clean workspace reps can actually use fast.</p></div>
+      <div class="feature"><div class="feature-icon">📊</div><h3>Manager analytics</h3><p>Show objection trends, response quality, and rep performance in a layout that looks like a real software company built it.</p></div>
     </div>
-
     <div class="pricing-label">Simple, transparent pricing</div>
-
     <div class="pricing-grid">
       <div class="plan">
         <h3>Starter</h3>
-        <div class="price">
-          <strong>$99</strong>
-          <span>per month</span>
-        </div>
-        <ul>
-          <li>AI helps write responses to common objections</li>
-          <li>Access to your script library</li>
-          <li>Fast response generation</li>
-          <li>Email support</li>
-        </ul>
-        <div class="plan-actions">
-          <button class="btn btn-primary" onclick="showPricing('starter')">View Plan</button>
-          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="showAuth('starter')">Try Demo</button>
-        </div>
+        <div class="price"><strong>$99</strong><span>per month</span></div>
+        <ul><li>AI helps write responses to common objections</li><li>Access to your script library</li><li>Fast response generation</li><li>Email support</li></ul>
+        <div class="plan-actions"><button class="btn btn-primary" onclick="showPricing('starter')">View Plan</button><button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="showAuth('starter')">Try Demo</button></div>
       </div>
-
       <div class="plan featured">
         <div class="plan-tag">Most Popular</div>
         <h3>Pro</h3>
-        <div class="price">
-          <strong>$399</strong>
-          <span>per month</span>
-        </div>
-        <ul>
-          <li>Real-time AI help during live calls</li>
-          <li>Stronger objection rebuttals</li>
-          <li>Multi-language response support</li>
-          <li>Performance and usage analytics</li>
-          <li>Priority support</li>
-        </ul>
-        <div class="plan-actions">
-          <button class="btn btn-primary" onclick="showPricing('pro')">View Plan</button>
-          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="showAuth('pro')">Try Demo</button>
-        </div>
+        <div class="price"><strong>$399</strong><span>per month</span></div>
+        <ul><li>Real-time AI help during live calls</li><li>Stronger objection rebuttals</li><li>Multi-language response support</li><li>Performance and usage analytics</li><li>Priority support</li></ul>
+        <div class="plan-actions"><button class="btn btn-primary" onclick="showPricing('pro')">View Plan</button><button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="showAuth('pro')">Try Demo</button></div>
       </div>
-
       <div class="plan">
         <h3>Enterprise</h3>
-        <div class="price">
-          <strong>Custom</strong>
-          <span>pricing</span>
-        </div>
-        <ul>
-          <li>AI trained on your own scripts and workflow</li>
-          <li>CRM and workflow integrations</li>
-          <li>Team onboarding and rollout support</li>
-          <li>Dedicated support</li>
-        </ul>
-        <div class="plan-actions">
-          <button class="btn btn-primary" onclick="showPricing('enterprise')">View Plan</button>
-          <button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="showAuth('enterprise')">Try Demo</button>
-        </div>
+        <div class="price"><strong>Custom</strong><span>pricing</span></div>
+        <ul><li>AI trained on your own scripts and workflow</li><li>CRM and workflow integrations</li><li>Team onboarding and rollout support</li><li>Dedicated support</li></ul>
+        <div class="plan-actions"><button class="btn btn-primary" onclick="showPricing('enterprise')">View Plan</button><button class="btn btn-ghost" style="color:#0f172a;border:1px solid #dbe4ef;background:#fff" onclick="showAuth('enterprise')">Try Demo</button></div>
       </div>
-    </div><!-- /.pricing-grid -->
-
-    <!-- HOME BILLING BANNER -->
-    <div style="padding-bottom:84px;">
-      <div style="border-radius:34px; background:linear-gradient(135deg, rgba(79,124,255,.14), rgba(53,214,255,.08)); border:1px solid rgba(255,255,255,.10); padding:42px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:28px;">
+    </div>
+    <div style="padding-bottom:84px;margin-top:52px">
+      <div style="border-radius:34px;background:linear-gradient(135deg,rgba(79,124,255,.14),rgba(53,214,255,.08));border:1px solid rgba(255,255,255,.10);padding:42px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:28px;">
         <div>
-          <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.16em; color:rgba(255,255,255,.52); margin-bottom:12px;">Simple billing. No surprises.</div>
-          <h3 style="margin:0 0 10px; font-family:'Playfair Display',serif; font-size:38px; color:#fff; letter-spacing:-.04em; line-height:1.1;">Start with a free demo.<br>Pay when you're ready.</h3>
-          <p style="margin:0; color:rgba(255,255,255,.68); font-size:16px; line-height:1.8; max-width:520px;">No credit card required to try the demo. Starter is $99/mo, Pro is $399/mo, and Enterprise is custom. Cancel anytime.</p>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:rgba(255,255,255,.52);margin-bottom:12px;">Simple billing. No surprises.</div>
+          <h3 style="margin:0 0 10px;font-family:'Playfair Display',serif;font-size:38px;color:#fff;letter-spacing:-.04em;line-height:1.1;">Start with a free demo.<br>Pay when you're ready.</h3>
+          <p style="margin:0;color:rgba(255,255,255,.68);font-size:16px;line-height:1.8;max-width:520px;">No credit card required to try the demo. Starter is $99/mo, Pro is $399/mo, and Enterprise is custom. Cancel anytime.</p>
         </div>
-        <div style="display:flex; flex-direction:column; gap:12px; min-width:200px;">
-          <button class="btn btn-primary" style="font-size:16px; padding:16px 28px;" onclick="showAuth('pro')">Start free demo</button>
-          <button class="btn btn-ghost" style="font-size:15px; padding:14px 22px;" onclick="showPricing()">Compare plans</button>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:200px;">
+          <button class="btn btn-primary" style="font-size:16px;padding:16px 28px;" onclick="showAuth('pro')">Start free demo</button>
+          <button class="btn btn-ghost" style="font-size:15px;padding:14px 22px;" onclick="showPricing()">Compare plans</button>
         </div>
       </div>
     </div>
-  </div><!-- /.section -->
-</div><!-- /#home -->
+  </div>
+</div>
 
-<!-- ===== AUTH ===== -->
+<!-- AUTH -->
 <div id="auth" class="hidden">
   <div class="auth-card">
     <div class="brand" onclick="goHome()" style="color:#0f172a;margin-bottom:18px">
       <div class="brand-badge">P</div>
-      <div>
-        <div class="brand-name">PayPilot AI</div>
-        <div class="brand-sub" style="color:#64748b">Workspace login</div>
-      </div>
+      <div><div class="brand-name">PayPilot AI</div><div class="brand-sub" style="color:#64748b">Workspace login</div></div>
     </div>
-
     <h2 class="auth-title">Welcome back</h2>
     <p class="note">Sign in to your PayPilot account.</p>
-
-    <label class="label">Email</label>
-    <input class="input" id="loginEmail" placeholder="Enter your email" />
-
-    <label class="label">Password</label>
-    <input class="input" id="loginPass" type="password" placeholder="Enter your password" />
-
+    <label class="label">Email</label><input class="input" id="loginEmail" placeholder="Enter your email" />
+    <label class="label">Password</label><input class="input" id="loginPass" type="password" placeholder="Enter your password" />
     <label class="label">Plan</label>
     <select class="select" id="loginPlan">
       <option value="starter">Starter</option>
       <option value="pro" selected>Pro</option>
       <option value="enterprise">Enterprise</option>
     </select>
-
     <div class="tool-row" style="margin-top:18px">
       <button class="app-btn blue" onclick="loginDemo()">Login</button>
       <button class="app-btn line" onclick="goHome()">Back</button>
@@ -745,27 +343,22 @@ body.modal-open{overflow:hidden}
   </div>
 </div>
 
-<!-- ===== APP ===== -->
+<!-- APP -->
 <div id="app">
   <div class="shell">
     <aside class="sidebar">
       <div class="brand" onclick="goHome()" style="margin:0 8px 14px">
         <div class="brand-badge">P</div>
-        <div>
-          <div class="brand-name">PayPilot AI</div>
-          <div class="brand-sub">Premium workspace</div>
-        </div>
+        <div><div class="brand-name">PayPilot AI</div><div class="brand-sub">Premium workspace</div></div>
       </div>
-
       <div class="side-group">Workspace</div>
-      <button class="side-btn active" data-page="dashboard" onclick="showPage('dashboard', this)">🏠 Dashboard</button>
-      <button class="side-btn" data-page="assist" onclick="showPage('assist', this)">🤖 Live Assist</button>
-      <button class="side-btn" data-page="scripts" onclick="showPage('scripts', this)">📜 Scripts</button>
-      <button class="side-btn" data-page="analytics" onclick="showPage('analytics', this)">📊 Analytics</button>
-
+      <button class="side-btn active" data-page="dashboard" onclick="showPage('dashboard',this)">🏠 Dashboard</button>
+      <button class="side-btn" data-page="assist" onclick="showPage('assist',this)">🤖 Live Assist</button>
+      <button class="side-btn" data-page="scripts" onclick="showPage('scripts',this)">📜 Scripts</button>
+      <button class="side-btn" data-page="analytics" onclick="showPage('analytics',this)">📊 Analytics</button>
       <div class="side-group">Account</div>
-      <button class="side-btn" data-page="settings" onclick="showPage('settings', this)">⚙️ Settings</button>
-      <button class="side-btn" data-page="billing" onclick="showPage('billing', this)">💳 Billing</button>
+      <button class="side-btn" data-page="settings" onclick="showPage('settings',this)">⚙️ Settings</button>
+      <button class="side-btn" data-page="billing" onclick="showPage('billing',this)">💳 Billing</button>
     </aside>
 
     <main class="content">
@@ -787,33 +380,27 @@ body.modal-open{overflow:hidden}
         <!-- DASHBOARD -->
         <section class="page active" id="dashboard">
           <div class="plan-banner" id="planBanner">You are viewing the Pro demo.</div>
-
           <div class="grid-4">
             <div class="card"><div class="subtle">Calls today</div><div class="value" id="metricCalls">43</div></div>
             <div class="card"><div class="subtle">Responses generated</div><div class="value" id="metricResponses">127</div></div>
             <div class="card"><div class="subtle">Close score</div><div class="value" id="metricClose">81%</div></div>
             <div class="card"><div class="subtle">Active plan</div><div class="value" style="font-size:32px" id="metricPlan">Pro</div></div>
           </div>
-
           <div class="dashboard-grid">
             <div class="stack">
               <div class="card">
-                <div class="card-head">
-                  <div class="card-title">Quick objection reply</div>
-                </div>
+                <div class="card-head"><div class="card-title">Quick objection reply</div></div>
                 <label class="label">What did the prospect say?</label>
                 <textarea class="textarea" id="quickObjection" placeholder="Example: I don't want to pay 1.2% to get my own money."></textarea>
                 <div class="tool-row">
                   <button class="app-btn blue" onclick="generateResponse('quickObjection','quickResponse')">Generate reply</button>
                   <button class="app-btn line" onclick="fillExample()">Use example</button>
                 </div>
-
                 <div class="ai-panel" style="margin-top:16px">
                   <div class="ai-badge">AI Coach Output</div>
                   <div class="ai-response" id="quickResponse">Your premium response will show here.</div>
                 </div>
               </div>
-
               <div class="card">
                 <div class="card-title" style="margin-bottom:12px">Best next step</div>
                 <div class="kpi" id="nextStepBox">
@@ -821,8 +408,6 @@ body.modal-open{overflow:hidden}
                   <div class="subtle" style="margin-top:8px">Start by validating the fee concern, then shift to speed, visibility, and reduced manual effort before asking a soft commitment question.</div>
                 </div>
               </div>
-
-              <!-- Enterprise-only card -->
               <div class="card" id="enterpriseDashboardCard" style="display:none">
                 <div class="card-title" style="margin-bottom:12px">Enterprise rollout view</div>
                 <div class="enterprise-panel">
@@ -835,7 +420,6 @@ body.modal-open{overflow:hidden}
                 </div>
               </div>
             </div>
-
             <div class="stack">
               <div class="card">
                 <div class="card-title" style="margin-bottom:12px">Manager highlights</div>
@@ -848,7 +432,6 @@ body.modal-open{overflow:hidden}
                   </tbody>
                 </table>
               </div>
-
               <div class="card">
                 <div class="card-title" style="margin-bottom:12px">Most common objections</div>
                 <div class="script-list" id="objectionList">
@@ -864,9 +447,9 @@ body.modal-open{overflow:hidden}
         <!-- LIVE ASSIST -->
         <section class="page" id="assist">
 
-          <!-- LIVE TRANSCRIPTION PANEL -->
+
           <div class="call-panel" id="callPanel" style="padding:14px 20px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
               <div class="subtle" id="callInfo">Click the mic and PayPilot will start listening. Responses generate automatically.</div>
               <div class="call-status idle" id="callStatus">Mic off</div>
             </div>
@@ -883,40 +466,23 @@ body.modal-open{overflow:hidden}
                   <div class="mic-hint" id="micHint">Mic</div>
                 </div>
               </div>
-
               <div class="two" style="margin-top:14px">
-                <div>
-                  <label class="label">Tone</label>
-                  <select class="select" id="toneSelect">
-                    <option>Confident</option>
-                    <option>Warm</option>
-                    <option>Direct</option>
-                    <option>Calm</option>
-                  </select>
+                <div><label class="label">Tone</label>
+                  <select class="select" id="toneSelect"><option>Confident</option><option>Warm</option><option>Direct</option><option>Calm</option></select>
                 </div>
-                <div>
-                  <label class="label">Language</label>
-                  <select class="select" id="langSelect">
-                    <option>English</option>
-                    <option>Spanish</option>
-                    <option>French</option>
-                    <option>Portuguese</option>
-                  </select>
+                <div><label class="label">Language</label>
+                  <select class="select" id="langSelect"><option>English</option><option>Spanish</option><option>French</option><option>Portuguese</option></select>
                 </div>
               </div>
-
               <div class="tool-row">
                 <button class="app-btn blue" onclick="generateResponse('assistInput','assistResponse')">Generate response</button>
                 <button class="app-btn soft" onclick="translateResponse()">Translate reply</button>
                 <button class="app-btn line" onclick="loadFeeExample()">Fee example</button>
               </div>
             </div>
-
             <div class="card">
               <div class="card-title" style="margin-bottom:12px">AI Response</div>
-              <div id="objectionTag" style="display:none">
-                <span class="objection-tag" id="objectionTagText">Detecting...</span>
-              </div>
+              <div id="objectionTag" style="display:none"><span class="objection-tag" id="objectionTagText">Detecting...</span></div>
               <div class="ai-panel">
                 <div class="ai-badge">Live rebuttal</div>
                 <div class="ai-response" id="assistResponse">Paste an objection and click Generate response.</div>
@@ -925,13 +491,11 @@ body.modal-open{overflow:hidden}
                 <button class="app-btn line" onclick="copyAssist()">Copy</button>
                 <button class="app-btn line" onclick="saveToHistory()">Save</button>
                 <button class="app-btn line" id="speakBtn" onclick="speakResponse()">🔊 Speak</button>
-                <button class="app-btn line" onclick="submitFeedback('up')" title="This response was helpful">👍</button>
-                <button class="app-btn line" onclick="submitFeedback('down')" title="This response needs work">👎</button>
                 <button class="app-btn soft" onclick="clearCallMemory()" title="Start fresh for next call">New Call</button>
               </div>
               <div class="feedback-row">
-                <button class="feedback-btn" id="thumbsUp" onclick="submitFeedback('up')" title="This worked">👍</button>
-                <button class="feedback-btn" id="thumbsDown" onclick="submitFeedback('down')" title="This didn't work">👎</button>
+                <button class="feedback-btn" id="thumbsUp" onclick="submitFeedback('up')">👍</button>
+                <button class="feedback-btn" id="thumbsDown" onclick="submitFeedback('down')">👎</button>
                 <span class="feedback-label" id="feedbackLabel">Was this helpful?</span>
               </div>
               <div class="memory-panel" id="memoryPanel" style="display:none">
@@ -940,9 +504,7 @@ body.modal-open{overflow:hidden}
               </div>
             </div>
           </div>
-
-          <!-- Starter-only note -->
-          <div class="card" id="starterAssistNote" style="display:none; margin-top:16px">
+          <div class="card" id="starterAssistNote" style="display:none;margin-top:16px">
             <div class="card-title" style="margin-bottom:12px">Starter demo note</div>
             <div class="subtle">Starter keeps things simple. This demo focuses on core objection help and scripts without the advanced analytics or enterprise rollout features.</div>
           </div>
@@ -954,25 +516,14 @@ body.modal-open{overflow:hidden}
             <div class="card">
               <div class="card-title" style="margin-bottom:12px">Script Library</div>
               <div class="script-list">
-                <div class="script-item">
-                  <b>Opening Script</b>
-                  Good morning / afternoon, is this [Supplier Name]? My name is [Your Name] and I'm calling from [Company] on a recorded line...
-                </div>
-                <div class="script-item">
-                  <b>Gatekeeper Script</b>
-                  I'm calling on behalf of [Buyer Name], who you may know as [Service Location]. They've partnered with us to help automate accounts payable...
-                </div>
-                <div class="script-item">
-                  <b>Fee Rebuttal</b>
-                  Totally understandable. Most businesses compare it to time spent tracking checks, delays in the mail, and manual reconciliation...
-                </div>
+                <div class="script-item"><b>Opening Script</b>Good morning / afternoon, is this [Supplier Name]? My name is [Your Name] and I'm calling from [Company] on a recorded line...</div>
+                <div class="script-item"><b>Gatekeeper Script</b>I'm calling on behalf of [Buyer Name], who you may know as [Service Location]. They've partnered with us to help automate accounts payable...</div>
+                <div class="script-item"><b>Fee Rebuttal</b>Totally understandable. Most businesses compare it to time spent tracking checks, delays in the mail, and manual reconciliation...</div>
               </div>
             </div>
-
             <div class="card">
               <div class="card-title" style="margin-bottom:12px">Custom Script Editor</div>
-              <label class="label">Script name</label>
-              <input class="input" id="scriptName" placeholder="Example: Enhanced Direct Deposit Pitch" />
+              <label class="label">Script name</label><input class="input" id="scriptName" placeholder="Example: Enhanced Direct Deposit Pitch" />
               <label class="label">Script content</label>
               <textarea class="textarea" id="scriptBody">Good morning / afternoon, is this [Supplier Name]?
 
@@ -996,7 +547,6 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
             <div class="card"><div class="subtle">Objections solved</div><div class="value" id="analyticsSolved">67</div></div>
             <div class="card"><div class="subtle">Rep adoption</div><div class="value" id="analyticsAdoption">94%</div></div>
           </div>
-
           <div class="two" style="margin-top:16px">
             <div class="card">
               <div class="card-title" style="margin-bottom:12px">Coaching Insights</div>
@@ -1017,9 +567,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               </table>
             </div>
           </div>
-
-          <!-- Starter-only note -->
-          <div class="card" id="starterAnalyticsNote" style="display:none; margin-top:16px">
+          <div class="card" id="starterAnalyticsNote" style="display:none;margin-top:16px">
             <div class="card-title" style="margin-bottom:12px">Starter analytics preview</div>
             <div class="subtle">Starter customers see a simplified analytics snapshot. Full trend reporting and deeper management visibility are shown in the Pro and Enterprise demos.</div>
           </div>
@@ -1031,30 +579,17 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
             <div class="card-title" style="margin-bottom:16px">Settings</div>
             <div class="settings-grid">
               <div>
-                <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px">
+                <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
                   <div class="avatar" id="avatarBox">S</div>
-                  <div>
-                    <strong id="profileNameView">Sean</strong>
-                    <div class="subtle">Supplier Hub Sales</div>
-                  </div>
+                  <div><strong id="profileNameView">Sean</strong><div class="subtle">Supplier Hub Sales</div></div>
                 </div>
-
-                <label class="label">Name</label>
-                <input class="input" id="profileName" value="Sean" />
-                <label class="label">Bio</label>
-                <textarea class="textarea" id="profileBio">Charismatic sales rep using AI to move faster on live calls.</textarea>
+                <label class="label">Name</label><input class="input" id="profileName" value="Sean" />
+                <label class="label">Bio</label><textarea class="textarea" id="profileBio">Charismatic sales rep using AI to move faster on live calls.</textarea>
               </div>
-
               <div>
-                <label class="label">Company</label>
-                <input class="input" id="profileCompany" value="PayPilot AI" />
+                <label class="label">Company</label><input class="input" id="profileCompany" value="PayPilot AI" />
                 <label class="label">Default plan</label>
-                <select class="select" id="profilePlan">
-                  <option value="starter">Starter</option>
-                  <option value="pro" selected>Pro</option>
-                  <option value="enterprise">Enterprise</option>
-                </select>
-
+                <select class="select" id="profilePlan"><option value="starter">Starter</option><option value="pro" selected>Pro</option><option value="enterprise">Enterprise</option></select>
                 <div class="tool-row">
                   <button class="app-btn blue" onclick="saveSettings()">Save settings</button>
                   <button class="app-btn line" onclick="resetSettings()">Reset</button>
@@ -1069,36 +604,26 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
           <div class="billing-grid">
             <div class="card">
               <div class="card-title">Starter</div>
-              <div class="price">
-                <strong>$99</strong>
-                <span>per month</span>
-              </div>
+              <div class="price"><strong>$99</strong><span>per month</span></div>
               <p class="subtle">Great for solo reps getting started.</p>
               <button class="app-btn blue" onclick="fakeStripe('Starter',99)">Choose Starter</button>
               <button class="app-btn line" style="margin-top:10px" onclick="enterPlanDemo('starter')">Preview Starter Demo</button>
             </div>
             <div class="card">
               <div class="card-title">Pro</div>
-              <div class="price">
-                <strong>$399</strong>
-                <span>per month</span>
-              </div>
+              <div class="price"><strong>$399</strong><span>per month</span></div>
               <p class="subtle">Live AI, analytics, and translation.</p>
               <button class="app-btn blue" onclick="fakeStripe('Pro',399)">Choose Pro</button>
               <button class="app-btn line" style="margin-top:10px" onclick="enterPlanDemo('pro')">Preview Pro Demo</button>
             </div>
             <div class="card">
               <div class="card-title">Enterprise</div>
-              <div class="price">
-                <strong>Custom</strong>
-                <span>pricing</span>
-              </div>
+              <div class="price"><strong>Custom</strong><span>pricing</span></div>
               <p class="subtle">Custom AI training and rollout.</p>
               <button class="app-btn blue" onclick="fakeStripe('Enterprise',0)">Talk to Sales</button>
               <button class="app-btn line" style="margin-top:10px" onclick="enterPlanDemo('enterprise')">Preview Enterprise Demo</button>
             </div>
           </div>
-
           <div class="card" style="margin-top:16px">
             <div class="card-title" style="margin-bottom:10px">Your current plan</div>
             <div class="kpi" id="billingCurrentPlan">
@@ -1117,31 +642,12 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
 <div class="modal" id="pricingModal">
   <div class="modal-box">
     <div class="modal-head">
-      <div>
-        <h3 style="margin:0">Choose Your Plan</h3>
-        <div class="subtle">Simple monthly pricing for reps and teams.</div>
-      </div>
+      <div><h3 style="margin:0">Choose Your Plan</h3><div class="subtle">Simple monthly pricing for reps and teams.</div></div>
       <button class="close" onclick="hidePricing()">✕</button>
     </div>
-
-    <div class="price-note" id="pricingText">
-      <strong>Pro</strong> is the best fit for most users.
-
-      <br><br>
-
-      It gives you live AI help during calls, better rebuttals, support for multiple languages, and performance tracking so you can see what is working.
-
-      <br><br>
-
-      <strong>Starter</strong> is best if you want a lower-cost version with basic AI help.
-
-      <br><br>
-
-      <strong>Enterprise</strong> is best for teams that want custom setup, deeper integrations, and AI trained on their own process.
-    </div>
-
+    <div class="price-note" id="pricingText"></div>
     <div class="tool-row" style="margin-top:18px">
-      <button class="app-btn blue" onclick="enterPlanDemo(currentPricingPlan || 'pro'); hidePricing();">Open Selected Demo</button>
+      <button class="app-btn blue" onclick="enterPlanDemo(currentPricingPlan||'pro');hidePricing();">Open Selected Demo</button>
       <button class="app-btn line" onclick="hidePricing()">Close</button>
     </div>
   </div>
@@ -1152,121 +658,45 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
 // STATE
 // ============================================================
 let currentPlan = "pro";
-let isLiveUser = false; // true when master login used
-let currentIsReal = false; // true when master login used
 let currentPricingPlan = "pro";
 let callActive = false;
-let lastGeneratedText = ""; // track last response text for translate
+let lastGeneratedText = "";
+let anthropicApiKey = "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";
+
+// ============================================================
+// API KEY MANAGEMENT
+// ============================================================
+function handleApiKeyInput(){
+  const val = document.getElementById('apiKeyInput').value.trim();
+  const status = document.getElementById('apiKeyStatus');
+  if(val.startsWith('sk-ant-') && val.length > 20){
+    status.textContent = 'Ready';
+    status.className = 'api-key-status set';
+  } else {
+    status.textContent = 'Not set';
+    status.className = 'api-key-status unset';
+  }
+}
+
+function saveApiKey(){
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if(!val.startsWith('sk-ant-') || val.length < 20){
+    toast('Enter a valid Anthropic API key (starts with sk-ant-)');
+    return;
+  }
+  anthropicApiKey = val;
+  document.getElementById('apiKeyStatus').textContent = '✓ Active';
+  document.getElementById('apiKeyStatus').className = 'api-key-status set';
+  toast('API key saved — AI is live!');
+}
 
 // ============================================================
 // PLAN CONFIGS
 // ============================================================
 const planConfigs = {
-  starter: {
-    label: "Starter Plan",
-    planName: "Starter",
-    banner: "You are viewing the Starter workspace. This version keeps things simple and focuses on core AI objection help and scripts.",
-    calls: "18", responses: "41", close: "63%",
-    quality: "74%", time: "5.8m", solved: "23", adoption: "61%",
-    nextStepTitle: "Simple objection handling",
-    nextStepBody: "Keep the response short, clear, and easy to say on a live call. Starter is designed for fast help without extra layers.",
-    insights: [
-      ["What's working", "Simple acknowledge-and-clarify responses work best here."],
-      ["What to improve", "Use the script library more often so the response feels more structured."],
-      ["AI suggestion", "Ask one clean follow-up question instead of stacking too much information."]
-    ],
-    objections: [
-      ["Fee pushback", "Use a simple value explanation without overcomplicating it."],
-      ["Check preference", "Explain speed and remittance clearly and keep it short."],
-      ["Not interested", "Use a soft exit and confirm whether timing is the real issue."]
-    ]
-  },
-  pro: {
-    label: "Pro Plan",
-    planName: "Pro",
-    banner: "You are viewing the Pro workspace with live assist, stronger rebuttals, and fuller analytics.",
-    calls: "43", responses: "127", close: "81%",
-    quality: "89%", time: "4.2m", solved: "67", adoption: "94%",
-    nextStepTitle: "Acknowledge → Reframe → Soft close",
-    nextStepBody: "Start by validating the fee concern, then shift to speed, visibility, and reduced manual effort before asking a soft commitment question.",
-    insights: [
-      ["What's working", "Acknowledge + reframe + soft close is outperforming direct closes."],
-      ["What to improve", "Reps should verify contact info before explaining fee structure."],
-      ["AI suggestion", "Bring the buyer-name reminder earlier in the pitch."]
-    ],
-    objections: [
-      ["Fee pushback", "Usually needs value reframing, not pressure."],
-      ["We prefer checks", "Best answered with speed + remittance clarity."],
-      ["Need owner approval", "Use an easy-forward explanation and soft close."]
-    ]
-  },
-  enterprise: {
-    label: "Enterprise Plan",
-    planName: "Enterprise",
-    banner: "You are viewing the Enterprise workspace. This version highlights customization, rollout support, training, and deeper integrations.",
-    calls: "112", responses: "318", close: "88%",
-    quality: "94%", time: "3.7m", solved: "146", adoption: "98%",
-    nextStepTitle: "Coach + personalize + roll out at scale",
-    nextStepBody: "Enterprise focuses on repeatable team performance, custom training, and better AI guidance built around your real workflow.",
-    insights: [
-      ["What's working", "Custom scripts and structured rollout are improving consistency across reps."],
-      ["What to improve", "Use plan-specific training paths for different rep levels."],
-      ["AI suggestion", "Connect CRM context so the assistant can personalize recommendations further."]
-    ],
-    objections: [
-      ["Security concerns", "Lead with process control, verification, and rollout safeguards."],
-      ["Workflow change resistance", "Frame the change around reduced manual effort and consistency."],
-      ["Decision-maker concern", "Use summary language built for internal forwarding and approvals."]
-    ]
-  }
-};
-
-// ============================================================
-// SMART REPLIES (demo fallback — replace with real AI in prod)
-// ============================================================
-const smartReplies = {
-  starter: [
-    {
-      match: ["fee","1.2%","cost","pay a fee","processing fee"],
-      reply: "Totally understand. Most suppliers compare the fee to the time saved from faster payments and less manual check handling. If it helps, I can keep the explanation simple."
-    },
-    {
-      match: ["checks","prefer checks","keep checks"],
-      reply: "That makes sense. The biggest reason people switch is usually speed and better payment detail, not because checks never work."
-    }
-  ],
-  pro: [
-    {
-      match: ["fee","1.2%","cost","pay a fee","processing fee"],
-      reply: "Totally understandable. A lot of businesses compare the fee to the time spent waiting on checks, dealing with mail delays, and manually reconciling payments. For many suppliers, the speed and payment detail end up being worth more than the processing cost. If that sounds fair, I can walk you through the secure setup now."
-    },
-    {
-      match: ["checks","prefer checks","keep checks"],
-      reply: "No problem at all. A lot of suppliers start there. The biggest advantage of electronic payments is faster delivery and a detailed remittance with every payment, so there's less guessing and less manual tracking. If you're open to it, I can show you what setup would look like."
-    },
-    {
-      match: ["not interested","no thanks","dont want it","don't want it"],
-      reply: "I understand. Before I let you go, let me just make sure your payment information is current so there aren't any delays moving forward. And if speed ever becomes a bigger priority, this option will still be available."
-    },
-    {
-      match: ["owner","manager","need approval","boss"],
-      reply: "That makes sense. What usually helps is giving them a quick summary: payments arrive faster, remittance comes with every payment, and it cuts down on manual check handling. If you'd like, I can send over the secure setup steps so it's easy for them to review."
-    }
-  ],
-  enterprise: [
-    {
-      match: ["fee","1.2%","cost","pay a fee","processing fee"],
-      reply: "That's a fair concern. At the enterprise level, the conversation is usually about total operational efficiency, payment visibility, and removing manual follow-up work across the team. If the process saves enough time and increases consistency, the value usually becomes much easier to justify."
-    },
-    {
-      match: ["security","scam","fraud","bank information"],
-      reply: "Completely fair. Enterprise teams usually need clear process control, secure enrollment, and visibility into how information is handled. That's exactly where rollout structure and verification steps matter most."
-    },
-    {
-      match: ["workflow","change","training","used to checks"],
-      reply: "I understand. The best enterprise rollouts keep change minimal and focus only on the parts of the workflow that reduce manual effort and improve consistency. If that's important, we'd map it around your current process."
-    }
-  ]
+  starter:{label:"Starter Plan",planName:"Starter",banner:"You are viewing the Starter workspace. This version keeps things simple and focuses on core AI objection help and scripts.",calls:"18",responses:"41",close:"63%",quality:"74%",time:"5.8m",solved:"23",adoption:"61%",nextStepTitle:"Simple objection handling",nextStepBody:"Keep the response short, clear, and easy to say on a live call. Starter is designed for fast help without extra layers.",insights:[["What's working","Simple acknowledge-and-clarify responses work best here."],["What to improve","Use the script library more often so the response feels more structured."],["AI suggestion","Ask one clean follow-up question instead of stacking too much information."]],objections:[["Fee pushback","Use a simple value explanation without overcomplicating it."],["Check preference","Explain speed and remittance clearly and keep it short."],["Not interested","Use a soft exit and confirm whether timing is the real issue."]]},
+  pro:{label:"Pro Plan",planName:"Pro",banner:"You are viewing the Pro workspace with live assist, stronger rebuttals, and fuller analytics.",calls:"43",responses:"127",close:"81%",quality:"89%",time:"4.2m",solved:"67",adoption:"94%",nextStepTitle:"Acknowledge → Reframe → Soft close",nextStepBody:"Start by validating the fee concern, then shift to speed, visibility, and reduced manual effort before asking a soft commitment question.",insights:[["What's working","Acknowledge + reframe + soft close is outperforming direct closes."],["What to improve","Reps should verify contact info before explaining fee structure."],["AI suggestion","Bring the buyer-name reminder earlier in the pitch."]],objections:[["Fee pushback","Usually needs value reframing, not pressure."],["We prefer checks","Best answered with speed + remittance clarity."],["Need owner approval","Use an easy-forward explanation and soft close."]]},
+  enterprise:{label:"Enterprise Plan",planName:"Enterprise",banner:"You are viewing the Enterprise workspace. This version highlights customization, rollout support, training, and deeper integrations.",calls:"112",responses:"318",close:"88%",quality:"94%",time:"3.7m",solved:"146",adoption:"98%",nextStepTitle:"Coach + personalize + roll out at scale",nextStepBody:"Enterprise focuses on repeatable team performance, custom training, and better AI guidance built around your real workflow.",insights:[["What's working","Custom scripts and structured rollout are improving consistency across reps."],["What to improve","Use plan-specific training paths for different rep levels."],["AI suggestion","Connect CRM context so the assistant can personalize recommendations further."]],objections:[["Security concerns","Lead with process control, verification, and rollout safeguards."],["Workflow change resistance","Frame the change around reduced manual effort and consistency."],["Decision-maker concern","Use summary language built for internal forwarding and approvals."]]}
 };
 
 // ============================================================
@@ -1284,80 +714,19 @@ function showAuth(plan){
   document.getElementById('home').style.display='none';
   document.getElementById('auth').classList.remove('hidden');
   document.getElementById('app').style.display='none';
-  // Pre-select the plan in the auth dropdown if provided
-  if(plan){
-    const sel = document.getElementById('loginPlan');
-    if(sel) sel.value = plan;
-  }
+  if(plan){ const sel=document.getElementById('loginPlan'); if(sel) sel.value=plan; }
 }
 
-// ── MASTER CREDENTIALS — change these to your real login ──
-const MASTER_EMAIL = 'sean@paypilot.ai';
-const MASTER_PASS  = 'PayPilot2024!';
-
 function loginDemo(){
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass  = document.getElementById('loginPass').value.trim();
-  const plan  = document.getElementById('loginPlan').value;
-
-  if(!email || !pass){
-    toast('Enter an email and password.');
-    return;
-  }
-
-  // Master login — real app, no demo labels
-  if(email === MASTER_EMAIL && pass === MASTER_PASS){
-    enterRealApp();
-    return;
-  }
-
-  // Demo login — anyone else gets demo mode
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value.trim();
+  const plan=document.getElementById('loginPlan').value;
+  if(!email||!pass){ toast('Enter an email and password.'); return; }
   enterPlanDemo(plan);
 }
 
-function enterRealApp(){
-  currentPlan = 'pro';
-  isLiveUser = true;
-  document.getElementById('home').style.display = 'none';
-  document.getElementById('auth').classList.add('hidden');
-  document.getElementById('app').style.display = 'block';
-  hidePricing();
-
-  // Apply pro config data
-  const cfg = planConfigs['pro'];
-  document.getElementById('planPill').textContent = 'Pro — Live';
-  const lp = document.getElementById('livePill');
-  if(lp){ lp.textContent = '🟢 Live'; lp.style.background = '#dcfce7'; lp.style.color = '#166534'; }
-  document.getElementById('metricPlan').textContent = 'Pro';
-  document.getElementById('metricCalls').textContent = cfg.calls;
-  document.getElementById('metricResponses').textContent = cfg.responses;
-  document.getElementById('metricClose').textContent = cfg.close;
-  document.getElementById('analyticsQuality').textContent = cfg.quality;
-  document.getElementById('analyticsTime').textContent = cfg.time;
-  document.getElementById('analyticsSolved').textContent = cfg.solved;
-  document.getElementById('analyticsAdoption').textContent = cfg.adoption;
-  const banner = document.getElementById('planBanner');
-  banner.textContent = 'PayPilot Pro — You are live. AI responses are real and powered by your scripts.';
-  banner.style.background = 'linear-gradient(135deg,#dcfce7,#d1fae5)';
-  banner.style.color = '#064e3b';
-  document.getElementById('nextStepBox').innerHTML = '<strong>Acknowledge → Reframe → Soft close</strong><div class="subtle" style="margin-top:8px">Start by validating the concern, then shift to speed and value before asking a soft commitment question.</div>';
-
-  // Hide all demo-only elements
-  document.getElementById('starterAssistNote').style.display = 'none';
-  document.getElementById('starterAnalyticsNote').style.display = 'none';
-  document.getElementById('enterpriseDashboardCard').style.display = 'none';
-
-  // Update manager table
-  document.getElementById('managerTable').innerHTML = '<tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr><tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr><tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>';
-
-  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
-  showPage('dashboard');
-  toast('Welcome back, Sean.');
-}
-
 function enterPlanDemo(plan){
-  currentPlan = plan || "pro";
+  currentPlan=plan||"pro";
   document.getElementById('home').style.display='none';
   document.getElementById('auth').classList.add('hidden');
   document.getElementById('app').style.display='block';
@@ -1366,164 +735,60 @@ function enterPlanDemo(plan){
 }
 
 function applyPlanDemo(plan){
-  const cfg = planConfigs[plan] || planConfigs.pro;
-
-  document.getElementById('planPill').textContent = cfg.label;
-  document.getElementById('metricPlan').textContent = cfg.planName;
-  document.getElementById('metricCalls').textContent = cfg.calls;
-  document.getElementById('metricResponses').textContent = cfg.responses;
-  document.getElementById('metricClose').textContent = cfg.close;
-  document.getElementById('analyticsQuality').textContent = cfg.quality;
-  document.getElementById('analyticsTime').textContent = cfg.time;
-  document.getElementById('analyticsSolved').textContent = cfg.solved;
-  document.getElementById('analyticsAdoption').textContent = cfg.adoption;
-  document.getElementById('planBanner').textContent = cfg.banner;
-
-  document.getElementById('nextStepBox').innerHTML = `
-    <strong>${cfg.nextStepTitle}</strong>
-    <div class="subtle" style="margin-top:8px">${cfg.nextStepBody}</div>
-  `;
-
-  const insightList = document.getElementById('insightList');
-  insightList.innerHTML = cfg.insights.map(i => `
-    <div class="script-item"><b>${i[0]}</b> ${i[1]}</div>
-  `).join('');
-
-  const objectionList = document.getElementById('objectionList');
-  objectionList.innerHTML = cfg.objections.map(o => `
-    <div class="script-item"><b>${o[0]}</b><span class="subtle">${o[1]}</span></div>
-  `).join('');
-
-  const managerTable = document.getElementById('managerTable');
-  if(plan === 'starter'){
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>18</td><td>74%</td><td>⚡ Building</td></tr>
-      <tr><td>Alex</td><td>12</td><td>69%</td><td>↗ Learning</td></tr>
-      <tr><td>Tori</td><td>9</td><td>71%</td><td>✅ Steady</td></tr>
-    `;
-  } else if(plan === 'enterprise'){
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>112</td><td>95%</td><td>🔥 Elite</td></tr>
-      <tr><td>Cory</td><td>98</td><td>91%</td><td>✅ Strong</td></tr>
-      <tr><td>Jess</td><td>87</td><td>89%</td><td>↗ Growing</td></tr>
-    `;
-  } else {
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr>
-      <tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr>
-      <tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>
-    `;
-  }
-
-  // Sync billing current plan display
-  const billingPlanName = document.getElementById('billingPlanName');
-  if(billingPlanName) billingPlanName.textContent = cfg.planName;
-  const billingCurrentPlan = document.getElementById('billingCurrentPlan');
-  if(billingCurrentPlan){
-    billingCurrentPlan.querySelector('.subtle').textContent =
-      `You are on the ${cfg.planName} plan. To upgrade or change your plan, choose an option above.`;
-  }
-
-  // Plan-conditional UI
-  document.getElementById('starterAssistNote').style.display = plan === 'starter' ? 'block' : 'none';
-  document.getElementById('starterAnalyticsNote').style.display = plan === 'starter' ? 'block' : 'none';
-  document.getElementById('enterpriseDashboardCard').style.display = plan === 'enterprise' ? 'block' : 'none';
-
-  // Sync settings plan selector with current plan
-  const profilePlan = document.getElementById('profilePlan');
-  if(profilePlan) profilePlan.value = plan;
-
-  // Reset to dashboard
-  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  const cfg=planConfigs[plan]||planConfigs.pro;
+  document.getElementById('planPill').textContent=cfg.label;
+  document.getElementById('metricPlan').textContent=cfg.planName;
+  document.getElementById('metricCalls').textContent=cfg.calls;
+  document.getElementById('metricResponses').textContent=cfg.responses;
+  document.getElementById('metricClose').textContent=cfg.close;
+  document.getElementById('analyticsQuality').textContent=cfg.quality;
+  document.getElementById('analyticsTime').textContent=cfg.time;
+  document.getElementById('analyticsSolved').textContent=cfg.solved;
+  document.getElementById('analyticsAdoption').textContent=cfg.adoption;
+  document.getElementById('planBanner').textContent=cfg.banner;
+  document.getElementById('nextStepBox').innerHTML=`<strong>${cfg.nextStepTitle}</strong><div class="subtle" style="margin-top:8px">${cfg.nextStepBody}</div>`;
+  document.getElementById('insightList').innerHTML=cfg.insights.map(i=>`<div class="script-item"><b>${i[0]}</b> ${i[1]}</div>`).join('');
+  document.getElementById('objectionList').innerHTML=cfg.objections.map(o=>`<div class="script-item"><b>${o[0]}</b><span class="subtle">${o[1]}</span></div>`).join('');
+  const mt=document.getElementById('managerTable');
+  if(plan==='starter') mt.innerHTML='<tr><td>Sean</td><td>18</td><td>74%</td><td>⚡ Building</td></tr><tr><td>Alex</td><td>12</td><td>69%</td><td>↗ Learning</td></tr><tr><td>Tori</td><td>9</td><td>71%</td><td>✅ Steady</td></tr>';
+  else if(plan==='enterprise') mt.innerHTML='<tr><td>Sean</td><td>112</td><td>95%</td><td>🔥 Elite</td></tr><tr><td>Cory</td><td>98</td><td>91%</td><td>✅ Strong</td></tr><tr><td>Jess</td><td>87</td><td>89%</td><td>↗ Growing</td></tr>';
+  else mt.innerHTML='<tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr><tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr><tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>';
+  const bn=document.getElementById('billingPlanName'); if(bn) bn.textContent=cfg.planName;
+  document.getElementById('starterAssistNote').style.display=plan==='starter'?'block':'none';
+  document.getElementById('starterAnalyticsNote').style.display=plan==='starter'?'block':'none';
+  document.getElementById('enterpriseDashboardCard').style.display=plan==='enterprise'?'block':'none';
+  const pp=document.getElementById('profilePlan'); if(pp) pp.value=plan;
+  document.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
-
-  // Reset live pill to Demo for demo users
-  const livePillDemo = document.getElementById('livePill');
-  if(livePillDemo && !isLiveUser){ 
-    livePillDemo.textContent = 'Demo'; 
-    livePillDemo.style.background = '#dcfce7'; 
-  }
-
+  const lp=document.getElementById('livePill'); if(lp){ lp.textContent='Demo'; lp.style.background='#dcfce7'; }
   showPage('dashboard');
 }
 
-function showPage(id, el){
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.getElementById('pageTitle').textContent = ({
-    dashboard:'Dashboard',
-    assist:'Live Assist',
-    scripts:'Scripts',
-    analytics:'Analytics',
-    settings:'Settings',
-    billing:'Billing'
-  })[id] || id;
-
-  if(el){
-    document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-  }
+  document.getElementById('pageTitle').textContent=({dashboard:'Dashboard',assist:'Live Assist',scripts:'Scripts',analytics:'Analytics',settings:'Settings',billing:'Billing'})[id]||id;
+  if(el){ document.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
 }
 
 function jumpToAssist(){
-  document.querySelectorAll('.side-btn').forEach(b=>{
-    b.classList.toggle('active', b.dataset.page==='assist');
-  });
+  document.querySelectorAll('.side-btn').forEach(b=>{ b.classList.toggle('active',b.dataset.page==='assist'); });
   showPage('assist');
 }
 
 // ============================================================
-// PRICING MODAL — using CSS class toggle instead of inline style
+// PRICING MODAL
 // ============================================================
 function showPricing(plan){
-  currentPricingPlan = plan || currentPlan || "pro";
-  const text = document.getElementById('pricingText');
-
-  if(currentPricingPlan === 'starter'){
-    text.innerHTML = `
-      <strong>Starter — $99/month</strong><br><br>
-      Best for solo reps or small teams that want simple AI help without paying for the full platform.<br><br>
-      You get:<br>
-      • AI-generated objection responses<br>
-      • Script library access<br>
-      • Fast response generation<br>
-      • Email support<br><br>
-      Demo includes:<br>
-      • Simplified dashboard<br>
-      • Core AI response demo<br>
-      • Basic analytics preview
-    `;
-  } else if(currentPricingPlan === 'enterprise'){
-    text.innerHTML = `
-      <strong>Enterprise — Custom Pricing</strong><br><br>
-      Best for larger teams that want PayPilot built around their exact workflow.<br><br>
-      You get:<br>
-      • AI trained on your scripts<br>
-      • CRM and workflow integrations<br>
-      • Team onboarding<br>
-      • Dedicated support<br><br>
-      Demo includes:<br>
-      • Enterprise dashboard view<br>
-      • Rollout and training panel<br>
-      • Enterprise-style analytics
-    `;
+  currentPricingPlan=plan||currentPlan||"pro";
+  const text=document.getElementById('pricingText');
+  if(currentPricingPlan==='starter'){
+    text.innerHTML='<strong>Starter — $99/month</strong><br><br>Best for solo reps or small teams that want simple AI help without paying for the full platform.<br><br>You get:<br>• AI-generated objection responses<br>• Script library access<br>• Fast response generation<br>• Email support';
+  } else if(currentPricingPlan==='enterprise'){
+    text.innerHTML='<strong>Enterprise — Custom Pricing</strong><br><br>Best for larger teams that want PayPilot built around their exact workflow.<br><br>You get:<br>• AI trained on your scripts<br>• CRM and workflow integrations<br>• Team onboarding<br>• Dedicated support';
   } else {
-    text.innerHTML = `
-      <strong>Pro — $399/month</strong><br><br>
-      This is the best option for most users.<br><br>
-      You get:<br>
-      • Live AI help during calls<br>
-      • Better rebuttals for objections<br>
-      • Multi-language response support<br>
-      • Performance analytics<br>
-      • Priority support<br><br>
-      Demo includes:<br>
-      • Full upgraded workspace<br>
-      • Live assist view<br>
-      • Full analytics layout
-    `;
+    text.innerHTML='<strong>Pro — $399/month</strong><br><br>This is the best option for most users.<br><br>You get:<br>• Live AI help during calls<br>• Better rebuttals for objections<br>• Multi-language response support<br>• Performance analytics<br>• Priority support';
   }
-
   document.getElementById('pricingModal').classList.add('open');
   document.body.classList.add('modal-open');
 }
@@ -1533,47 +798,39 @@ function hidePricing(){
   document.body.classList.remove('modal-open');
 }
 
-document.addEventListener('keydown', e => {
-  if(e.key === 'Escape') hidePricing();
-});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') hidePricing(); });
 
 // ============================================================
 // EXAMPLE FILLERS
 // ============================================================
 function fillExample(){
-  document.getElementById('quickObjection').value = currentPlan === 'enterprise'
-    ? "We are concerned about security, process change, and team rollout."
-    : "I don't want to pay 1.2% to get my own money.";
+  document.getElementById('quickObjection').value=currentPlan==='enterprise'?"We are concerned about security, process change, and team rollout.":"I don't want to pay 1.2% to get my own money.";
 }
-
 function loadFeeExample(){
-  document.getElementById('assistInput').value = currentPlan === 'enterprise'
-    ? "This sounds like too much process change for our team."
-    : "I don't want to pay a fee just to get my payment faster.";
+  document.getElementById('assistInput').value=currentPlan==='enterprise'?"This sounds like too much process change for our team.":"I don't want to pay a fee just to get my payment faster.";
 }
 
 // ============================================================
 // SCRIPT LIBRARY — injected into every AI prompt
 // ============================================================
 const scriptLibrary = {
-  opening: `Good morning / afternoon, is this [Supplier Name]? My name is [Your Name], and I'm calling from [Company] on a recorded line. I'm reaching out because we process payments to you on behalf of [Client Name], and it looks like there was a request to get you set up for enhanced direct deposit.`,
-  gatekeeper: `I'm calling on behalf of [Buyer Name], who you may know as [Service Location]. They've partnered with us to help automate accounts payable. I just need about two minutes with whoever handles your incoming payments.`,
-  feeRebuttal: `Totally understandable. Most businesses compare the fee to the time spent tracking checks, delays in the mail, and manual reconciliation. A lot of suppliers find the speed and payment detail end up being worth more than the processing cost. If that sounds fair, I can walk you through the secure setup now — it only takes a couple of minutes.`,
-  notInterested: `I understand. Before I let you go, let me just make sure your payment information is current so there aren't any delays on your next payment. And if speed ever becomes a priority down the road, this option will still be available.`,
-  ownerApproval: `That makes total sense. What usually helps is giving them a quick summary: payments arrive faster, a detailed remittance comes with every payment, and it cuts down on manual check handling. I can send over the secure setup steps so it's easy for them to review.`,
-  checkPreference: `No problem at all. A lot of suppliers start there. The biggest advantage of electronic payments is faster delivery and a detailed remittance with every payment — so there's less guessing and less manual tracking. If you're open to it, I can show you what the setup looks like.`
+  opening:`Good morning / afternoon, is this [Supplier Name]? My name is [Your Name], and I'm calling from [Company] on a recorded line. I'm reaching out because we process payments to you on behalf of [Client Name], and it looks like there was a request to get you set up for enhanced direct deposit.`,
+  gatekeeper:`I'm calling on behalf of [Buyer Name], who you may know as [Service Location]. They've partnered with us to help automate accounts payable. I just need about two minutes with whoever handles your incoming payments.`,
+  feeRebuttal:`Totally understandable. Most businesses compare the fee to the time spent tracking checks, delays in the mail, and manual reconciliation. A lot of suppliers find the speed and payment detail end up being worth more than the processing cost. If that sounds fair, I can walk you through the secure setup now — it only takes a couple of minutes.`,
+  notInterested:`I understand. Before I let you go, let me just make sure your payment information is current so there aren't any delays on your next payment. And if speed ever becomes a priority down the road, this option will still be available.`,
+  ownerApproval:`That makes total sense. What usually helps is giving them a quick summary: payments arrive faster, a detailed remittance comes with every payment, and it cuts down on manual check handling. I can send over the secure setup steps so it's easy for them to review.`,
+  checkPreference:`No problem at all. A lot of suppliers start there. The biggest advantage of electronic payments is faster delivery and a detailed remittance with every payment — so there's less guessing and less manual tracking. If you're open to it, I can show you what the setup looks like.`
 };
 
 // ============================================================
-// CONVERSATION MEMORY — tracks current call + history
+// CONVERSATION MEMORY
 // ============================================================
-let conversationMemory = [];       // current call turns
-let sessionHistory = [];           // across calls this session
-let objectionCounts = {};          // tracks objection frequency
-let feedbackLog = [];              // thumbs up/down tracking
+let conversationMemory = [];
+let sessionHistory = [];
+let objectionCounts = {};
 
 function detectObjectionType(text){
-  const t = text.toLowerCase();
+  const t=text.toLowerCase();
   if(t.match(/fee|1\.2%|cost|pay a fee|processing fee|charge/)) return 'fee';
   if(t.match(/check|cheque|mail|prefer check/)) return 'check_preference';
   if(t.match(/not interested|no thank|don't want|dont want/)) return 'not_interested';
@@ -1584,24 +841,14 @@ function detectObjectionType(text){
   return 'general';
 }
 
-function buildSystemPrompt(tone, language, objectionType){
-  const planContext = {
-    starter: 'Keep responses short, clear, and simple. One or two sentences max.',
-    pro: 'Give confident, value-focused responses with a smooth soft close.',
-    enterprise: 'Focus on operational efficiency, team rollout, and measurable business value.'
-  }[currentPlan] || 'Give confident, value-focused responses.';
-
-  const langInstruction = language !== 'English'
-    ? `IMPORTANT: Respond entirely in ${language}. Do not use English at all.`
-    : 'Respond in English.';
-
-  const toneGuide = {
-    'Confident': 'Be direct, assured, and professional.',
-    'Warm': 'Be empathetic and understanding before pivoting to value.',
-    'Direct': 'Get straight to the point with no filler.',
-    'Calm': 'Stay measured, patient, and reassuring.'
-  }[tone] || 'Be professional and confident.';
-
+function buildSystemPrompt(tone,language,objectionType){
+  const planContext={
+    starter:'Keep responses short, clear, and simple. One or two sentences max.',
+    pro:'Give confident, value-focused responses with a smooth soft close.',
+    enterprise:'Focus on operational efficiency, team rollout, and measurable business value.'
+  }[currentPlan]||'Give confident, value-focused responses.';
+  const langInstruction=language!=='English'?`IMPORTANT: Respond entirely in ${language}. Do not use English at all.`:'Respond in English.';
+  const toneGuide={'Confident':'Be direct, assured, and professional.','Warm':'Be empathetic and understanding before pivoting to value.','Direct':'Get straight to the point with no filler.','Calm':'Stay measured, patient, and reassuring.'}[tone]||'Be professional and confident.';
   return `You are PayPilot AI, an elite real-time sales coach helping payment reps handle live supplier calls.
 
 TONE: ${toneGuide}
@@ -1630,161 +877,153 @@ RULES:
 // ============================================================
 // TYPETEXT
 // ============================================================
-function typeText(el, text){
+function typeText(el,text){
   el.classList.add('loading');
-  el.textContent = '';
-  lastGeneratedText = text;
-  let i = 0;
-  const timer = setInterval(()=>{
-    el.textContent += text.charAt(i);
+  el.textContent='';
+  lastGeneratedText=text;
+  let i=0;
+  const timer=setInterval(()=>{
+    el.textContent+=text.charAt(i);
     i++;
-    if(i >= text.length){
-      clearInterval(timer);
-      el.classList.remove('loading');
-    }
-  }, 10);
+    if(i>=text.length){ clearInterval(timer); el.classList.remove('loading'); }
+  },10);
 }
 
 // ============================================================
-// GENERATE RESPONSE — real OpenAI via secure backend
+// GENERATE RESPONSE — calls Anthropic API directly
 // ============================================================
-async function generateResponse(inputId, outputId){
-  const text = document.getElementById(inputId).value.trim();
+async function generateResponse(inputId,outputId){
+  const text=document.getElementById(inputId).value.trim();
   if(!text){ toast('Type an objection first.'); return; }
+  if(!anthropicApiKey){
+    toast('Add your Anthropic API key in the Live Assist tab first.');
+    jumpToAssist();
+    return;
+  }
 
-  const output = document.getElementById(outputId);
-  const toneEl = document.getElementById('toneSelect');
-  const langEl = document.getElementById('langSelect');
-  const tone = toneEl ? toneEl.value : 'Confident';
-  const language = langEl ? langEl.value : 'English';
+  const output=document.getElementById(outputId);
+  const toneEl=document.getElementById('toneSelect');
+  const langEl=document.getElementById('langSelect');
+  const tone=toneEl?toneEl.value:'Confident';
+  const language=langEl?langEl.value:'English';
 
-  // Detect objection type
-  const objectionType = detectObjectionType(text);
-  objectionCounts[objectionType] = (objectionCounts[objectionType] || 0) + 1;
+  const objectionType=detectObjectionType(text);
+  objectionCounts[objectionType]=(objectionCounts[objectionType]||0)+1;
 
-  // Show generating state
   output.classList.add('loading');
-  output.textContent = 'Generating...';
+  output.textContent='Generating...';
 
-  // Add to conversation memory
-  conversationMemory.push({ role: 'user', content: `Supplier said: "${text}"` });
+  conversationMemory.push({role:'user',content:`Supplier said: "${text}"`});
+  const systemPrompt=buildSystemPrompt(tone,language,objectionType);
 
-  // Build messages array with system prompt + memory
-  const systemPrompt = buildSystemPrompt(tone, language, objectionType);
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    ...conversationMemory.slice(-6) // last 3 exchanges for context
+  const messages=[
+    ...conversationMemory.slice(-6)
   ];
 
   try {
-    const resp = await fetch('/api/generate-response', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages })
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':anthropicApiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:300,
+        system:systemPrompt,
+        messages:messages
+      })
     });
 
-    const data = await resp.json();
-    if(!resp.ok){ throw new Error(data.error || 'Server error'); }
-    const reply = data.reply || 'Could not generate a response. Please try again.';
+    if(!resp.ok){
+      const err=await resp.json();
+      throw new Error(err.error?.message||'API error '+resp.status);
+    }
 
-    // Store reply in memory
-    conversationMemory.push({ role: 'assistant', content: reply });
-    sessionHistory.push({ objection: text, reply, type: objectionType, tone, language, time: new Date().toLocaleTimeString() });
+    const data=await resp.json();
+    const reply=data.content?.[0]?.text||'Could not generate a response. Please try again.';
 
-    lastGeneratedText = reply;
-    typeText(output, reply);
+    conversationMemory.push({role:'assistant',content:reply});
+    sessionHistory.push({objection:text,reply,type:objectionType,tone,language,time:new Date().toLocaleTimeString()});
 
-    // Update objection insights in analytics
+    lastGeneratedText=reply;
+    typeText(output,reply);
     updateObjectionInsights();
 
   } catch(e){
     output.classList.remove('loading');
-    output.textContent = 'Connection error. Please try again.';
-    toast('Could not reach server. Check your connection.');
+    output.textContent='Error: '+e.message;
+    toast('API error: '+e.message);
   }
 }
 
 // ============================================================
-// TRANSLATE — real OpenAI translation via backend
+// TRANSLATE
 // ============================================================
 async function translateResponse(){
-  const box = document.getElementById('assistResponse');
-  const lang = document.getElementById('langSelect').value;
-  if(lang === 'English'){ toast('Select a language first.'); return; }
+  const box=document.getElementById('assistResponse');
+  const lang=document.getElementById('langSelect').value;
+  if(lang==='English'){ toast('Select a language first.'); return; }
   if(!lastGeneratedText){ toast('Generate a response first.'); return; }
+  if(!anthropicApiKey){ toast('Add your Anthropic API key first.'); return; }
 
   box.classList.add('loading');
-  box.textContent = 'Translating...';
-
-  const messages = [
-    { role: 'system', content: `You are a professional translator. Translate the following sales rebuttal into ${lang}. Keep the same natural, spoken tone. Return ONLY the translated text — no explanation, no labels.` },
-    { role: 'user', content: lastGeneratedText }
-  ];
+  box.textContent='Translating...';
 
   try {
-    const resp = await fetch('/api/generate-response', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages })
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':anthropicApiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:300,
+        system:`You are a professional translator. Translate the following sales rebuttal into ${lang}. Keep the same natural, spoken tone. Return ONLY the translated text — no explanation, no labels.`,
+        messages:[{role:'user',content:lastGeneratedText}]
+      })
     });
-    const data = await resp.json();
-    const translated = data.reply || lastGeneratedText;
-    typeText(box, translated);
-    toast('Translated to ' + lang + '.');
+    const data=await resp.json();
+    const translated=data.content?.[0]?.text||lastGeneratedText;
+    typeText(box,translated);
+    toast('Translated to '+lang+'.');
   } catch(e){
     box.classList.remove('loading');
-    box.textContent = lastGeneratedText;
+    box.textContent=lastGeneratedText;
     toast('Translation error. Try again.');
   }
 }
 
 // ============================================================
-// FEEDBACK TRACKING — thumbs up / down on responses
+// FEEDBACK
 // ============================================================
 function submitFeedback(type){
-  const last = sessionHistory[sessionHistory.length - 1];
+  const last=sessionHistory[sessionHistory.length-1];
   if(!last){ toast('No response to rate yet.'); return; }
-  last.feedback = type;
-  feedbackLog.push({ ...last, feedback: type });
-  toast(type === 'up' ? '👍 Noted — response marked helpful.' : '👎 Noted — will improve.');
-  updateObjectionInsights();
+  last.feedback=type;
+  toast(type==='up'?'👍 Noted — response marked helpful.':'👎 Noted — will improve.');
 }
 
 // ============================================================
-// UPDATE ANALYTICS WITH LIVE OBJECTION DATA
+// UPDATE ANALYTICS
 // ============================================================
 function updateObjectionInsights(){
-  const objList = document.getElementById('objectionList');
+  const objList=document.getElementById('objectionList');
   if(!objList) return;
-
-  const typeLabels = {
-    fee: 'Fee pushback',
-    check_preference: 'Check preference',
-    not_interested: 'Not interested',
-    owner_approval: 'Needs owner approval',
-    security: 'Security concern',
-    timing: 'Bad timing',
-    already_has_solution: 'Already has a system',
-    general: 'General objection'
-  };
-
-  const sorted = Object.entries(objectionCounts)
-    .sort((a,b) => b[1] - a[1])
-    .slice(0, 3);
-
-  if(sorted.length > 0){
-    objList.innerHTML = sorted.map(([type, count]) => `
-      <div class="script-item">
-        <b>${typeLabels[type] || type}</b>
-        <span class="subtle">Came up ${count} time${count > 1 ? 's' : ''} this session.</span>
-      </div>
-    `).join('');
+  const typeLabels={fee:'Fee pushback',check_preference:'Check preference',not_interested:'Not interested',owner_approval:'Needs owner approval',security:'Security concern',timing:'Bad timing',already_has_solution:'Already has a system',general:'General objection'};
+  const sorted=Object.entries(objectionCounts).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  if(sorted.length>0){
+    objList.innerHTML=sorted.map(([type,count])=>`<div class="script-item"><b>${typeLabels[type]||type}</b><span class="subtle">Came up ${count} time${count>1?'s':''} this session.</span></div>`).join('');
   }
 }
 
-// Clear memory when starting a new call
 function clearCallMemory(){
-  conversationMemory = [];
+  conversationMemory=[];
   toast('Call memory cleared. Ready for next call.');
 }
 
@@ -1792,25 +1031,19 @@ function clearCallMemory(){
 // COPY + HISTORY
 // ============================================================
 function copyAssist(){
-  const txt = document.getElementById('assistResponse').textContent;
-  if(!txt || txt.includes('Paste an objection')){
-    toast('Generate a response first.');
-    return;
-  }
-  navigator.clipboard.writeText(txt).then(()=> toast('Response copied.'));
+  const txt=document.getElementById('assistResponse').textContent;
+  if(!txt||txt.includes('Paste an objection')){ toast('Generate a response first.'); return; }
+  navigator.clipboard.writeText(txt).then(()=>toast('Response copied.'));
 }
 
 function saveToHistory(){
-  const txt = document.getElementById('assistResponse').textContent;
-  const objection = document.getElementById('assistInput').value.trim() || 'Objection';
-  if(!txt || txt.includes('Paste an objection')){
-    toast('Generate a response first.');
-    return;
-  }
-  const tbody = document.getElementById('historyTable');
-  const tr = document.createElement('tr');
-  const shortObjection = objection.length > 40 ? objection.substring(0,40)+'…' : objection;
-  tr.innerHTML = `<td>Now</td><td>${shortObjection}</td><td>Saved</td>`;
+  const txt=document.getElementById('assistResponse').textContent;
+  const objection=document.getElementById('assistInput').value.trim()||'Objection';
+  if(!txt||txt.includes('Paste an objection')){ toast('Generate a response first.'); return; }
+  const tbody=document.getElementById('historyTable');
+  const tr=document.createElement('tr');
+  const short=objection.length>40?objection.substring(0,40)+'…':objection;
+  tr.innerHTML=`<td>Now</td><td>${short}</td><td>Saved</td>`;
   tbody.prepend(tr);
   toast('Saved to history.');
 }
@@ -1819,259 +1052,146 @@ function saveToHistory(){
 // SCRIPTS
 // ============================================================
 function saveScript(){
-  const name = document.getElementById('scriptName').value.trim() || 'Custom Script';
-  document.getElementById('scriptSavedNote').textContent = name + ' saved.';
-  toast(name + ' saved.');
+  const name=document.getElementById('scriptName').value.trim()||'Custom Script';
+  document.getElementById('scriptSavedNote').textContent=name+' saved.';
+  toast(name+' saved.');
 }
-
 function resetScript(){
-  document.getElementById('scriptName').value = '';
-  document.getElementById('scriptBody').value = `Good morning / afternoon, is this [Supplier Name]?
-
-My name is [Your Name], and I'm calling from [Company] on a recorded line.
-
-I'm reaching out because we process payments to you on behalf of [Client Name], and it looks like there was a request to get you set up for enhanced direct deposit.`;
-  document.getElementById('scriptSavedNote').textContent = '';
+  document.getElementById('scriptName').value='';
+  document.getElementById('scriptBody').value=`Good morning / afternoon, is this [Supplier Name]?\n\nMy name is [Your Name], and I'm calling from [Company] on a recorded line.\n\nI'm reaching out because we process payments to you on behalf of [Client Name], and it looks like there was a request to get you set up for enhanced direct deposit.`;
+  document.getElementById('scriptSavedNote').textContent='';
 }
 
 // ============================================================
 // SETTINGS
 // ============================================================
 function saveSettings(){
-  const name = document.getElementById('profileName').value.trim() || 'User';
-  const plan = document.getElementById('profilePlan').value;
-  document.getElementById('profileNameView').textContent = name;
-  document.getElementById('avatarBox').textContent = name.charAt(0).toUpperCase();
+  const name=document.getElementById('profileName').value.trim()||'User';
+  const plan=document.getElementById('profilePlan').value;
+  document.getElementById('profileNameView').textContent=name;
+  document.getElementById('avatarBox').textContent=name.charAt(0).toUpperCase();
   enterPlanDemo(plan);
   toast('Settings saved.');
 }
-
 function resetSettings(){
-  document.getElementById('profileName').value = 'Sean';
-  document.getElementById('profileBio').value = 'Charismatic sales rep using AI to move faster on live calls.';
-  document.getElementById('profileCompany').value = 'PayPilot AI';
-  document.getElementById('profilePlan').value = currentPlan;
+  document.getElementById('profileName').value='Sean';
+  document.getElementById('profileBio').value='Charismatic sales rep using AI to move faster on live calls.';
+  document.getElementById('profileCompany').value='PayPilot AI';
+  document.getElementById('profilePlan').value=currentPlan;
 }
 
 // ============================================================
-// BILLING / STRIPE STUB
+// BILLING
 // ============================================================
-function fakeStripe(plan, amount){
-  // In production: open Stripe Checkout here
-  // window.location.href = '/api/create-checkout-session?plan=' + plan;
-  const msg = amount > 0
-    ? `Stripe checkout for ${plan} ($${amount}/mo) — ready to wire in.`
-    : `Enterprise sales form — ready to wire in.`;
-  toast(msg);
+function fakeStripe(plan,amount){
+  toast(amount>0?`Stripe checkout for ${plan} ($${amount}/mo) — ready to wire in.`:`Enterprise sales form — ready to wire in.`);
 }
 
 // ============================================================
-// LIVE TRANSCRIPTION
+// LIVE TRANSCRIPTION (Deepgram — requires backend token endpoint)
 // ============================================================
-let micActive = false;
-let deepgramSocket = null;
-let mediaStream = null;
-let audioProcessor = null;
-let audioContext = null;
-let dgKey = ''; // Loaded securely from server at runtime
-let finalTranscriptBuffer = '';
-let autoGenTimer = null;
+let micActive=false;
+let deepgramSocket=null;
+let mediaStream=null;
+let audioProcessor=null;
+let audioContext=null;
+let dgKey='a6dc0846cf1cf3616b775bf574583d5a3fa88c9e';
+let finalTranscriptBuffer='';
+let autoGenTimer=null;
 
 async function toggleMic(){
-  if(micActive){
-    stopDeepgram();
-  } else {
-    await startDeepgram();
-  }
+  if(micActive){ stopDeepgram(); } else { await startDeepgram(); }
 }
 
 async function startDeepgram(){
-  // Fetch key securely from backend
-  if(!dgKey){
-    try {
-      const resp = await fetch('/api/deepgram-token');
-      if(!resp.ok){ toast('Could not connect to server. Try again.'); return; }
-      const data = await resp.json();
-      dgKey = data.key;
-    } catch(e){
-      toast('Could not reach server. Check your connection.');
-      return;
-    }
-  }
-
-  // Request mic access
-  try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-  } catch(e){
-    toast('Mic access denied. Allow mic in your browser settings.');
-    return;
-  }
-
-  // Open streaming connection
-  deepgramSocket = new WebSocket(
-    'wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&vad_events=true&encoding=linear16&sample_rate=16000',
-    ['token', dgKey]
-  );
-
-  deepgramSocket.onopen = () => {
-    micActive = true;
-    setMicUI(true);
-    toast('PayPilot is listening — speak naturally.');
-
-    // Stream mic audio as linear16 PCM — most reliable with Deepgram
-    audioContext = new AudioContext({ sampleRate: 16000 });
-    const source = audioContext.createMediaStreamSource(mediaStream);
-    const bufferSize = 4096;
-    audioProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
-    source.connect(audioProcessor);
-    audioProcessor.connect(audioContext.destination);
-
-    audioProcessor.onaudioprocess = (e) => {
-      if(!deepgramSocket || deepgramSocket.readyState !== WebSocket.OPEN) return;
-      const float32 = e.inputBuffer.getChannelData(0);
-      const int16 = new Int16Array(float32.length);
-      for(let i = 0; i < float32.length; i++){
-        int16[i] = Math.max(-32768, Math.min(32767, float32[i] * 32768));
-      }
+  try{ mediaStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false}); } catch(e){ toast('Mic access denied. Allow mic in your browser settings.'); return; }
+  deepgramSocket=new WebSocket('wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&encoding=linear16&sample_rate=16000',['token',dgKey]);
+  deepgramSocket.onopen=()=>{
+    micActive=true; setMicUI(true); toast('PayPilot is listening.');
+    audioContext=new AudioContext({sampleRate:16000});
+    const source=audioContext.createMediaStreamSource(mediaStream);
+    audioProcessor=audioContext.createScriptProcessor(4096,1,1);
+    source.connect(audioProcessor); audioProcessor.connect(audioContext.destination);
+    audioProcessor.onaudioprocess=(e)=>{
+      if(!deepgramSocket||deepgramSocket.readyState!==WebSocket.OPEN) return;
+      const float32=e.inputBuffer.getChannelData(0);
+      const int16=new Int16Array(float32.length);
+      for(let i=0;i<float32.length;i++) int16[i]=Math.max(-32768,Math.min(32767,float32[i]*32768));
       deepgramSocket.send(int16.buffer);
     };
   };
-
-  deepgramSocket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-
-    const transcript = data?.channel?.alternatives?.[0]?.transcript;
-    if(!transcript || !transcript.trim()) return;
-
-    const isFinal = data.is_final;
-    const inputBox = document.getElementById('assistInput');
-
+  deepgramSocket.onmessage=(event)=>{
+    const data=JSON.parse(event.data);
+    const transcript=data?.channel?.alternatives?.[0]?.transcript;
+    if(!transcript||!transcript.trim()) return;
+    const isFinal=data.is_final;
+    const inputBox=document.getElementById('assistInput');
     if(isFinal){
-      // Confirmed transcript — update box and fire response
-      finalTranscriptBuffer = (finalTranscriptBuffer + ' ' + transcript).trim();
-      inputBox.value = finalTranscriptBuffer;
-      document.getElementById('callInfo').textContent = 'Heard: "' + finalTranscriptBuffer + '"';
-
-      // Debounce — wait 1.5s of silence then generate
+      finalTranscriptBuffer=(finalTranscriptBuffer+' '+transcript).trim();
+      inputBox.value=finalTranscriptBuffer;
+      document.getElementById('callInfo').textContent='Heard: "'+finalTranscriptBuffer+'"';
       clearTimeout(autoGenTimer);
-      autoGenTimer = setTimeout(() => {
+      autoGenTimer=setTimeout(()=>{
         if(finalTranscriptBuffer.trim()){
-          generateResponse('assistInput', 'assistResponse');
-          finalTranscriptBuffer = '';
-          // Clear objection box so it's ready for the next one
-          document.getElementById('assistInput').value = '';
-          document.getElementById('callInfo').textContent = 'Ready for next objection...';
+          generateResponse('assistInput','assistResponse');
+          finalTranscriptBuffer='';
+          document.getElementById('assistInput').value='';
+          document.getElementById('callInfo').textContent='Ready for next objection...';
         }
-      }, 1500);
-
+      },1500);
     } else {
-      // Show words live as supplier speaks
-      inputBox.value = (finalTranscriptBuffer + ' ' + transcript).trim();
+      inputBox.value=(finalTranscriptBuffer+' '+transcript).trim();
     }
   };
-
-  deepgramSocket.onerror = () => {
-    toast('Connection error. Please try again.');
-    stopDeepgram();
-  };
-
-  deepgramSocket.onclose = () => {
-    if(micActive) stopDeepgram();
-  };
+  deepgramSocket.onerror=()=>{ toast('Transcription error.'); stopDeepgram(); };
+  deepgramSocket.onclose=()=>{ if(micActive) stopDeepgram(); };
 }
 
 function stopDeepgram(){
-  micActive = false;
-  setMicUI(false);
-  clearTimeout(autoGenTimer);
-
-  if(audioProcessor){ 
-    try { audioProcessor.disconnect(); } catch(e){}
-    audioProcessor = null; 
-  }
-  if(audioContext){ audioContext.close(); audioContext = null; }
-  if(mediaStream){ mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
-  if(deepgramSocket){ deepgramSocket.close(); deepgramSocket = null; }
-
-  document.getElementById('callInfo').textContent = 'Mic stopped. Click the mic button to listen again.';
+  micActive=false; setMicUI(false); clearTimeout(autoGenTimer);
+  if(audioProcessor){ try{audioProcessor.disconnect();}catch(e){} audioProcessor=null; }
+  if(audioContext){ audioContext.close(); audioContext=null; }
+  if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
+  if(deepgramSocket){ deepgramSocket.close(); deepgramSocket=null; }
+  document.getElementById('callInfo').textContent='Mic stopped. Click the mic button to listen again.';
   toast('Mic stopped.');
 }
 
 function setMicUI(active){
-  const btn = document.getElementById('micBtn');
-  const hint = document.getElementById('micHint');
-  const status = document.getElementById('callStatus');
-  if(active){
-    btn.classList.add('active');
-    hint.textContent = 'Live';
-    hint.style.color = '#ef4444';
-    status.className = 'call-status live';
-    status.textContent = 'Listening live';
-  } else {
-    btn.classList.remove('active');
-    hint.textContent = 'Mic';
-    hint.style.color = '';
-    status.className = 'call-status idle';
-    status.textContent = 'Mic off';
-  }
+  const btn=document.getElementById('micBtn');
+  const hint=document.getElementById('micHint');
+  const status=document.getElementById('callStatus');
+  if(active){ btn.classList.add('active'); hint.textContent='Live'; hint.style.color='#ef4444'; status.className='call-status live'; status.textContent='Listening live'; }
+  else { btn.classList.remove('active'); hint.textContent='Mic'; hint.style.color=''; status.className='call-status idle'; status.textContent='Mic off'; }
 }
 
 // ============================================================
-// SPEAKER — reads AI response aloud in selected language
+// SPEAKER
 // ============================================================
-let currentUtterance = null;
-
 function speakResponse(){
-  const txt = document.getElementById('assistResponse').textContent;
-  if(!txt || txt.includes('Paste an objection')){
-    toast('Generate a response first.');
-    return;
-  }
-
-  // If already speaking, stop it
-  if(window.speechSynthesis.speaking){
-    window.speechSynthesis.cancel();
-    document.getElementById('speakBtn').textContent = '🔊 Speak';
-    return;
-  }
-
-  const lang = document.getElementById('langSelect') ? document.getElementById('langSelect').value : 'English';
-  const langCodes = {
-    'English': 'en-US',
-    'Spanish': 'es-ES',
-    'French': 'fr-FR',
-    'Portuguese': 'pt-BR'
-  };
-
-  const utterance = new SpeechSynthesisUtterance(txt);
-  utterance.lang = langCodes[lang] || 'en-US';
-  utterance.rate = 0.92;
-  utterance.pitch = 1;
-
-  utterance.onstart = () => {
-    document.getElementById('speakBtn').textContent = '⏹ Stop';
-  };
-  utterance.onend = () => {
-    document.getElementById('speakBtn').textContent = '🔊 Speak';
-  };
-  utterance.onerror = () => {
-    document.getElementById('speakBtn').textContent = '🔊 Speak';
-  };
-
-  currentUtterance = utterance;
+  const txt=document.getElementById('assistResponse').textContent;
+  if(!txt||txt.includes('Paste an objection')){ toast('Generate a response first.'); return; }
+  if(window.speechSynthesis.speaking){ window.speechSynthesis.cancel(); document.getElementById('speakBtn').textContent='🔊 Speak'; return; }
+  const lang=document.getElementById('langSelect')?document.getElementById('langSelect').value:'English';
+  const langCodes={'English':'en-US','Spanish':'es-ES','French':'fr-FR','Portuguese':'pt-BR'};
+  const utterance=new SpeechSynthesisUtterance(txt);
+  utterance.lang=langCodes[lang]||'en-US'; utterance.rate=0.92; utterance.pitch=1;
+  utterance.onstart=()=>{ document.getElementById('speakBtn').textContent='⏹ Stop'; };
+  utterance.onend=()=>{ document.getElementById('speakBtn').textContent='🔊 Speak'; };
+  utterance.onerror=()=>{ document.getElementById('speakBtn').textContent='🔊 Speak'; };
   window.speechSynthesis.speak(utterance);
 }
 
 // ============================================================
-// TOAST UTILITY (replaces all alert() calls)
+// TOAST
 // ============================================================
 let toastTimer;
 function toast(msg){
-  const el = document.getElementById('toast');
-  el.textContent = msg;
+  const el=document.getElementById('toast');
+  el.textContent=msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=> el.classList.remove('show'), 2800);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2800);
 }
 </script>
 </body>
