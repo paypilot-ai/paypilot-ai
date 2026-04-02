@@ -723,19 +723,19 @@ body.modal-open{overflow:hidden}
     </div>
 
     <h2 class="auth-title">Welcome back</h2>
-    <p class="note">Demo login — ready for real auth integration later.</p>
+    <p class="note">Sign in to your PayPilot account.</p>
 
     <label class="label">Email</label>
-    <input class="input" id="loginEmail" value="demo@paypilot.ai" />
+    <input class="input" id="loginEmail" placeholder="Enter your email" />
 
     <label class="label">Password</label>
-    <input class="input" id="loginPass" type="password" value="demo1234" />
+    <input class="input" id="loginPass" type="password" placeholder="Enter your password" />
 
-    <label class="label">Demo Plan</label>
+    <label class="label">Plan</label>
     <select class="select" id="loginPlan">
-      <option value="starter">Starter Demo</option>
-      <option value="pro" selected>Pro Demo</option>
-      <option value="enterprise">Enterprise Demo</option>
+      <option value="starter">Starter</option>
+      <option value="pro" selected>Pro</option>
+      <option value="enterprise">Enterprise</option>
     </select>
 
     <div class="tool-row" style="margin-top:18px">
@@ -772,7 +772,7 @@ body.modal-open{overflow:hidden}
       <div class="topbar">
         <div class="topbar-left">
           <div class="page-title" id="pageTitle">Dashboard</div>
-          <div class="pill live">Live Demo</div>
+          <div class="pill live" id="livePill">Live</div>
           <div class="pill plan" id="planPill">Pro Plan</div>
         </div>
         <div class="topbar-actions">
@@ -1152,6 +1152,8 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
 // STATE
 // ============================================================
 let currentPlan = "pro";
+let isLiveUser = false; // true when master login used
+let currentIsReal = false; // true when master login used
 let currentPricingPlan = "pro";
 let callActive = false;
 let lastGeneratedText = ""; // track last response text for translate
@@ -1163,7 +1165,7 @@ const planConfigs = {
   starter: {
     label: "Starter Plan",
     planName: "Starter",
-    banner: "You are viewing the Starter demo. This version keeps things simple and focuses on core AI objection help and scripts.",
+    banner: "You are viewing the Starter workspace. This version keeps things simple and focuses on core AI objection help and scripts.",
     calls: "18", responses: "41", close: "63%",
     quality: "74%", time: "5.8m", solved: "23", adoption: "61%",
     nextStepTitle: "Simple objection handling",
@@ -1182,7 +1184,7 @@ const planConfigs = {
   pro: {
     label: "Pro Plan",
     planName: "Pro",
-    banner: "You are viewing the Pro demo. This is the main upgraded workspace with live assist, stronger rebuttals, and fuller analytics.",
+    banner: "You are viewing the Pro workspace with live assist, stronger rebuttals, and fuller analytics.",
     calls: "43", responses: "127", close: "81%",
     quality: "89%", time: "4.2m", solved: "67", adoption: "94%",
     nextStepTitle: "Acknowledge → Reframe → Soft close",
@@ -1201,7 +1203,7 @@ const planConfigs = {
   enterprise: {
     label: "Enterprise Plan",
     planName: "Enterprise",
-    banner: "You are viewing the Enterprise demo. This version highlights customization, rollout support, training, and deeper integrations.",
+    banner: "You are viewing the Enterprise workspace. This version highlights customization, rollout support, training, and deeper integrations.",
     calls: "112", responses: "318", close: "88%",
     quality: "94%", time: "3.7m", solved: "146", adoption: "98%",
     nextStepTitle: "Coach + personalize + roll out at scale",
@@ -1303,17 +1305,55 @@ function loginDemo(){
     return;
   }
 
-  // Master login — full real app
+  // Master login — real app, no demo labels
   if(email === MASTER_EMAIL && pass === MASTER_PASS){
-    enterPlanDemo('pro');
-    document.getElementById('planPill').textContent = 'Live — Pro';
-    document.getElementById('planBanner').textContent = 'You are logged in as the account owner.';
-    toast('Welcome back, Sean.');
+    enterRealApp();
     return;
   }
 
-  // Demo login — anyone else
+  // Demo login — anyone else gets demo mode
   enterPlanDemo(plan);
+}
+
+function enterRealApp(){
+  currentPlan = 'pro';
+  isLiveUser = true;
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('auth').classList.add('hidden');
+  document.getElementById('app').style.display = 'block';
+  hidePricing();
+
+  // Apply pro config data
+  const cfg = planConfigs['pro'];
+  document.getElementById('planPill').textContent = 'Pro — Live';
+  const lp = document.getElementById('livePill');
+  if(lp){ lp.textContent = '🟢 Live'; lp.style.background = '#dcfce7'; lp.style.color = '#166534'; }
+  document.getElementById('metricPlan').textContent = 'Pro';
+  document.getElementById('metricCalls').textContent = cfg.calls;
+  document.getElementById('metricResponses').textContent = cfg.responses;
+  document.getElementById('metricClose').textContent = cfg.close;
+  document.getElementById('analyticsQuality').textContent = cfg.quality;
+  document.getElementById('analyticsTime').textContent = cfg.time;
+  document.getElementById('analyticsSolved').textContent = cfg.solved;
+  document.getElementById('analyticsAdoption').textContent = cfg.adoption;
+  const banner = document.getElementById('planBanner');
+  banner.textContent = 'PayPilot Pro — You are live. AI responses are real and powered by your scripts.';
+  banner.style.background = 'linear-gradient(135deg,#dcfce7,#d1fae5)';
+  banner.style.color = '#064e3b';
+  document.getElementById('nextStepBox').innerHTML = '<strong>Acknowledge → Reframe → Soft close</strong><div class="subtle" style="margin-top:8px">Start by validating the concern, then shift to speed and value before asking a soft commitment question.</div>';
+
+  // Hide all demo-only elements
+  document.getElementById('starterAssistNote').style.display = 'none';
+  document.getElementById('starterAnalyticsNote').style.display = 'none';
+  document.getElementById('enterpriseDashboardCard').style.display = 'none';
+
+  // Update manager table
+  document.getElementById('managerTable').innerHTML = '<tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr><tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr><tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>';
+
+  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
+  showPage('dashboard');
+  toast('Welcome back, Sean.');
 }
 
 function enterPlanDemo(plan){
@@ -1396,6 +1436,14 @@ function applyPlanDemo(plan){
   // Reset to dashboard
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
+
+  // Reset live pill to Demo for demo users
+  const livePillDemo = document.getElementById('livePill');
+  if(livePillDemo && !isLiveUser){ 
+    livePillDemo.textContent = 'Demo'; 
+    livePillDemo.style.background = '#dcfce7'; 
+  }
+
   showPage('dashboard');
 }
 
@@ -1861,7 +1909,7 @@ async function startDeepgram(){
 
   // Open streaming connection
   deepgramSocket = new WebSocket(
-    'wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&vad_events=true',
+    'wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&vad_events=true&encoding=linear16&sample_rate=16000',
     ['token', dgKey]
   );
 
@@ -1870,17 +1918,23 @@ async function startDeepgram(){
     setMicUI(true);
     toast('PayPilot is listening — speak naturally.');
 
-    // Stream mic audio using MediaRecorder (modern, no deprecation)
-    audioContext = new AudioContext();
-    const mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
-    audioProcessor = mediaRecorder; // store ref for cleanup
+    // Stream mic audio as linear16 PCM — most reliable with Deepgram
+    audioContext = new AudioContext({ sampleRate: 16000 });
+    const source = audioContext.createMediaStreamSource(mediaStream);
+    const bufferSize = 4096;
+    audioProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
+    source.connect(audioProcessor);
+    audioProcessor.connect(audioContext.destination);
 
-    mediaRecorder.ondataavailable = (e) => {
+    audioProcessor.onaudioprocess = (e) => {
       if(!deepgramSocket || deepgramSocket.readyState !== WebSocket.OPEN) return;
-      if(e.data && e.data.size > 0) deepgramSocket.send(e.data);
+      const float32 = e.inputBuffer.getChannelData(0);
+      const int16 = new Int16Array(float32.length);
+      for(let i = 0; i < float32.length; i++){
+        int16[i] = Math.max(-32768, Math.min(32767, float32[i] * 32768));
+      }
+      deepgramSocket.send(int16.buffer);
     };
-
-    mediaRecorder.start(250); // send chunk every 250ms
   };
 
   deepgramSocket.onmessage = (event) => {
@@ -1932,7 +1986,7 @@ function stopDeepgram(){
   clearTimeout(autoGenTimer);
 
   if(audioProcessor){ 
-    try { audioProcessor.stop(); } catch(e){}
+    try { audioProcessor.disconnect(); } catch(e){}
     audioProcessor = null; 
   }
   if(audioContext){ audioContext.close(); audioContext = null; }
