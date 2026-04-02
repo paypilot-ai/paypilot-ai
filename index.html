@@ -1683,10 +1683,12 @@ async function generateResponse(inputId, outputId){
   // Demo rate limit — non-master users get 3 free responses
   if(!isLiveUser){
     if(demoResponseCount >= DEMO_RESPONSE_LIMIT){
-      const output = document.getElementById(outputId);
-      output.classList.remove('loading');
-      output.textContent = "You've used your 3 free demo responses. Sign up for full access to get unlimited AI responses, live mic transcription, and more.";
-      toast('Free demo limit reached. Sign up for full access.');
+      const limitOutput = document.getElementById(outputId);
+      if(limitOutput){
+        limitOutput.classList.remove('loading');
+        limitOutput.textContent = "You’ve used your 3 free responses. Sign up for full access to unlock unlimited AI responses, live mic, and more.";
+      }
+      toast('Sign up for full access.');
       showDemoLimitBanner();
       return;
     }
@@ -2130,14 +2132,17 @@ function updateDemoCounter(){
   // Show counter banners
   const assistBanner = document.getElementById('demoCounterBanner');
   const dashBanner = document.getElementById('dashboardDemoCounter');
-  if(assistBanner) assistBanner.style.display = 'block';
-  if(dashBanner) dashBanner.style.display = 'block';
+  if(assistBanner){ assistBanner.style.display = 'block'; assistBanner.style.visibility = 'visible'; }
+  if(dashBanner){ dashBanner.style.display = 'block'; dashBanner.style.visibility = 'visible'; }
 
   // Update text
   const assistText = document.getElementById('demoCounterText');
   const dashText = document.getElementById('dashboardCounterText');
   if(assistText) assistText.textContent = text;
   if(dashText) dashText.textContent = text;
+
+  // Also show a toast with remaining count
+  toast(remaining > 0 ? remaining + ' free responses remaining — Sign up for unlimited.' : 'Last free response used.');
 }
 
 function showDemoLimitBanner(){
