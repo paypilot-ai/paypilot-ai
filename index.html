@@ -3512,7 +3512,7 @@ let recentLookups = [];
 let currentContact = null;
 
 function lookupContact(){
-  const query = (document.getElementById('contactSearch') || document.getElementById('dashContactSearch'));
+  const query = document.getElementById('contactSearch') || document.getElementById('dashContactSearch');
   if(!query) return;
   const val = query.value.trim().toLowerCase();
   if(!val){ toast('Enter a company or supplier name.'); return; }
@@ -3556,6 +3556,7 @@ function showContactResult(c){
   const results = document.getElementById('contactResults');
   if(!results) return;
   results.style.display = 'block';
+  window._currentContact = c; // store for dial/assist
 
   // Update all fields
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; };
@@ -3645,52 +3646,6 @@ function loadContactToAssist(){
 }
 
 // ============================================================
-function lookupContact(){
-  const query = (document.getElementById('contactSearch') || {value:''}).value.trim().toLowerCase();
-  if(!query){ toast('Type a company name to search.'); return; }
-
-  // Hide all states
-  document.getElementById('contactResults').style.display = 'none';
-  document.getElementById('contactEmpty').style.display = 'none';
-  document.getElementById('contactNotFound').style.display = 'none';
-  document.getElementById('contactLoading').style.display = 'block';
-
-  // Simulate slight lookup delay for realism
-  setTimeout(() => {
-    document.getElementById('contactLoading').style.display = 'none';
-
-    const result = contactDatabase.find(c =>
-      c.company.toLowerCase().includes(query) ||
-      c.name.toLowerCase().includes(query)
-    );
-
-    if(result){
-      // Populate all fields
-      document.getElementById('contactInitial').textContent = result.initial;
-      document.getElementById('contactCompany').textContent = result.company;
-      document.getElementById('contactIndustry').textContent = result.industry;
-      document.getElementById('contactName').textContent = result.name;
-      document.getElementById('contactTitle').textContent = result.title;
-      document.getElementById('contactPhone').textContent = result.phone;
-      document.getElementById('contactEmail').textContent = result.email;
-      document.getElementById('contactAddress').innerHTML = result.address;
-      document.getElementById('contactStatus').innerHTML =
-        `<span style="background:${result.statusBg};color:${result.statusColor};padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${result.status}</span>`;
-      document.getElementById('contactNote').textContent = result.note;
-      document.getElementById('contactLastCall').textContent = result.lastCall;
-
-      // Store for dial/assist use
-      window._currentContact = result;
-
-      document.getElementById('contactResults').style.display = 'block';
-    } else {
-      document.getElementById('contactNotFoundMsg').textContent =
-        `No results for "${query}". Try a different spelling or add them to the database.`;
-      document.getElementById('contactNotFound').style.display = 'block';
-    }
-  }, 400);
-}
-
 function quickLookup(val){
   // Called from dashboard quick search
   if(!val || !val.trim()) return;
