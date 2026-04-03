@@ -1,5 +1,6 @@
+
 // api/search-company.js
-// Google Places API proxy — key never touches the browser
+// Google Places API proxy — returns top 3 results so user can pick the right one
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,8 +16,7 @@ module.exports = async function handler(req, res) {
   if (!query) return res.status(400).json({ error: 'No query provided' });
 
   try {
-    // Single call — Text Search API (simpler, more reliable)
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&fields=name,formatted_address,formatted_phone_number,website,types,rating&key=${key}`;
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${key}`;
     const resp = await fetch(url);
     const data = await resp.json();
 
@@ -24,9 +24,6 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ found: false, status: data.status });
     }
 
-    const place = data.results[0];
-
-    // Map types to industry
     const typeMap = {
       food: 'Food & Beverage', restaurant: 'Food & Beverage',
       store: 'Retail', shopping_mall: 'Retail',
@@ -38,18 +35,19 @@ module.exports = async function handler(req, res) {
       grocery_or_supermarket: 'Grocery', supermarket: 'Grocery',
       wholesale: 'Wholesale Distribution'
     };
-    const types = place.types || [];
-    const industry = types.map(t => typeMap[t]).find(Boolean) || 'Business';
 
-    return res.status(200).json({
-      found: true,
+    // Return top 3 results so user can pick the right location
+    const results = data.results.slice(0, 3).map(place => ({
       company: place.name,
       address: place.formatted_address,
       phone: place.formatted_phone_number || 'Not listed',
       website: place.website || 'Not listed',
-      industry,
-      rating: place.rating || null
-    });
+      industry: (place.types || []).map(t => typeMap[t]).find(Boolean) || 'Business',
+      rating: place.rating || null,
+      place_id: place.place_id
+    }));
+
+    return res.status(200).json({ found: true, results });
 
   } catch(e) {
     return res.status(500).json({ error: e.message });
