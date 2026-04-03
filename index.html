@@ -907,6 +907,16 @@ body.modal-open{overflow:hidden}
               <button class="app-btn blue" onclick="startTwilioCall()" id="twilioCallBtn">Call Now</button>
               <button class="app-btn line" onclick="endTwilioCall()" id="twilioEndBtn" style="display:none;">End Call</button>
             </div>
+            <div style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <label style="font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.08em;">Supplier language:</label>
+              <select class="select" id="callLanguageSelect" style="width:auto; padding:8px 12px; font-size:13px;" onchange="setCallLanguage(this.value)">
+                <option value="English">English</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="Portuguese">Portuguese</option>
+              </select>
+              <span class="subtle" id="callLangNote" style="font-size:12px;">Rep sees English, supplier hears their language.</span>
+            </div>
             <div class="subtle" id="twilioInfo" style="margin-top:8px; font-size:12px;">Call minutes billed at $0.04/min. The supplier will hear a brief notice that the call is recorded.</div>
           </div>
 
@@ -2381,6 +2391,20 @@ function toggleTwilioPanel(){
   const panel = document.getElementById('twilioPanel');
   const isVisible = panel.style.display !== 'none';
   panel.style.display = isVisible ? 'none' : 'block';
+}
+
+function setCallLanguage(lang){
+  detectedLanguage = lang;
+  // Also sync the main language selector
+  const langEl = document.getElementById('langSelect');
+  if(langEl) langEl.value = lang;
+  const note = document.getElementById('callLangNote');
+  if(lang === 'English'){
+    if(note) note.textContent = 'Standard English call.';
+  } else {
+    if(note) note.textContent = 'Rep sees English rebuttal. Supplier hears ' + lang + ' automatically.';
+    toast('Call language set to ' + lang + '. Bilingual mode active.');
+  }
 }
 
 async function startTwilioCall(){
