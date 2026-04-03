@@ -2093,10 +2093,19 @@ async function startDeepgram(){
       clearTimeout(autoGenTimer);
       autoGenTimer = setTimeout(() => {
         if(finalTranscriptBuffer.trim()){
-          generateBilingualResponse(finalTranscriptBuffer);
+          const bufferCopy = finalTranscriptBuffer;
           finalTranscriptBuffer = '';
-          document.getElementById('assistInput').value = '';
           document.getElementById('callInfo').textContent = 'Ready for next objection...';
+
+          // Route to bilingual if foreign language, otherwise standard
+          if(detectedLanguage !== 'English'){
+            document.getElementById('assistInput').value = '';
+            generateBilingualResponse(bufferCopy);
+          } else {
+            document.getElementById('assistInput').value = bufferCopy;
+            generateResponse('assistInput', 'assistResponse');
+            setTimeout(() => { document.getElementById('assistInput').value = ''; }, 100);
+          }
         }
       }, 1500);
 
@@ -2402,7 +2411,10 @@ async function startTwilioCall(){
     document.getElementById('twilioEndBtn').style.display = 'block';
     toast('Call connected. PayPilot is listening...');
 
-    // Start mic listening to capture call audio
+    // Stop any existing session, force fresh key fetch, then restart
+    if(micActive) stopDeepgram();
+    dgKey = '';
+    await new Promise(r => setTimeout(r, 600));
     await startDeepgram();
 
   } catch(e) {
