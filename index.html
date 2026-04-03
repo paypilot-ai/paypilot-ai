@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3511,13 +3512,12 @@ const contactDatabase = [
 let recentLookups = [];
 let currentContact = null;
 
-function lookupContact(){
-  const query = document.getElementById('contactSearch') || document.getElementById('dashContactSearch');
-  if(!query) return;
-  const val = query.value.trim().toLowerCase();
+async function lookupContact(){
+  const queryEl = document.getElementById('contactSearch') || document.getElementById('dashContactSearch');
+  if(!queryEl) return;
+  const val = queryEl.value.trim();
   if(!val){ toast('Enter a company or supplier name.'); return; }
 
-  // Show loading
   const loading = document.getElementById('contactLoading');
   const results = document.getElementById('contactResults');
   const empty = document.getElementById('contactEmpty');
@@ -3528,28 +3528,58 @@ function lookupContact(){
   if(empty) empty.style.display = 'none';
   if(notFound) notFound.style.display = 'none';
 
-  // Simulate brief lookup delay
-  setTimeout(() => {
+  // First check local database
+  const localMatch = contactDatabase.find(c =>
+    c.company.toLowerCase().includes(val.toLowerCase()) ||
+    c.name.toLowerCase().includes(val.toLowerCase())
+  );
+
+  if(localMatch){
+    if(loading) loading.style.display = 'none';
+    showContactResult(localMatch);
+    addToRecentLookups(localMatch);
+    return;
+  }
+
+  // No local match — search Google Places
+  try {
+    const resp = await fetch('/api/search-company?query=' + encodeURIComponent(val));
+    const data = await resp.json();
     if(loading) loading.style.display = 'none';
 
-    const match = contactDatabase.find(c =>
-      c.company.toLowerCase().includes(val) ||
-      c.name.toLowerCase().includes(val) ||
-      c.industry.toLowerCase().includes(val)
-    );
-
-    if(match){
-      currentContact = match;
-      showContactResult(match);
-      addToRecentLookups(match);
+    if(data.found){
+      const contact = {
+        company: data.company,
+        initial: data.company.charAt(0).toUpperCase(),
+        industry: data.industry,
+        name: 'Contact not listed',
+        title: '',
+        phone: data.phone,
+        email: data.website !== 'Not listed' ? 'Visit: ' + data.website : 'Not listed',
+        address: data.address,
+        status: 'Not enrolled',
+        statusColor: '#f59e0b',
+        statusBg: 'rgba(245,158,11,.15)',
+        note: data.rating ? 'Google rating: ' + data.rating + '★' : '',
+        lastCall: 'No call history yet.'
+      };
+      showContactResult(contact);
+      addToRecentLookups(contact);
     } else {
       if(notFound){
         notFound.style.display = 'block';
         document.getElementById('contactNotFoundMsg').textContent =
-          'No results for "' + query.value.trim() + '". Try adding this contact to your directory.';
+          'No results for "' + val + '". Try a different spelling or add them manually.';
       }
     }
-  }, 400);
+  } catch(e) {
+    if(loading) loading.style.display = 'none';
+    if(notFound){
+      notFound.style.display = 'block';
+      document.getElementById('contactNotFoundMsg').textContent =
+        'Search unavailable. Check your connection and try again.';
+    }
+  }
 }
 
 function showContactResult(c){
