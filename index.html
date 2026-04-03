@@ -2024,7 +2024,7 @@ async function startDeepgram(){
 
   // Open streaming connection
   deepgramSocket = new WebSocket(
-    'wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&vad_events=true&encoding=linear16&sample_rate=16000&detect_language=true',
+    'wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&vad_events=true&encoding=linear16&sample_rate=16000',
     ['token', dgKey]
   );
 
@@ -2411,9 +2411,8 @@ async function startTwilioCall(){
     document.getElementById('twilioEndBtn').style.display = 'block';
     toast('Call connected. PayPilot is listening...');
 
-    // Stop any existing session, force fresh key fetch, then restart
+    // Stop any existing session then restart fresh
     if(micActive) stopDeepgram();
-    dgKey = '';
     await new Promise(r => setTimeout(r, 600));
     await startDeepgram();
 
