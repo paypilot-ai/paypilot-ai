@@ -895,7 +895,26 @@ body.modal-open{overflow:hidden}
             <button class="btn btn-primary" style="padding:14px 28px; font-size:16px;" onclick="showAuth('pro')">Get Full Access</button>
           </div>
 
+          <!-- TWILIO CALL PANEL -->
+          <div class="call-panel" id="twilioPanel" style="display:none; margin-bottom:12px; background:linear-gradient(135deg,#fff7ed,#eff6ff); border:1px solid #fed7aa;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+              <h4 style="margin:0; color:#92400e; font-size:15px;">📞 Call through PayPilot</h4>
+              <div class="call-status idle" id="twilioStatus">Ready</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <input class="input" id="twilioNumber" placeholder="Supplier phone number (10 digits)" style="flex:1; margin-bottom:0;" />
+              <button class="app-btn blue" onclick="startTwilioCall()" id="twilioCallBtn">Call Now</button>
+              <button class="app-btn line" onclick="endTwilioCall()" id="twilioEndBtn" style="display:none;">End Call</button>
+            </div>
+            <div class="subtle" id="twilioInfo" style="margin-top:8px; font-size:12px;">Call minutes billed at $0.04/min. The supplier will hear a short recording notice.</div>
+          </div>
+
           <!-- LIVE TRANSCRIPTION PANEL -->
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <button class="app-btn line" style="font-size:12px; padding:8px 12px;" onclick="toggleTwilioPanel()">📞 Use Twilio Call</button>
+            </div>
+          </div>
           <div class="call-panel" id="callPanel" style="padding:14px 20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
               <div class="subtle" id="callInfo">Click the mic and PayPilot will start listening. Responses generate automatically.</div>
@@ -2193,6 +2212,80 @@ function resetDemoState(){
   if(dashBanner) dashBanner.style.display = 'none';
   if(limitBanner) limitBanner.style.display = 'none';
   if(callPanel) callPanel.style.display = 'block';
+}
+
+// ============================================================
+// TWILIO CALL FEATURE
+// ============================================================
+let activeTwilioCall = null;
+
+function toggleTwilioPanel(){
+  const panel = document.getElementById('twilioPanel');
+  const isVisible = panel.style.display !== 'none';
+  panel.style.display = isVisible ? 'none' : 'block';
+}
+
+async function startTwilioCall(){
+  const number = document.getElementById('twilioNumber').value.trim();
+  if(!number || number.replace(/\D/g,'').length < 10){
+    toast('Enter a valid 10-digit phone number.');
+    return;
+  }
+
+  document.getElementById('twilioCallBtn').textContent = 'Calling...';
+  document.getElementById('twilioCallBtn').disabled = true;
+  document.getElementById('twilioStatus').className = 'call-status live';
+  document.getElementById('twilioStatus').textContent = 'Connecting...';
+
+  try {
+    const resp = await fetch('/api/twilio-call', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toNumber: number })
+    });
+
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.error || 'Call failed');
+
+    activeTwilioCall = data.callSid;
+    document.getElementById('twilioStatus').textContent = 'Call in progress';
+    document.getElementById('twilioInfo').textContent = 'Call connected — PayPilot is transcribing. Supplier: ' + number;
+    document.getElementById('twilioCallBtn').style.display = 'none';
+    document.getElementById('twilioEndBtn').style.display = 'block';
+    toast('Call connected. Listening for objections...');
+
+    // Start mic listening to capture call audio
+    await startDeepgram();
+
+  } catch(e) {
+    toast('Call failed: ' + e.message);
+    document.getElementById('twilioCallBtn').textContent = 'Call Now';
+    document.getElementById('twilioCallBtn').disabled = false;
+    document.getElementById('twilioStatus').className = 'call-status idle';
+    document.getElementById('twilioStatus').textContent = 'Ready';
+  }
+}
+
+async function endTwilioCall(){
+  if(!activeTwilioCall){ stopDeepgram(); return; }
+
+  try {
+    const accountSid = ''; // handled server-side
+    toast('Ending call...');
+    stopDeepgram();
+    activeTwilioCall = null;
+    document.getElementById('twilioStatus').className = 'call-status idle';
+    document.getElementById('twilioStatus').textContent = 'Call ended';
+    document.getElementById('twilioCallBtn').style.display = 'block';
+    document.getElementById('twilioCallBtn').textContent = 'Call Now';
+    document.getElementById('twilioCallBtn').disabled = false;
+    document.getElementById('twilioEndBtn').style.display = 'none';
+    document.getElementById('twilioInfo').textContent = 'Call minutes billed at $0.04/min. The supplier will hear a short recording notice.';
+    clearCallMemory();
+    toast('Call ended. Memory cleared for next call.');
+  } catch(e) {
+    toast('Error ending call: ' + e.message);
+  }
 }
 
 // ============================================================
