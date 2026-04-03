@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2411,10 +2412,12 @@ async function startTwilioCall(){
     document.getElementById('twilioEndBtn').style.display = 'block';
     toast('Call connected. PayPilot is listening...');
 
-    // Stop any existing session then restart fresh
-    if(micActive) stopDeepgram();
-    await new Promise(r => setTimeout(r, 600));
-    await startDeepgram();
+    // Start mic if not already running
+    if(!micActive){
+      await startDeepgram();
+    } else {
+      toast('PayPilot is listening — speak naturally.');
+    }
 
   } catch(e) {
     toast('Call failed: ' + e.message);
