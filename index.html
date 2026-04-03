@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3547,29 +3546,19 @@ async function lookupContact(){
     const data = await resp.json();
     if(loading) loading.style.display = 'none';
 
-    if(data.found){
-      const contact = {
-        company: data.company,
-        initial: data.company.charAt(0).toUpperCase(),
-        industry: data.industry,
-        name: 'Contact not listed',
-        title: '',
-        phone: data.phone,
-        email: data.website !== 'Not listed' ? 'Visit: ' + data.website : 'Not listed',
-        address: data.address,
-        status: 'Not enrolled',
-        statusColor: '#f59e0b',
-        statusBg: 'rgba(245,158,11,.15)',
-        note: data.rating ? 'Google rating: ' + data.rating + '★' : '',
-        lastCall: 'No call history yet.'
-      };
-      showContactResult(contact);
-      addToRecentLookups(contact);
+    if(data.found && data.results && data.results.length > 0){
+      if(data.results.length === 1){
+        // Only one result — show it directly
+        selectGoogleResult(data.results[0]);
+      } else {
+        // Multiple results — show picker so rep chooses the right location
+        showResultPicker(data.results, val);
+      }
     } else {
       if(notFound){
         notFound.style.display = 'block';
         document.getElementById('contactNotFoundMsg').textContent =
-          'No results for "' + val + '". Try a different spelling or add them manually.';
+          'No results for "' + val + '". Try adding a city name e.g. "AvidXchange Charlotte".';
       }
     }
   } catch(e) {
@@ -3580,6 +3569,58 @@ async function lookupContact(){
         'Search unavailable. Check your connection and try again.';
     }
   }
+}
+
+function selectGoogleResult(place){
+  const contact = {
+    company: place.company,
+    initial: place.company.charAt(0).toUpperCase(),
+    industry: place.industry,
+    name: 'Contact not listed',
+    title: '',
+    phone: place.phone,
+    email: place.website !== 'Not listed' ? place.website : 'Not listed',
+    address: place.address,
+    status: 'Not enrolled',
+    statusColor: '#f59e0b',
+    statusBg: 'rgba(245,158,11,.15)',
+    note: place.rating ? 'Google rating: ' + place.rating + '★' : 'No rating available',
+    lastCall: 'No call history yet.'
+  };
+  showContactResult(contact);
+  addToRecentLookups(contact);
+
+  // Hide picker if open
+  const picker = document.getElementById('resultPicker');
+  if(picker) picker.style.display = 'none';
+}
+
+function showResultPicker(results, query){
+  let picker = document.getElementById('resultPicker');
+  if(!picker){
+    picker = document.createElement('div');
+    picker.id = 'resultPicker';
+    const contactResults = document.getElementById('contactResults');
+    contactResults.parentNode.insertBefore(picker, contactResults);
+  }
+
+  window._pickerResults = results;
+  picker.style.cssText = 'display:block;background:#fff;border-radius:20px;padding:20px;border:1.5px solid #bfdbfe;margin-bottom:14px;box-shadow:0 4px 20px rgba(13,27,46,.08);';
+
+  let html = '<div style="font-family:Sora,sans-serif;font-size:15px;font-weight:800;color:#0d1b2e;margin-bottom:14px;">Found ' + results.length + ' locations for <em>' + query + '</em> — pick the right one:</div>';
+
+  results.forEach(function(r, i){
+    var cardStyle = 'padding:14px 16px;border-radius:14px;background:#f8fbff;border:1.5px solid #e0eaff;margin-bottom:10px;cursor:pointer;transition:all .15s;';
+    html += '<div onclick="selectGoogleResult(window._pickerResults[' + i + '])" style="' + cardStyle + '">';
+    html += '<div style="font-weight:700;color:#0d1b2e;font-size:14px;margin-bottom:4px;">' + r.company + '</div>';
+    html += '<div style="font-size:13px;color:#6b7fa3;">' + r.address + '</div>';
+    if(r.phone && r.phone !== 'Not listed'){
+      html += '<div style="font-size:13px;color:#1a6fff;margin-top:4px;font-weight:600;">' + r.phone + '</div>';
+    }
+    html += '</div>';
+  });
+
+  picker.innerHTML = html;
 }
 
 function showContactResult(c){
