@@ -986,6 +986,7 @@ body.modal-open{overflow:hidden}
                 <button class="app-btn line" onclick="copyAssist()">Copy</button>
                 <button class="app-btn line" onclick="saveToHistory()">Save</button>
                 <button class="app-btn line" id="speakBtn" onclick="speakResponse()">🔊 Speak</button>
+                <button class="app-btn blue" id="sendToCallBtn" onclick="sendCurrentToCall()" style="display:none;">📞 Send to Call</button>
                 <button class="app-btn line" onclick="submitFeedback('up')" title="This response was helpful">👍</button>
                 <button class="app-btn line" onclick="submitFeedback('down')" title="This response needs work">👎</button>
                 <button class="app-btn soft" onclick="clearCallMemory()" title="Start fresh for next call">New Call</button>
@@ -2347,6 +2348,39 @@ async function generateTranslatedVersion(englishText, language){
   }
 }
 
+// Shows Send to Call button when a call is active
+function updateSendToCallBtn(){
+  const btn = document.getElementById('sendToCallBtn');
+  if(btn) btn.style.display = activeTwilioCall ? 'block' : 'none';
+}
+
+// Sends current English response to call in selected language
+async function sendCurrentToCall(){
+  if(!activeTwilioCall){
+    toast('No active call. Start a PayPilot Live Call first.');
+    return;
+  }
+  const txt = translatedSpanishResponse || lastGeneratedText;
+  if(!txt || txt.includes('Paste an objection')){
+    toast('Generate a response first.');
+    return;
+  }
+  const lang = detectedLanguage !== 'English' ? detectedLanguage : 
+    (document.getElementById('callLanguageSelect')?.value || 'English');
+
+  toast('Sending to call in ' + lang + '...');
+  try {
+    const resp = await fetch('/api/twilio-speak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callSid: activeTwilioCall, text: txt, language: lang })
+    });
+    const data = await resp.json();
+    if(data.success) toast('Response played to supplier in ' + lang + '.');
+    else toast('Could not send: ' + (data.error || 'Unknown error'));
+  } catch(e){ toast('Error sending to call.'); }
+}
+
 async function sendToCall(){
   if(!activeTwilioCall){
     toast('No active call. Use the Live Call feature first.');
@@ -2430,6 +2464,7 @@ async function startTwilioCall(){
     if(!resp.ok) throw new Error(data.error || 'Call failed');
 
     activeTwilioCall = data.callSid;
+    updateSendToCallBtn();
     document.getElementById('twilioStatus').textContent = 'Call in progress';
     document.getElementById('twilioInfo').textContent = 'Connected — PayPilot is listening. Supplier: ' + number;
     document.getElementById('twilioCallBtn').style.display = 'none';
@@ -2460,6 +2495,7 @@ async function endTwilioCall(){
     toast('Ending call...');
     stopDeepgram();
     activeTwilioCall = null;
+    updateSendToCallBtn();
     document.getElementById('twilioStatus').className = 'call-status idle';
     document.getElementById('twilioStatus').textContent = 'Call ended';
     document.getElementById('twilioCallBtn').style.display = 'block';
