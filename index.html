@@ -1,5 +1,4 @@
-
-<!DOCTYPE html>
+><!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -998,7 +997,6 @@ body.modal-open{overflow:hidden}
                 <div style="font-size:16px; line-height:1.75; color:#1c1917;" id="translatedText"></div>
                 <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
                   <button class="app-btn line" onclick="speakTranslated()">🔊 Speak to supplier</button>
-                  <button class="app-btn blue" onclick="sendToCall()">📞 Send to Call</button>
                 </div>
               </div>
               <div class="feedback-row">
@@ -2381,38 +2379,8 @@ async function sendCurrentToCall(){
   } catch(e){ toast('Error sending to call.'); }
 }
 
-async function sendToCall(){
-  if(!activeTwilioCall){
-    toast('No active call. Use the Live Call feature first.');
-    return;
-  }
-  if(!translatedSpanishResponse){
-    toast('No translated response ready yet.');
-    return;
-  }
-
-  toast('Sending response to call...');
-
-  try {
-    const resp = await fetch('/api/twilio-speak', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        callSid: activeTwilioCall,
-        text: translatedSpanishResponse,
-        language: detectedLanguage
-      })
-    });
-    const data = await resp.json();
-    if(data.success){
-      toast('Response sent to supplier.');
-    } else {
-      toast('Could not send response. Try again.');
-    }
-  } catch(e){
-    toast('Error sending response.');
-  }
-}
+// Alias — both buttons use the same function
+async function sendToCall(){ sendCurrentToCall(); }
 
 // ============================================================
 // LIVE CALL FEATURE
