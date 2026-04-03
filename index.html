@@ -404,7 +404,7 @@ body.modal-open{overflow:hidden}
   color:#475569;
 }
 
-/* ===== TWILIO CALL PANEL ===== */
+/* ===== CALL PANEL ===== */
 .call-panel{
   padding:20px;
   border-radius:22px;
@@ -689,7 +689,7 @@ body.modal-open{overflow:hidden}
         <div style="font-size:13px; font-weight:700; color:#64748b; margin-bottom:12px;">25+ users</div>
         <ul>
           <li>Everything in Pro</li>
-          <li>Twilio call integration</li>
+          <li>Live call integration</li>
           <li>AI trained on your scripts</li>
           <li>CRM and workflow integrations</li>
           <li>Team onboarding and rollout</li>
@@ -895,10 +895,10 @@ body.modal-open{overflow:hidden}
             <button class="btn btn-primary" style="padding:14px 28px; font-size:16px;" onclick="showAuth('pro')">Get Full Access</button>
           </div>
 
-          <!-- TWILIO CALL PANEL -->
+          <!-- CALL PANEL -->
           <div class="call-panel" id="twilioPanel" style="display:none; margin-bottom:12px; background:linear-gradient(135deg,#fff7ed,#eff6ff); border:1px solid #fed7aa;">
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
-              <h4 style="margin:0; color:#92400e; font-size:15px;">📞 Call through PayPilot</h4>
+              <h4 style="margin:0; color:#92400e; font-size:15px;">📞 Live Call</h4>
               <div class="call-status idle" id="twilioStatus">Ready</div>
             </div>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
@@ -906,13 +906,13 @@ body.modal-open{overflow:hidden}
               <button class="app-btn blue" onclick="startTwilioCall()" id="twilioCallBtn">Call Now</button>
               <button class="app-btn line" onclick="endTwilioCall()" id="twilioEndBtn" style="display:none;">End Call</button>
             </div>
-            <div class="subtle" id="twilioInfo" style="margin-top:8px; font-size:12px;">Call minutes billed at $0.04/min. The supplier will hear a short recording notice.</div>
+            <div class="subtle" id="twilioInfo" style="margin-top:8px; font-size:12px;">Call minutes billed at $0.04/min. The supplier will hear a brief notice that the call is recorded.</div>
           </div>
 
           <!-- LIVE TRANSCRIPTION PANEL -->
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
             <div style="display:flex; align-items:center; gap:10px;">
-              <button class="app-btn line" style="font-size:12px; padding:8px 12px;" onclick="toggleTwilioPanel()">📞 Use Twilio Call</button>
+              <button class="app-btn line" style="font-size:12px; padding:8px 12px;" onclick="toggleTwilioPanel()">📞 Live Call</button>
             </div>
           </div>
           <div class="call-panel" id="callPanel" style="padding:14px 20px;">
@@ -978,6 +978,16 @@ body.modal-open{overflow:hidden}
                 <button class="app-btn line" onclick="submitFeedback('up')" title="This response was helpful">👍</button>
                 <button class="app-btn line" onclick="submitFeedback('down')" title="This response needs work">👎</button>
                 <button class="app-btn soft" onclick="clearCallMemory()" title="Start fresh for next call">New Call</button>
+              </div>
+
+              <!-- TRANSLATED RESPONSE PANEL — shows when foreign language detected -->
+              <div id="translatedPanel" style="display:none; margin-top:14px; border-radius:22px; padding:18px; background:linear-gradient(135deg,#fff7ed,#fffbeb); border:1px solid #fed7aa;">
+                <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.10em; color:#92400e; margin-bottom:8px;" id="translatedLabel">🌐 Spanish Response — for supplier</div>
+                <div style="font-size:16px; line-height:1.75; color:#1c1917;" id="translatedText"></div>
+                <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+                  <button class="app-btn line" onclick="speakTranslated()">🔊 Speak to supplier</button>
+                  <button class="app-btn blue" onclick="sendToCall()">📞 Send to Call</button>
+                </div>
               </div>
               <div class="feedback-row">
                 <button class="feedback-btn" id="thumbsUp" onclick="submitFeedback('up')" title="This worked">👍</button>
@@ -2014,7 +2024,7 @@ async function startDeepgram(){
 
   // Open streaming connection
   deepgramSocket = new WebSocket(
-    'wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&vad_events=true&encoding=linear16&sample_rate=16000',
+    'wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&vad_events=true&encoding=linear16&sample_rate=16000&detect_language=true',
     ['token', dgKey]
   );
 
@@ -2048,29 +2058,49 @@ async function startDeepgram(){
     const transcript = data?.channel?.alternatives?.[0]?.transcript;
     if(!transcript || !transcript.trim()) return;
 
+    // Auto-detect language from Deepgram
+    const detectedLang = data?.channel?.detected_language;
+    if(detectedLang && detectedLang !== 'en'){
+      const langMap = { 'es': 'Spanish', 'fr': 'French', 'pt': 'Portuguese' };
+      const mapped = langMap[detectedLang];
+      if(mapped && mapped !== detectedLanguage){
+        detectedLanguage = mapped;
+        // Auto-switch language selector
+        const langEl = document.getElementById('langSelect');
+        if(langEl) langEl.value = mapped;
+        toast('Language detected: ' + mapped + ' — auto-switching.');
+        document.getElementById('callInfo').textContent = mapped + ' detected — translating automatically.';
+      }
+    } else if(detectedLang === 'en'){
+      detectedLanguage = 'English';
+    }
+
     const isFinal = data.is_final;
     const inputBox = document.getElementById('assistInput');
 
     if(isFinal){
-      // Confirmed transcript — update box and fire response
       finalTranscriptBuffer = (finalTranscriptBuffer + ' ' + transcript).trim();
-      inputBox.value = finalTranscriptBuffer;
-      document.getElementById('callInfo').textContent = 'Heard: "' + finalTranscriptBuffer + '"';
+      
+      // If Spanish/French/Portuguese — show translated English version for rep
+      if(detectedLanguage !== 'English'){
+        inputBox.value = finalTranscriptBuffer + ' [' + detectedLanguage + ']';
+        document.getElementById('callInfo').textContent = detectedLanguage + ' detected. Generating English rebuttal + ' + detectedLanguage + ' version for call.';
+      } else {
+        inputBox.value = finalTranscriptBuffer;
+        document.getElementById('callInfo').textContent = 'Heard: "' + finalTranscriptBuffer + '"';
+      }
 
-      // Debounce — wait 1.5s of silence then generate
       clearTimeout(autoGenTimer);
       autoGenTimer = setTimeout(() => {
         if(finalTranscriptBuffer.trim()){
-          generateResponse('assistInput', 'assistResponse');
+          generateBilingualResponse(finalTranscriptBuffer);
           finalTranscriptBuffer = '';
-          // Clear objection box so it's ready for the next one
           document.getElementById('assistInput').value = '';
           document.getElementById('callInfo').textContent = 'Ready for next objection...';
         }
       }, 1500);
 
     } else {
-      // Show words live as supplier speaks
       inputBox.value = (finalTranscriptBuffer + ' ' + transcript).trim();
     }
   };
@@ -2215,9 +2245,127 @@ function resetDemoState(){
 }
 
 // ============================================================
-// TWILIO CALL FEATURE
+// BILINGUAL RESPONSE — English for rep, foreign language for supplier
+// ============================================================
+async function generateBilingualResponse(text){
+  const tone = document.getElementById('toneSelect') ? document.getElementById('toneSelect').value : 'Confident';
+
+  // Step 1 — Generate English response for the rep
+  const objectionType = detectObjectionType(text);
+  objectionCounts[objectionType] = (objectionCounts[objectionType] || 0) + 1;
+
+  const output = document.getElementById('assistResponse');
+  output.classList.add('loading');
+  output.textContent = 'Generating...';
+
+  conversationMemory.push({ role: 'user', content: 'Supplier said: "' + text + '"' });
+
+  const systemPrompt = buildSystemPrompt(tone, 'English', objectionType);
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...conversationMemory.slice(-6)
+  ];
+
+  try {
+    const systemMsg = messages.find(m => m.role === 'system');
+    const chatMessages = messages.filter(m => m.role !== 'system');
+
+    const resp = await fetch('/api/generate-response', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        system: systemMsg ? systemMsg.content : '',
+        messages: chatMessages,
+        max_tokens: 300
+      })
+    });
+
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.error || 'Server error');
+    const englishReply = data.reply || '';
+
+    conversationMemory.push({ role: 'assistant', content: englishReply });
+    lastGeneratedText = englishReply;
+    typeText(output, englishReply);
+    updateObjectionInsights();
+
+    // Step 2 — If foreign language detected, also translate for the supplier
+    if(detectedLanguage !== 'English'){
+      await generateTranslatedVersion(englishReply, detectedLanguage);
+    }
+
+  } catch(e){
+    output.classList.remove('loading');
+    output.textContent = 'Connection error. Please try again.';
+  }
+}
+
+async function generateTranslatedVersion(englishText, language){
+  try {
+    const resp = await fetch('/api/generate-response', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: 'You are a professional translator. Translate the following sales rebuttal into ' + language + '. Keep the same natural spoken tone. Return ONLY the translated text.',
+        messages: [{ role: 'user', content: englishText }],
+        max_tokens: 300
+      })
+    });
+    const data = await resp.json();
+    translatedSpanishResponse = data.reply || '';
+
+    // Show translated version panel
+    const transPanel = document.getElementById('translatedPanel');
+    const transText = document.getElementById('translatedText');
+    if(transPanel && transText){
+      transText.textContent = translatedSpanishResponse;
+      transPanel.style.display = 'block';
+    }
+    toast('Translation ready — click Speak or Send to Call.');
+  } catch(e){
+    toast('Translation error.');
+  }
+}
+
+async function sendToCall(){
+  if(!activeTwilioCall){
+    toast('No active call. Use the Live Call feature first.');
+    return;
+  }
+  if(!translatedSpanishResponse){
+    toast('No translated response ready yet.');
+    return;
+  }
+
+  toast('Sending response to call...');
+
+  try {
+    const resp = await fetch('/api/twilio-speak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        callSid: activeTwilioCall,
+        text: translatedSpanishResponse,
+        language: detectedLanguage
+      })
+    });
+    const data = await resp.json();
+    if(data.success){
+      toast('Response sent to supplier.');
+    } else {
+      toast('Could not send response. Try again.');
+    }
+  } catch(e){
+    toast('Error sending response.');
+  }
+}
+
+// ============================================================
+// LIVE CALL FEATURE
 // ============================================================
 let activeTwilioCall = null;
+let detectedLanguage = 'English'; // auto-detected from Deepgram
+let translatedSpanishResponse = ''; // Spanish version of last response
 
 function toggleTwilioPanel(){
   const panel = document.getElementById('twilioPanel');
@@ -2249,10 +2397,10 @@ async function startTwilioCall(){
 
     activeTwilioCall = data.callSid;
     document.getElementById('twilioStatus').textContent = 'Call in progress';
-    document.getElementById('twilioInfo').textContent = 'Call connected — PayPilot is transcribing. Supplier: ' + number;
+    document.getElementById('twilioInfo').textContent = 'Connected — PayPilot is listening. Supplier: ' + number;
     document.getElementById('twilioCallBtn').style.display = 'none';
     document.getElementById('twilioEndBtn').style.display = 'block';
-    toast('Call connected. Listening for objections...');
+    toast('Call connected. PayPilot is listening...');
 
     // Start mic listening to capture call audio
     await startDeepgram();
@@ -2280,12 +2428,24 @@ async function endTwilioCall(){
     document.getElementById('twilioCallBtn').textContent = 'Call Now';
     document.getElementById('twilioCallBtn').disabled = false;
     document.getElementById('twilioEndBtn').style.display = 'none';
-    document.getElementById('twilioInfo').textContent = 'Call minutes billed at $0.04/min. The supplier will hear a short recording notice.';
+    document.getElementById('twilioInfo').textContent = 'Call minutes billed at $0.04/min. The supplier will hear a brief notice that the call is recorded.';
     clearCallMemory();
     toast('Call ended. Memory cleared for next call.');
   } catch(e) {
     toast('Error ending call: ' + e.message);
   }
+}
+
+function speakTranslated(){
+  if(!translatedSpanishResponse){ toast('No translated response yet.'); return; }
+  if(window.speechSynthesis.speaking){ window.speechSynthesis.cancel(); }
+
+  const langCodes = { 'Spanish':'es-ES', 'French':'fr-FR', 'Portuguese':'pt-BR' };
+  const utterance = new SpeechSynthesisUtterance(translatedSpanishResponse);
+  utterance.lang = langCodes[detectedLanguage] || 'es-ES';
+  utterance.rate = 0.92;
+  window.speechSynthesis.speak(utterance);
+  toast('Speaking response through speakers.');
 }
 
 // ============================================================
