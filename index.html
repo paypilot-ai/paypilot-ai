@@ -643,11 +643,13 @@ body.modal-open{overflow:hidden}
           <strong>$99</strong>
           <span>per month</span>
         </div>
+        <div style="font-size:13px; font-weight:700; color:#64748b; margin-bottom:12px;">Up to 5 users</div>
         <ul>
-          <li>AI helps write responses to common objections</li>
-          <li>Access to your script library</li>
+          <li>AI-generated objection responses</li>
+          <li>Script library access</li>
           <li>Fast response generation</li>
           <li>Email support</li>
+          <li style="color:#94a3b8;">Call minutes billed at $0.04/min</li>
         </ul>
         <div class="plan-actions">
           <button class="btn btn-primary" onclick="showPricing('starter')">View Plan</button>
@@ -662,12 +664,15 @@ body.modal-open{overflow:hidden}
           <strong>$399</strong>
           <span>per month</span>
         </div>
+        <div style="font-size:13px; font-weight:700; color:#64748b; margin-bottom:12px;">Up to 25 users</div>
         <ul>
           <li>Real-time AI help during live calls</li>
           <li>Stronger objection rebuttals</li>
           <li>Multi-language response support</li>
+          <li>Live mic transcription</li>
           <li>Performance and usage analytics</li>
           <li>Priority support</li>
+          <li style="color:#94a3b8;">Call minutes billed at $0.04/min</li>
         </ul>
         <div class="plan-actions">
           <button class="btn btn-primary" onclick="showPricing('pro')">View Plan</button>
@@ -681,11 +686,15 @@ body.modal-open{overflow:hidden}
           <strong>Custom</strong>
           <span>pricing</span>
         </div>
+        <div style="font-size:13px; font-weight:700; color:#64748b; margin-bottom:12px;">25+ users</div>
         <ul>
-          <li>AI trained on your own scripts and workflow</li>
+          <li>Everything in Pro</li>
+          <li>Twilio call integration</li>
+          <li>AI trained on your scripts</li>
           <li>CRM and workflow integrations</li>
-          <li>Team onboarding and rollout support</li>
+          <li>Team onboarding and rollout</li>
           <li>Dedicated support</li>
+          <li style="color:#94a3b8;">Call minutes billed at $0.04/min</li>
         </ul>
         <div class="plan-actions">
           <button class="btn btn-primary" onclick="showPricing('enterprise')">View Plan</button>
@@ -700,7 +709,7 @@ body.modal-open{overflow:hidden}
         <div>
           <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.16em; color:rgba(255,255,255,.52); margin-bottom:12px;">Simple billing. No surprises.</div>
           <h3 style="margin:0 0 10px; font-family:'Playfair Display',serif; font-size:38px; color:#fff; letter-spacing:-.04em; line-height:1.1;">Start with a free demo.<br>Pay when you're ready.</h3>
-          <p style="margin:0; color:rgba(255,255,255,.68); font-size:16px; line-height:1.8; max-width:520px;">No credit card required to try the demo. Starter is $99/mo, Pro is $399/mo, and Enterprise is custom. Cancel anytime.</p>
+          <p style="margin:0; color:rgba(255,255,255,.68); font-size:16px; line-height:1.8; max-width:520px;">No credit card required to try the demo. Starter ($99/mo, up to 5 users), Pro ($399/mo, up to 25 users), Enterprise (custom, 25+ users). Call minutes billed at $0.04/min. Cancel anytime.</p>
         </div>
         <div style="display:flex; flex-direction:column; gap:12px; min-width:200px;">
           <button class="btn btn-primary" style="font-size:16px; padding:16px 28px;" onclick="showAuth('pro')">Start free demo</button>
@@ -1096,7 +1105,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
                 <span>per month</span>
               </div>
               <p class="subtle">Great for solo reps getting started.</p>
-              <button class="app-btn blue" onclick="fakeStripe('Starter',99)">Choose Starter</button>
+              <button class="app-btn blue" onclick="fakeStripe('Starter',99)">Subscribe — $99/mo</button>
               <button class="app-btn line" style="margin-top:10px" onclick="enterPlanDemo('starter')">Preview Starter Demo</button>
             </div>
             <div class="card">
@@ -1106,7 +1115,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
                 <span>per month</span>
               </div>
               <p class="subtle">Live AI, analytics, and translation.</p>
-              <button class="app-btn blue" onclick="fakeStripe('Pro',399)">Choose Pro</button>
+              <button class="app-btn blue" onclick="fakeStripe('Pro',399)">Subscribe — $399/mo</button>
               <button class="app-btn line" style="margin-top:10px" onclick="enterPlanDemo('pro')">Preview Pro Demo</button>
             </div>
             <div class="card">
@@ -1116,7 +1125,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
                 <span>pricing</span>
               </div>
               <p class="subtle">Custom AI training and rollout.</p>
-              <button class="app-btn blue" onclick="fakeStripe('Enterprise',0)">Talk to Sales</button>
+              <button class="app-btn blue" onclick="fakeStripe('Enterprise',0)">Contact Sales</button>
               <button class="app-btn line" style="margin-top:10px" onclick="enterPlanDemo('enterprise')">Preview Enterprise Demo</button>
             </div>
           </div>
@@ -1914,15 +1923,32 @@ function resetSettings(){
 }
 
 // ============================================================
-// BILLING / STRIPE STUB
+// BILLING / STRIPE — real checkout
 // ============================================================
-function fakeStripe(plan, amount){
-  // In production: open Stripe Checkout here
-  // window.location.href = '/api/create-checkout-session?plan=' + plan;
-  const msg = amount > 0
-    ? `Stripe checkout for ${plan} ($${amount}/mo) — ready to wire in.`
-    : `Enterprise sales form — ready to wire in.`;
-  toast(msg);
+async function fakeStripe(plan, amount){
+  if(plan === 'Enterprise' || amount === 0){
+    // Enterprise — send to contact form or email
+    window.location.href = 'mailto:sean@paypilot.ai?subject=PayPilot Enterprise Inquiry';
+    return;
+  }
+
+  toast('Opening secure checkout...');
+
+  try {
+    const resp = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: plan.toLowerCase() })
+    });
+    const data = await resp.json();
+    if(data.url){
+      window.location.href = data.url;
+    } else {
+      toast('Could not open checkout. Try again.');
+    }
+  } catch(e){
+    toast('Checkout error. Try again.');
+  }
 }
 
 // ============================================================
