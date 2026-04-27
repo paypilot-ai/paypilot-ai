@@ -14,8 +14,8 @@ module.exports = async function handler(req, res) {
   const { plan, successUrl, cancelUrl } = req.body || {};
 
   const priceIds = {
-    starter: 'price_1THvQx84nVx3JlYAzi3ypSY4',
-    pro: 'price_1THvRf84nVx3JlYA7IvOjBHi'
+   starter: 'price_1TQdvP84nVx3JlYAn5pAbYAb',
+    pro: 'price_1TQdx284nVx3JlYAHl6dGlci'
   };
 
   const priceId = priceIds[plan];
