@@ -2339,14 +2339,63 @@ function loginDemo(){
     return;
   }
 
-  // Master login — real app, no demo labels
+  // Master login
   if(email === MASTER_EMAIL && pass === MASTER_PASS){
     enterRealApp();
     return;
   }
 
+  // Tester login — full Pro access, unlimited calls
+  const isTester = TESTER_ACCOUNTS.find(a => a.email === email && a.password === pass);
+  if(isTester){
+    enterTesterApp();
+    return;
+  }
+
   // Demo login — anyone else gets demo mode
   enterPlanDemo(plan);
+}
+
+function enterTesterApp(){
+  currentPlan = 'pro';
+  isLiveUser = true;
+  demoResponseCount = 0;
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('auth').classList.add('hidden');
+  document.getElementById('app').style.display = 'block';
+  hidePricing();
+
+  const cfg = planConfigs['pro'];
+  document.getElementById('planPill').textContent = 'Pro — Tester';
+  const lp = document.getElementById('livePill');
+  if(lp){ lp.textContent = '🟢 Live'; lp.style.background = '#dcfce7'; lp.style.color = '#166534'; }
+  document.getElementById('metricPlan').textContent = 'Pro';
+  document.getElementById('metricCalls').textContent = cfg.calls;
+  document.getElementById('metricResponses').textContent = cfg.responses;
+  document.getElementById('metricClose').textContent = cfg.close;
+  document.getElementById('analyticsQuality').textContent = cfg.quality;
+  document.getElementById('analyticsTime').textContent = cfg.time;
+  document.getElementById('analyticsSolved').textContent = cfg.solved;
+  document.getElementById('analyticsAdoption').textContent = cfg.adoption;
+
+  const banner = document.getElementById('planBanner');
+  banner.textContent = 'PayPilot Pro — Tester Access. Full Pro features unlocked.';
+  banner.style.background = 'linear-gradient(135deg,#dcfce7,#d1fae5)';
+  banner.style.color = '#064e3b';
+
+  document.getElementById('nextStepBox').innerHTML = '<span class="kpi-label">Recommended approach</span><strong>Acknowledge → Reframe → Soft close</strong><div class="subtle" style="margin-top:0">Start by validating the concern, then shift to speed and value before asking a soft commitment question.</div>';
+
+  document.getElementById('starterAssistNote').style.display = 'none';
+  document.getElementById('starterAnalyticsNote').style.display = 'none';
+  document.getElementById('enterpriseDashboardCard').style.display = 'none';
+
+  document.getElementById('managerTable').innerHTML = '<tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr><tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr><tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>';
+
+  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
+  showPage('dashboard');
+  resetDemoState();
+  toast('Welcome, tester! Full Pro access unlocked.');
 }
 
 function enterRealApp(){
