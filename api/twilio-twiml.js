@@ -7,9 +7,10 @@ module.exports = function handler(req, res) {
 
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="alice">This call may be recorded for quality assurance.</Say>
+  <Say voice="alice">This call may be monitored or recorded for quality assurance and training purposes. By remaining on the line, you consent to being recorded. To opt out, you may hang up at any time.</Say>
+  <Pause length="1"/>
   <Dial>
-    <Conference 
+    <Conference
       record="record-from-start"
       recordingStatusCallback="https://paypilot-ai.vercel.app/api/twilio-recording"
       waitUrl=""

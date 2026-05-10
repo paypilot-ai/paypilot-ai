@@ -1222,12 +1222,157 @@ body.modal-open{overflow:hidden}
   .section{padding:0 20px 68px}
   .main{padding:16px}
 }
+
+/* ═══════════════════════════════════
+   MOBILE BOTTOM NAV
+═══════════════════════════════════ */
+.mob-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:linear-gradient(180deg,#05091a,#07101f);
+  border-top:1px solid rgba(255,255,255,.09);
+  padding:0 4px env(safe-area-inset-bottom,0);
+  box-shadow:0 -8px 32px rgba(0,0,0,.40);
+}
+.mob-nav-items{display:flex;justify-content:space-around;align-items:stretch}
+.mob-nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding:10px 4px 12px;border:none;background:transparent;
+  color:rgba(255,255,255,.40);cursor:pointer;transition:color .15s;
+  font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-nav-btn .mob-icon{font-size:20px;line-height:1}
+.mob-nav-btn.active{color:var(--blue-3)}
+.mob-nav-btn:active{opacity:.7}
+
+/* More drawer */
+.mob-drawer-overlay{
+  display:none;position:fixed;inset:0;z-index:110;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
+}
+.mob-drawer-overlay.open{display:block}
+.mob-drawer{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(180deg,#0b1627,#07101f);
+  border-radius:22px 22px 0 0;
+  border-top:1px solid rgba(255,255,255,.10);
+  padding:16px 16px calc(80px + env(safe-area-inset-bottom,0));
+}
+.mob-drawer-handle{
+  width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.20);
+  margin:0 auto 20px;
+}
+.mob-drawer-title{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;
+  color:rgba(255,255,255,.30);margin-bottom:10px;padding:0 4px;
+}
+.mob-drawer-btn{
+  width:100%;display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border-radius:14px;border:none;background:transparent;
+  color:rgba(255,255,255,.70);font-size:15px;font-weight:600;
+  cursor:pointer;transition:background .15s;text-align:left;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-drawer-btn:active{background:rgba(255,255,255,.07)}
+.mob-drawer-btn.active{background:rgba(26,111,255,.18);color:#fff}
+.mob-drawer-btn .mob-icon{font-size:20px;width:28px;text-align:center}
+
+@media (max-width:840px){
+  .mob-nav{display:block}
+  .main{padding-bottom:calc(80px + env(safe-area-inset-bottom,0)) !important}
+}
+
+/* ═══════════════════════════════════
+   COOKIE CONSENT BANNER
+═══════════════════════════════════ */
+.cookie-banner{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:linear-gradient(180deg,#05091a,#07101f);
+  border-top:1px solid rgba(255,255,255,.12);
+  padding:14px 24px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  box-shadow:0 -8px 32px rgba(0,0,0,.50);
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+}
+.cookie-banner.show{transform:translateY(0)}
+.cookie-banner p{
+  margin:0;flex:1;min-width:220px;
+  font-size:13px;color:rgba(255,255,255,.68);line-height:1.65;
+}
+.cookie-banner a{color:var(--blue-3);text-decoration:underline;cursor:pointer}
+.cookie-banner-actions{display:flex;gap:8px;flex-shrink:0}
+@media(max-width:840px){
+  .cookie-banner{padding-bottom:calc(80px + env(safe-area-inset-bottom,0))}
+}
+
+/* ═══════════════════════════════════
+   COMPLIANCE PAGE
+═══════════════════════════════════ */
+.comp-status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.comp-status-item{
+  padding:16px 18px;border-radius:16px;
+  background:#fff;border:1.5px solid #e0eaff;
+  box-shadow:0 2px 10px rgba(13,27,46,.06);
+  display:flex;align-items:flex-start;gap:12px;
+}
+.comp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.comp-dot.green{background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.15)}
+.comp-dot.yellow{background:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.15)}
+.comp-dot.red{background:#ef4444;box-shadow:0 0 0 4px rgba(239,68,68,.15)}
+.comp-status-label{font-size:13px;font-weight:700;color:var(--text);line-height:1.3}
+.comp-status-sub{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500}
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;border-bottom:1px solid #f0f4f8;
+}
+.toggle-row:last-child{border-bottom:none;padding-bottom:0}
+.toggle-label{font-size:14px;font-weight:600;color:var(--text)}
+.toggle-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.toggle{
+  position:relative;width:44px;height:24px;flex-shrink:0;
+}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{
+  position:absolute;inset:0;border-radius:999px;
+  background:#d0dae8;cursor:pointer;transition:.2s;
+}
+.toggle input:checked + .toggle-track{background:var(--blue)}
+.toggle-thumb{
+  position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;
+  background:#fff;transition:.2s;pointer-events:none;
+  box-shadow:0 1px 4px rgba(0,0,0,.20);
+}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(20px)}
+.dnc-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-radius:12px;
+  background:#f8faff;border:1px solid #e0eaff;margin-bottom:8px;
+}
+.dnc-number{font-size:14px;font-weight:600;color:var(--text)}
+.dnc-remove{
+  border:none;background:transparent;cursor:pointer;
+  color:#ef4444;font-size:16px;line-height:1;padding:4px 8px;border-radius:8px;
+  transition:.15s;
+}
+.dnc-remove:hover{background:#fee2e2}
+@media(max-width:1120px){.comp-status-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:840px){.comp-status-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
+
+<!-- Cookie / GDPR consent banner -->
+<div class="cookie-banner" id="cookieBanner">
+  <p>We use cookies and similar technologies to keep you signed in, remember your preferences, and improve the product. By continuing you agree to our <a onclick="openPrivacyModal()">Privacy Policy</a> and <a onclick="openTermsModal()">Terms of Service</a>.</p>
+  <div class="cookie-banner-actions">
+    <button class="btn btn-ghost" style="font-size:13px;padding:9px 18px" onclick="declineCookies()">Decline</button>
+    <button class="btn btn-primary" style="font-size:13px;padding:9px 18px" onclick="acceptCookies()">Accept all</button>
+  </div>
+</div>
 
 <div id="home">
   <div class="grid-noise"></div>
@@ -1463,7 +1608,49 @@ body.modal-open{overflow:hidden}
       <button class="side-btn" data-page="contacts" onclick="showPage('contacts', this)">🔍 Contact Lookup</button>
       <button class="side-btn" data-page="settings" onclick="showPage('settings', this)">⚙️ Settings</button>
       <button class="side-btn" data-page="billing" onclick="showPage('billing', this)">💳 Billing</button>
+      <button class="side-btn" data-page="compliance" onclick="showPage('compliance', this)">🛡️ Compliance</button>
     </aside>
+
+    <!-- Mobile bottom nav -->
+    <nav class="mob-nav">
+      <div class="mob-nav-items">
+        <button class="mob-nav-btn active" data-mob-page="dashboard" onclick="showPage('dashboard',document.querySelector('[data-page=dashboard]'))">
+          <span class="mob-icon">🏠</span>Home
+        </button>
+        <button class="mob-nav-btn" data-mob-page="assist" onclick="showPage('assist',document.querySelector('[data-page=assist]'))">
+          <span class="mob-icon">🤖</span>Assist
+        </button>
+        <button class="mob-nav-btn" data-mob-page="contacts" onclick="showPage('contacts',document.querySelector('[data-page=contacts]'))">
+          <span class="mob-icon">🔍</span>Contacts
+        </button>
+        <button class="mob-nav-btn" data-mob-page="billing" onclick="showPage('billing',document.querySelector('[data-page=billing]'))">
+          <span class="mob-icon">💳</span>Billing
+        </button>
+        <button class="mob-nav-btn" id="mobMoreBtn" onclick="openMobDrawer()">
+          <span class="mob-icon">⋯</span>More
+        </button>
+      </div>
+    </nav>
+
+    <!-- More drawer overlay -->
+    <div class="mob-drawer-overlay" id="mobDrawerOverlay" onclick="closeMobDrawer()">
+      <div class="mob-drawer" onclick="event.stopPropagation()">
+        <div class="mob-drawer-handle"></div>
+        <div class="mob-drawer-title">More</div>
+        <button class="mob-drawer-btn" data-mob-page="scripts" onclick="showPage('scripts',document.querySelector('[data-page=scripts]'));closeMobDrawer()">
+          <span class="mob-icon">📜</span>Scripts
+        </button>
+        <button class="mob-drawer-btn" data-mob-page="analytics" onclick="showPage('analytics',document.querySelector('[data-page=analytics]'));closeMobDrawer()">
+          <span class="mob-icon">📊</span>Analytics
+        </button>
+        <button class="mob-drawer-btn" data-mob-page="settings" onclick="showPage('settings',document.querySelector('[data-page=settings]'));closeMobDrawer()">
+          <span class="mob-icon">⚙️</span>Settings
+        </button>
+        <button class="mob-drawer-btn" data-mob-page="compliance" onclick="showPage('compliance',document.querySelector('[data-page=compliance]'));closeMobDrawer()">
+          <span class="mob-icon">🛡️</span>Compliance
+        </button>
+      </div>
+    </div>
 
     <main class="content">
       <div class="topbar">
@@ -2140,8 +2327,267 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
 
         </section>
 
+        <!-- COMPLIANCE -->
+        <section class="page" id="compliance">
+          <div class="main">
+
+            <div style="margin-bottom:22px">
+              <div style="font-family:'Sora',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.04em;color:var(--text);margin-bottom:6px">🛡️ Compliance Center</div>
+              <div style="color:var(--muted);font-size:14px">Manage call recording laws, privacy, and do-not-call settings.</div>
+            </div>
+
+            <!-- Status grid -->
+            <div class="comp-status-grid">
+              <div class="comp-status-item">
+                <div class="comp-dot green"></div>
+                <div>
+                  <div class="comp-status-label">Recording Disclosure</div>
+                  <div class="comp-status-sub">Disclaimer active on all calls</div>
+                </div>
+              </div>
+              <div class="comp-status-item">
+                <div class="comp-dot" id="dncDot" style="background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.15)"></div>
+                <div>
+                  <div class="comp-status-label">Do Not Call List</div>
+                  <div class="comp-status-sub" id="dncStatusSub">0 numbers blocked</div>
+                </div>
+              </div>
+              <div class="comp-status-item">
+                <div class="comp-dot yellow"></div>
+                <div>
+                  <div class="comp-status-label">Privacy Policy</div>
+                  <div class="comp-status-sub">Review recommended annually</div>
+                </div>
+              </div>
+              <div class="comp-status-item">
+                <div class="comp-dot green"></div>
+                <div>
+                  <div class="comp-status-label">Data Encryption</div>
+                  <div class="comp-status-sub">TLS in transit, AES-256 at rest</div>
+                </div>
+              </div>
+              <div class="comp-status-item">
+                <div class="comp-dot green"></div>
+                <div>
+                  <div class="comp-status-label">Cookie Consent</div>
+                  <div class="comp-status-sub" id="cookieStatusSub">Pending visitor consent</div>
+                </div>
+              </div>
+              <div class="comp-status-item">
+                <div class="comp-dot yellow"></div>
+                <div>
+                  <div class="comp-status-label">Data Retention</div>
+                  <div class="comp-status-sub" id="retentionStatusSub">90-day default</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+              <!-- Recording settings -->
+              <div class="card">
+                <div class="card-title" style="margin-bottom:16px">📞 Call Recording</div>
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-label">Enable recording disclosure</div>
+                    <div class="toggle-sub">Plays an audio notice before recording starts</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="recordingDisclosureToggle" checked onchange="syncComplianceStatus()">
+                    <div class="toggle-track"></div>
+                    <div class="toggle-thumb"></div>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-label">Two-party consent mode</div>
+                    <div class="toggle-sub">Required in CA, FL, IL, MD, MA, NV, NH, OR, WA</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="twoPartyToggle" onchange="syncComplianceStatus()">
+                    <div class="toggle-track"></div>
+                    <div class="toggle-thumb"></div>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-label">Pause recording on request</div>
+                    <div class="toggle-sub">Agent can pause mid-call for sensitive info</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="pauseRecordingToggle" checked onchange="syncComplianceStatus()">
+                    <div class="toggle-track"></div>
+                    <div class="toggle-thumb"></div>
+                  </label>
+                </div>
+                <div style="margin-top:14px">
+                  <label class="label">Disclosure message</label>
+                  <textarea class="textarea" id="disclosureText" rows="3" style="font-size:13px;resize:vertical">This call may be monitored or recorded for quality assurance and training purposes. By remaining on the line, you consent to being recorded.</textarea>
+                </div>
+              </div>
+
+              <!-- Do Not Call list -->
+              <div class="card">
+                <div class="card-title" style="margin-bottom:16px">🚫 Do Not Call List</div>
+                <div style="display:flex;gap:8px;margin-bottom:14px">
+                  <input class="input" id="dncInput" type="tel" placeholder="(555) 123-4567" style="flex:1" onkeydown="if(event.key==='Enter')addDNC()">
+                  <button class="app-btn blue" onclick="addDNC()">Add</button>
+                </div>
+                <div id="dncList" style="max-height:220px;overflow-y:auto">
+                  <div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">No numbers blocked yet</div>
+                </div>
+              </div>
+
+              <!-- Data retention -->
+              <div class="card">
+                <div class="card-title" style="margin-bottom:16px">🗓️ Data Retention</div>
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-label">Call recordings</div>
+                    <div class="toggle-sub">Auto-delete after retention period</div>
+                  </div>
+                  <select class="select" id="recordingRetention" onchange="syncComplianceStatus()" style="width:auto;padding:8px 12px;font-size:13px">
+                    <option value="30">30 days</option>
+                    <option value="90" selected>90 days</option>
+                    <option value="180">6 months</option>
+                    <option value="365">1 year</option>
+                    <option value="0">Never delete</option>
+                  </select>
+                </div>
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-label">Contact data</div>
+                    <div class="toggle-sub">Auto-delete inactive contacts</div>
+                  </div>
+                  <select class="select" id="contactRetention" onchange="syncComplianceStatus()" style="width:auto;padding:8px 12px;font-size:13px">
+                    <option value="90">90 days</option>
+                    <option value="365" selected>1 year</option>
+                    <option value="730">2 years</option>
+                    <option value="0">Never delete</option>
+                  </select>
+                </div>
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-label">Right to erasure (GDPR/CCPA)</div>
+                    <div class="toggle-sub">Honor deletion requests within 30 days</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="erasureToggle" checked>
+                    <div class="toggle-track"></div>
+                    <div class="toggle-thumb"></div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Legal documents -->
+              <div class="card">
+                <div class="card-title" style="margin-bottom:16px">📄 Legal Documents</div>
+                <div style="display:grid;gap:10px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:14px;background:#f8faff;border:1px solid #e0eaff">
+                    <div>
+                      <div style="font-size:14px;font-weight:600;color:var(--text)">Terms of Service</div>
+                      <div style="font-size:12px;color:var(--muted);margin-top:2px">Last updated May 2026</div>
+                    </div>
+                    <button class="app-btn soft" style="font-size:12px;padding:8px 14px" onclick="openTermsModal()">View</button>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:14px;background:#f8faff;border:1px solid #e0eaff">
+                    <div>
+                      <div style="font-size:14px;font-weight:600;color:var(--text)">Privacy Policy</div>
+                      <div style="font-size:12px;color:var(--muted);margin-top:2px">GDPR & CCPA compliant</div>
+                    </div>
+                    <button class="app-btn soft" style="font-size:12px;padding:8px 14px" onclick="openPrivacyModal()">View</button>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:14px;background:#f8faff;border:1px solid #e0eaff">
+                    <div>
+                      <div style="font-size:14px;font-weight:600;color:var(--text)">Export My Data</div>
+                      <div style="font-size:12px;color:var(--muted);margin-top:2px">Download all data (GDPR Art. 20)</div>
+                    </div>
+                    <button class="app-btn line" style="font-size:12px;padding:8px 14px" onclick="toast('Data export requested. You will receive an email within 48 hours.')">Request</button>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:14px;background:#fff0f0;border:1px solid #fecaca">
+                    <div>
+                      <div style="font-size:14px;font-weight:600;color:#b91c1c">Delete My Account</div>
+                      <div style="font-size:12px;color:#ef4444;margin-top:2px">Permanently remove all data</div>
+                    </div>
+                    <button class="app-btn" style="font-size:12px;padding:8px 14px;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5" onclick="toast('Contact support@paypilot.ai to complete account deletion.')">Request</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
       </div>
     </main>
+  </div>
+</div>
+
+<!-- TERMS OF SERVICE MODAL -->
+<div class="modal" id="termsModal">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;width:min(700px,100%)">
+    <div class="modal-head">
+      <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.04em;color:var(--text)">Terms of Service</div>
+      <button class="close" onclick="closeTermsModal()">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Last updated: May 2026 &nbsp;·&nbsp; Effective immediately</div>
+    <div style="font-size:14px;line-height:1.85;color:var(--text-2)">
+      <p><strong style="color:var(--text)">1. Acceptance of Terms</strong><br>
+      By accessing or using PayPilot AI ("Service"), you agree to be bound by these Terms. If you do not agree, do not use the Service.</p>
+      <p><strong style="color:var(--text)">2. Description of Service</strong><br>
+      PayPilot AI provides AI-assisted sales tools including call recording, contact lookup, script generation, and analytics. The Service is intended for lawful business use only.</p>
+      <p><strong style="color:var(--text)">3. Call Recording &amp; Consent</strong><br>
+      You are solely responsible for complying with all applicable federal, state, and local laws governing call recording, including the Telephone Consumer Protection Act (TCPA) and applicable two-party consent statutes. You must obtain all necessary consents before recording any call. PayPilot AI's recording disclosure feature is provided as a convenience and does not constitute legal advice or guarantee compliance.</p>
+      <p><strong style="color:var(--text)">4. Prohibited Uses</strong><br>
+      You may not use the Service to: (a) violate any law or regulation; (b) harass, spam, or contact individuals on national or state Do Not Call registries without lawful basis; (c) collect personal data without consent; (d) reverse engineer or resell the Service.</p>
+      <p><strong style="color:var(--text)">5. Data &amp; Privacy</strong><br>
+      Your use of the Service is also governed by our Privacy Policy. You retain ownership of your data. We process it only as necessary to provide the Service.</p>
+      <p><strong style="color:var(--text)">6. Billing &amp; Cancellation</strong><br>
+      Subscriptions are billed monthly or annually in advance. You may cancel at any time; cancellation takes effect at the end of the current billing period. No refunds for partial periods.</p>
+      <p><strong style="color:var(--text)">7. Limitation of Liability</strong><br>
+      To the maximum extent permitted by law, PayPilot AI's liability is limited to the fees paid by you in the 12 months preceding the claim. We are not liable for indirect, incidental, or consequential damages.</p>
+      <p><strong style="color:var(--text)">8. Changes to Terms</strong><br>
+      We may update these Terms. Continued use after notice of changes constitutes acceptance.</p>
+      <p style="color:var(--muted);font-size:12px">Questions? Contact legal@paypilot.ai</p>
+    </div>
+    <div style="margin-top:20px;display:flex;justify-content:flex-end">
+      <button class="app-btn blue" onclick="closeTermsModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY POLICY MODAL -->
+<div class="modal" id="privacyModal">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;width:min(700px,100%)">
+    <div class="modal-head">
+      <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.04em;color:var(--text)">Privacy Policy</div>
+      <button class="close" onclick="closePrivacyModal()">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Last updated: May 2026 &nbsp;·&nbsp; GDPR &amp; CCPA compliant</div>
+    <div style="font-size:14px;line-height:1.85;color:var(--text-2)">
+      <p><strong style="color:var(--text)">1. Information We Collect</strong><br>
+      We collect: (a) account information (email, name, company); (b) usage data (pages visited, features used, session duration); (c) call data (recordings, transcripts) you create through the Service; (d) payment information processed securely through Stripe (we do not store card numbers).</p>
+      <p><strong style="color:var(--text)">2. How We Use Your Information</strong><br>
+      We use your data to: provide and improve the Service; send product updates and support emails; comply with legal obligations; prevent fraud and abuse. We do not sell your personal data to third parties.</p>
+      <p><strong style="color:var(--text)">3. Call Recordings &amp; Transcripts</strong><br>
+      Call recordings and AI-generated transcripts are stored on your behalf. You control retention periods in the Compliance settings. You are responsible for obtaining consent from call participants as required by law.</p>
+      <p><strong style="color:var(--text)">4. Cookies &amp; Tracking</strong><br>
+      We use essential cookies for authentication and session management, and analytics cookies to understand product usage. You may decline non-essential cookies via the consent banner. Essential cookies cannot be disabled as the Service requires them to function.</p>
+      <p><strong style="color:var(--text)">5. Data Sharing</strong><br>
+      We share data only with: (a) service providers (Twilio for calls, Deepgram for transcription, OpenAI for AI features, Stripe for payments, Google for contact lookup) under data processing agreements; (b) legal authorities when required by law.</p>
+      <p><strong style="color:var(--text)">6. Your Rights (GDPR &amp; CCPA)</strong><br>
+      You have the right to: access your data; correct inaccurate data; request erasure ("right to be forgotten"); port your data to another service; object to processing; opt out of sale (we do not sell data). Submit requests via the Compliance page or at privacy@paypilot.ai. We respond within 30 days.</p>
+      <p><strong style="color:var(--text)">7. Data Retention</strong><br>
+      We retain account data for the duration of your subscription plus 30 days after cancellation. Call recordings are retained per your configured retention period. You may request earlier deletion at any time.</p>
+      <p><strong style="color:var(--text)">8. Security</strong><br>
+      Data is encrypted in transit (TLS 1.2+) and at rest (AES-256). Access is restricted to authorized personnel. We conduct regular security reviews.</p>
+      <p><strong style="color:var(--text)">9. International Transfers</strong><br>
+      Data is processed in the United States. For EU/EEA users, transfers rely on Standard Contractual Clauses (SCCs) approved by the European Commission.</p>
+      <p style="color:var(--muted);font-size:12px">Questions? Contact privacy@paypilot.ai</p>
+    </div>
+    <div style="margin-top:20px;display:flex;justify-content:flex-end">
+      <button class="app-btn blue" onclick="closePrivacyModal()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -2567,15 +3013,35 @@ function showPage(id, el){
     contacts:'Contact Lookup',
     scripts:'Scripts',
     analytics:'Analytics',
-    contacts:'Contact Lookup',
     settings:'Settings',
-    billing:'Billing'
+    billing:'Billing',
+    compliance:'Compliance'
   })[id] || id;
 
   if(el){
     document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
   }
+
+  // Sync mobile bottom nav
+  const drawerPages = ['scripts','analytics','settings','compliance'];
+  document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.mob-drawer-btn').forEach(b => b.classList.remove('active'));
+  if(drawerPages.includes(id)){
+    document.getElementById('mobMoreBtn').classList.add('active');
+    const db = document.querySelector(`.mob-drawer-btn[data-mob-page="${id}"]`);
+    if(db) db.classList.add('active');
+  } else {
+    const mb = document.querySelector(`.mob-nav-btn[data-mob-page="${id}"]`);
+    if(mb) mb.classList.add('active');
+  }
+}
+
+function openMobDrawer(){
+  document.getElementById('mobDrawerOverlay').classList.add('open');
+}
+function closeMobDrawer(){
+  document.getElementById('mobDrawerOverlay').classList.remove('open');
 }
 
 function jumpToAssist(){
@@ -3849,6 +4315,112 @@ function toast(msg){
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=> el.classList.remove('show'), 2800);
+}
+
+// ============================================================
+// COOKIE CONSENT
+// ============================================================
+(function initCookieBanner(){
+  const consent = localStorage.getItem('pp_cookie_consent');
+  if(!consent){
+    setTimeout(()=> document.getElementById('cookieBanner').classList.add('show'), 800);
+  } else {
+    updateCookieStatus(consent);
+  }
+})();
+
+function acceptCookies(){
+  localStorage.setItem('pp_cookie_consent','accepted');
+  document.getElementById('cookieBanner').classList.remove('show');
+  updateCookieStatus('accepted');
+  toast('Preferences saved.');
+}
+function declineCookies(){
+  localStorage.setItem('pp_cookie_consent','declined');
+  document.getElementById('cookieBanner').classList.remove('show');
+  updateCookieStatus('declined');
+}
+function updateCookieStatus(val){
+  const el = document.getElementById('cookieStatusSub');
+  if(el) el.textContent = val === 'accepted' ? 'Accepted' : 'Declined (essential only)';
+}
+
+// ============================================================
+// DO NOT CALL LIST
+// ============================================================
+let dncNumbers = JSON.parse(localStorage.getItem('pp_dnc') || '[]');
+
+function renderDNC(){
+  const list = document.getElementById('dncList');
+  if(!list) return;
+  if(dncNumbers.length === 0){
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">No numbers blocked yet</div>';
+  } else {
+    list.innerHTML = dncNumbers.map((n,i) =>
+      `<div class="dnc-item"><span class="dnc-number">${n}</span><button class="dnc-remove" onclick="removeDNC(${i})" title="Remove">×</button></div>`
+    ).join('');
+  }
+  const sub = document.getElementById('dncStatusSub');
+  if(sub) sub.textContent = `${dncNumbers.length} number${dncNumbers.length !== 1 ? 's' : ''} blocked`;
+}
+
+function addDNC(){
+  const input = document.getElementById('dncInput');
+  const raw = (input.value || '').trim();
+  if(!raw){ toast('Enter a phone number.'); return; }
+  const digits = raw.replace(/\D/g,'');
+  if(digits.length < 7){ toast('Enter a valid phone number.'); return; }
+  const fmt = digits.length === 10
+    ? `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`
+    : `+${digits.slice(0,-10)} (${digits.slice(-10,-7)}) ${digits.slice(-7,-4)}-${digits.slice(-4)}`;
+  if(dncNumbers.includes(fmt)){ toast('Already on the list.'); return; }
+  dncNumbers.push(fmt);
+  localStorage.setItem('pp_dnc', JSON.stringify(dncNumbers));
+  input.value = '';
+  renderDNC();
+  toast(`${fmt} added to Do Not Call list.`);
+}
+
+function removeDNC(i){
+  dncNumbers.splice(i,1);
+  localStorage.setItem('pp_dnc', JSON.stringify(dncNumbers));
+  renderDNC();
+}
+
+function syncComplianceStatus(){
+  const retention = document.getElementById('recordingRetention');
+  const sub = document.getElementById('retentionStatusSub');
+  if(retention && sub){
+    const labels = {'30':'30-day','90':'90-day','180':'6-month','365':'1-year','0':'No auto-delete'};
+    sub.textContent = (labels[retention.value] || retention.value) + ' retention';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  renderDNC();
+  syncComplianceStatus();
+  const consent = localStorage.getItem('pp_cookie_consent');
+  if(consent) updateCookieStatus(consent);
+});
+
+// ============================================================
+// LEGAL MODALS
+// ============================================================
+function openTermsModal(){
+  document.getElementById('termsModal').classList.add('open');
+  document.body.classList.add('modal-open');
+}
+function closeTermsModal(){
+  document.getElementById('termsModal').classList.remove('open');
+  document.body.classList.remove('modal-open');
+}
+function openPrivacyModal(){
+  document.getElementById('privacyModal').classList.add('open');
+  document.body.classList.add('modal-open');
+}
+function closePrivacyModal(){
+  document.getElementById('privacyModal').classList.remove('open');
+  document.body.classList.remove('modal-open');
 }
 </script>
 </body>
