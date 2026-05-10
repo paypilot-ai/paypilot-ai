@@ -1,0 +1,15 @@
+{
+  "name": "paypilot-voice-server",
+  "version": "1.0.0",
+  "description": "PayPilot AI — real-time voice WebSocket server for AI outbound calls",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

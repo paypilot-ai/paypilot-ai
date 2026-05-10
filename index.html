@@ -1603,6 +1603,7 @@ body.modal-open{overflow:hidden}
       <button class="side-btn" data-page="contacts" onclick="showPage('contacts', this)">🔍 Contact Lookup</button>
       <button class="side-btn" data-page="scripts" onclick="showPage('scripts', this)">📜 Scripts</button>
       <button class="side-btn" data-page="analytics" onclick="showPage('analytics', this)">📊 Analytics</button>
+      <button class="side-btn" data-page="aicaller" onclick="showPage('aicaller', this)">🤙 AI Caller</button>
 
       <div class="side-group">Account</div>
       <button class="side-btn" data-page="contacts" onclick="showPage('contacts', this)">🔍 Contact Lookup</button>
@@ -1622,6 +1623,9 @@ body.modal-open{overflow:hidden}
         </button>
         <button class="mob-nav-btn" data-mob-page="contacts" onclick="showPage('contacts',document.querySelector('[data-page=contacts]'))">
           <span class="mob-icon">🔍</span>Contacts
+        </button>
+        <button class="mob-nav-btn" data-mob-page="aicaller" onclick="showPage('aicaller',document.querySelector('[data-page=aicaller]'))">
+          <span class="mob-icon">🤙</span>AI Caller
         </button>
         <button class="mob-nav-btn" data-mob-page="billing" onclick="showPage('billing',document.querySelector('[data-page=billing]'))">
           <span class="mob-icon">💳</span>Billing
@@ -2325,6 +2329,131 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
             </div>
           </div>
 
+          <!-- AI Caller add-on -->
+          <div style="margin-top:16px;padding:24px 28px;border-radius:20px;background:linear-gradient(135deg,#07101f,#0f1e38);border:1.5px solid rgba(26,111,255,.30);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div style="font-size:36px;">🤙</div>
+              <div>
+                <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#fff;letter-spacing:-.03em;">AI Caller Add-on</div>
+                <div style="color:rgba(255,255,255,.60);font-size:13px;margin-top:4px;">AI rep that dials, talks, handles objections, and books demos — automatically.</div>
+                <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">
+                  <div style="font-size:12px;color:rgba(255,255,255,.50);"><span style="color:#4ade80;font-weight:700;">✓</span> 200 min/month included</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.50);"><span style="color:#4ade80;font-weight:700;">✓</span> $0.25/min overage</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.50);"><span style="color:#4ade80;font-weight:700;">✓</span> ElevenLabs + GPT-4o voice</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.50);"><span style="color:#4ade80;font-weight:700;">✓</span> Cancel anytime</div>
+                </div>
+              </div>
+            </div>
+            <div style="text-align:center;flex-shrink:0;">
+              <div style="font-family:'Sora',sans-serif;font-size:40px;font-weight:900;color:#fff;letter-spacing:-.05em;line-height:1;">$49</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:14px;">/month add-on</div>
+              <button class="btn btn-primary" id="aiCallerAddOnBtn" style="padding:11px 24px;font-size:14px;" onclick="purchaseAICaller()">Add to Plan</button>
+              <div id="aiCallerAddOnActive" style="display:none;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;color:#4ade80;">Active ✓</div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- AI CALLER -->
+        <section class="page" id="aicaller">
+
+          <!-- Upgrade wall (shown when not subscribed to AI Caller) -->
+          <div id="aiCallerUpgradeWall" style="display:none; min-height:60vh; display:flex; align-items:center; justify-content:center; padding:32px;">
+            <div style="max-width:480px; text-align:center;">
+              <div style="font-size:56px; margin-bottom:16px;">🤙</div>
+              <div style="font-family:'Sora',sans-serif; font-size:28px; font-weight:800; letter-spacing:-.04em; color:var(--text); margin-bottom:10px;">AI Caller</div>
+              <div style="color:var(--text-2); font-size:15px; line-height:1.8; margin-bottom:28px;">
+                An AI sales rep that dials for you — handles the opener, overcomes objections, and books demos automatically. <strong style="color:var(--text)">200 minutes/month included, $0.25/min after.</strong>
+              </div>
+              <div style="display:grid; gap:10px; text-align:left; background:#f8faff; border-radius:16px; padding:20px; border:1px solid #e0eaff; margin-bottom:24px;">
+                <div style="display:flex; gap:10px; align-items:center; font-size:14px; color:var(--text-2)"><span style="color:var(--blue)">✓</span> Real ElevenLabs voice — sounds human</div>
+                <div style="display:flex; gap:10px; align-items:center; font-size:14px; color:var(--text-2)"><span style="color:var(--blue)">✓</span> GPT-4o powered objection handling</div>
+                <div style="display:flex; gap:10px; align-items:center; font-size:14px; color:var(--text-2)"><span style="color:var(--blue)">✓</span> Interruption-aware — listens and adapts</div>
+                <div style="display:flex; gap:10px; align-items:center; font-size:14px; color:var(--text-2)"><span style="color:var(--blue)">✓</span> Fully customizable script and persona</div>
+                <div style="display:flex; gap:10px; align-items:center; font-size:14px; color:var(--text-2)"><span style="color:var(--blue)">✓</span> 200 minutes/month — $49 add-on</div>
+              </div>
+              <button class="app-btn blue" style="width:100%; padding:14px; font-size:15px;" onclick="showPage('billing', document.querySelector('[data-page=billing]'))">Add AI Caller — $49/month</button>
+              <div style="font-size:12px; color:var(--muted); margin-top:10px;">Cancel anytime. Usage billed monthly.</div>
+            </div>
+          </div>
+
+          <!-- Main AI Caller UI (shown when subscribed) -->
+          <div id="aiCallerMain">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:22px;">
+              <div>
+                <div style="font-family:'Sora',sans-serif; font-size:26px; font-weight:800; letter-spacing:-.04em; color:var(--text); margin-bottom:4px;">🤙 AI Caller</div>
+                <div style="color:var(--muted); font-size:13px;">Your AI sales rep makes the call — you watch it happen.</div>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <div style="font-size:12px; color:var(--muted); font-weight:600;" id="aiCallerMinutes">200 min remaining</div>
+                <div class="pill plan" id="aiCallerPill">AI Caller Active</div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1.1fr .9fr; gap:16px;">
+
+              <!-- Config panel -->
+              <div class="card">
+                <div class="card-title" style="margin-bottom:18px;">Configure Your AI Rep</div>
+
+                <label class="label">Rep name</label>
+                <input class="input" id="aiRepName" value="Alex" placeholder="Alex">
+
+                <label class="label">Company name</label>
+                <input class="input" id="aiCompanyName" placeholder="PayPilot AI" value="PayPilot AI">
+
+                <label class="label">Goal</label>
+                <select class="select" id="aiGoal">
+                  <option value="book a 15-minute demo call this week">Book a demo</option>
+                  <option value="introduce the product and gauge interest">Gauge interest</option>
+                  <option value="follow up on a previous conversation and push toward a decision">Follow-up close</option>
+                  <option value="reactivate a lapsed customer and offer a renewal discount">Win-back</option>
+                </select>
+
+                <label class="label">Opening line (optional)</label>
+                <input class="input" id="aiOpeningLine" placeholder="Hi, this is Alex from PayPilot AI — got 2 minutes?">
+
+                <label class="label" style="margin-top:16px;">Dial number</label>
+                <div style="display:flex; gap:8px;">
+                  <input class="input" id="aiToNumber" type="tel" placeholder="(555) 123-4567" style="flex:1;">
+                  <button class="app-btn blue" id="aiCallBtn" onclick="launchAICall()" style="white-space:nowrap;">📞 Call Now</button>
+                </div>
+              </div>
+
+              <!-- Live call panel -->
+              <div class="stack">
+
+                <!-- Status card -->
+                <div class="card" id="aiCallStatus" style="background:linear-gradient(140deg,#07101f,#0f1e35); border:1px solid rgba(26,111,255,.25);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                    <div style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:rgba(255,255,255,.45);">Call Status</div>
+                    <div class="call-status idle" id="aiStatusPill">Idle</div>
+                  </div>
+                  <div style="font-family:'Sora',sans-serif; font-size:32px; font-weight:800; color:#fff; letter-spacing:-.04em; margin-bottom:4px;" id="aiTimer">0:00</div>
+                  <div style="font-size:13px; color:rgba(255,255,255,.50);" id="aiStatusMsg">Ready to dial</div>
+                  <button class="app-btn" id="aiEndBtn" onclick="endAICall()" style="display:none; margin-top:14px; width:100%; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;">End Call</button>
+                </div>
+
+                <!-- Live transcript -->
+                <div class="card" style="min-height:200px; max-height:320px; overflow-y:auto;">
+                  <div class="card-title" style="margin-bottom:12px;">Live Transcript</div>
+                  <div id="aiTranscript" style="font-size:13px; line-height:1.9; color:var(--text-2);">
+                    <div style="color:var(--muted); font-size:13px;">Transcript will appear here once the call starts.</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Call log -->
+            <div class="card" style="margin-top:16px;">
+              <div class="card-title" style="margin-bottom:14px;">Recent AI Calls</div>
+              <div id="aiCallLog">
+                <div style="color:var(--muted); font-size:13px; text-align:center; padding:20px 0;">No calls yet.</div>
+              </div>
+            </div>
+
+          </div>
         </section>
 
         <!-- COMPLIANCE -->
@@ -3015,6 +3144,7 @@ function showPage(id, el){
     analytics:'Analytics',
     settings:'Settings',
     billing:'Billing',
+    aicaller:'AI Caller',
     compliance:'Compliance'
   })[id] || id;
 
@@ -3024,7 +3154,7 @@ function showPage(id, el){
   }
 
   // Sync mobile bottom nav
-  const drawerPages = ['scripts','analytics','settings','compliance'];
+  const drawerPages = ['scripts','analytics','settings','compliance','aicaller'];
   document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.mob-drawer-btn').forEach(b => b.classList.remove('active'));
   if(drawerPages.includes(id)){
@@ -4318,6 +4448,137 @@ function toast(msg){
 }
 
 // ============================================================
+// AI CALLER
+// ============================================================
+let aiCallSid = null;
+let aiCallTimer = null;
+let aiCallSeconds = 0;
+let aiCallerEnabled = false; // set true when user has the add-on
+
+function initAICaller() {
+  aiCallerEnabled = localStorage.getItem('pp_ai_caller') === 'true';
+  const wall = document.getElementById('aiCallerUpgradeWall');
+  const main = document.getElementById('aiCallerMain');
+  if (wall && main) {
+    wall.style.display = aiCallerEnabled ? 'none' : 'flex';
+    main.style.display = aiCallerEnabled ? 'block' : 'none';
+  }
+  // Sync billing page add-on button
+  const btn    = document.getElementById('aiCallerAddOnBtn');
+  const active = document.getElementById('aiCallerAddOnActive');
+  if (btn && active) {
+    btn.style.display    = aiCallerEnabled ? 'none' : 'block';
+    active.style.display = aiCallerEnabled ? 'block' : 'none';
+  }
+}
+
+function purchaseAICaller() {
+  // In production this would hit Stripe. For now simulate purchase.
+  localStorage.setItem('pp_ai_caller', 'true');
+  aiCallerEnabled = true;
+  initAICaller();
+  toast('AI Caller activated! You have 200 minutes this month.');
+  showPage('aicaller', document.querySelector('[data-page=aicaller]'));
+}
+
+async function launchAICall() {
+  const toNumber = document.getElementById('aiToNumber').value.trim();
+  if (!toNumber || toNumber.replace(/\D/g,'').length < 10) {
+    toast('Enter a valid 10-digit phone number.'); return;
+  }
+
+  const repName     = document.getElementById('aiRepName').value.trim() || 'Alex';
+  const company     = document.getElementById('aiCompanyName').value.trim() || 'PayPilot AI';
+  const goal        = document.getElementById('aiGoal').value;
+  const openingLine = document.getElementById('aiOpeningLine').value.trim();
+
+  document.getElementById('aiCallBtn').disabled = true;
+  document.getElementById('aiCallBtn').textContent = 'Dialing...';
+  setAIStatus('Connecting…', 'live');
+
+  try {
+    const resp = await fetch('/api/ai-call', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toNumber, repName, company, goal, openingLine }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Call failed');
+
+    aiCallSid = data.callSid;
+    setAIStatus('Call in progress — ' + data.to, 'live');
+    document.getElementById('aiEndBtn').style.display = 'block';
+    document.getElementById('aiTranscript').innerHTML = '';
+    startAITimer();
+    addTranscriptLine('system', '📞 Call connected to ' + data.to);
+    toast('AI call started. Your rep is dialing now.');
+  } catch (e) {
+    toast('Call failed: ' + e.message);
+    setAIStatus('Ready to dial', 'idle');
+    document.getElementById('aiCallBtn').disabled = false;
+    document.getElementById('aiCallBtn').textContent = '📞 Call Now';
+  }
+}
+
+function endAICall() {
+  clearInterval(aiCallTimer);
+  aiCallSid = null;
+  setAIStatus('Call ended', 'idle');
+  document.getElementById('aiEndBtn').style.display = 'none';
+  document.getElementById('aiCallBtn').disabled = false;
+  document.getElementById('aiCallBtn').textContent = '📞 Call Now';
+  addToCallLog();
+  toast('AI call ended.');
+}
+
+function startAITimer() {
+  aiCallSeconds = 0;
+  clearInterval(aiCallTimer);
+  aiCallTimer = setInterval(() => {
+    aiCallSeconds++;
+    const m = Math.floor(aiCallSeconds / 60);
+    const s = String(aiCallSeconds % 60).padStart(2, '0');
+    document.getElementById('aiTimer').textContent = m + ':' + s;
+  }, 1000);
+}
+
+function setAIStatus(msg, state) {
+  const pill = document.getElementById('aiStatusPill');
+  const msgEl = document.getElementById('aiStatusMsg');
+  if (pill) { pill.textContent = state === 'live' ? 'Live' : 'Idle'; pill.className = 'call-status ' + state; }
+  if (msgEl) msgEl.textContent = msg;
+}
+
+function addTranscriptLine(speaker, text) {
+  const el = document.getElementById('aiTranscript');
+  if (!el) return;
+  const isAI = speaker === 'ai';
+  const isSystem = speaker === 'system';
+  const div = document.createElement('div');
+  div.style.cssText = 'margin-bottom:10px;padding:' + (isSystem ? '0' : '8px 12px') + ';border-radius:10px;' +
+    (isAI ? 'background:#eff6ff;border-left:3px solid var(--blue);' : isSystem ? 'color:var(--muted);font-size:12px;' : 'background:#f8faff;border-left:3px solid #94a3b8;');
+  div.innerHTML = isSystem ? text :
+    `<span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.10em;color:${isAI ? 'var(--blue)' : 'var(--muted)'};display:block;margin-bottom:3px;">${isAI ? 'AI Rep' : 'Prospect'}</span>${text}`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function addToCallLog() {
+  const log = document.getElementById('aiCallLog');
+  if (!log) return;
+  const m = Math.floor(aiCallSeconds / 60);
+  const s = String(aiCallSeconds % 60).padStart(2, '0');
+  const number = document.getElementById('aiToNumber').value.trim() || '—';
+  const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const empty = log.querySelector('div[style*="text-align:center"]');
+  if (empty) empty.remove();
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;background:#f8faff;border:1px solid #e0eaff;margin-bottom:8px;font-size:13px;';
+  row.innerHTML = `<span style="font-weight:600;color:var(--text);">${number}</span><span style="color:var(--muted);">${now}</span><span style="color:var(--muted);">${m}:${s}</span><span style="color:var(--green);font-weight:700;">Completed</span>`;
+  log.prepend(row);
+}
+
+// ============================================================
 // COOKIE CONSENT
 // ============================================================
 (function initCookieBanner(){
@@ -4399,6 +4660,7 @@ function syncComplianceStatus(){
 document.addEventListener('DOMContentLoaded', function(){
   renderDNC();
   syncComplianceStatus();
+  initAICaller();
   const consent = localStorage.getItem('pp_cookie_consent');
   if(consent) updateCookieStatus(consent);
 });
