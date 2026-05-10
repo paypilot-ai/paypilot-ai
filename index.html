@@ -1222,6 +1222,66 @@ body.modal-open{overflow:hidden}
   .section{padding:0 20px 68px}
   .main{padding:16px}
 }
+
+/* ═══════════════════════════════════
+   MOBILE BOTTOM NAV
+═══════════════════════════════════ */
+.mob-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:linear-gradient(180deg,#05091a,#07101f);
+  border-top:1px solid rgba(255,255,255,.09);
+  padding:0 4px env(safe-area-inset-bottom,0);
+  box-shadow:0 -8px 32px rgba(0,0,0,.40);
+}
+.mob-nav-items{display:flex;justify-content:space-around;align-items:stretch}
+.mob-nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding:10px 4px 12px;border:none;background:transparent;
+  color:rgba(255,255,255,.40);cursor:pointer;transition:color .15s;
+  font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-nav-btn .mob-icon{font-size:20px;line-height:1}
+.mob-nav-btn.active{color:var(--blue-3)}
+.mob-nav-btn:active{opacity:.7}
+
+/* More drawer */
+.mob-drawer-overlay{
+  display:none;position:fixed;inset:0;z-index:110;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
+}
+.mob-drawer-overlay.open{display:block}
+.mob-drawer{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(180deg,#0b1627,#07101f);
+  border-radius:22px 22px 0 0;
+  border-top:1px solid rgba(255,255,255,.10);
+  padding:16px 16px calc(80px + env(safe-area-inset-bottom,0));
+}
+.mob-drawer-handle{
+  width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.20);
+  margin:0 auto 20px;
+}
+.mob-drawer-title{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;
+  color:rgba(255,255,255,.30);margin-bottom:10px;padding:0 4px;
+}
+.mob-drawer-btn{
+  width:100%;display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border-radius:14px;border:none;background:transparent;
+  color:rgba(255,255,255,.70);font-size:15px;font-weight:600;
+  cursor:pointer;transition:background .15s;text-align:left;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-drawer-btn:active{background:rgba(255,255,255,.07)}
+.mob-drawer-btn.active{background:rgba(26,111,255,.18);color:#fff}
+.mob-drawer-btn .mob-icon{font-size:20px;width:28px;text-align:center}
+
+@media (max-width:840px){
+  .mob-nav{display:block}
+  .main{padding-bottom:calc(80px + env(safe-area-inset-bottom,0)) !important}
+}
 </style>
 </head>
 <body>
@@ -1464,6 +1524,44 @@ body.modal-open{overflow:hidden}
       <button class="side-btn" data-page="settings" onclick="showPage('settings', this)">⚙️ Settings</button>
       <button class="side-btn" data-page="billing" onclick="showPage('billing', this)">💳 Billing</button>
     </aside>
+
+    <!-- Mobile bottom nav -->
+    <nav class="mob-nav">
+      <div class="mob-nav-items">
+        <button class="mob-nav-btn active" data-mob-page="dashboard" onclick="showPage('dashboard',document.querySelector('[data-page=dashboard]'))">
+          <span class="mob-icon">🏠</span>Home
+        </button>
+        <button class="mob-nav-btn" data-mob-page="assist" onclick="showPage('assist',document.querySelector('[data-page=assist]'))">
+          <span class="mob-icon">🤖</span>Assist
+        </button>
+        <button class="mob-nav-btn" data-mob-page="contacts" onclick="showPage('contacts',document.querySelector('[data-page=contacts]'))">
+          <span class="mob-icon">🔍</span>Contacts
+        </button>
+        <button class="mob-nav-btn" data-mob-page="billing" onclick="showPage('billing',document.querySelector('[data-page=billing]'))">
+          <span class="mob-icon">💳</span>Billing
+        </button>
+        <button class="mob-nav-btn" id="mobMoreBtn" onclick="openMobDrawer()">
+          <span class="mob-icon">⋯</span>More
+        </button>
+      </div>
+    </nav>
+
+    <!-- More drawer overlay -->
+    <div class="mob-drawer-overlay" id="mobDrawerOverlay" onclick="closeMobDrawer()">
+      <div class="mob-drawer" onclick="event.stopPropagation()">
+        <div class="mob-drawer-handle"></div>
+        <div class="mob-drawer-title">More</div>
+        <button class="mob-drawer-btn" data-mob-page="scripts" onclick="showPage('scripts',document.querySelector('[data-page=scripts]'));closeMobDrawer()">
+          <span class="mob-icon">📜</span>Scripts
+        </button>
+        <button class="mob-drawer-btn" data-mob-page="analytics" onclick="showPage('analytics',document.querySelector('[data-page=analytics]'));closeMobDrawer()">
+          <span class="mob-icon">📊</span>Analytics
+        </button>
+        <button class="mob-drawer-btn" data-mob-page="settings" onclick="showPage('settings',document.querySelector('[data-page=settings]'));closeMobDrawer()">
+          <span class="mob-icon">⚙️</span>Settings
+        </button>
+      </div>
+    </div>
 
     <main class="content">
       <div class="topbar">
@@ -2567,7 +2665,6 @@ function showPage(id, el){
     contacts:'Contact Lookup',
     scripts:'Scripts',
     analytics:'Analytics',
-    contacts:'Contact Lookup',
     settings:'Settings',
     billing:'Billing'
   })[id] || id;
@@ -2576,6 +2673,26 @@ function showPage(id, el){
     document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
   }
+
+  // Sync mobile bottom nav
+  const drawerPages = ['scripts','analytics','settings'];
+  document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.mob-drawer-btn').forEach(b => b.classList.remove('active'));
+  if(drawerPages.includes(id)){
+    document.getElementById('mobMoreBtn').classList.add('active');
+    const db = document.querySelector(`.mob-drawer-btn[data-mob-page="${id}"]`);
+    if(db) db.classList.add('active');
+  } else {
+    const mb = document.querySelector(`.mob-nav-btn[data-mob-page="${id}"]`);
+    if(mb) mb.classList.add('active');
+  }
+}
+
+function openMobDrawer(){
+  document.getElementById('mobDrawerOverlay').classList.add('open');
+}
+function closeMobDrawer(){
+  document.getElementById('mobDrawerOverlay').classList.remove('open');
 }
 
 function jumpToAssist(){
