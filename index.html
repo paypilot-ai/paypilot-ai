@@ -2410,6 +2410,11 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
                   </div>
                 </div>
                 <div style="margin-bottom:14px;">
+                  <label class="label">Your email address <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">— follow-up emails are sent from this address</span></label>
+                  <input class="input" id="aiUserEmail" type="email" placeholder="alex@yourcompany.com">
+                  <div style="font-size:11px;color:var(--muted);margin-top:5px;">Prospect replies go directly to your inbox. The AI sends follow-ups automatically when a demo is booked.</div>
+                </div>
+                <div style="margin-bottom:14px;">
                   <label class="label">Call goal</label>
                   <select class="select" id="aiGoal">
                     <option value="book a 15-minute demo call this week">Book a demo</option>
@@ -2494,6 +2499,32 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               <div id="aiCallLog">
                 <div style="color:var(--muted); font-size:13px; text-align:center; padding:20px 0;">No calls yet.</div>
               </div>
+            </div>
+
+            <!-- Follow-up email composer -->
+            <div class="card" style="margin-top:16px; display:none;" id="aiEmailPanel">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                <div class="card-title">✉️ Follow-up Email</div>
+                <div style="font-size:12px;color:var(--muted);">Sent from your email · replies go to your inbox</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                <div>
+                  <label class="label">To (prospect email)</label>
+                  <input class="input" id="aiEmailTo" type="email" placeholder="prospect@company.com">
+                </div>
+                <div>
+                  <label class="label">Subject</label>
+                  <input class="input" id="aiEmailSubject" value="Great speaking with you — next steps">
+                </div>
+              </div>
+              <label class="label">Message</label>
+              <textarea class="textarea" id="aiEmailBody" rows="7"></textarea>
+              <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+                <button class="app-btn blue" onclick="sendFollowUpEmail()">Send Email</button>
+                <button class="app-btn line" onclick="regenerateEmailBody()">Regenerate</button>
+                <button class="app-btn line" onclick="document.getElementById('aiEmailPanel').style.display='none'">Dismiss</button>
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-top:8px;" id="aiEmailStatus"></div>
             </div>
 
           </div>
@@ -4528,6 +4559,7 @@ function purchaseAICaller() {
 function saveAIConfig() {
   const cfg = {
     repName:        document.getElementById('aiRepName').value,
+    userEmail:      document.getElementById('aiUserEmail').value,
     company:        document.getElementById('aiCompanyName').value,
     goal:           document.getElementById('aiGoal').value,
     openingLine:    document.getElementById('aiOpeningLine').value,
@@ -4546,6 +4578,7 @@ function loadAIConfig() {
   try {
     const cfg = JSON.parse(localStorage.getItem('pp_ai_config') || '{}');
     if (cfg.repName)        document.getElementById('aiRepName').value = cfg.repName;
+    if (cfg.userEmail)      document.getElementById('aiUserEmail').value = cfg.userEmail;
     if (cfg.company)        document.getElementById('aiCompanyName').value = cfg.company;
     if (cfg.goal)           document.getElementById('aiGoal').value = cfg.goal;
     if (cfg.openingLine)    document.getElementById('aiOpeningLine').value = cfg.openingLine;
@@ -4612,6 +4645,83 @@ function endAICall() {
   document.getElementById('aiCallBtn').textContent = '📞 Call Now';
   addToCallLog();
   toast('AI call ended.');
+  showEmailPanel();
+}
+
+async function showEmailPanel() {
+  const repEmail = document.getElementById('aiUserEmail').value.trim();
+  if (!repEmail) return; // no email configured, skip
+  const panel = document.getElementById('aiEmailPanel');
+  if (!panel) return;
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('aiEmailStatus').textContent = '';
+  await regenerateEmailBody();
+}
+
+async function regenerateEmailBody() {
+  const repName    = document.getElementById('aiRepName').value.trim() || 'Alex';
+  const company    = document.getElementById('aiCompanyName').value.trim() || 'PayPilot AI';
+  const productDesc = document.getElementById('aiProductDesc').value.trim();
+  const transcript = document.getElementById('aiTranscript').innerText.trim();
+  const bodyEl     = document.getElementById('aiEmailBody');
+
+  bodyEl.value = 'Writing email…';
+  bodyEl.disabled = true;
+
+  try {
+    const resp = await fetch('/api/generate-response', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        max_tokens: 350,
+        system: `You write short, warm, professional sales follow-up emails. Write in first person as ${repName} from ${company}. Do not use placeholder brackets. Sound human, not templated.`,
+        messages: [{
+          role: 'user',
+          content: `Write a follow-up email after this sales call.\n\nCall transcript:\n${transcript || '(No transcript available)'}\n\nProduct: ${productDesc || company}\n\nThe email should:\n- Thank them for their time\n- Summarize the key point from the call in one sentence\n- Confirm the next step (demo, callback, or sending more info)\n- Be 3-4 short paragraphs\n- End with my name and company\n\nJust write the email body — no subject line.`
+        }]
+      })
+    });
+    const data = await resp.json();
+    bodyEl.value = data.reply || 'Could not generate email. Please write your message above.';
+  } catch {
+    bodyEl.value = `Hi,\n\nThank you for taking the time to speak with me today. I enjoyed learning more about your team and how you're currently handling sales.\n\nAs discussed, I'd love to show you how ${company} can help — would you have 15 minutes this week for a quick demo?\n\nLooking forward to connecting.\n\nBest,\n${repName}\n${company}`;
+  } finally {
+    bodyEl.disabled = false;
+  }
+}
+
+async function sendFollowUpEmail() {
+  const repName   = document.getElementById('aiRepName').value.trim() || 'Alex';
+  const repEmail  = document.getElementById('aiUserEmail').value.trim();
+  const company   = document.getElementById('aiCompanyName').value.trim() || 'PayPilot AI';
+  const to        = document.getElementById('aiEmailTo').value.trim();
+  const subject   = document.getElementById('aiEmailSubject').value.trim();
+  const body      = document.getElementById('aiEmailBody').value.trim();
+  const statusEl  = document.getElementById('aiEmailStatus');
+
+  if (!repEmail) { toast('Add your email address in the config first.'); return; }
+  if (!to)       { toast('Enter the prospect\'s email address.'); return; }
+  if (!body)     { toast('Email body is empty.'); return; }
+
+  statusEl.textContent = 'Sending…';
+
+  try {
+    const resp = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, subject, body, repName, repEmail, company }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Send failed');
+    statusEl.textContent = '✓ Email sent. Replies go to ' + repEmail;
+    statusEl.style.color = 'var(--green)';
+    toast('Follow-up email sent to ' + to);
+  } catch (e) {
+    statusEl.textContent = '✗ ' + e.message;
+    statusEl.style.color = 'var(--red)';
+    toast('Email failed: ' + e.message);
+  }
 }
 
 function startAITimer() {
