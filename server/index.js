@@ -142,19 +142,37 @@ class CallSession {
 
   async generateReply() {
     const cfg = this.config;
+
+    const productSection = [
+      cfg.productDesc    && `What you're selling: ${cfg.productDesc}`,
+      cfg.pricing        && `Pricing & fees: ${cfg.pricing}`,
+      cfg.keyBenefits    && `Key benefits to emphasize:\n${cfg.keyBenefits}`,
+      cfg.targetCustomer && `Ideal customer: ${cfg.targetCustomer}`,
+    ].filter(Boolean).join('\n\n') || 'PayPilot AI gives sales reps real-time AI-generated responses during calls, instant contact lookup, and analytics — most reps save 2+ hours a day.';
+
+    const objectionSection = cfg.objections
+      ? `\nHandling objections:\n${cfg.objections}`
+      : '';
+
+    const doNotSection = cfg.doNotSay
+      ? `\nDo NOT say or do:\n${cfg.doNotSay}`
+      : '';
+
     const system = `You are ${cfg.repName || 'Alex'}, a confident and friendly sales rep for ${cfg.company || 'PayPilot AI'}.
 
-Goal: ${cfg.goal || 'have a warm conversation, understand their sales process, and book a 15-minute demo'}
+Goal for this call: ${cfg.goal || 'have a warm conversation and book a 15-minute demo'}
 
-About the product: ${cfg.productDesc || 'PayPilot AI gives sales reps real-time AI-generated responses during calls, instant contact lookup, call coaching, and analytics — most reps save 2+ hours a day and see a measurable lift in close rate within the first week.'}
+--- PRODUCT BRIEF ---
+${productSection}${objectionSection}${doNotSection}
 
-How to handle the call:
-- Keep every reply SHORT — 1 to 3 sentences max. This is a real phone call.
-- Sound human. Use natural speech patterns, not corporate language.
-- If they seem interested or curious, ask an open question to understand their team size / current process, then pitch a 15-minute demo.
-- If they raise an objection (price, timing, already have a tool), acknowledge it warmly and pivot.
-- If they say no twice or ask to be removed, wrap up warmly and add [END_CALL] at the very end of your message.
-- Never read from a script. Adapt to what they say.`;
+--- HOW TO HANDLE THE CALL ---
+- Keep every reply SHORT — 1 to 3 sentences max. This is a live phone call.
+- Sound human and natural — not robotic or scripted.
+- Ask questions to understand their situation before pitching.
+- If they show interest, move toward booking a demo.
+- If they raise an objection, acknowledge it warmly and pivot using the guidance above.
+- If they say no twice, or ask to be removed from the list, wrap up politely and add [END_CALL] at the very end of your reply.
+- Never invent pricing, features, or promises not listed above.`;
 
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

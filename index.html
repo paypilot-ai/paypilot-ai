@@ -2392,31 +2392,75 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
             <div style="display:grid; grid-template-columns:1.1fr .9fr; gap:16px;">
 
               <!-- Config panel -->
-              <div class="card">
-                <div class="card-title" style="margin-bottom:18px;">Configure Your AI Rep</div>
+              <div class="card" style="display:flex;flex-direction:column;gap:0;">
 
-                <label class="label">Rep name</label>
-                <input class="input" id="aiRepName" value="Alex" placeholder="Alex">
+                <div class="card-title" style="margin-bottom:4px;">Configure Your AI Rep</div>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">The AI reads everything here before dialing. Be specific — it makes a real difference.</div>
 
-                <label class="label">Company name</label>
-                <input class="input" id="aiCompanyName" placeholder="PayPilot AI" value="PayPilot AI">
+                <!-- Section: Rep identity -->
+                <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f0f4f8;">Rep Identity</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                  <div>
+                    <label class="label">Rep name</label>
+                    <input class="input" id="aiRepName" value="Alex" placeholder="Alex">
+                  </div>
+                  <div>
+                    <label class="label">Company name</label>
+                    <input class="input" id="aiCompanyName" value="PayPilot AI" placeholder="PayPilot AI">
+                  </div>
+                </div>
+                <div style="margin-bottom:14px;">
+                  <label class="label">Call goal</label>
+                  <select class="select" id="aiGoal">
+                    <option value="book a 15-minute demo call this week">Book a demo</option>
+                    <option value="introduce the product and gauge interest">Gauge interest</option>
+                    <option value="follow up on a previous conversation and push toward a decision">Follow-up close</option>
+                    <option value="reactivate a lapsed customer and offer a renewal discount">Win-back</option>
+                  </select>
+                </div>
+                <div style="margin-bottom:20px;">
+                  <label class="label">Opening line <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">(optional — leave blank to use the default)</span></label>
+                  <input class="input" id="aiOpeningLine" placeholder="Hi, this is Alex from PayPilot AI — got 2 minutes?">
+                </div>
 
-                <label class="label">Goal</label>
-                <select class="select" id="aiGoal">
-                  <option value="book a 15-minute demo call this week">Book a demo</option>
-                  <option value="introduce the product and gauge interest">Gauge interest</option>
-                  <option value="follow up on a previous conversation and push toward a decision">Follow-up close</option>
-                  <option value="reactivate a lapsed customer and offer a renewal discount">Win-back</option>
-                </select>
+                <!-- Section: Product brief -->
+                <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f0f4f8;">Product Brief</div>
+                <div style="margin-bottom:14px;">
+                  <label class="label">What are you selling?</label>
+                  <textarea class="textarea" id="aiProductDesc" rows="3" placeholder="e.g. PayPilot AI is a sales tool that gives reps real-time AI-generated objection responses during live calls, instant contact lookup via Google Places, and call analytics. Most reps save 2+ hours a day and see a measurable lift in close rate within the first week."></textarea>
+                </div>
+                <div style="margin-bottom:14px;">
+                  <label class="label">Pricing &amp; fees</label>
+                  <textarea class="textarea" id="aiPricing" rows="2" placeholder="e.g. Starter plan $99/month for up to 5 users. Pro plan $199/month unlimited users. Free 14-day trial, no credit card required."></textarea>
+                </div>
+                <div style="margin-bottom:20px;">
+                  <label class="label">Key benefits <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">(bullet points the AI should emphasize)</span></label>
+                  <textarea class="textarea" id="aiKeyBenefits" rows="3" placeholder="e.g.&#10;- Saves 2+ hours per rep per day&#10;- AI generates objection responses in real time&#10;- Instant contact lookup — name, phone, email, company&#10;- Works during live calls, no setup required"></textarea>
+                </div>
 
-                <label class="label">Opening line (optional)</label>
-                <input class="input" id="aiOpeningLine" placeholder="Hi, this is Alex from PayPilot AI — got 2 minutes?">
+                <!-- Section: Objection handling -->
+                <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f0f4f8;">Objection Handling</div>
+                <div style="margin-bottom:14px;">
+                  <label class="label">Target customer</label>
+                  <input class="input" id="aiTargetCustomer" placeholder="e.g. Sales managers at companies with 5–50 reps, B2B focus">
+                </div>
+                <div style="margin-bottom:14px;">
+                  <label class="label">Common objections &amp; how to handle them</label>
+                  <textarea class="textarea" id="aiObjections" rows="4" placeholder="e.g.&#10;'We already have a tool' → Ask what they use and what's missing. Position PayPilot as complementary.&#10;'Not the right time' → Ask when would be better and offer to follow up.&#10;'Too expensive' → Remind them the free trial requires no card."></textarea>
+                </div>
+                <div style="margin-bottom:20px;">
+                  <label class="label">Do NOT say <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">(things to avoid)</span></label>
+                  <input class="input" id="aiDoNotSay" placeholder="e.g. Don't mention competitors by name. Don't promise custom integrations.">
+                </div>
 
-                <label class="label" style="margin-top:16px;">Dial number</label>
-                <div style="display:flex; gap:8px;">
+                <!-- Dial -->
+                <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f0f4f8;">Dial</div>
+                <div style="display:flex;gap:8px;">
                   <input class="input" id="aiToNumber" type="tel" placeholder="(555) 123-4567" style="flex:1;">
                   <button class="app-btn blue" id="aiCallBtn" onclick="launchAICall()" style="white-space:nowrap;">📞 Call Now</button>
                 </div>
+                <div style="font-size:12px;color:var(--muted);margin-top:8px;">Billed at $0.25/min · <a onclick="saveAIConfig()" style="color:var(--blue);cursor:pointer;text-decoration:underline;">Save config</a></div>
+
               </div>
 
               <!-- Live call panel -->
@@ -4462,6 +4506,7 @@ function initAICaller() {
     wall.style.display = aiCallerEnabled ? 'none' : 'flex';
     main.style.display = aiCallerEnabled ? 'block' : 'none';
   }
+  if (aiCallerEnabled) loadAIConfig();
   // Sync billing page add-on button
   const btn    = document.getElementById('aiCallerAddOnBtn');
   const active = document.getElementById('aiCallerAddOnActive');
@@ -4480,16 +4525,55 @@ function purchaseAICaller() {
   showPage('aicaller', document.querySelector('[data-page=aicaller]'));
 }
 
+function saveAIConfig() {
+  const cfg = {
+    repName:        document.getElementById('aiRepName').value,
+    company:        document.getElementById('aiCompanyName').value,
+    goal:           document.getElementById('aiGoal').value,
+    openingLine:    document.getElementById('aiOpeningLine').value,
+    productDesc:    document.getElementById('aiProductDesc').value,
+    pricing:        document.getElementById('aiPricing').value,
+    keyBenefits:    document.getElementById('aiKeyBenefits').value,
+    targetCustomer: document.getElementById('aiTargetCustomer').value,
+    objections:     document.getElementById('aiObjections').value,
+    doNotSay:       document.getElementById('aiDoNotSay').value,
+  };
+  localStorage.setItem('pp_ai_config', JSON.stringify(cfg));
+  toast('AI Caller config saved.');
+}
+
+function loadAIConfig() {
+  try {
+    const cfg = JSON.parse(localStorage.getItem('pp_ai_config') || '{}');
+    if (cfg.repName)        document.getElementById('aiRepName').value = cfg.repName;
+    if (cfg.company)        document.getElementById('aiCompanyName').value = cfg.company;
+    if (cfg.goal)           document.getElementById('aiGoal').value = cfg.goal;
+    if (cfg.openingLine)    document.getElementById('aiOpeningLine').value = cfg.openingLine;
+    if (cfg.productDesc)    document.getElementById('aiProductDesc').value = cfg.productDesc;
+    if (cfg.pricing)        document.getElementById('aiPricing').value = cfg.pricing;
+    if (cfg.keyBenefits)    document.getElementById('aiKeyBenefits').value = cfg.keyBenefits;
+    if (cfg.targetCustomer) document.getElementById('aiTargetCustomer').value = cfg.targetCustomer;
+    if (cfg.objections)     document.getElementById('aiObjections').value = cfg.objections;
+    if (cfg.doNotSay)       document.getElementById('aiDoNotSay').value = cfg.doNotSay;
+  } catch {}
+}
+
 async function launchAICall() {
   const toNumber = document.getElementById('aiToNumber').value.trim();
   if (!toNumber || toNumber.replace(/\D/g,'').length < 10) {
     toast('Enter a valid 10-digit phone number.'); return;
   }
 
-  const repName     = document.getElementById('aiRepName').value.trim() || 'Alex';
-  const company     = document.getElementById('aiCompanyName').value.trim() || 'PayPilot AI';
-  const goal        = document.getElementById('aiGoal').value;
-  const openingLine = document.getElementById('aiOpeningLine').value.trim();
+  const repName        = document.getElementById('aiRepName').value.trim() || 'Alex';
+  const company        = document.getElementById('aiCompanyName').value.trim() || 'PayPilot AI';
+  const goal           = document.getElementById('aiGoal').value;
+  const openingLine    = document.getElementById('aiOpeningLine').value.trim();
+  const productDesc    = document.getElementById('aiProductDesc').value.trim();
+  const pricing        = document.getElementById('aiPricing').value.trim();
+  const keyBenefits    = document.getElementById('aiKeyBenefits').value.trim();
+  const targetCustomer = document.getElementById('aiTargetCustomer').value.trim();
+  const objections     = document.getElementById('aiObjections').value.trim();
+  const doNotSay       = document.getElementById('aiDoNotSay').value.trim();
 
   document.getElementById('aiCallBtn').disabled = true;
   document.getElementById('aiCallBtn').textContent = 'Dialing...';
@@ -4499,7 +4583,7 @@ async function launchAICall() {
     const resp = await fetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber, repName, company, goal, openingLine }),
+      body: JSON.stringify({ toNumber, repName, company, goal, openingLine, productDesc, pricing, keyBenefits, targetCustomer, objections, doNotSay }),
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Call failed');

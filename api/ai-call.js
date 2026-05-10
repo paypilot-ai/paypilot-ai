@@ -11,7 +11,7 @@ module.exports = async function handler(req, res) {
   const { TWILIO_ACCOUNT_SID: sid, TWILIO_AUTH_TOKEN: token, TWILIO_PHONE_NUMBER: from } = process.env;
   if (!sid || !token || !from) return res.status(500).json({ error: 'Twilio not configured' });
 
-  const { toNumber, repName, company, goal, productDesc, openingLine } = req.body || {};
+  const { toNumber, repName, company, goal, openingLine, productDesc, pricing, keyBenefits, targetCustomer, objections, doNotSay } = req.body || {};
   if (!toNumber) return res.status(400).json({ error: 'toNumber required' });
 
   const digits = toNumber.replace(/\D/g, '');
@@ -19,11 +19,16 @@ module.exports = async function handler(req, res) {
   const e164 = digits.startsWith('1') ? '+' + digits : '+1' + digits;
 
   const twimlUrl = new URL('https://paypilotai.live/api/ai-twiml');
-  if (repName)     twimlUrl.searchParams.set('repName', repName);
-  if (company)     twimlUrl.searchParams.set('company', company);
-  if (goal)        twimlUrl.searchParams.set('goal', goal);
-  if (productDesc) twimlUrl.searchParams.set('productDesc', productDesc);
-  if (openingLine) twimlUrl.searchParams.set('openingLine', openingLine);
+  if (repName)        twimlUrl.searchParams.set('repName', repName);
+  if (company)        twimlUrl.searchParams.set('company', company);
+  if (goal)           twimlUrl.searchParams.set('goal', goal);
+  if (openingLine)    twimlUrl.searchParams.set('openingLine', openingLine);
+  if (productDesc)    twimlUrl.searchParams.set('productDesc', productDesc);
+  if (pricing)        twimlUrl.searchParams.set('pricing', pricing);
+  if (keyBenefits)    twimlUrl.searchParams.set('keyBenefits', keyBenefits);
+  if (targetCustomer) twimlUrl.searchParams.set('targetCustomer', targetCustomer);
+  if (objections)     twimlUrl.searchParams.set('objections', objections);
+  if (doNotSay)       twimlUrl.searchParams.set('doNotSay', doNotSay);
 
   try {
     const creds = Buffer.from(`${sid}:${token}`).toString('base64');
