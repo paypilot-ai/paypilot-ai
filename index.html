@@ -2808,8 +2808,8 @@ function showAuth(plan){
 }
 
 // ── MASTER CREDENTIALS — change these to your real login ──
-const MASTER_EMAIL = 'sean@paypilot.ai';
-const MASTER_PASS  = 'PayPilot2024!';
+const MASTER_EMAIL = 'info@paypilotai.live';
+const MASTER_PASS  = 'icyunv220';
 
   const TESTER_ACCOUNTS = [
   { email: 'tester1@paypilot.ai',  password: 'Tester2024!', plan: 'pro' },
@@ -3506,7 +3506,7 @@ function resetSettings(){
 async function fakeStripe(plan, amount){
   if(plan === 'Enterprise' || amount === 0){
     // Enterprise — send to contact form or email
-    window.location.href = 'mailto:sean@paypilot.ai?subject=PayPilot Enterprise Inquiry';
+    window.location.href = 'mailto:info@paypilotai.live?subject=PayPilot Enterprise Inquiry';
     return;
   }
 
