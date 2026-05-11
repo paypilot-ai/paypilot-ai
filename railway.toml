@@ -1,0 +1,6 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd railway && npm install"
+
+[deploy]
+startCommand = "cd railway && node server.js"
