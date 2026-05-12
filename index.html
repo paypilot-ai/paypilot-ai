@@ -2976,6 +2976,11 @@ function enterTesterApp(){
 
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
+  // Hide billing from paid accounts
+  const billingBtn = document.querySelector('.side-btn[data-page="billing"]');
+  if(billingBtn) billingBtn.style.display = 'none';
+  const billingMob = document.querySelector('.mob-nav-btn[data-mob-page="billing"]');
+  if(billingMob) billingMob.style.display = 'none';
   showPage('dashboard');
   resetDemoState();
   toast('Welcome, tester! Full Pro access unlocked.');
@@ -3018,6 +3023,11 @@ function enterRealApp(){
 
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
+  // Hide billing from live/paid accounts
+  const billingBtn2 = document.querySelector('.side-btn[data-page="billing"]');
+  if(billingBtn2) billingBtn2.style.display = 'none';
+  const billingMob2 = document.querySelector('.mob-nav-btn[data-mob-page="billing"]');
+  if(billingMob2) billingMob2.style.display = 'none';
   showPage('dashboard');
   resetDemoState();
   toast('Welcome back, Sean.');
@@ -3124,6 +3134,7 @@ function showPage(id, el){
   document.getElementById('pageTitle').textContent = ({
     dashboard:'Dashboard',
     assist:'Live Assist',
+    aicaller:'AI Auto-Caller',
     contacts:'Contact Lookup',
     scripts:'Scripts',
     analytics:'Analytics',
@@ -3131,6 +3142,10 @@ function showPage(id, el){
     billing:'Billing',
     compliance:'Compliance'
   })[id] || id;
+
+  // Hide Live pill on AI Caller page (it's about outbound, not live assist)
+  const lp2 = document.getElementById('livePill');
+  if(lp2) lp2.style.display = (id === 'aicaller') ? 'none' : '';
 
   if(el){
     document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
