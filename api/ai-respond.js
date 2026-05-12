@@ -37,7 +37,6 @@ module.exports = async function handler(req, res) {
 
   try {
     if (!transcript) {
-      // Nothing heard — ask them to repeat
       const last = history.findLast?.(m => m.role === 'assistant')?.content || "I didn't catch that, could you repeat?";
       const h = Buffer.from(JSON.stringify(history)).toString('base64url');
       return res.status(200).send(gatherTwiml(last, h));
@@ -49,7 +48,6 @@ module.exports = async function handler(req, res) {
     const reply = await ask(messages);
     history.push({ role: 'assistant', content: reply });
 
-    // Keep history under 6KB to stay within URL limits
     while (Buffer.from(JSON.stringify(history)).length > 6000) history.splice(0, 2);
 
     const h = Buffer.from(JSON.stringify(history)).toString('base64url');
