@@ -19,6 +19,42 @@ const sessions = new Map();
 
 app.get('/health', (req, res) => res.json({ ok: true, activeCalls: sessions.size }));
 
+app.get('/test', async (req, res) => {
+  const results = {
+    env: {
+      DEEPGRAM_API_KEY: !!DEEPGRAM_API_KEY,
+      OPENAI_API_KEY:   !!OPENAI_API_KEY,
+      ELEVENLABS_KEY:   !!ELEVENLABS_KEY,
+      ELEVENLABS_VOICE
+    },
+    openai: null,
+    elevenlabs: null
+  };
+
+  // Test OpenAI
+  try {
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content: 'Say "ok"' }], max_tokens: 5 })
+    });
+    const d = await r.json();
+    results.openai = r.ok ? 'OK: ' + d.choices?.[0]?.message?.content : 'ERROR: ' + JSON.stringify(d);
+  } catch (e) { results.openai = 'EXCEPTION: ' + e.message; }
+
+  // Test ElevenLabs
+  try {
+    const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}`, {
+      method: 'POST',
+      headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: 'test', model_id: 'eleven_turbo_v2', output_format: 'pcm_16000' })
+    });
+    results.elevenlabs = r.ok ? 'OK: got ' + r.headers.get('content-length') + ' bytes' : 'ERROR: ' + await r.text();
+  } catch (e) { results.elevenlabs = 'EXCEPTION: ' + e.message; }
+
+  res.json(results);
+});
+
 server.on('upgrade', (req, socket, head) => {
   wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
 });
