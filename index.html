@@ -1663,7 +1663,7 @@ body.modal-open{overflow:hidden}
         </div>
         <div class="topbar-actions">
           <button class="app-btn line" onclick="goHome()">Home</button>
-          <button class="app-btn soft" onclick="showPricing(currentPlan)">Get Pricing</button>
+          <button class="app-btn soft" id="getPricingBtn" onclick="showPricing(currentPlan)">Get Pricing</button>
           <button class="app-btn blue" onclick="jumpToAssist()">Generate Response</button>
         </div>
       </div>
@@ -2977,11 +2977,13 @@ function enterTesterApp(){
 
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
-  // Hide billing from paid accounts
+  // Hide billing + pricing from paid accounts
   const billingBtn = document.querySelector('.side-btn[data-page="billing"]');
   if(billingBtn) billingBtn.style.display = 'none';
   const billingMob = document.querySelector('.mob-nav-btn[data-mob-page="billing"]');
   if(billingMob) billingMob.style.display = 'none';
+  const pricingBtn = document.getElementById('getPricingBtn');
+  if(pricingBtn) pricingBtn.style.display = 'none';
   showPage('dashboard');
   resetDemoState();
   toast('Welcome, tester! Full Pro access unlocked.');
@@ -3024,11 +3026,13 @@ function enterRealApp(){
 
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
-  // Hide billing from live/paid accounts
+  // Hide billing + pricing from live/paid accounts
   const billingBtn2 = document.querySelector('.side-btn[data-page="billing"]');
   if(billingBtn2) billingBtn2.style.display = 'none';
   const billingMob2 = document.querySelector('.mob-nav-btn[data-mob-page="billing"]');
   if(billingMob2) billingMob2.style.display = 'none';
+  const pricingBtn2 = document.getElementById('getPricingBtn');
+  if(pricingBtn2) pricingBtn2.style.display = 'none';
   showPage('dashboard');
   resetDemoState();
   toast('Welcome back, Sean.');
