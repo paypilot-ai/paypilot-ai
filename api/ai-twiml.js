@@ -1,20 +1,41 @@
-module.exports = function handler(req, res) {
-  res.setHeader('Content-Type', 'text/xml');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+const OPENAI_KEY   = process.env.OPENAI_API_KEY;
+const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
+  'You are a professional AI collections agent. Be concise — respond in 1-2 sentences. Your goal is to collect payment or arrange a payment plan. Be polite and compliant.';
 
-  const railwayUrl = process.env.RAILWAY_URL;
+function xml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-  if (!railwayUrl) {
-    return res.status(500).send(`<?xml version="1.0" encoding="UTF-8"?>
-<Response><Say>AI caller is not configured. Please contact support.</Say></Response>`);
-  }
+async function ask(messages) {
+  const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
+    body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 120 })
+  });
+  const d = await r.json();
+  return d.choices?.[0]?.message?.content?.trim() || '';
+}
 
-  const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+function gatherTwiml(say, historyB64) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Connect>
-    <Stream url="wss://${railwayUrl}/twilio"/>
-  </Connect>
+  <Gather input="speech" action="/api/ai-respond?h=${historyB64}" method="POST" timeout="8" speechTimeout="auto" language="en-US">
+    <Say voice="Polly.Joanna">${xml(say)}</Say>
+  </Gather>
+  <Redirect>/api/ai-twiml</Redirect>
 </Response>`;
+}
 
-  return res.status(200).send(twiml);
+module.exports = async function handler(req, res) {
+  res.setHeader('Content-Type', 'text/xml');
+  try {
+    const greeting = await ask([
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user',   content: 'The call just connected. Give a short professional opening greeting.' }
+    ]);
+    const history = Buffer.from(JSON.stringify([{ role: 'assistant', content: greeting }])).toString('base64url');
+    res.status(200).send(gatherTwiml(greeting, history));
+  } catch (e) {
+    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say>Sorry, there was a technical issue.</Say></Response>`);
+  }
 };
