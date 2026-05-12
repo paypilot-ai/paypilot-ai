@@ -1969,64 +1969,173 @@ body.modal-open{overflow:hidden}
                   <!-- The head SVG — detailed wireframe face -->
                   <svg id="aiHeadSvg" width="185" height="225" viewBox="0 0 185 225" fill="none" xmlns="http://www.w3.org/2000/svg"
                        style="filter:drop-shadow(0 0 14px #00ff88) drop-shadow(0 0 4px rgba(0,255,136,.5));animation:aiHeadBob 3.8s ease-in-out infinite;z-index:2;">
+                    <defs>
+                      <radialGradient id="faceDepth" cx="50%" cy="42%" r="52%">
+                        <stop offset="0%" stop-color="#052010" stop-opacity="0.9"/>
+                        <stop offset="100%" stop-color="#010806" stop-opacity="0.98"/>
+                      </radialGradient>
+                    </defs>
+                    <!-- Face fill for depth -->
+                    <path d="M92 16 Q136 16 156 44 Q172 68 168 96 Q163 130 150 158 Q132 190 92 202 Q52 190 34 158 Q21 130 16 96 Q12 68 28 44 Q48 16 92 16 Z" fill="url(#faceDepth)"/>
                     <!-- Skull outline -->
-                    <ellipse cx="92" cy="82" rx="58" ry="68" stroke="#00ff88" stroke-width="1.4" fill="none" opacity="0.9"/>
-                    <!-- Jaw / chin -->
-                    <path d="M34 128 Q30 158 46 178 Q68 196 92 198 Q116 196 138 178 Q154 158 150 128" stroke="#00ff88" stroke-width="1.4" fill="none" opacity="0.9"/>
-                    <!-- Neck -->
-                    <line x1="76" y1="196" x2="70" y2="218" stroke="#00ff88" stroke-width="1.3" opacity="0.65"/>
-                    <line x1="108" y1="196" x2="114" y2="218" stroke="#00ff88" stroke-width="1.3" opacity="0.65"/>
-                    <!-- Shoulders -->
-                    <path d="M14 225 Q38 214 70 218" stroke="#00ff88" stroke-width="1.1" fill="none" opacity="0.45"/>
-                    <path d="M170 225 Q146 214 114 218" stroke="#00ff88" stroke-width="1.1" fill="none" opacity="0.45"/>
-                    <!-- Horizontal mesh lines across face -->
-                    <line x1="38" y1="52"  x2="146" y2="52"  stroke="#00ff88" stroke-width="0.35" opacity="0.22"/>
-                    <line x1="36" y1="68"  x2="148" y2="68"  stroke="#00ff88" stroke-width="0.35" opacity="0.22"/>
-                    <line x1="36" y1="84"  x2="148" y2="84"  stroke="#00ff88" stroke-width="0.35" opacity="0.22"/>
-                    <line x1="36" y1="100" x2="148" y2="100" stroke="#00ff88" stroke-width="0.35" opacity="0.22"/>
-                    <line x1="38" y1="116" x2="146" y2="116" stroke="#00ff88" stroke-width="0.35" opacity="0.22"/>
-                    <line x1="42" y1="132" x2="142" y2="132" stroke="#00ff88" stroke-width="0.35" opacity="0.22"/>
-                    <line x1="48" y1="148" x2="136" y2="148" stroke="#00ff88" stroke-width="0.35" opacity="0.22"/>
-                    <line x1="56" y1="164" x2="128" y2="164" stroke="#00ff88" stroke-width="0.35" opacity="0.22"/>
-                    <line x1="66" y1="180" x2="118" y2="180" stroke="#00ff88" stroke-width="0.35" opacity="0.18"/>
-                    <!-- Vertical center axis -->
-                    <line x1="92" y1="14"  x2="92"  y2="198" stroke="#00ff88" stroke-width="0.35" opacity="0.18"/>
-                    <!-- Eyebrows -->
-                    <path d="M52 60 Q66 54 80 57" stroke="#00ff88" stroke-width="1.3" fill="none" opacity="0.85"/>
-                    <path d="M104 57 Q118 54 132 60" stroke="#00ff88" stroke-width="1.3" fill="none" opacity="0.85"/>
-                    <!-- Left eye -->
-                    <ellipse cx="68" cy="76" rx="14" ry="9" stroke="#00ff88" stroke-width="1.4" fill="none"/>
-                    <circle cx="68" cy="76" r="5.5" fill="#00ff88" opacity="0.88"/>
-                    <circle cx="68" cy="76" r="2.5" fill="#020c06"/>
-                    <circle cx="70" cy="74" r="1.2" fill="#00ff88" opacity="0.9"/>
-                    <!-- Right eye -->
-                    <ellipse cx="116" cy="76" rx="14" ry="9" stroke="#00ff88" stroke-width="1.4" fill="none"/>
-                    <circle cx="116" cy="76" r="5.5" fill="#00ff88" opacity="0.88"/>
-                    <circle cx="116" cy="76" r="2.5" fill="#020c06"/>
-                    <circle cx="118" cy="74" r="1.2" fill="#00ff88" opacity="0.9"/>
-                    <!-- Nose bridge + tip -->
-                    <path d="M92 88 L89 106 L84 114 M92 88 L95 106 L100 114" stroke="#00ff88" stroke-width="1" fill="none" opacity="0.55"/>
-                    <path d="M80 116 Q86 121 92 119 Q98 121 104 116" stroke="#00ff88" stroke-width="1" fill="none" opacity="0.55"/>
+                    <path d="M92 16 Q136 16 156 44 Q172 68 168 96 Q163 130 150 158 Q132 190 92 202 Q52 190 34 158 Q21 130 16 96 Q12 68 28 44 Q48 16 92 16 Z" stroke="#00ff88" stroke-width="1.5" fill="none" opacity="0.88"/>
+                    <!-- Temporal ridge lines -->
+                    <path d="M56 20 Q36 40 34 66" stroke="#00ff88" stroke-width="0.6" fill="none" opacity="0.38"/>
+                    <path d="M128 20 Q148 40 150 66" stroke="#00ff88" stroke-width="0.6" fill="none" opacity="0.38"/>
+
+                    <!-- Face mesh — curved rows following surface -->
+                    <path d="M48 50  Q92 44  136 50"  stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.18"/>
+                    <path d="M38 66  Q92 60  146 66"  stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.18"/>
+                    <path d="M36 82  Q92 76  148 82"  stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.18"/>
+                    <path d="M36 98  Q92 92  148 98"  stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.18"/>
+                    <path d="M38 114 Q92 108 146 114" stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.16"/>
+                    <path d="M42 130 Q92 124 142 130" stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.15"/>
+                    <path d="M48 146 Q92 140 136 146" stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.14"/>
+                    <path d="M56 162 Q92 156 128 162" stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.12"/>
+                    <path d="M66 178 Q92 173 118 178" stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.10"/>
+                    <!-- Vertical mesh columns -->
+                    <path d="M66 28 Q62 92 64 178" stroke="#00ff88" stroke-width="0.28" fill="none" opacity="0.13"/>
+                    <path d="M118 28 Q122 92 120 178" stroke="#00ff88" stroke-width="0.28" fill="none" opacity="0.13"/>
+                    <path d="M46 46 Q40 92 54 166" stroke="#00ff88" stroke-width="0.25" fill="none" opacity="0.10"/>
+                    <path d="M138 46 Q144 92 130 166" stroke="#00ff88" stroke-width="0.25" fill="none" opacity="0.10"/>
+                    <line x1="92" y1="16" x2="92" y2="202" stroke="#00ff88" stroke-width="0.3" opacity="0.16"/>
+
+                    <!-- Ears — detailed with helix + canal -->
+                    <path d="M32 70 Q20 82 18 98 Q17 114 22 124 Q27 132 34 130" stroke="#00ff88" stroke-width="1.3" fill="none" opacity="0.72"/>
+                    <path d="M32 70 Q28 82 29 98 Q30 112 34 122" stroke="#00ff88" stroke-width="0.7" fill="none" opacity="0.32"/>
+                    <ellipse cx="24" cy="98" rx="3" ry="6" stroke="#00ff88" stroke-width="0.6" fill="none" opacity="0.38"/>
+                    <path d="M22 88 Q24 95 23 100 Q22 105 24 110" stroke="#00ff88" stroke-width="0.45" fill="none" opacity="0.28"/>
+                    <path d="M152 70 Q164 82 166 98 Q167 114 162 124 Q157 132 150 130" stroke="#00ff88" stroke-width="1.3" fill="none" opacity="0.72"/>
+                    <path d="M152 70 Q156 82 155 98 Q154 112 150 122" stroke="#00ff88" stroke-width="0.7" fill="none" opacity="0.32"/>
+                    <ellipse cx="160" cy="98" rx="3" ry="6" stroke="#00ff88" stroke-width="0.6" fill="none" opacity="0.38"/>
+                    <path d="M162 88 Q160 95 161 100 Q162 105 160 110" stroke="#00ff88" stroke-width="0.45" fill="none" opacity="0.28"/>
+
+                    <!-- Brow ridge -->
+                    <path d="M44 62 Q68 56 88 60" stroke="#00ff88" stroke-width="0.7" fill="none" opacity="0.42"/>
+                    <path d="M96 60 Q116 56 140 62" stroke="#00ff88" stroke-width="0.7" fill="none" opacity="0.42"/>
+
+                    <!-- Eyebrows — tapered arch -->
+                    <path d="M48 58 Q64 50 82 54 Q86 55 87 58" stroke="#00ff88" stroke-width="2.4" fill="none" opacity="0.92" stroke-linecap="round"/>
+                    <path d="M97 58 Q98 55 102 54 Q120 50 136 58" stroke="#00ff88" stroke-width="2.4" fill="none" opacity="0.92" stroke-linecap="round"/>
+
+                    <!-- Left eye socket shadow -->
+                    <path d="M46 74 Q50 64 68 63 Q86 62 90 74 Q88 88 68 90 Q46 88 46 74 Z" stroke="#00ff88" stroke-width="0.45" fill="rgba(0,255,136,0.035)" opacity="0.5"/>
+                    <!-- Left upper eyelid -->
+                    <path d="M49 78 Q58 68 68 67 Q78 68 87 78" stroke="#00ff88" stroke-width="1.8" fill="none" opacity="0.95" stroke-linecap="round"/>
+                    <!-- Left lower eyelid -->
+                    <path d="M49 78 Q58 86 68 87 Q78 86 87 78" stroke="#00ff88" stroke-width="1.0" fill="none" opacity="0.72" stroke-linecap="round"/>
+                    <!-- Left eyelid crease -->
+                    <path d="M52 74 Q68 68 84 74" stroke="#00ff88" stroke-width="0.45" fill="none" opacity="0.28"/>
+                    <!-- Left iris + pupil -->
+                    <circle cx="68" cy="78" r="9.5" stroke="#00ff88" stroke-width="1.1" fill="rgba(0,255,136,0.07)"/>
+                    <circle cx="68" cy="78" r="7" stroke="#00ff88" stroke-width="0.4" fill="none" opacity="0.45"/>
+                    <circle cx="68" cy="78" r="4.5" stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.35"/>
+                    <circle cx="68" cy="78" r="3.8" fill="#010806"/>
+                    <!-- Left iris rays -->
+                    <path d="M68 69 L68 68.2" stroke="#00ff88" stroke-width="0.5" opacity="0.55"/>
+                    <path d="M76 72 L76.6 71.4" stroke="#00ff88" stroke-width="0.5" opacity="0.55"/>
+                    <path d="M60 72 L59.4 71.4" stroke="#00ff88" stroke-width="0.5" opacity="0.55"/>
+                    <path d="M77 78 L77.8 78" stroke="#00ff88" stroke-width="0.5" opacity="0.55"/>
+                    <path d="M59 78 L58.2 78" stroke="#00ff88" stroke-width="0.5" opacity="0.55"/>
+                    <!-- Left corneal glint -->
+                    <circle cx="71" cy="74" r="2.2" fill="#00ff88" opacity="0.92"/>
+                    <circle cx="65" cy="80" r="0.9" fill="#00ff88" opacity="0.48"/>
+
+                    <!-- Right eye socket shadow -->
+                    <path d="M94 74 Q98 64 116 63 Q134 62 138 74 Q136 88 116 90 Q94 88 94 74 Z" stroke="#00ff88" stroke-width="0.45" fill="rgba(0,255,136,0.035)" opacity="0.5"/>
+                    <!-- Right upper eyelid -->
+                    <path d="M97 78 Q106 68 116 67 Q126 68 135 78" stroke="#00ff88" stroke-width="1.8" fill="none" opacity="0.95" stroke-linecap="round"/>
+                    <!-- Right lower eyelid -->
+                    <path d="M97 78 Q106 86 116 87 Q126 86 135 78" stroke="#00ff88" stroke-width="1.0" fill="none" opacity="0.72" stroke-linecap="round"/>
+                    <!-- Right eyelid crease -->
+                    <path d="M100 74 Q116 68 132 74" stroke="#00ff88" stroke-width="0.45" fill="none" opacity="0.28"/>
+                    <!-- Right iris + pupil -->
+                    <circle cx="116" cy="78" r="9.5" stroke="#00ff88" stroke-width="1.1" fill="rgba(0,255,136,0.07)"/>
+                    <circle cx="116" cy="78" r="7" stroke="#00ff88" stroke-width="0.4" fill="none" opacity="0.45"/>
+                    <circle cx="116" cy="78" r="4.5" stroke="#00ff88" stroke-width="0.3" fill="none" opacity="0.35"/>
+                    <circle cx="116" cy="78" r="3.8" fill="#010806"/>
+                    <!-- Right iris rays -->
+                    <path d="M116 69 L116 68.2" stroke="#00ff88" stroke-width="0.5" opacity="0.55"/>
+                    <path d="M124 72 L124.6 71.4" stroke="#00ff88" stroke-width="0.5" opacity="0.55"/>
+                    <path d="M108 72 L107.4 71.4" stroke="#00ff88" stroke-width="0.5" opacity="0.55"/>
+                    <path d="M125 78 L125.8 78" stroke="#00ff88" stroke-width="0.5" opacity="0.55"/>
+                    <path d="M107 78 L106.2 78" stroke="#00ff88" stroke-width="0.5" opacity="0.55"/>
+                    <!-- Right corneal glint -->
+                    <circle cx="119" cy="74" r="2.2" fill="#00ff88" opacity="0.92"/>
+                    <circle cx="113" cy="80" r="0.9" fill="#00ff88" opacity="0.48"/>
+
+                    <!-- Nose bridge -->
+                    <path d="M84 90 Q88 87 92 87 Q96 87 100 90" stroke="#00ff88" stroke-width="0.65" fill="none" opacity="0.48"/>
+                    <!-- Nose sides -->
+                    <path d="M84 90 L80 108 Q77 116 76 122" stroke="#00ff88" stroke-width="1.05" fill="none" opacity="0.62"/>
+                    <path d="M100 90 L104 108 Q107 116 108 122" stroke="#00ff88" stroke-width="1.05" fill="none" opacity="0.62"/>
+                    <!-- Nose tip -->
+                    <path d="M76 122 Q82 128 92 127 Q102 128 108 122" stroke="#00ff88" stroke-width="1.25" fill="none" opacity="0.75"/>
+                    <!-- Nostril wings -->
+                    <path d="M76 122 Q70 126 71 132 Q74 136 79 134" stroke="#00ff88" stroke-width="1.0" fill="none" opacity="0.65"/>
+                    <path d="M108 122 Q114 126 113 132 Q110 136 105 134" stroke="#00ff88" stroke-width="1.0" fill="none" opacity="0.65"/>
+                    <!-- Nostrils (filled) -->
+                    <ellipse cx="76" cy="129" rx="4.2" ry="3.2" stroke="#00ff88" stroke-width="0.55" fill="#010806" opacity="0.62"/>
+                    <ellipse cx="108" cy="129" rx="4.2" ry="3.2" stroke="#00ff88" stroke-width="0.55" fill="#010806" opacity="0.62"/>
+                    <!-- Philtrum -->
+                    <path d="M87 133 Q89.5 138 92 139 Q94.5 138 97 133" stroke="#00ff88" stroke-width="0.65" fill="none" opacity="0.38"/>
+                    <!-- Nasolabial folds -->
+                    <path d="M74 126 Q68 140 70 152" stroke="#00ff88" stroke-width="0.55" fill="none" opacity="0.28"/>
+                    <path d="M110 126 Q116 140 114 152" stroke="#00ff88" stroke-width="0.55" fill="none" opacity="0.28"/>
+
                     <!-- Cheekbones -->
-                    <path d="M34 102 Q48 110 62 107" stroke="#00ff88" stroke-width="0.8" fill="none" opacity="0.4"/>
-                    <path d="M150 102 Q136 110 122 107" stroke="#00ff88" stroke-width="0.8" fill="none" opacity="0.4"/>
-                    <!-- Left ear -->
-                    <path d="M34 74 Q26 84 28 98 Q30 112 36 116" stroke="#00ff88" stroke-width="1.2" fill="none" opacity="0.7"/>
-                    <path d="M34 74 Q32 84 33 96 Q34 106 36 116" stroke="#00ff88" stroke-width="0.6" fill="none" opacity="0.3"/>
-                    <!-- Right ear -->
-                    <path d="M150 74 Q158 84 156 98 Q154 112 148 116" stroke="#00ff88" stroke-width="1.2" fill="none" opacity="0.7"/>
-                    <path d="M150 74 Q152 84 151 96 Q150 106 148 116" stroke="#00ff88" stroke-width="0.6" fill="none" opacity="0.3"/>
-                    <!-- Mouth (animated) -->
-                    <path id="aiMouth" d="M72 154 Q92 162 112 154" stroke="#00ff88" stroke-width="2" fill="none" opacity="0.95"/>
-                    <!-- Chin line -->
-                    <path d="M89 188 Q92 192 95 188" stroke="#00ff88" stroke-width="0.8" fill="none" opacity="0.35"/>
-                    <!-- Data node dots at key landmarks -->
-                    <circle cx="68"  cy="76"  r="1.8" fill="#00ff88" opacity="0.4"/>
-                    <circle cx="116" cy="76"  r="1.8" fill="#00ff88" opacity="0.4"/>
-                    <circle cx="92"  cy="119" r="1.8" fill="#00ff88" opacity="0.4"/>
-                    <circle cx="92"  cy="154" r="1.8" fill="#00ff88" opacity="0.4"/>
-                    <circle cx="34"  cy="98"  r="1.5" fill="#00ff88" opacity="0.35"/>
-                    <circle cx="150" cy="98"  r="1.5" fill="#00ff88" opacity="0.35"/>
+                    <path d="M34 106 Q46 112 62 112 Q68 111 72 109" stroke="#00ff88" stroke-width="0.85" fill="none" opacity="0.42"/>
+                    <path d="M150 106 Q138 112 122 112 Q116 111 112 109" stroke="#00ff88" stroke-width="0.85" fill="none" opacity="0.42"/>
+
+                    <!-- Upper lip — Cupid's bow -->
+                    <path d="M74 147 Q82 141 88 143 Q92 144 96 143 Q102 141 110 147" stroke="#00ff88" stroke-width="1.1" fill="none" opacity="0.68"/>
+                    <!-- Upper lip base -->
+                    <path d="M74 147 Q92 152 110 147" stroke="#00ff88" stroke-width="1.2" fill="none" opacity="0.72"/>
+                    <!-- Animated mouth opening -->
+                    <path id="aiMouth" d="M78 156 Q92 162 106 156" stroke="#00ff88" stroke-width="2.4" fill="none" opacity="0.95" stroke-linecap="round"/>
+                    <!-- Lower lip -->
+                    <path d="M74 156 Q92 168 110 156" stroke="#00ff88" stroke-width="0.95" fill="rgba(0,255,136,0.04)" opacity="0.62"/>
+                    <!-- Lip corners -->
+                    <path d="M74 147 L74 156" stroke="#00ff88" stroke-width="0.9" opacity="0.55"/>
+                    <path d="M110 147 L110 156" stroke="#00ff88" stroke-width="0.9" opacity="0.55"/>
+                    <!-- Mentolabial crease -->
+                    <path d="M80 170 Q92 174 104 170" stroke="#00ff88" stroke-width="0.55" fill="none" opacity="0.28"/>
+
+                    <!-- Jaw / mandible -->
+                    <path d="M34 132 Q28 158 34 178 Q44 196 62 203" stroke="#00ff88" stroke-width="1.35" fill="none" opacity="0.8"/>
+                    <path d="M150 132 Q156 158 150 178 Q140 196 122 203" stroke="#00ff88" stroke-width="1.35" fill="none" opacity="0.8"/>
+                    <!-- Chin -->
+                    <path d="M62 203 Q77 208 92 208 Q107 208 122 203" stroke="#00ff88" stroke-width="1.35" fill="none" opacity="0.8"/>
+                    <!-- Chin cleft -->
+                    <path d="M89 203 Q92 207 95 203" stroke="#00ff88" stroke-width="0.65" fill="none" opacity="0.38"/>
+
+                    <!-- Neck muscles -->
+                    <path d="M74 206 Q66 215 62 225" stroke="#00ff88" stroke-width="1.1" fill="none" opacity="0.58"/>
+                    <path d="M110 206 Q118 215 122 225" stroke="#00ff88" stroke-width="1.1" fill="none" opacity="0.58"/>
+                    <path d="M80 206 Q76 216 74 225" stroke="#00ff88" stroke-width="0.75" fill="none" opacity="0.42"/>
+                    <path d="M104 206 Q108 216 110 225" stroke="#00ff88" stroke-width="0.75" fill="none" opacity="0.42"/>
+                    <!-- Thyroid cartilage -->
+                    <path d="M88 216 Q92 220 96 216 Q94 222 92 223 Q90 222 88 216" stroke="#00ff88" stroke-width="0.6" fill="none" opacity="0.32"/>
+
+                    <!-- Shoulders -->
+                    <path d="M10 225 Q32 216 62 219 Q74 220 82 221" stroke="#00ff88" stroke-width="1.1" fill="none" opacity="0.38"/>
+                    <path d="M174 225 Q152 216 122 219 Q110 220 102 221" stroke="#00ff88" stroke-width="1.1" fill="none" opacity="0.38"/>
+
+                    <!-- Biometric landmark dots -->
+                    <circle cx="68"  cy="78"  r="1.6" fill="#00ff88" opacity="0.5"/>
+                    <circle cx="116" cy="78"  r="1.6" fill="#00ff88" opacity="0.5"/>
+                    <circle cx="92"  cy="127" r="1.5" fill="#00ff88" opacity="0.44"/>
+                    <circle cx="92"  cy="152" r="1.5" fill="#00ff88" opacity="0.44"/>
+                    <circle cx="92"  cy="208" r="1.4" fill="#00ff88" opacity="0.38"/>
+                    <circle cx="34"  cy="132" r="1.3" fill="#00ff88" opacity="0.34"/>
+                    <circle cx="150" cy="132" r="1.3" fill="#00ff88" opacity="0.34"/>
+                    <circle cx="50"  cy="58"  r="1.2" fill="#00ff88" opacity="0.4"/>
+                    <circle cx="134" cy="58"  r="1.2" fill="#00ff88" opacity="0.4"/>
+                    <circle cx="74"  cy="147" r="1.1" fill="#00ff88" opacity="0.38"/>
+                    <circle cx="110" cy="147" r="1.1" fill="#00ff88" opacity="0.38"/>
+                    <circle cx="76"  cy="129" r="1.0" fill="#00ff88" opacity="0.32"/>
+                    <circle cx="108" cy="129" r="1.0" fill="#00ff88" opacity="0.32"/>
+                    <circle cx="92"  cy="87"  r="1.0" fill="#00ff88" opacity="0.32"/>
                   </svg>
                 </div>
 
@@ -4322,12 +4431,12 @@ function startMouthAnimation(){
   if(!mouth) return;
   let phase = 0;
   const frames = [
-    'M72 154 Q92 162 112 154',
-    'M72 154 Q92 168 112 154',
-    'M72 154 Q92 158 112 154',
-    'M72 154 Q92 170 112 154',
-    'M72 154 Q92 155 112 154',
-    'M72 154 Q92 165 112 154',
+    'M78 156 Q92 162 106 156',
+    'M78 156 Q92 170 106 156',
+    'M78 156 Q92 159 106 156',
+    'M78 156 Q92 172 106 156',
+    'M78 156 Q92 157 106 156',
+    'M78 156 Q92 166 106 156',
   ];
   if(aiMouthInterval) clearInterval(aiMouthInterval);
   aiMouthInterval = setInterval(() => {
