@@ -1812,8 +1812,20 @@ body.modal-open{overflow:hidden}
           </div>
         </section>
 
-        <!-- LIVE ASSIST -->
+        <!-- AI CALLER -->
         <section class="page" id="aicaller">
+          <style>
+            @keyframes aiPulseRing {
+              0%   { transform:scale(1);   opacity:.7; }
+              70%  { transform:scale(1.35);opacity:0; }
+              100% { transform:scale(1.35);opacity:0; }
+            }
+            .ai-pulse-ring {
+              position:absolute;border-radius:50%;
+              border:2px solid #00ff88;
+              animation:aiPulseRing 2s ease-out infinite;
+            }
+          </style>
           <div style="max-width:560px; margin:0 auto; padding:32px 0;">
             <div style="margin-bottom:28px;">
               <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#6b7fa3;margin-bottom:8px;">Enterprise Feature</div>
@@ -1824,26 +1836,92 @@ body.modal-open{overflow:hidden}
             <div style="background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:28px;margin-bottom:20px;">
               <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:16px;">📞 Start an AI Call</div>
 
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Customer Name</label>
+                  <input id="aiCallerName" type="text" placeholder="John Smith" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Phone Number</label>
+                  <input id="aiCallerNumber" type="tel" placeholder="(555) 000-0000" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
+                </div>
+              </div>
+
               <div style="margin-bottom:16px;">
-                <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Phone Number to Call</label>
-                <input id="aiCallerNumber" type="tel" placeholder="(555) 000-0000" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:15px;outline:none;"/>
+                <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Reason for Call</label>
+                <input id="aiCallerObjective" type="text" placeholder="e.g. Insurance quote follow-up, switch to direct deposit, accounts payable intro" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
               </div>
 
-              <div style="margin-bottom:20px;">
-                <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Call Objective</label>
-                <textarea id="aiCallerObjective" rows="3" placeholder="e.g. Collect past-due balance of $450. Offer payment plan if needed. Account #12345." style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;resize:vertical;font-family:inherit;"></textarea>
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:20px;">
+                <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:12px;">📄 Agreement (Optional — send if sale closes)</div>
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Your Email (reply-to sender)</label>
+                  <input id="aiSenderEmail" type="email" placeholder="you@yourcompany.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Customer Email</label>
+                  <input id="aiCallerEmail" type="email" placeholder="customer@email.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">DocuSign Link</label>
+                  <input id="aiCallerDocuSign" type="url" placeholder="https://docusign.net/..." style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
+                </div>
               </div>
 
-              <button id="aiCallBtn" onclick="startAiCall()" style="width:100%;padding:14px;background:#1a6fff;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">🤖 Launch AI Call</button>
+              <button id="aiCallBtn" onclick="startAiCall()" style="width:100%;padding:14px;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.03em;">🤖 Launch AI Call</button>
             </div>
 
-            <div id="aiCallStatus" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:20px;padding:24px;">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <div style="width:10px;height:10px;border-radius:50%;background:#16a34a;animation:pulse 1.5s infinite;"></div>
-                <div style="font-weight:700;color:#15803d;" id="aiCallStatusText">AI Call in progress...</div>
+            <!-- MATRIX AI AVATAR STATUS PANEL -->
+            <div id="aiCallStatus" style="display:none;background:#0a0a0f;border:1px solid #1a2540;border-radius:20px;padding:28px;overflow:hidden;position:relative;">
+              <canvas id="matrixCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0.18;pointer-events:none;"></canvas>
+
+              <div style="position:relative;display:flex;flex-direction:column;align-items:center;margin-bottom:20px;">
+                <div style="position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;">
+                  <div class="ai-pulse-ring" style="width:90px;height:90px;top:15px;left:15px;animation-delay:0s;"></div>
+                  <div class="ai-pulse-ring" style="width:90px;height:90px;top:15px;left:15px;animation-delay:.6s;"></div>
+                  <div class="ai-pulse-ring" style="width:90px;height:90px;top:15px;left:15px;animation-delay:1.2s;"></div>
+                  <svg id="aiHeadSvg" width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 8px #00ff88);z-index:1;">
+                    <ellipse cx="45" cy="38" rx="26" ry="30" stroke="#00ff88" stroke-width="1.5" fill="none" opacity="0.9"/>
+                    <line x1="38" y1="66" x2="35" y2="78" stroke="#00ff88" stroke-width="1.5" opacity="0.8"/>
+                    <line x1="52" y1="66" x2="55" y2="78" stroke="#00ff88" stroke-width="1.5" opacity="0.8"/>
+                    <path d="M35 78 Q45 82 55 78" stroke="#00ff88" stroke-width="1.5" fill="none" opacity="0.7"/>
+                    <ellipse cx="36" cy="35" rx="5" ry="3.5" stroke="#00ff88" stroke-width="1.2" fill="none"/>
+                    <ellipse cx="54" cy="35" rx="5" ry="3.5" stroke="#00ff88" stroke-width="1.2" fill="none"/>
+                    <circle cx="36" cy="35" r="2" fill="#00ff88" opacity="0.9"/>
+                    <circle cx="54" cy="35" r="2" fill="#00ff88" opacity="0.9"/>
+                    <path d="M43 38 L41 46 L45 48 L49 46 L47 38" stroke="#00ff88" stroke-width="1" fill="none" opacity="0.5"/>
+                    <path id="aiMouth" d="M37 55 Q45 60 53 55" stroke="#00ff88" stroke-width="1.5" fill="none" opacity="0.8"/>
+                    <line x1="20" y1="28" x2="70" y2="28" stroke="#00ff88" stroke-width="0.4" opacity="0.2"/>
+                    <line x1="20" y1="38" x2="70" y2="38" stroke="#00ff88" stroke-width="0.4" opacity="0.2"/>
+                    <line x1="20" y1="48" x2="70" y2="48" stroke="#00ff88" stroke-width="0.4" opacity="0.2"/>
+                    <path d="M19 34 Q15 38 19 42" stroke="#00ff88" stroke-width="1.2" fill="none" opacity="0.6"/>
+                    <path d="M71 34 Q75 38 71 42" stroke="#00ff88" stroke-width="1.2" fill="none" opacity="0.6"/>
+                  </svg>
+                </div>
+
+                <div id="aiCallStatusText" style="color:#00ff88;font-weight:700;font-size:13px;margin-top:12px;letter-spacing:.1em;text-transform:uppercase;font-family:monospace;">AI CONNECTING...</div>
+                <div id="aiWaveform" style="display:flex;align-items:center;gap:3px;height:24px;margin-top:8px;">
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:4px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:10px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:18px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:24px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:16px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:8px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:14px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:22px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:12px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:6px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:20px;transition:height .1s;"></div>
+                  <div class="ai-wave-bar" style="width:3px;background:#00ff88;border-radius:2px;height:14px;transition:height .1s;"></div>
+                </div>
               </div>
-              <div id="aiCallTranscript" style="font-size:13px;color:#374151;line-height:1.7;max-height:280px;overflow-y:auto;"></div>
-              <button onclick="endAiCall()" style="margin-top:16px;padding:10px 20px;background:#ef4444;color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;">End Call</button>
+
+              <div id="aiCallTranscript" style="font-size:12px;color:#7effa0;line-height:1.8;max-height:160px;overflow-y:auto;margin-bottom:16px;font-family:monospace;background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.15);border-radius:10px;padding:12px;"></div>
+
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button onclick="endAiCall()" style="padding:10px 20px;background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.35);border-radius:10px;font-weight:600;cursor:pointer;font-family:monospace;">■ End Call</button>
+                <button id="sendAgreementBtn" onclick="sendAgreement()" style="padding:10px 20px;background:rgba(0,255,136,.12);color:#00ff88;border:1px solid rgba(0,255,136,.3);border-radius:10px;font-weight:600;cursor:pointer;font-family:monospace;">📄 Send Agreement</button>
+              </div>
             </div>
           </div>
         </section>
@@ -4024,7 +4102,58 @@ async function endTwilioCall(){
 
 // ── AI Auto-Caller ──────────────────────────────────────────────
 let activeAiCallSid = null;
-let aiMonitorWs = null;
+let aiMatrixInterval = null;
+let aiWaveInterval  = null;
+let aiMouthInterval = null;
+
+function startMatrixAnimation(){
+  const canvas = document.getElementById('matrixCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width  = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  const W = canvas.width, H = canvas.height;
+  const cols = Math.floor(W / 14);
+  const drops = Array(cols).fill(1);
+  const chars = '01アイウエオカキクケコサシスセソABCDEFGHIJKLMNOP';
+  if(aiMatrixInterval) clearInterval(aiMatrixInterval);
+  aiMatrixInterval = setInterval(() => {
+    ctx.fillStyle = 'rgba(10,10,15,0.05)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#00ff88';
+    ctx.font = '12px monospace';
+    drops.forEach((y, i) => {
+      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 14, y * 14);
+      if(y * 14 > H && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    });
+  }, 50);
+}
+
+function stopMatrixAnimation(){
+  if(aiMatrixInterval){ clearInterval(aiMatrixInterval); aiMatrixInterval = null; }
+  if(aiWaveInterval){   clearInterval(aiWaveInterval);   aiWaveInterval   = null; }
+  if(aiMouthInterval){  clearInterval(aiMouthInterval);  aiMouthInterval  = null; }
+}
+
+function startWaveAnimation(){
+  const bars = document.querySelectorAll('.ai-wave-bar');
+  if(aiWaveInterval) clearInterval(aiWaveInterval);
+  aiWaveInterval = setInterval(() => {
+    bars.forEach(b => { b.style.height = (Math.random() * 22 + 2) + 'px'; });
+  }, 120);
+}
+
+function startMouthAnimation(){
+  const mouth = document.getElementById('aiMouth');
+  if(!mouth) return;
+  let open = false;
+  if(aiMouthInterval) clearInterval(aiMouthInterval);
+  aiMouthInterval = setInterval(() => {
+    open = !open;
+    mouth.setAttribute('d', open ? 'M37 55 Q45 63 53 55' : 'M37 55 Q45 58 53 55');
+  }, 280);
+}
 
 async function startAiCall(){
   if(!isLiveUser){
@@ -4036,69 +4165,80 @@ async function startAiCall(){
     toast('Enter a valid 10-digit phone number.');
     return;
   }
-  const objective = document.getElementById('aiCallerObjective').value.trim();
-
-  document.getElementById('aiCallBtn').disabled = true;
-  document.getElementById('aiCallBtn').textContent = 'Dialing...';
+  const customerName = document.getElementById('aiCallerName').value.trim();
+  const callReason   = document.getElementById('aiCallerObjective').value.trim();
+  const btn = document.getElementById('aiCallBtn');
+  btn.disabled = true;
+  btn.textContent = 'Dialing...';
 
   try {
     const resp = await fetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number, objective })
+      body: JSON.stringify({ toNumber: number, customerName, callReason })
     });
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Call failed');
 
     activeAiCallSid = data.callSid;
     document.getElementById('aiCallStatus').style.display = 'block';
-    document.getElementById('aiCallBtn').textContent = 'Call Active';
     document.getElementById('aiCallTranscript').innerHTML = '';
-    toast('AI call launched. Dialing ' + number + '...');
+    document.getElementById('aiCallStatusText').textContent = 'AI DIALING...';
+    btn.textContent = 'Call Active';
+    toast('AI call launched — dialing ' + number + '...');
 
-    // Connect browser monitor to Railway for live transcript
-    connectAiMonitor(data.callSid);
+    startMatrixAnimation();
+    startWaveAnimation();
+    startMouthAnimation();
 
   } catch(e) {
     toast('AI call failed: ' + e.message);
-    document.getElementById('aiCallBtn').disabled = false;
-    document.getElementById('aiCallBtn').textContent = '🤖 Launch AI Call';
+    btn.disabled = false;
+    btn.textContent = '🤖 Launch AI Call';
   }
 }
 
-function connectAiMonitor(callSid){
-  const railwayUrl = 'paypilot-ai-production.up.railway.app';
-  if(aiMonitorWs) aiMonitorWs.close();
-
-  aiMonitorWs = new WebSocket(`wss://${railwayUrl}/browser?callSid=${callSid}`);
-
-  aiMonitorWs.onmessage = (e) => {
-    const msg = JSON.parse(e.data);
-    const box = document.getElementById('aiCallTranscript');
-    if(msg.event === 'transcript'){
-      box.innerHTML += `<div style="margin-bottom:8px;"><span style="font-weight:600;color:#1e40af;">Prospect:</span> ${msg.text}</div>`;
-    } else if(msg.event === 'ai-response'){
-      box.innerHTML += `<div style="margin-bottom:8px;"><span style="font-weight:600;color:#15803d;">AI:</span> ${msg.text}</div>`;
-      document.getElementById('aiCallStatusText').textContent = 'AI is responding...';
-    } else if(msg.event === 'ai-done'){
-      document.getElementById('aiCallStatusText').textContent = 'AI Call in progress — listening...';
-    } else if(msg.event === 'call-ended'){
-      document.getElementById('aiCallStatusText').textContent = 'Call ended';
-      endAiCall();
-    }
-    box.scrollTop = box.scrollHeight;
-  };
-
-  aiMonitorWs.onerror = () => console.log('AI monitor ws error');
-}
-
 function endAiCall(){
-  if(aiMonitorWs){ aiMonitorWs.close(); aiMonitorWs = null; }
+  stopMatrixAnimation();
   activeAiCallSid = null;
   document.getElementById('aiCallStatus').style.display = 'none';
-  document.getElementById('aiCallBtn').disabled = false;
-  document.getElementById('aiCallBtn').textContent = '🤖 Launch AI Call';
+  const btn = document.getElementById('aiCallBtn');
+  btn.disabled = false;
+  btn.textContent = '🤖 Launch AI Call';
   toast('AI call ended.');
+}
+
+async function sendAgreement(){
+  const customerEmail = document.getElementById('aiCallerEmail').value.trim();
+  const docuSignLink  = document.getElementById('aiCallerDocuSign').value.trim();
+  const customerName  = document.getElementById('aiCallerName').value.trim();
+  const callReason    = document.getElementById('aiCallerObjective').value.trim();
+  const senderEmail   = document.getElementById('aiSenderEmail').value.trim();
+
+  if(!customerEmail){ toast('Enter the customer email first.'); return; }
+  if(!docuSignLink){  toast('Enter the DocuSign link first.');  return; }
+
+  const btn = document.getElementById('sendAgreementBtn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch('/api/send-agreement', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customerName, customerEmail, docuSignLink, callReason, senderEmail })
+    });
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.error || 'Failed to send');
+    toast('Agreement sent to ' + customerEmail + '!');
+    const box = document.getElementById('aiCallTranscript');
+    if(box) box.innerHTML += `<div style="color:#00ff88;margin-top:6px;">[ Agreement emailed to ${customerEmail} ]</div>`;
+  } catch(e) {
+    toast('Send failed: ' + e.message);
+  } finally {
+    btn.textContent = '📄 Send Agreement';
+    btn.disabled = false;
+  }
 }
 
 function speakTranslated(){
