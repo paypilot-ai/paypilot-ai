@@ -174,38 +174,84 @@ async function speakToTwilio(session, text) {
         headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_turbo_v2_5',
-          output_format: 'ulaw_8000',
+          model_id: 'eleven_turbo_v2',
+          output_format: 'pcm_16000',
           voice_settings: { stability: 0.5, similarity_boost: 0.75 }
         })
       }
     );
 
     if (!resp.ok) {
-      console.error('[elevenlabs]', await resp.text());
+      const err = await resp.text();
+      console.error('[elevenlabs] error:', err);
+      session.state = 'listening';
+      pushToBrowser(session, { event: 'ai-done' });
       return;
     }
 
     const reader = resp.body.getReader();
+    let buffer = Buffer.alloc(0);
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       if (!value?.length) continue;
       if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
-      for (let i = 0; i < value.length; i += 160) {
-        const chunk = value.slice(i, i + 160);
+
+      // Accumulate PCM16 16kHz data, convert to mulaw 8kHz in 160-sample chunks
+      buffer = Buffer.concat([buffer, Buffer.from(value)]);
+
+      // Process complete 320-byte chunks (160 samples at 16kHz = 160 samples at 8kHz after downsample)
+      while (buffer.length >= 320) {
+        const chunk = buffer.slice(0, 320);
+        buffer = buffer.slice(320);
+        const pcm16k = new Int16Array(chunk.buffer, chunk.byteOffset, 160);
+        const mulaw = pcm16ToMulaw(pcm16k);
         session.twilioWs.send(JSON.stringify({
           event: 'media',
           streamSid: session.streamSid,
-          media: { payload: Buffer.from(chunk).toString('base64') }
+          media: { payload: mulaw.toString('base64') }
         }));
       }
     }
+
+    // Flush remaining samples
+    if (buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
+      const pcm16k = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
+      const mulaw = pcm16ToMulaw(pcm16k);
+      session.twilioWs.send(JSON.stringify({
+        event: 'media',
+        streamSid: session.streamSid,
+        media: { payload: mulaw.toString('base64') }
+      }));
+    }
+
   } catch (e) {
     console.error('[elevenlabs] stream error:', e.message);
   }
 
+  session.state = 'listening';
   pushToBrowser(session, { event: 'ai-done' });
+}
+
+// PCM16 16kHz → mulaw 8kHz (downsample 2:1 + encode)
+function pcm16ToMulaw(samples) {
+  const BIAS = 0x84;
+  const CLIP = 32635;
+  const out = Buffer.allocUnsafe(Math.floor(samples.length / 2));
+  for (let i = 0; i < out.length; i++) {
+    let s = samples[i * 2]; // downsample: take every other sample
+    const sign = s < 0 ? 0x80 : 0;
+    if (sign) s = -s;
+    if (s > CLIP) s = CLIP;
+    s += BIAS;
+    let exp = 7;
+    let mask = 0x4000;
+    while (exp > 0 && (s & mask) === 0) { exp--; mask >>= 1; }
+    const mantissa = (s >> (exp + 3)) & 0x0F;
+    out[i] = ~(sign | (exp << 4) | mantissa) & 0xFF;
+  }
+  return out;
 }
 
 function pushToBrowser(session, data) {
