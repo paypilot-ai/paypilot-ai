@@ -20,12 +20,14 @@ const sessions = new Map();
 app.get('/health', (req, res) => res.json({ ok: true, activeCalls: sessions.size }));
 
 app.get('/test', async (req, res) => {
+  // Read directly from process.env to bypass module-load caching
   const results = {
     env: {
-      DEEPGRAM_API_KEY: !!DEEPGRAM_API_KEY,
-      OPENAI_API_KEY:   !!OPENAI_API_KEY,
-      ELEVENLABS_KEY:   !!ELEVENLABS_KEY,
-      ELEVENLABS_VOICE
+      DEEPGRAM_API_KEY:  !!process.env.DEEPGRAM_API_KEY,
+      OPENAI_API_KEY:    !!process.env.OPENAI_API_KEY,
+      ELEVENLABS_API_KEY:!!process.env.ELEVENLABS_API_KEY,
+      ELEVENLABS_VOICE_ID: process.env.ELEVENLABS_VOICE_ID || '(not set)',
+      allKeys: Object.keys(process.env).filter(k => !k.includes('SECRET') && !k.includes('TOKEN') && !k.includes('KEY') && !k.includes('SID'))
     },
     openai: null,
     elevenlabs: null
