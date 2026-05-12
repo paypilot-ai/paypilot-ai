@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Twilio credentials not configured' });
   }
 
-  const { toNumber } = req.body || {};
+  const { toNumber, customerName, callReason } = req.body || {};
   if (!toNumber) return res.status(400).json({ error: 'Phone number required' });
 
   const cleaned = toNumber.replace(/\D/g, '');
@@ -21,16 +21,14 @@ module.exports = async function handler(req, res) {
 
   try {
     const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
-    const twimlUrl = `https://paypilot-ai.vercel.app/api/ai-twiml`;
+    const params = new URLSearchParams({ n: customerName || '', r: callReason || '' });
+    const twimlUrl = `https://paypilot-ai.vercel.app/api/ai-twiml?${params}`;
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
       {
         method: 'POST',
-        headers: {
-          'Authorization': 'Basic ' + credentials,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
+        headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
       }
     );
