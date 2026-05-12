@@ -8,9 +8,9 @@ module.exports = async function handler(req, res) {
   const RESEND_KEY = process.env.RESEND_API_KEY;
   if (!RESEND_KEY) return res.status(500).json({ error: 'Resend not configured' });
 
-  const { customerName, customerEmail, docuSignLink, callReason, senderEmail } = req.body || {};
+  const { customerName, customerEmail, callReason, senderEmail, fileContent, fileName } = req.body || {};
   if (!customerEmail) return res.status(400).json({ error: 'Customer email required' });
-  if (!docuSignLink)  return res.status(400).json({ error: 'DocuSign link required' });
+  if (!fileContent)   return res.status(400).json({ error: 'Agreement file required' });
 
   const name = customerName || 'there';
 
@@ -20,22 +20,24 @@ module.exports = async function handler(req, res) {
     subject: 'Your Agreement — Please Review & Sign',
     html: `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;">
-        <h2 style="color:#0f172a;">Hi ${name},</h2>
-        <p style="color:#374151;font-size:16px;line-height:1.6;">
-          Thank you for speaking with us today${callReason ? ' regarding ' + callReason : ''}.
-          As discussed, please find your agreement below.
+        <h2 style="color:#0f172a;margin-bottom:8px;">Hi ${name},</h2>
+        <p style="color:#374151;font-size:16px;line-height:1.6;margin-bottom:24px;">
+          Thank you for speaking with us today${callReason ? ' regarding <strong>' + callReason + '</strong>' : ''}.
+          Please find your agreement attached to this email.
         </p>
-        <div style="margin:32px 0;">
-          <a href="${docuSignLink}" style="background:#1a6fff;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;">
-            Review &amp; Sign Agreement
-          </a>
-        </div>
-        <p style="color:#64748b;font-size:14px;">
-          If you have any questions, feel free to reply to this email.
+        <p style="color:#374151;font-size:15px;line-height:1.6;">
+          Review it at your earliest convenience. If you have any questions, simply reply to this email.
         </p>
-        <p style="color:#64748b;font-size:14px;">— The PayPilot AI Team</p>
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:28px 0;"/>
+        <p style="color:#94a3b8;font-size:13px;">— The PayPilot AI Team</p>
       </div>
-    `
+    `,
+    attachments: [
+      {
+        filename: fileName || 'agreement.pdf',
+        content:  fileContent
+      }
+    ]
   };
 
   if (senderEmail) payload.reply_to = senderEmail;
