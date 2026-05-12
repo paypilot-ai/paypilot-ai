@@ -224,7 +224,7 @@ body.modal-open{overflow:hidden}
 .section-head p{margin:0;color:rgba(255,255,255,.58);font-size:17px;line-height:1.82;font-weight:300}
 
 /* ── FEATURES ── */
-.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:60px}
+.feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:60px}
 .feature{
   padding:30px;border-radius:22px;
   background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
@@ -4409,23 +4409,31 @@ function endAiCall(){
 
 async function sendAgreement(){
   const customerEmail = document.getElementById('aiCallerEmail').value.trim();
-  const docuSignLink  = document.getElementById('aiCallerDocuSign').value.trim();
   const customerName  = document.getElementById('aiCallerName').value.trim();
   const callReason    = document.getElementById('aiCallerObjective').value.trim();
   const senderEmail   = document.getElementById('aiSenderEmail').value.trim();
+  const fileInput     = document.getElementById('aiCallerAgreement');
+  const file          = fileInput && fileInput.files[0];
 
   if(!customerEmail){ toast('Enter the customer email first.'); return; }
-  if(!docuSignLink){  toast('Enter the DocuSign link first.');  return; }
+  if(!file){          toast('Attach an agreement file first.');  return; }
 
   const btn = document.getElementById('sendAgreementBtn');
   btn.textContent = 'Sending...';
   btn.disabled = true;
 
   try {
+    const fileContent = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = e => res(e.target.result.split(',')[1]);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
+    });
+
     const resp = await fetch('/api/send-agreement', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customerName, customerEmail, docuSignLink, callReason, senderEmail })
+      body: JSON.stringify({ customerName, customerEmail, callReason, senderEmail, fileContent, fileName: file.name })
     });
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Failed to send');
