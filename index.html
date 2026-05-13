@@ -4527,6 +4527,23 @@ async function endTwilioCall(){
 
 // ── AI Auto-Caller ──────────────────────────────────────────────
 let activeAiCallSid = null;
+let aiCallPollInterval = null;
+
+function startCallStatusPolling(sid){
+  if(aiCallPollInterval) clearInterval(aiCallPollInterval);
+  aiCallPollInterval = setInterval(async () => {
+    if(!sid) return;
+    try {
+      const resp = await fetch('/api/call-status?sid=' + sid);
+      const data = await resp.json();
+      if(['completed','failed','busy','no-answer','canceled'].includes(data.status)){
+        clearInterval(aiCallPollInterval);
+        aiCallPollInterval = null;
+        endAiCall();
+      }
+    } catch(e){}
+  }, 3000);
+}
 let aiMatrixInterval = null;
 let aiWaveInterval  = null;
 let aiMouthInterval = null;
@@ -4547,10 +4564,10 @@ function startMatrixAnimation(){
   ctx.scale(dpr, dpr);
   const W = cssW, H = cssH;
 
-  // Face is sized to fill most of the canvas
-  const SCALE = Math.min(W, H) * 0.42;
+  // Face fills most of the canvas
+  const SCALE = Math.min(W, H) * 0.50;
   const CX = W * 0.50;
-  const CY = H * 0.44;
+  const CY = H * 0.43;
 
   // ── Fibonacci sphere point cloud ───────────────────────────────────────
   // Fibonacci distribution = perfectly even coverage, no pole clustering
@@ -4654,23 +4671,28 @@ function startMatrixAnimation(){
     aiMatrixInterval = requestAnimationFrame(frame);
     tick++;
 
-    // Clear to near-black each frame (dark trail)
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    // Slow fade — keeps rain streaks long and visible
+    ctx.fillStyle = 'rgba(0,0,0,0.065)';
     ctx.fillRect(0, 0, W, H);
 
-    // ── Rain layer ───────────────────────────────────────────────────────
+    // ── Rain layer — clearly visible falling code ─────────────────────
     ctx.font = SZ + 'px monospace';
     for(let i = 0; i < cols; i++){
       const px = i * SZ;
       const py = drops[i] * SZ;
-      // Rain is dim — face dots will dominate
-      const alpha = Math.random() < 0.5 ? 0.08 + Math.random() * 0.12 : 0;
-      if(alpha > 0){
-        ctx.fillStyle = `rgba(0,200,80,${alpha})`;
-        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
+      const isLead = (drops[i] % 1) < 0.22;
+
+      if(isLead){
+        // Leading character — brightest, near-white green
+        ctx.fillStyle = 'rgba(200,255,220,0.92)';
+      } else {
+        // Body of streak — solid green, clearly readable
+        ctx.fillStyle = `rgba(0,220,90,${0.30 + Math.random() * 0.20})`;
       }
-      drops[i] += 0.5;
-      if(drops[i] * SZ > H + SZ && Math.random() > 0.97) drops[i] = Math.random() * -35;
+      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
+
+      drops[i] += 0.55;
+      if(drops[i] * SZ > H + SZ && Math.random() > 0.968) drops[i] = Math.random() * -40;
     }
 
     // ── 3D face dots ─────────────────────────────────────────────────────
@@ -4699,13 +4721,13 @@ function startMatrixAnimation(){
 
       if(sx < 0 || sx > W || sy < 0 || sy > H) continue;
 
-      const alpha = Math.min(0.96, p.bright * depth * 1.6);
-      const r     = Math.max(0.6, p.size * depth);
+      const alpha = Math.min(0.98, p.bright * depth * 1.8);
+      const r     = Math.max(0.8, p.size * depth * 1.2);
 
-      ctx.shadowBlur = r * 7 * alpha;
+      ctx.shadowBlur = r * 9 * alpha;
       ctx.beginPath();
       ctx.arc(sx, sy, r, 0, 6.2832);
-      ctx.fillStyle = `rgba(0,255,130,${alpha})`;
+      ctx.fillStyle = `rgba(0,255,140,${alpha})`;
       ctx.fill();
     }
 
@@ -4807,6 +4829,7 @@ async function startAiCall(){
       startMouthAnimation();
       startCallTimer();
     }, 220);
+    startCallStatusPolling(data.callSid);
 
   } catch(e) {
     toast('AI call failed: ' + e.message);
@@ -4816,6 +4839,7 @@ async function startAiCall(){
 }
 
 async function endAiCall(){
+  if(aiCallPollInterval){ clearInterval(aiCallPollInterval); aiCallPollInterval = null; }
   stopMatrixAnimation();
   const sid = activeAiCallSid;
   activeAiCallSid = null;
