@@ -1953,138 +1953,11 @@ body.modal-open{overflow:hidden}
               <div style="position:relative;display:flex;flex-direction:column;align-items:center;padding:28px 20px 16px;">
 
                 <!-- Orbital rings + head container -->
-                <div style="position:relative;width:280px;height:320px;display:flex;align-items:center;justify-content:center;perspective:800px;">
-                  <!-- Face canvas — fixed size, inside the avatar box -->
-                  <canvas id="matrixCanvas" width="280" height="320" style="position:absolute;top:0;left:0;width:280px;height:320px;z-index:2;pointer-events:none;display:block;"></canvas>
-
-                  <!-- Pulse rings -->
-                  <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:0s;"></div>
-                  <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:.8s;"></div>
-                  <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:1.6s;"></div>
-
-                  <!-- Orbital rings -->
-                  <div style="display:none;position:absolute;width:1 9s linear infinite;transform-style:preserve-3d;transform:rotateX(68deg);pointer-events:none;"></div>
-                  <div style="display:none;position:absolute;width:2 14s linear infinite;transform-style:preserve-3d;transform:rotateX(68deg) rotateZ(55deg);pointer-events:none;"></div>
-                  <div style="display:none;position:absolute;width:3 18s linear infinite;transform-style:preserve-3d;transform:rotateX(30deg) rotateY(20deg);pointer-events:none;"></div>
+                <div id="faceContainer" style="position:relative;width:280px;height:320px;display:flex;align-items:center;justify-content:center;">
 
                   <!-- Scan line sweeping over head -->
                   <div id="aiScanLine" style="position:absolute;left:50%;transform:translateX(-50%);width:185px;height:2px;background:linear-gradient(to right,transparent 0%,rgba(0,255,136,.7) 40%,rgba(0,255,136,.9) 50%,rgba(0,255,136,.7) 60%,transparent 100%);animation:aiScanLine 3.2s linear infinite;z-index:3;pointer-events:none;border-radius:2px;"></div>
 
-                  <!-- The head SVG — detailed wireframe face -->
-                  <svg id="aiHeadSvg" style="display:none" width="185" height="225" viewBox="0 0 185 225" fill="none" xmlns="http://www.w3.org/2000/svg"
-                       style="filter:drop-shadow(0 0 18px #00ff88) drop-shadow(0 0 6px rgba(0,255,136,.6));animation:aiHeadBob 3.8s ease-in-out infinite;z-index:2;">
-                    <defs>
-                      <radialGradient id="faceBg"     cx="50%" cy="44%" r="56%">
-                        <stop offset="0%"   stop-color="#031a0a" stop-opacity="1"/>
-                        <stop offset="100%" stop-color="#010603" stop-opacity="1"/>
-                      </radialGradient>
-                      <radialGradient id="foreheadGl" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.22"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="browGl"     cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.42"/>
-                        <stop offset="60%"  stop-color="#00ff88" stop-opacity="0.12"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="socketL"    cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#000000" stop-opacity="0.88"/>
-                        <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="socketR"    cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#000000" stop-opacity="0.88"/>
-                        <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="noseGl"     cx="50%" cy="62%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.72"/>
-                        <stop offset="38%"  stop-color="#00ff88" stop-opacity="0.36"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="cheekLGl"   cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.32"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="cheekRGl"   cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.32"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="lipGl"      cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.52"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="chinGl"     cx="50%" cy="40%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.38"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                    </defs>
-
-                    <!-- FACE SILHOUETTE — fabric draped over head -->
-                    <path d="M92 14 C136 14 164 44 166 82 C168 120 154 160 138 178 C122 196 108 208 92 210 C76 208 62 196 46 178 C30 160 16 120 18 82 C20 44 48 14 92 14 Z" fill="url(#faceBg)"/>
-                    <path d="M92 14 C136 14 164 44 166 82 C168 120 154 160 138 178 C122 196 108 208 92 210 C76 208 62 196 46 178 C30 160 16 120 18 82 C20 44 48 14 92 14 Z" stroke="#00ff88" stroke-width="1.6" fill="none" opacity="0.7"/>
-
-                    <!-- Fabric wrinkle lines radiating outward from face edge -->
-                    <path d="M164 84 L172 76"  stroke="#00ff88" stroke-width="0.55" opacity="0.22" stroke-linecap="round"/>
-                    <path d="M158 148 L166 144" stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-                    <path d="M136 184 L142 192" stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-                    <path d="M20 84 L12 76"    stroke="#00ff88" stroke-width="0.55" opacity="0.22" stroke-linecap="round"/>
-                    <path d="M26 148 L18 144"  stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-                    <path d="M48 184 L42 192"  stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-                    <path d="M62 16 L56 8"     stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-                    <path d="M122 16 L128 8"   stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-
-                    <!-- DEPTH MAP — glow where face presses out, dark where it caves in -->
-
-                    <!-- Forehead dome, gentle forward curve -->
-                    <ellipse cx="92" cy="46" rx="52" ry="32" fill="url(#foreheadGl)"/>
-
-                    <!-- Brow ridge — second most forward feature -->
-                    <ellipse cx="92" cy="66" rx="52" ry="18" fill="url(#browGl)"/>
-
-                    <!-- Eye socket depressions — fabric sinks in here -->
-                    <ellipse cx="66"  cy="82" rx="20" ry="15" fill="url(#socketL)"/>
-                    <ellipse cx="118" cy="82" rx="20" ry="15" fill="url(#socketR)"/>
-                    <!-- Faint eyeball glow seen through fabric -->
-                    <circle cx="66"  cy="81" r="6.5" fill="rgba(0,255,136,0.06)"/>
-                    <circle cx="118" cy="81" r="6.5" fill="rgba(0,255,136,0.06)"/>
-                    <circle cx="66"  cy="80" r="2.8" fill="#00ff88" opacity="0.38"/>
-                    <circle cx="118" cy="80" r="2.8" fill="#00ff88" opacity="0.38"/>
-
-                    <!-- Nose — MOST prominent, brightest -->
-                    <ellipse cx="92" cy="118" rx="26" ry="38" fill="url(#noseGl)"/>
-                    <!-- Nostril openings — dark holes pressing into fabric -->
-                    <ellipse cx="77"  cy="136" rx="6.5" ry="5.5" fill="#010806" opacity="0.95"/>
-                    <ellipse cx="107" cy="136" rx="6.5" ry="5.5" fill="#010806" opacity="0.95"/>
-                    <!-- Nose tip edge — only line on the nose, tight fabric here -->
-                    <path d="M71 130 C78 140 86 142 92 141 C98 142 106 140 113 130" stroke="#00ff88" stroke-width="1.8" fill="none" opacity="0.82" stroke-linecap="round"/>
-
-                    <!-- Cheekbone prominences -->
-                    <ellipse cx="44"  cy="114" rx="30" ry="20" fill="url(#cheekLGl)"/>
-                    <ellipse cx="140" cy="114" rx="30" ry="20" fill="url(#cheekRGl)"/>
-
-                    <!-- Lip glow -->
-                    <ellipse cx="92" cy="156" rx="28" ry="17" fill="url(#lipGl)"/>
-                    <!-- Upper lip Cupid's bow — single tight-fabric line -->
-                    <path d="M74 150 C82 143 89 146 92 148 C95 146 102 143 110 150" stroke="#00ff88" stroke-width="1.6" fill="none" opacity="0.72" stroke-linecap="round"/>
-                    <!-- Animated mouth gap -->
-                    <path id="aiMouth" d="M78 158 Q92 164 106 158" stroke="#00ff88" stroke-width="3" fill="none" opacity="0.98" stroke-linecap="round"/>
-                    <!-- Lower lip arch -->
-                    <path d="M74 158 C82 170 102 170 110 158" stroke="#00ff88" stroke-width="1.1" fill="none" opacity="0.55" stroke-linecap="round"/>
-
-                    <!-- Chin glow -->
-                    <ellipse cx="92" cy="196" rx="22" ry="16" fill="url(#chinGl)"/>
-
-                    <!-- Ears — pressed flat, just their outer curve -->
-                    <path d="M28 74 C16 88 12 104 14 118 C16 130 24 138 32 134" stroke="#00ff88" stroke-width="1.5" fill="none" opacity="0.65" stroke-linecap="round"/>
-                    <path d="M156 74 C168 88 172 104 170 118 C168 130 160 138 152 134" stroke="#00ff88" stroke-width="1.5" fill="none" opacity="0.65" stroke-linecap="round"/>
-
-                    <!-- Neck -->
-                    <path d="M74 210 C68 220 66 225 64 225" stroke="#00ff88" stroke-width="1.2" fill="none" opacity="0.5" stroke-linecap="round"/>
-                    <path d="M110 210 C116 220 118 225 120 225" stroke="#00ff88" stroke-width="1.2" fill="none" opacity="0.5" stroke-linecap="round"/>
-
-                    <!-- Shoulders -->
-                    <path d="M8 225 C30 216 58 218 76 221"  stroke="#00ff88" stroke-width="1.3" fill="none" opacity="0.36" stroke-linecap="round"/>
-                    <path d="M176 225 C154 216 126 218 108 221" stroke="#00ff88" stroke-width="1.3" fill="none" opacity="0.36" stroke-linecap="round"/>
-                  </svg>
                 </div>
 
                 <!-- Status label + call mode indicator -->
@@ -4531,109 +4404,73 @@ let aiTimerInterval = null;
 let aiCallSeconds   = 0;
 
 function startMatrixAnimation(){
-  const canvas = document.getElementById('matrixCanvas');
-  if(!canvas){ console.error('NO CANVAS'); return; }
+  const container = document.getElementById('faceContainer');
+  if(!container){ return; }
+  let canvas = document.getElementById('matrixCanvas');
+  if(canvas) canvas.remove();
+  canvas = document.createElement('canvas');
+  canvas.id = 'matrixCanvas';
+  canvas.width  = 280;
+  canvas.height = 320;
+  canvas.style.cssText = 'position:absolute;top:0;left:0;width:280px;height:320px;pointer-events:none;';
+  container.insertBefore(canvas, container.firstChild);
   const ctx = canvas.getContext('2d');
-  if(!ctx){ console.error('NO CTX'); return; }
-
-  const W = 280, H = 320;
-  canvas.width  = W;
-  canvas.height = H;
-
-  // Immediate paint — confirms canvas is live before animation loop starts
-  ctx.fillStyle = '#001a00';
-  ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#00ff88';
-  ctx.fillRect(W/2 - 40, H/2 - 10, 80, 20);
-
-  const CX = W / 2, CY = H * 0.45;
-  const FW = W * 0.42, FH = H * 0.46;
-
-  function faceDepth(px, py){
-    const nx = (px - CX) / FW, ny = (py - CY) / FH;
-    const r2 = nx*nx + ny*ny;
-    if(r2 > 1.3) return 0;
-    function g(mx,my,rx,ry){ const dx=(nx-mx)/rx,dy=(ny-my)/ry; return Math.max(0,1-dx*dx-dy*dy); }
-    let d = 0;
-    d += g( 0.00, +0.12, 0.18, 0.16) * 1.20;  // nose
-    d += g( 0.00, -0.04, 0.08, 0.30) * 0.60;  // nose bridge
-    d += g( 0.00, -0.30, 0.90, 0.10) * 0.65;  // brow
-    d += g(-0.42, +0.05, 0.24, 0.18) * 0.62;  // left cheek
-    d += g(+0.42, +0.05, 0.24, 0.18) * 0.52;  // right cheek
-    d += g( 0.00, -0.52, 0.60, 0.24) * 0.38;  // forehead
-    d += g( 0.00, +0.44, 0.22, 0.08) * 0.50;  // upper lip
-    d += g( 0.00, +0.56, 0.20, 0.09) * 0.58;  // lower lip
-    d += g( 0.00, +0.72, 0.18, 0.11) * 0.45;  // chin
-    d -= g(-0.26, -0.16, 0.20, 0.15) * 0.95;  // left eye
-    d -= g(+0.26, -0.16, 0.20, 0.15) * 0.80;  // right eye
-    d -= g(-0.68, -0.10, 0.20, 0.22) * 0.55;  // left temple
-    d -= g(+0.68, -0.10, 0.20, 0.22) * 0.45;  // right temple
-    const base = r2 < 1.0 ? 0.32 : 0;
-    return Math.max(0, Math.min(1, base + d * 0.80));
+  const W=280, H=320, CX=W/2, CY=H*0.44, FW=W*0.44, FH=H*0.47;
+  function g(nx,ny,mx,my,rx,ry){ const dx=(nx-mx)/rx,dy=(ny-my)/ry; return Math.max(0,1-dx*dx-dy*dy); }
+  function depth(px,py){
+    const nx=(px-CX)/FW, ny=(py-CY)/FH, r2=nx*nx+ny*ny;
+    if(r2>1.3) return 0;
+    let d=0;
+    d+=g(nx,ny, 0.00,+0.12,0.18,0.16)*1.1;
+    d+=g(nx,ny, 0.00,-0.04,0.08,0.30)*0.55;
+    d+=g(nx,ny, 0.00,-0.30,0.90,0.10)*0.60;
+    d+=g(nx,ny,-0.42,+0.05,0.24,0.18)*0.60;
+    d+=g(nx,ny,+0.42,+0.05,0.24,0.18)*0.48;
+    d+=g(nx,ny, 0.00,-0.52,0.58,0.22)*0.35;
+    d+=g(nx,ny, 0.00,+0.44,0.22,0.07)*0.48;
+    d+=g(nx,ny, 0.00,+0.56,0.19,0.08)*0.52;
+    d+=g(nx,ny, 0.00,+0.72,0.17,0.10)*0.42;
+    d-=g(nx,ny,-0.27,-0.16,0.19,0.14)*0.90;
+    d-=g(nx,ny,+0.27,-0.16,0.19,0.14)*0.75;
+    d-=g(nx,ny,-0.70,-0.10,0.19,0.20)*0.50;
+    d-=g(nx,ny,+0.70,-0.10,0.19,0.20)*0.42;
+    return Math.max(0, Math.min(1, (r2<1?0.30:0)+d*0.78));
   }
-
-  // Pre-build depth map for performance
-  const DS = 6;
-  const cols = Math.ceil(W/DS)+1, rows = Math.ceil(H/DS)+1;
-  const depths = new Float32Array(cols * rows);
-  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++)
-    depths[r*cols+c] = faceDepth(c*DS, r*DS);
-
-  // Mouth state
-  let mouthAmp = 0, mouthPhase = 0;
-  const flicker = new Float32Array(cols*rows);
-  for(let i=0;i<flicker.length;i++) flicker[i] = Math.random()*Math.PI*2;
-
-  let tick = 0;
-  if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval = null; }
-
+  const DS=6, gc=Math.ceil(W/DS)+1, gr=Math.ceil(H/DS)+1;
+  const map=new Float32Array(gc*gr);
+  for(let r=0;r<gr;r++) for(let c=0;c<gc;c++) map[r*gc+c]=depth(c*DS,r*DS);
+  const flk=new Float32Array(gc*gr);
+  for(let i=0;i<flk.length;i++) flk[i]=Math.random()*6.28;
+  let mAmp=0, mPhase=0, tick=0;
+  if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval=null; }
   function frame(){
-    aiMatrixInterval = requestAnimationFrame(frame);
+    aiMatrixInterval=requestAnimationFrame(frame);
     tick++;
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, W, H);
-
-    const breathe = 1 + Math.sin(tick*0.018)*0.06;
-    mouthAmp += ((window.aiMouthTarget||0) - mouthAmp)*0.10;
-    mouthPhase += 0.52;
-    const mo = mouthAmp * Math.max(0, 0.5 + 0.5*Math.sin(mouthPhase));
-
-    for(let r=0; r<rows; r++){
-      for(let c=0; c<cols; c++){
-        const px = c*DS, py = r*DS;
-        let d = depths[r*cols+c] * breathe;
-
-        // Apply mouth opening
-        if(mo > 0.01){
-          const nx=(px-CX)/FW, ny=(py-CY)/FH;
-          const mouthG = Math.max(0, 1 - (nx/0.15)**2 - ((ny-0.50)/0.05)**2);
-          d -= mouthG * mo * 1.8;
-        }
-
-        if(d < 0.04) continue;
-
-        const t = Math.min(1, d);
-        const sh = 0.88 + Math.sin(tick*0.05 + flicker[r*cols+c])*0.12;
-        // Left-side lighting boost
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+    const br=1+Math.sin(tick*0.018)*0.06;
+    mAmp+=((window.aiMouthTarget||0)-mAmp)*0.10;
+    mPhase+=0.52;
+    const mo=mAmp*Math.max(0,0.5+0.5*Math.sin(mPhase));
+    for(let r=0;r<gr;r++){
+      for(let c=0;c<gc;c++){
+        const px=c*DS, py=r*DS;
+        let d=map[r*gc+c]*br;
+        if(mo>0.01){ const nx=(px-CX)/FW,ny=(py-CY)/FH; d-=Math.max(0,1-(nx/0.14)**2-((ny-0.50)/0.045)**2)*mo*1.6; }
+        if(d<0.04) continue;
+        const t=Math.min(1,d);
+        const sh=0.88+Math.sin(tick*0.05+flk[r*gc+c])*0.12;
         const nx=(px-CX)/FW;
-        const lit = t * sh * (1 + Math.max(0,-nx)*0.3);
-        const bright = Math.min(1, lit);
-
-        const radius = DS * 0.48 * (0.25 + t*0.75);
-        const g = Math.min(255, (55 + bright*200)|0);
-        const rv = (bright*115)|0;
-        const alpha = Math.min(1, 0.45 + bright*0.55);
-
-        ctx.beginPath();
-        ctx.arc(px, py, radius, 0, 6.283);
-        ctx.fillStyle = `rgba(${rv},${g},${(bright*55)|0},${alpha})`;
+        const bright=Math.min(1,(t+Math.max(0,-nx)*0.25)*sh);
+        const rad=DS*0.50*(0.22+t*0.78);
+        const gv=Math.min(255,(55+bright*200)|0);
+        ctx.beginPath(); ctx.arc(px,py,rad,0,6.283);
+        ctx.fillStyle='rgba('+((bright*115)|0)+','+gv+','+((bright*55)|0)+','+Math.min(1,0.4+bright*0.6)+')';
         ctx.fill();
       }
     }
   }
   frame();
 }
-
 function stopMatrixAnimation(){
   if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval = null; }
   if(aiWaveInterval){   clearInterval(aiWaveInterval);   aiWaveInterval   = null; }
