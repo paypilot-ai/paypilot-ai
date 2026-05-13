@@ -4549,125 +4549,131 @@ function startMatrixAnimation(){
   const SCALE = Math.min(W, H) * 0.37;
   const cx = W * 0.50, cy = H * 0.43;
 
-  // ── Build 3D face point cloud ──────────────────────────────────────────
-  const pts = [];
-  const STEPS = 44;
+  // ── Matrix rain setup ──────────────────────────────────────────────────
+  const SZ    = 13;
+  const cols  = Math.floor(W / SZ);
+  const drops = Array.from({length: cols}, () => Math.random() * -(H / SZ));
+  const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ₿∑∆∇∈ABCDEF';
 
-  for(let pi = 1; pi < STEPS; pi++){
-    for(let ti = 0; ti <= STEPS * 2; ti++){
-      const phi   = (pi / STEPS) * Math.PI;
-      const theta = (ti / (STEPS * 2)) * Math.PI * 2;
-
-      const sinP = Math.sin(phi), cosP = Math.cos(phi);
-      const sinT = Math.sin(theta), cosT = Math.cos(theta);
-
-      // Unit-sphere normals
-      const nx = sinP * cosT;   // left–right  (-1 left, +1 right)
-      const ny = cosP;          // bottom–top  (-1 bottom, +1 top)
-      const nz = sinP * sinT;   // front–back  (+1 front)
-
-      // Only front hemisphere + soft sides
-      if(nz < -0.10) continue;
-      // Drop top of skull above hairline
-      if(ny > 0.90) continue;
-
-      // ── Facial feature displacement map ───────────────────────────────
-      let disp = 0;
-
-      // Nose bridge (vertical ridge)
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*32  + (ny+0.05)*(ny+0.05)*9))  * 0.09;
-      // Nose tip
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*38  + (ny+0.38)*(ny+0.38)*28)) * 0.14;
-      // Nostrils
-      disp += Math.max(0, 1 - Math.sqrt((nx+0.13)*(nx+0.13)*55+(ny+0.43)*(ny+0.43)*65)) * 0.05;
-      disp += Math.max(0, 1 - Math.sqrt((nx-0.13)*(nx-0.13)*55+(ny+0.43)*(ny+0.43)*65)) * 0.05;
-      // Cheekbones
-      disp += Math.max(0, 1 - Math.sqrt((nx+0.50)*(nx+0.50)*4.5+(ny+0.08)*(ny+0.08)*9)) * 0.07;
-      disp += Math.max(0, 1 - Math.sqrt((nx-0.50)*(nx-0.50)*4.5+(ny+0.08)*(ny+0.08)*9)) * 0.07;
-      // Brow ridge
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*0.9 + (ny-0.27)*(ny-0.27)*22)) * 0.065;
-      // Upper lip philtrum
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*20  + (ny+0.50)*(ny+0.50)*55)) * 0.05;
-      // Lower lip
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*9   + (ny+0.60)*(ny+0.60)*38)) * 0.07;
-      // Chin
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*11  + (ny+0.74)*(ny+0.74)*18)) * 0.055;
-      // Forehead centre
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*1.2 + (ny-0.52)*(ny-0.52)*5))  * 0.04;
-
-      // Eye sockets — recess
-      const le = Math.max(0, 1 - Math.sqrt((nx+0.30)*(nx+0.30)*20+(ny-0.16)*(ny-0.16)*26));
-      const re = Math.max(0, 1 - Math.sqrt((nx-0.30)*(nx-0.30)*20+(ny-0.16)*(ny-0.16)*26));
-      disp -= Math.max(le, re) * 0.07;
-
-      // Temple hollow
-      const lt = Math.max(0, 1 - Math.sqrt((nx+0.72)*(nx+0.72)*5+(ny-0.18)*(ny-0.18)*5));
-      const rt = Math.max(0, 1 - Math.sqrt((nx-0.72)*(nx-0.72)*5+(ny-0.18)*(ny-0.18)*5));
-      disp -= (lt + rt) * 0.04;
-
-      // Head proportions (slightly wide, moderately deep)
-      const r = 1.0 + Math.max(-0.15, disp);
-      const x3d =  nx * 0.78 * r * SCALE;
-      const y3d = -ny * 1.04 * r * SCALE;   // flip Y so +ny = up on screen
-      const z3d =  nz * 0.88 * r * SCALE;
-
-      // Brightness: facing camera + feature elevation
-      const bright = Math.max(0.12, nz * 0.55 + Math.max(0, disp) * 3.5 + 0.22);
-      // Dot radius: features punch out bigger dots
-      const size   = 1.1 + Math.max(0, disp) * 5.5;
-      // Per-dot organic phase for subtle shimmer
-      const phase  = Math.random() * Math.PI * 2;
-      const jx     = (Math.random() - 0.5) * 1.2;
-      const jy     = (Math.random() - 0.5) * 1.2;
-
-      pts.push({ x3d, y3d, z3d, bright, size, phase, jx, jy });
-    }
+  // Fast 2D face depth map (Gaussian blobs in screen space)
+  // ny: negative = above center (forehead/brow), positive = below center (nose/chin)
+  function faceDepth2D(px, py){
+    const nx = (px - cx) / (SCALE * 0.78);
+    const ny = (py - cy) / (SCALE * 1.04);
+    if(nx*nx + ny*ny > 1.35) return 0;
+    function gb(mx,my,rx,ry){ return Math.max(0, 1-((nx-mx)*(nx-mx))/(rx*rx)-((ny-my)*(ny-my))/(ry*ry)); }
+    const raised = Math.max(
+      gb(0,   0.10, 0.18, 0.30) * 0.95,  // nose
+      gb(0,  -0.34, 0.88, 0.09) * 0.80,  // brow ridge
+      gb(-0.44, 0.06, 0.20, 0.15) * 0.60, // left cheek
+      gb( 0.44, 0.06, 0.20, 0.15) * 0.60, // right cheek
+      gb(0,  0.42, 0.22, 0.09) * 0.72,   // lips
+      gb(0,  0.70, 0.15, 0.07) * 0.48    // chin
+    );
+    const recession = Math.max(
+      gb(-0.28, -0.20, 0.14, 0.10) * 0.85, // left eye socket
+      gb( 0.28, -0.20, 0.14, 0.10) * 0.85  // right eye socket
+    );
+    const base = nx*nx + ny*ny < 1.0 ? 0.32 : 0.14;
+    return Math.max(0, Math.min(1, base + raised * 0.68 - recession * 0.32));
   }
 
-  // Sort back-to-front so near dots overdraw far ones
+  // ── 3D face point cloud ────────────────────────────────────────────────
+  const pts = [];
+  const STEPS = 44;
+  for(let pi = 1; pi < STEPS; pi++){
+    for(let ti = 0; ti <= STEPS * 2; ti++){
+      const phi = (pi / STEPS) * Math.PI, theta = (ti / (STEPS * 2)) * Math.PI * 2;
+      const sinP = Math.sin(phi), cosP = Math.cos(phi);
+      const sinT = Math.sin(theta), cosT = Math.cos(theta);
+      const nx = sinP * cosT, ny = cosP, nz = sinP * sinT;
+      if(nz < -0.10 || ny > 0.90) continue;
+
+      let disp = 0;
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*32  + (ny+0.05)*(ny+0.05)*9))  * 0.09;
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*38  + (ny+0.38)*(ny+0.38)*28)) * 0.14;
+      disp += Math.max(0, 1 - Math.sqrt((nx+0.13)*(nx+0.13)*55+(ny+0.43)*(ny+0.43)*65)) * 0.05;
+      disp += Math.max(0, 1 - Math.sqrt((nx-0.13)*(nx-0.13)*55+(ny+0.43)*(ny+0.43)*65)) * 0.05;
+      disp += Math.max(0, 1 - Math.sqrt((nx+0.50)*(nx+0.50)*4.5+(ny+0.08)*(ny+0.08)*9)) * 0.07;
+      disp += Math.max(0, 1 - Math.sqrt((nx-0.50)*(nx-0.50)*4.5+(ny+0.08)*(ny+0.08)*9)) * 0.07;
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*0.9 + (ny-0.27)*(ny-0.27)*22)) * 0.065;
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*9   + (ny+0.60)*(ny+0.60)*38)) * 0.07;
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*11  + (ny+0.74)*(ny+0.74)*18)) * 0.055;
+      disp -= Math.max(0, 1 - Math.sqrt((nx+0.30)*(nx+0.30)*20+(ny-0.16)*(ny-0.16)*26)) * 0.07;
+      disp -= Math.max(0, 1 - Math.sqrt((nx-0.30)*(nx-0.30)*20+(ny-0.16)*(ny-0.16)*26)) * 0.07;
+      disp -= Math.max(0, 1 - Math.sqrt((nx+0.72)*(nx+0.72)*5+(ny-0.18)*(ny-0.18)*5))  * 0.04;
+      disp -= Math.max(0, 1 - Math.sqrt((nx-0.72)*(nx-0.72)*5+(ny-0.18)*(ny-0.18)*5))  * 0.04;
+
+      const r   = 1.0 + Math.max(-0.15, disp);
+      pts.push({
+        x3d:  nx * 0.78 * r * SCALE,
+        y3d: -ny * 1.04 * r * SCALE,
+        z3d:  nz * 0.88 * r * SCALE,
+        bright: Math.max(0.12, nz * 0.55 + Math.max(0, disp) * 3.5 + 0.22),
+        size:   1.1 + Math.max(0, disp) * 5.5,
+        phase:  Math.random() * Math.PI * 2,
+        jx: (Math.random()-0.5)*1.2, jy: (Math.random()-0.5)*1.2
+      });
+    }
+  }
   pts.sort((a, b) => a.z3d - b.z3d);
 
   // ── Animation loop ─────────────────────────────────────────────────────
-  let tick = 0;
-  let rot  = 0;
-
+  let tick = 0, rot = 0;
   if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval = null; }
 
   function frame(){
     aiMatrixInterval = requestAnimationFrame(frame);
     tick++;
 
-    // Fade previous frame (motion trail)
-    ctx.fillStyle = 'rgba(1,5,2,0.28)';
+    // Soft trail — slower fade keeps rain streaks visible
+    ctx.fillStyle = 'rgba(1,5,2,0.07)';
     ctx.fillRect(0, 0, W, H);
 
-    // Slow oscillating Y-axis rotation (±14°, ~9 s period)
+    // ── Layer 1: Matrix rain (background) ──────────────────────────────
+    ctx.font = SZ + 'px monospace';
+    for(let i = 0; i < cols; i++){
+      const px  = i * SZ;
+      const py  = drops[i] * SZ;
+      const fd  = faceDepth2D(px + SZ * 0.5, py);
+
+      // Characters behind the face glow with it; outside face = dim green rain
+      const isLead = (drops[i] % 1) < 0.18;
+      if(isLead){
+        // Leading character — always bright white-green
+        ctx.fillStyle = fd > 0.25 ? 'rgba(220,255,235,0.95)' : 'rgba(180,255,200,0.85)';
+      } else {
+        // Body of streak: face area lights up the code from within
+        const alpha = Math.min(0.82, 0.06 + fd * 0.76 + (Math.random() < 0.06 ? 0.12 : 0));
+        ctx.fillStyle = `rgba(0,255,110,${alpha})`;
+      }
+      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
+
+      // Advance drop — slightly faster through bright face regions
+      drops[i] += 0.60 + fd * 0.35;
+      if(drops[i] * SZ > H + SZ && Math.random() > 0.972) drops[i] = Math.random() * -28;
+    }
+
+    // ── Layer 2: 3D face dots (poke through) ───────────────────────────
     const targetRot = Math.sin(tick / 265) * 0.245;
     rot += (targetRot - rot) * 0.018;
     const cosR = Math.cos(rot), sinR = Math.sin(rot);
 
     ctx.shadowColor = '#00ff88';
-
-    pts.forEach(p => {
-      // Rotate around Y axis
+    for(let i = 0; i < pts.length; i++){
+      const p = pts[i];
       const x = p.x3d * cosR - p.z3d * sinR;
       const z = p.x3d * sinR + p.z3d * cosR;
+      if(z < -SCALE * 0.25) continue;
 
-      // Back-face cull
-      if(z < -SCALE * 0.25) return;
-
-      // Perspective divide
       const fov   = SCALE * 2.8;
       const depth = fov / (fov + z + SCALE * 0.4);
+      const sx    = cx + x * depth + p.jx;
+      const sy    = cy + p.y3d * depth + p.jy + Math.sin(tick * 0.038 + p.phase) * 0.7;
 
-      const sx = cx + x * depth + p.jx;
-      // Subtle per-dot shimmer breathe
-      const shimmer = Math.sin(tick * 0.038 + p.phase) * 0.7;
-      const sy = cy + p.y3d * depth + p.jy + shimmer;
+      if(sx < 0 || sx > W || sy < 0 || sy > H) continue;
 
-      if(sx < -2 || sx > W+2 || sy < -2 || sy > H+2) return;
-
-      const alpha = Math.min(0.98, p.bright * depth * 1.55);
+      const alpha = Math.min(0.97, p.bright * depth * 1.55);
       const r     = Math.max(0.5, p.size * depth);
 
       ctx.shadowBlur = r * 5 * alpha;
@@ -4675,8 +4681,7 @@ function startMatrixAnimation(){
       ctx.arc(sx, sy, r, 0, 6.283);
       ctx.fillStyle = `rgba(0,255,128,${alpha})`;
       ctx.fill();
-    });
-
+    }
     ctx.shadowBlur = 0;
   }
 
