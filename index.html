@@ -1931,11 +1931,6 @@ body.modal-open{overflow:hidden}
 
             <!-- FULL-SIZE MATRIX AI AVATAR — replaces form when call is active -->
             <div id="aiCallStatus" style="display:none;background:#000;border:1px solid rgba(0,255,136,.22);border-radius:20px;overflow:hidden;position:relative;min-height:560px;animation:aiGlowPulse 4s ease-in-out infinite;">
-              <!-- Matrix rain canvas -->
-              <canvas id="matrixCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:1;pointer-events:none;"></canvas>
-              <!-- Radial glow behind head -->
-              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:340px;height:340px;background:radial-gradient(circle,rgba(0,255,136,.10) 0%,transparent 70%);pointer-events:none;"></div>
-
               <!-- Top status bar -->
               <div style="position:relative;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid rgba(0,255,136,.12);">
                 <div style="display:flex;align-items:center;gap:8px;">
@@ -1956,6 +1951,8 @@ body.modal-open{overflow:hidden}
 
                 <!-- Orbital rings + head container -->
                 <div style="position:relative;width:280px;height:320px;display:flex;align-items:center;justify-content:center;perspective:800px;">
+                  <!-- Face canvas — fixed size, inside the avatar box -->
+                  <canvas id="matrixCanvas" width="280" height="320" style="position:absolute;top:0;left:0;width:280px;height:320px;z-index:1;pointer-events:none;border-radius:4px;"></canvas>
 
                   <!-- Pulse rings -->
                   <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:0s;"></div>
@@ -4534,23 +4531,19 @@ function startMatrixAnimation(){
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
 
-  const dpr  = Math.min(window.devicePixelRatio || 1, 2);
-  // Force canvas to fill the panel — height:100% doesn't resolve on min-height parents
-  const cssW = canvas.parentElement?.offsetWidth  || 400;
-  const cssH = 560;
-  canvas.style.width  = cssW + 'px';
-  canvas.style.height = cssH + 'px';
-  canvas.width  = cssW * dpr;
-  canvas.height = cssH * dpr;
+  // Canvas has fixed HTML dimensions (280x320) — just read them directly
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W   = canvas.offsetWidth  || 280;
+  const H   = canvas.offsetHeight || 320;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
   ctx.scale(dpr, dpr);
-  const W = cssW, H = cssH;
 
-  // Face center — slightly above-center, like the reference image
+  // Face fills most of the 280x320 canvas
   const CX = W * 0.50;
-  const CY = H * 0.42;
-  // Face half-dimensions — clearly visible but with black space around it
-  const FW = H * 0.20;   // ~112px half-width  → 224px total
-  const FH = H * 0.30;   // ~168px half-height → 336px total
+  const CY = H * 0.45;
+  const FW = W * 0.42;   // 118px half-width  → 236px total
+  const FH = H * 0.46;   // 147px half-height → 294px total
 
   function faceDepth(px, py, breathe, mouthOpen){
     const nx = (px - CX) / FW;
@@ -4590,8 +4583,8 @@ function startMatrixAnimation(){
   // Mouth animation state
   let mouthAmp = 0, mouthPhase = 0;
 
-  // Dot grid — 8px spacing matches reference image halftone density
-  const DS    = 8;
+  // Dot grid — 7px spacing, slightly tighter for 280px canvas
+  const DS    = 7;
   const dCols = Math.ceil(W / DS) + 1;
   const dRows = Math.ceil(H / DS) + 1;
 
@@ -4649,15 +4642,16 @@ function startMatrixAnimation(){
 
         // Inside face — scale dot by depth
         const t = Math.min(1.0, d);
-        // Strong contrast: nose/brow near white-green, edges dark green
-        const bright = t * shimmer;
-        const maxR   = DS * 0.50;
-        const r      = maxR * (0.18 + t * 0.82);
+        const nx2 = (px - CX) / FW, ny2 = (py - CY) / FH;
+        const lightBoost = Math.max(0, -nx2 * 0.25 + -ny2 * 0.30) * 0.35;
+        const bright = Math.min(1, t + lightBoost) * shimmer;
+        const maxR   = DS * 0.54;
+        const r      = maxR * (0.22 + t * 0.78);
 
-        const green = Math.min(255, (80 + bright * 175) | 0);
-        const red   = (bright * 110) | 0;
-        const blue  = (bright * 55)  | 0;
-        const alpha = Math.min(1, 0.30 + bright * 0.70);
+        const green = Math.min(255, (60 + bright * 195) | 0);
+        const red   = (bright * 120) | 0;
+        const blue  = (bright * 60)  | 0;
+        const alpha = Math.min(1, 0.45 + bright * 0.55);
 
         ctx.beginPath();
         ctx.arc(px, py, r, 0, Math.PI * 2);
