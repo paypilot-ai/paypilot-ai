@@ -19,7 +19,8 @@ CRITICAL RULES — follow every one:
 - If they push back on fees or timing, give ONE punchy benefit and move on.
 - If they're open or curious, push toward a clear next step (email them info, quick 5-min call).
 - If they say no or want to hang up, acknowledge it respectfully in one sentence and close.
-- Always refer to the company as "${company}" — never say "your company" or "our solution".`;
+- Always refer to the company as "${company}" — never say "your company" or "our solution".
+- HANGUP SIGNAL: When the conversation is clearly over (they firmly said no, said goodbye, agreed and you've confirmed next steps, or asked you not to call again) — append the exact token [END] on a new line after your reply. Do not use [END] mid-conversation.`;
 }
 
 async function ask(messages) {
@@ -72,10 +73,20 @@ module.exports = async function handler(req, res) {
     history.push({ role: 'user', content: transcript });
 
     const messages = [{ role: 'system', content: buildPrompt(n, r, c) }, ...history.slice(-12)];
-    const reply = await ask(messages);
-    history.push({ role: 'assistant', content: reply });
+    const raw   = await ask(messages);
+    const hangup = raw.includes('[END]');
+    const reply  = raw.replace('[END]', '').trim();
 
+    history.push({ role: 'assistant', content: reply });
     while (Buffer.from(JSON.stringify(history)).length > 6000) history.splice(0, 2);
+
+    if(hangup){
+      return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna-Neural">${xml(reply)}</Say>
+  <Hangup/>
+</Response>`);
+    }
 
     const h = Buffer.from(JSON.stringify(history)).toString('base64url');
     res.status(200).send(gatherTwiml(reply, h, 0, n, r, c));

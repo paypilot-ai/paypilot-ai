@@ -4788,14 +4788,26 @@ async function startAiCall(){
   }
 }
 
-function endAiCall(){
+async function endAiCall(){
   stopMatrixAnimation();
+  const sid = activeAiCallSid;
   activeAiCallSid = null;
   document.getElementById('aiCallStatus').style.display = 'none';
   document.getElementById('aiCallerFormCard').style.display = 'block';
   const btn = document.getElementById('aiCallBtn');
   btn.disabled = false;
   btn.textContent = '🤖 Launch AI Call';
+
+  // Tell Twilio to terminate the call
+  if(sid){
+    try {
+      await fetch('/api/end-call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callSid: sid })
+      });
+    } catch(e){ /* non-critical */ }
+  }
   toast('AI call ended.');
 }
 
