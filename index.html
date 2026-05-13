@@ -4328,54 +4328,60 @@ function startMatrixAnimation(){
   const canvas = document.getElementById('matrixCanvas');
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
-  canvas.width  = canvas.offsetWidth  || 460;
-  canvas.height = canvas.offsetHeight || 620;
-  const W = canvas.width, H = canvas.height;
-  const SZ = 13;
+
+  // Account for device pixel ratio — fixes blurry/misaligned canvas on high-DPR phones
+  const dpr  = Math.min(window.devicePixelRatio || 1, 3);
+  const cssW = canvas.offsetWidth  || 460;
+  const cssH = canvas.offsetHeight || 620;
+  canvas.width  = cssW * dpr;
+  canvas.height = cssH * dpr;
+  ctx.scale(dpr, dpr);
+  // All drawing coordinates below are in CSS pixels (W/H = cssW/cssH)
+  const W = cssW, H = cssH;
+
+  const SZ   = 14; // character cell size in CSS px
   const cols = Math.floor(W / SZ);
   const drops = Array(cols).fill(1);
   const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノABCDEFGHIJKLM₿∑∆∇∈';
 
-  // Gaussian blob helper
-  function gb(px, py, mx, my, rx, ry){
-    return Math.max(0, 1 - ((px-mx)*(px-mx))/(rx*rx) - ((py-my)*(py-my))/(ry*ry));
+  // Face is sized relative to the smaller screen dimension so it looks the
+  // same regardless of aspect ratio (tall Samsung vs wider iPhone)
+  const faceRef = Math.min(W, H) * 0.54;
+  const FCX = W * 0.50;        // face centre X
+  const FCY = H * 0.42;        // face centre Y (slightly above mid)
+  const FW  = faceRef * 0.74;  // face half-width
+  const FH  = faceRef * 0.92;  // face half-height
+
+  // Gaussian blob helper (normalised coordinates)
+  function gb(nx, ny, mx, my, rx, ry){
+    return Math.max(0, 1 - ((nx-mx)*(nx-mx))/(rx*rx) - ((ny-my)*(ny-my))/(ry*ry));
   }
 
-  // Face depth map — returns 0..1 (1=most forward/bright, 0=recessed/dark)
+  // Returns 0..1 — 1 = face pressing forward (bright), 0 = recessed (dark)
   function faceDepth(px, py){
-    const cx = W * 0.5;
-    const cy = H * 0.44;
-    const fw = W * 0.29; // face half-width in pixels
-    const fh = H * 0.42; // face half-height in pixels
+    const nx = (px - FCX) / FW;
+    const ny = (py - FCY) / FH;
 
-    const nx = (px - cx) / fw; // normalised x   -1..1
-    const ny = (py - cy) / fh; // normalised y   -1..1
+    if(nx*nx + ny*ny > 1.28) return 0.26; // outside head
 
-    // Outside head silhouette → dim background rain
-    if(nx*nx + ny*ny > 1.25) return 0.28;
-
-    // --- raised features (bright) ---
-    const nose   = gb(nx, ny,  0,      0.10,  0.18, 0.30) * 1.00; // nose tip & bridge
-    const brow   = gb(nx, ny,  0,     -0.34,  0.90, 0.10) * 0.82; // brow ridge (wide)
+    const nose   = gb(nx, ny,  0,      0.10,  0.18, 0.30) * 1.00;
+    const brow   = gb(nx, ny,  0,     -0.34,  0.90, 0.10) * 0.82;
     const lCheek = gb(nx, ny, -0.44,   0.06,  0.20, 0.16) * 0.62;
     const rCheek = gb(nx, ny,  0.44,   0.06,  0.20, 0.16) * 0.62;
     const lips   = gb(nx, ny,  0,      0.42,  0.24, 0.09) * 0.75;
     const chin   = gb(nx, ny,  0,      0.70,  0.16, 0.08) * 0.50;
     const raised = Math.max(nose, brow, lCheek, rCheek, lips, chin);
 
-    // --- recessed features (dark) ---
-    const lEye = gb(nx, ny, -0.27, -0.20,  0.15, 0.11) * 0.90;
-    const rEye = gb(nx, ny,  0.27, -0.20,  0.15, 0.11) * 0.90;
-    const temple = gb(nx, ny,  0,    -0.60,  0.65, 0.12) * 0.30; // forehead taper
-    const recessed = Math.max(lEye, rEye, temple);
+    const lEye    = gb(nx, ny, -0.27, -0.20,  0.15, 0.11) * 0.90;
+    const rEye    = gb(nx, ny,  0.27, -0.20,  0.15, 0.11) * 0.90;
+    const recessed = Math.max(lEye, rEye);
 
-    const base = nx*nx + ny*ny < 1.0 ? 0.40 : 0.28;
+    const base = nx*nx + ny*ny < 1.0 ? 0.40 : 0.26;
     return Math.max(0.04, Math.min(1.0, base + raised * 0.60 - recessed * 0.34));
   }
 
   if(aiMatrixInterval) clearInterval(aiMatrixInterval);
   aiMatrixInterval = setInterval(() => {
-    // Slow fade — trails persist longer for depth illusion
     ctx.fillStyle = 'rgba(2,10,5,0.035)';
     ctx.fillRect(0, 0, W, H);
 
@@ -4384,10 +4390,9 @@ function startMatrixAnimation(){
       const py = y * SZ;
       const d  = faceDepth(px, py);
 
-      // Whiteish leading edge spike in bright areas
       const isLead = Math.random() > (1 - d * 0.4);
-      ctx.fillStyle = isLead ? '#d4fff0' : '#00ff88';
-      ctx.font = (isLead ? 'bold ' : '') + SZ + 'px monospace';
+      ctx.fillStyle  = isLead ? '#d4fff0' : '#00ff88';
+      ctx.font       = (isLead ? 'bold ' : '') + SZ + 'px monospace';
       ctx.globalAlpha = 0.06 + d * 0.94;
       ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
       ctx.globalAlpha = 1;
