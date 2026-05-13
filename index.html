@@ -1617,6 +1617,7 @@ body.modal-open{overflow:hidden}
       <button class="side-btn" data-page="settings" onclick="showPage('settings', this)">⚙️ Settings</button>
       <button class="side-btn" data-page="billing" onclick="showPage('billing', this)">💳 Billing</button>
       <button class="side-btn" data-page="compliance" onclick="showPage('compliance', this)">🛡️ Compliance</button>
+      <button class="side-btn" data-page="guide" onclick="showPage('guide', this)">📖 How to Use</button>
     </aside>
 
     <!-- Mobile bottom nav -->
@@ -2833,6 +2834,192 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               </div>
 
             </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- HOW TO USE GUIDE                                              -->
+        <!-- ============================================================ -->
+        <section class="page" id="guide">
+          <div class="main" style="max-width:760px;">
+
+            <div style="margin-bottom:32px;">
+              <div style="font-family:'Sora',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text);margin-bottom:6px;">📖 How to Use PayPilot</div>
+              <div style="color:var(--muted);font-size:15px;line-height:1.6;">Everything you need to get up and running — step by step, plain and simple.</div>
+            </div>
+
+            <!-- Quick-start steps -->
+            <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #86efac;border-radius:20px;padding:24px;margin-bottom:28px;">
+              <div style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.10em;color:#16a34a;margin-bottom:16px;">✅ Quick Start — Do These First</div>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;gap:14px;align-items:flex-start;">
+                  <div style="min-width:28px;height:28px;background:#16a34a;color:#fff;border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;">1</div>
+                  <div><strong style="color:#14532d;">Go to Settings</strong><br><span style="color:#166534;font-size:14px;">Enter your name, company name, and select your default tone. This personalizes every AI response.</span></div>
+                </div>
+                <div style="display:flex;gap:14px;align-items:flex-start;">
+                  <div style="min-width:28px;height:28px;background:#16a34a;color:#fff;border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;">2</div>
+                  <div><strong style="color:#14532d;">Load your script</strong><br><span style="color:#166534;font-size:14px;">Go to Scripts, pick an opening line and rebuttals for common objections. The AI uses these on every call.</span></div>
+                </div>
+                <div style="display:flex;gap:14px;align-items:flex-start;">
+                  <div style="min-width:28px;height:28px;background:#16a34a;color:#fff;border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;">3</div>
+                  <div><strong style="color:#14532d;">Make your first call</strong><br><span style="color:#166534;font-size:14px;">Use Live Call Assist for manual calls or AI Auto-Caller for fully automated outreach.</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Feature cards -->
+            <div style="display:flex;flex-direction:column;gap:20px;">
+
+              <!-- Dashboard -->
+              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                  <div style="width:42px;height:42px;background:#eff6ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">🏠</div>
+                  <div>
+                    <div style="font-size:16px;font-weight:800;color:var(--text);">Dashboard</div>
+                    <div style="font-size:13px;color:var(--muted);">Your home base</div>
+                  </div>
+                </div>
+                <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;">See your call activity, recent wins, and a summary of your plan at a glance. This is the first screen you'll see when you log in. Nothing to set up here — it updates automatically.</p>
+              </div>
+
+              <!-- Live Call Assist -->
+              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                  <div style="width:42px;height:42px;background:#fdf4ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">🤖</div>
+                  <div>
+                    <div style="font-size:16px;font-weight:800;color:var(--text);">Live Call Assist</div>
+                    <div style="font-size:13px;color:var(--muted);">AI coaches you in real time while you're on the call</div>
+                  </div>
+                </div>
+                <p style="margin:0 0 12px;color:#475569;font-size:14px;line-height:1.7;">You make the call. The AI listens and gives you the perfect thing to say — right when you need it.</p>
+                <div style="background:#faf5ff;border-radius:12px;padding:14px;font-size:13px;color:#6b21a8;line-height:1.8;">
+                  <strong>How to use it:</strong><br>
+                  1. Enter the customer's phone number and click <strong>Call Now</strong>.<br>
+                  2. Click the 🎤 mic button — PayPilot starts listening to the call.<br>
+                  3. When the customer raises an objection, the AI types a suggested response automatically.<br>
+                  4. Click <strong>📞 Send to Call</strong> — the AI speaks your response to the customer.<br>
+                  5. If the call closes, click <strong>Send Agreement</strong> to email the contract instantly.
+                </div>
+                <div style="margin-top:12px;background:#fff7ed;border-radius:10px;padding:12px;font-size:13px;color:#92400e;">
+                  💡 <strong>Tip:</strong> If the customer speaks Spanish, Portuguese, or French — PayPilot auto-detects it, translates what they say to English so you can hear it, and replies to them in their language automatically.
+                </div>
+              </div>
+
+              <!-- AI Auto-Caller -->
+              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                  <div style="width:42px;height:42px;background:#f0fdf4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">📞</div>
+                  <div>
+                    <div style="font-size:16px;font-weight:800;color:var(--text);">AI Auto-Caller</div>
+                    <div style="font-size:13px;color:var(--muted);">The AI makes the call — no rep needed</div>
+                  </div>
+                </div>
+                <p style="margin:0 0 12px;color:#475569;font-size:14px;line-height:1.7;">The AI dials the number, introduces itself, listens to the prospect, handles objections, and closes — completely on its own.</p>
+                <div style="background:#f0fdf4;border-radius:12px;padding:14px;font-size:13px;color:#166534;line-height:1.8;">
+                  <strong>How to use it:</strong><br>
+                  1. Fill in <strong>Your Company Name</strong>, <strong>Customer Name</strong>, and <strong>Phone Number</strong>.<br>
+                  2. In <strong>Reason for Call</strong>, write a short note — e.g. "Follow up on insurance quote" or "Introduce B2B payment program."<br>
+                  3. Optionally attach an agreement to send if the call closes.<br>
+                  4. Click <strong>🤖 Launch AI Call</strong> — the AI takes it from there.
+                </div>
+                <div style="margin-top:12px;background:#fff7ed;border-radius:10px;padding:12px;font-size:13px;color:#92400e;">
+                  💡 <strong>Tip:</strong> The more specific your "Reason for Call," the better the AI performs. Instead of "sales call," try "Enroll them in our ACH direct deposit program — they currently pay by check."
+                </div>
+              </div>
+
+              <!-- Scripts -->
+              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                  <div style="width:42px;height:42px;background:#fefce8;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">📝</div>
+                  <div>
+                    <div style="font-size:16px;font-weight:800;color:var(--text);">Scripts</div>
+                    <div style="font-size:13px;color:var(--muted);">Pre-built responses for every situation</div>
+                  </div>
+                </div>
+                <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;">Scripts give the AI a foundation to work from. Choose an opening line, select rebuttals for common objections (fees, timing, security, etc.), and the AI weaves them into natural-sounding responses. You can customize or add your own lines at any time.</p>
+              </div>
+
+              <!-- Analytics -->
+              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                  <div style="width:42px;height:42px;background:#fff1f2;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">📊</div>
+                  <div>
+                    <div style="font-size:16px;font-weight:800;color:var(--text);">Analytics</div>
+                    <div style="font-size:13px;color:var(--muted);">Track your performance over time</div>
+                  </div>
+                </div>
+                <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;">See how many calls you've made, what objections come up most, and where deals are won or lost. Use this to improve your pitch and know which customers to follow up with.</p>
+              </div>
+
+              <!-- Settings -->
+              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                  <div style="width:42px;height:42px;background:#f8fafc;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">⚙️</div>
+                  <div>
+                    <div style="font-size:16px;font-weight:800;color:var(--text);">Settings</div>
+                    <div style="font-size:13px;color:var(--muted);">Personalize your workspace</div>
+                  </div>
+                </div>
+                <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;">Set your name, company name, preferred AI tone (Confident, Warm, Direct, or Calm), and default call language. These settings shape how the AI sounds on every call — set them once and you're good to go.</p>
+              </div>
+
+              <!-- Compliance -->
+              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                  <div style="width:42px;height:42px;background:#f0fdf4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">🛡️</div>
+                  <div>
+                    <div style="font-size:16px;font-weight:800;color:var(--text);">Compliance</div>
+                    <div style="font-size:13px;color:var(--muted);">Stay legal on every call</div>
+                  </div>
+                </div>
+                <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;">PayPilot automatically plays a recording disclosure at the start of every call so you're covered. The Compliance Center lets you review your settings, manage your do-not-call list, and confirm your call recording laws are set for your state.</p>
+              </div>
+
+            </div>
+
+            <!-- FAQ -->
+            <div style="margin-top:32px;margin-bottom:20px;">
+              <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:16px;">❓ Common Questions</div>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+
+                <details style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;cursor:pointer;">
+                  <summary style="font-size:14px;font-weight:700;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;">Do I need to be on the phone for the AI Auto-Caller? <span style="color:#94a3b8;">▾</span></summary>
+                  <p style="margin:12px 0 0;font-size:14px;color:#475569;line-height:1.7;">No. The AI handles the entire conversation without you. You just fill in the details, hit Launch, and check back later to see how it went.</p>
+                </details>
+
+                <details style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;cursor:pointer;">
+                  <summary style="font-size:14px;font-weight:700;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;">What if the customer speaks Spanish? <span style="color:#94a3b8;">▾</span></summary>
+                  <p style="margin:12px 0 0;font-size:14px;color:#475569;line-height:1.7;">In Live Call Assist, PayPilot detects the language automatically. You'll hear the customer's words translated to English through your browser, and the AI will reply to the customer in Spanish. No setup needed.</p>
+                </details>
+
+                <details style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;cursor:pointer;">
+                  <summary style="font-size:14px;font-weight:700;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;">How do I send a contract after a call? <span style="color:#94a3b8;">▾</span></summary>
+                  <p style="margin:12px 0 0;font-size:14px;color:#475569;line-height:1.7;">In the Live Call Assist panel, enter the customer's email and attach your agreement file (PDF, Word, or image). When the deal closes, click <strong>Send Agreement</strong> — it emails the document to the customer instantly.</p>
+                </details>
+
+                <details style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;cursor:pointer;">
+                  <summary style="font-size:14px;font-weight:700;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;">Can I change how the AI sounds? <span style="color:#94a3b8;">▾</span></summary>
+                  <p style="margin:12px 0 0;font-size:14px;color:#475569;line-height:1.7;">Yes. Go to <strong>Settings</strong> and pick your tone: <em>Confident</em> (direct, assertive), <em>Warm</em> (friendly, empathetic), <em>Direct</em> (straight to the point), or <em>Calm</em> (patient, measured). You can also change the tone mid-call from the Call Assist panel.</p>
+                </details>
+
+                <details style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;cursor:pointer;">
+                  <summary style="font-size:14px;font-weight:700;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;">Is the call being recorded? <span style="color:#94a3b8;">▾</span></summary>
+                  <p style="margin:12px 0 0;font-size:14px;color:#475569;line-height:1.7;">Yes. All calls are recorded for training and quality purposes. A disclosure is automatically played at the start of every call to notify the customer, keeping you compliant.</p>
+                </details>
+
+              </div>
+            </div>
+
+            <!-- Bottom CTA -->
+            <div style="background:linear-gradient(135deg,#1e3a5f,#1a1a3e);border-radius:18px;padding:24px;text-align:center;margin-top:8px;">
+              <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;">Ready to make your first call?</div>
+              <div style="font-size:14px;color:#94a3b8;margin-bottom:18px;">Head to Live Call Assist or launch the AI Auto-Caller to get started.</div>
+              <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <button onclick="showPage('assist', document.querySelector('[data-page=assist]'))" style="padding:12px 24px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">Go to Live Call Assist</button>
+                <button onclick="showPage('ai-caller', document.querySelector('[data-page=ai-caller]'))" style="padding:12px 24px;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">Go to AI Auto-Caller</button>
+              </div>
+            </div>
+
           </div>
         </section>
 
