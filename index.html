@@ -2156,7 +2156,7 @@ body.modal-open{overflow:hidden}
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               <input class="input" id="twilioNumber" placeholder="Supplier phone number (10 digits)" style="flex:1; margin-bottom:0;" />
               <button class="app-btn blue" onclick="startTwilioCall()" id="twilioCallBtn">Call Now</button>
-              <button class="app-btn line" onclick="endTwilioCall()" id="twilioEndBtn" style="display:none;">End Call</button>
+              <button class="app-btn" onclick="endTwilioCall()" id="twilioEndBtn" style="display:none;background:#c0392b;border-color:#c0392b;color:#fff;font-weight:700;">&#9632; End Call</button>
             </div>
             <div style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               <label style="font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.08em;">Supplier language:</label>
@@ -4506,10 +4506,15 @@ async function endTwilioCall(){
   if(!activeTwilioCall){ stopDeepgram(); return; }
 
   try {
-    const accountSid = ''; // handled server-side
     toast('Ending call...');
+    const sidToEnd = activeTwilioCall;
     stopDeepgram();
     activeTwilioCall = null;
+    fetch('/api/end-call', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callSid: sidToEnd })
+    }).catch(() => {});
     updateSendToCallBtn();
     document.getElementById('twilioStatus').className = 'call-status idle';
     document.getElementById('twilioStatus').textContent = 'Call ended';
