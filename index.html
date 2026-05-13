@@ -1875,6 +1875,11 @@ body.modal-open{overflow:hidden}
               0%,100% { box-shadow:0 0 30px rgba(0,255,136,.15), inset 0 0 30px rgba(0,255,136,.03); }
               50%     { box-shadow:0 0 60px rgba(0,255,136,.28), inset 0 0 60px rgba(0,255,136,.07); }
             }
+            @keyframes faceGlow {
+              0%,100% { filter:brightness(.88) drop-shadow(0 0 8px rgba(0,255,136,.5)); }
+              50%     { filter:brightness(1.14) drop-shadow(0 0 20px rgba(0,255,136,.85)); }
+            }
+            #matrixCanvas { animation:faceGlow 3.5s ease-in-out infinite; }
             .ai-wave-bar { width:4px; background:#00ff88; border-radius:3px; transition:height .09s ease; }
           </style>
           <div style="max-width:560px; margin:0 auto; padding:32px 0;">
@@ -1954,7 +1959,7 @@ body.modal-open{overflow:hidden}
 
                 <!-- Face canvas + scan line -->
                 <div id="faceContainer" style="position:relative;width:280px;height:320px;">
-                  <canvas id="matrixCanvas" width="280" height="320" style="display:block;position:absolute;top:0;left:0;width:280px;height:320px;z-index:1;"></canvas>
+                  <div id="matrixCanvas" style="position:absolute;top:0;left:0;width:280px;height:320px;z-index:1;"></div>
                   <!-- Scan line sweeping over head -->
                   <div id="aiScanLine" style="position:absolute;left:50%;transform:translateX(-50%);width:185px;height:2px;background:linear-gradient(to right,transparent 0%,rgba(0,255,136,.7) 40%,rgba(0,255,136,.9) 50%,rgba(0,255,136,.7) 60%,transparent 100%);animation:aiScanLine 3.2s linear infinite;z-index:3;pointer-events:none;border-radius:2px;"></div>
                 </div>
@@ -4403,64 +4408,48 @@ let aiTimerInterval = null;
 let aiCallSeconds   = 0;
 
 function startMatrixAnimation(){
-  const canvas = document.getElementById('matrixCanvas');
-  if(!canvas){ return; }
-  canvas.width  = 280;
-  canvas.height = 320;
-  const ctx = canvas.getContext('2d');
-  const W=280, H=320, CX=W/2, CY=H*0.44, FW=W*0.44, FH=H*0.47;
-  function g(nx,ny,mx,my,rx,ry){ const dx=(nx-mx)/rx,dy=(ny-my)/ry; return Math.max(0,1-dx*dx-dy*dy); }
-  function depth(px,py){
-    const nx=(px-CX)/FW, ny=(py-CY)/FH, r2=nx*nx+ny*ny;
-    if(r2>1.3) return 0;
-    let d=0;
-    d+=g(nx,ny, 0.00,+0.12,0.18,0.16)*1.1;
-    d+=g(nx,ny, 0.00,-0.04,0.08,0.30)*0.55;
-    d+=g(nx,ny, 0.00,-0.30,0.90,0.10)*0.60;
-    d+=g(nx,ny,-0.42,+0.05,0.24,0.18)*0.60;
-    d+=g(nx,ny,+0.42,+0.05,0.24,0.18)*0.48;
-    d+=g(nx,ny, 0.00,-0.52,0.58,0.22)*0.35;
-    d+=g(nx,ny, 0.00,+0.44,0.22,0.07)*0.48;
-    d+=g(nx,ny, 0.00,+0.56,0.19,0.08)*0.52;
-    d+=g(nx,ny, 0.00,+0.72,0.17,0.10)*0.42;
-    d-=g(nx,ny,-0.27,-0.16,0.19,0.14)*0.90;
-    d-=g(nx,ny,+0.27,-0.16,0.19,0.14)*0.75;
-    d-=g(nx,ny,-0.70,-0.10,0.19,0.20)*0.50;
-    d-=g(nx,ny,+0.70,-0.10,0.19,0.20)*0.42;
-    return Math.max(0, Math.min(1, (r2<1?0.30:0)+d*0.78));
-  }
-  const DS=6, gc=Math.ceil(W/DS)+1, gr=Math.ceil(H/DS)+1;
-  const map=new Float32Array(gc*gr);
-  for(let r=0;r<gr;r++) for(let c=0;c<gc;c++) map[r*gc+c]=depth(c*DS,r*DS);
-  const flk=new Float32Array(gc*gr);
-  for(let i=0;i<flk.length;i++) flk[i]=Math.random()*6.28;
-  let mAmp=0, mPhase=0, tick=0;
+  const el = document.getElementById('matrixCanvas');
+  if(!el) return;
   if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval=null; }
+  const DS=8, W=280, H=320, CX=140, CY=150, RX=112, RY=140;
+  function dotB(x,y){
+    const dx=(x-CX)/RX, dy=(y-CY)/RY, r2=dx*dx+dy*dy;
+    if(r2>1) return -1;
+    let b=0.25+0.65*(1-Math.sqrt(r2)*0.75);
+    b+=Math.max(0,1-((x-CX)/28)**2-((y-155)/35)**2)*0.45;
+    b+=Math.max(0,1-((x-CX)/88)**2-((y-105)/13)**2)*0.25;
+    b-=Math.max(0,1-((x-102)/23)**2-((y-118)/17)**2)*0.65;
+    b-=Math.max(0,1-((x-178)/23)**2-((y-118)/17)**2)*0.65;
+    b-=Math.max(0,1-((x-60)/17)**2-((y-132)/22)**2)*0.38;
+    b-=Math.max(0,1-((x-220)/17)**2-((y-132)/22)**2)*0.38;
+    return Math.max(0,Math.min(1,b));
+  }
+  let openDots='', closedDots='';
+  for(let y=DS;y<H;y+=DS){
+    for(let x=DS;x<W;x+=DS){
+      const b=dotB(x,y);
+      if(b<0.04) continue;
+      const rad=(DS*0.44*(0.3+b*0.7)).toFixed(1);
+      const g=Math.min(255,(80+b*175)|0);
+      const rr=(b*30)|0;
+      const a=(0.45+b*0.55).toFixed(2);
+      const circle=`<circle cx="${x}" cy="${y}" r="${rad}" fill="rgb(${rr},${g},0)" opacity="${a}"/>`;
+      const inMouth=((x-CX)/34)**2+((y-210)/20)**2<1;
+      if(inMouth){ closedDots+=circle; }
+      else{ openDots+=circle; closedDots+=circle; }
+    }
+  }
+  el.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" style="display:block;"><g id="svgFaceOpen">${openDots}</g><g id="svgFaceClose" style="display:none">${closedDots}</g></svg>`;
+  const openG=el.querySelector('#svgFaceOpen');
+  const closeG=el.querySelector('#svgFaceClose');
+  let mAmp=0, mPhase=0;
   function frame(){
     aiMatrixInterval=requestAnimationFrame(frame);
-    tick++;
-    ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
-    const br=1+Math.sin(tick*0.018)*0.06;
-    mAmp+=((window.aiMouthTarget||0)-mAmp)*0.10;
-    mPhase+=0.52;
-    const mo=mAmp*Math.max(0,0.5+0.5*Math.sin(mPhase));
-    for(let r=0;r<gr;r++){
-      for(let c=0;c<gc;c++){
-        const px=c*DS, py=r*DS;
-        let d=map[r*gc+c]*br;
-        if(mo>0.01){ const nx=(px-CX)/FW,ny=(py-CY)/FH; d-=Math.max(0,1-(nx/0.14)**2-((ny-0.50)/0.045)**2)*mo*1.6; }
-        if(d<0.04) continue;
-        const t=Math.min(1,d);
-        const sh=0.88+Math.sin(tick*0.05+flk[r*gc+c])*0.12;
-        const nx=(px-CX)/FW;
-        const bright=Math.min(1,(t+Math.max(0,-nx)*0.25)*sh);
-        const rad=DS*0.50*(0.22+t*0.78);
-        const gv=Math.min(255,(55+bright*200)|0);
-        ctx.beginPath(); ctx.arc(px,py,rad,0,6.283);
-        ctx.fillStyle='rgba('+((bright*115)|0)+','+gv+','+((bright*55)|0)+','+Math.min(1,0.4+bright*0.6)+')';
-        ctx.fill();
-      }
-    }
+    mAmp+=((window.aiMouthTarget||0)-mAmp)*0.12;
+    mPhase+=0.5;
+    const speaking=mAmp*Math.max(0,0.5+0.5*Math.sin(mPhase))>0.3;
+    if(openG) openG.style.display=speaking?'':'none';
+    if(closeG) closeG.style.display=speaking?'none':'';
   }
   frame();
 }
