@@ -4538,82 +4538,153 @@ function startMatrixAnimation(){
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
 
-  // Account for device pixel ratio — fixes blurry/misaligned canvas on high-DPR phones
   const dpr  = Math.min(window.devicePixelRatio || 1, 3);
   const cssW = canvas.offsetWidth  || 460;
   const cssH = canvas.offsetHeight || 620;
   canvas.width  = cssW * dpr;
   canvas.height = cssH * dpr;
   ctx.scale(dpr, dpr);
-  // All drawing coordinates below are in CSS pixels (W/H = cssW/cssH)
   const W = cssW, H = cssH;
 
-  const SZ   = 14; // character cell size in CSS px
-  const cols = Math.floor(W / SZ);
-  const drops = Array(cols).fill(1);
-  const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノABCDEFGHIJKLM₿∑∆∇∈';
+  const SCALE = Math.min(W, H) * 0.37;
+  const cx = W * 0.50, cy = H * 0.43;
 
-  // Face is sized relative to the smaller screen dimension so it looks the
-  // same regardless of aspect ratio (tall Samsung vs wider iPhone)
-  const faceRef = Math.min(W, H) * 0.54;
-  const FCX = W * 0.50;        // face centre X
-  const FCY = H * 0.42;        // face centre Y (slightly above mid)
-  const FW  = faceRef * 0.74;  // face half-width
-  const FH  = faceRef * 0.92;  // face half-height
+  // ── Build 3D face point cloud ──────────────────────────────────────────
+  const pts = [];
+  const STEPS = 44;
 
-  // Gaussian blob helper (normalised coordinates)
-  function gb(nx, ny, mx, my, rx, ry){
-    return Math.max(0, 1 - ((nx-mx)*(nx-mx))/(rx*rx) - ((ny-my)*(ny-my))/(ry*ry));
+  for(let pi = 1; pi < STEPS; pi++){
+    for(let ti = 0; ti <= STEPS * 2; ti++){
+      const phi   = (pi / STEPS) * Math.PI;
+      const theta = (ti / (STEPS * 2)) * Math.PI * 2;
+
+      const sinP = Math.sin(phi), cosP = Math.cos(phi);
+      const sinT = Math.sin(theta), cosT = Math.cos(theta);
+
+      // Unit-sphere normals
+      const nx = sinP * cosT;   // left–right  (-1 left, +1 right)
+      const ny = cosP;          // bottom–top  (-1 bottom, +1 top)
+      const nz = sinP * sinT;   // front–back  (+1 front)
+
+      // Only front hemisphere + soft sides
+      if(nz < -0.10) continue;
+      // Drop top of skull above hairline
+      if(ny > 0.90) continue;
+
+      // ── Facial feature displacement map ───────────────────────────────
+      let disp = 0;
+
+      // Nose bridge (vertical ridge)
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*32  + (ny+0.05)*(ny+0.05)*9))  * 0.09;
+      // Nose tip
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*38  + (ny+0.38)*(ny+0.38)*28)) * 0.14;
+      // Nostrils
+      disp += Math.max(0, 1 - Math.sqrt((nx+0.13)*(nx+0.13)*55+(ny+0.43)*(ny+0.43)*65)) * 0.05;
+      disp += Math.max(0, 1 - Math.sqrt((nx-0.13)*(nx-0.13)*55+(ny+0.43)*(ny+0.43)*65)) * 0.05;
+      // Cheekbones
+      disp += Math.max(0, 1 - Math.sqrt((nx+0.50)*(nx+0.50)*4.5+(ny+0.08)*(ny+0.08)*9)) * 0.07;
+      disp += Math.max(0, 1 - Math.sqrt((nx-0.50)*(nx-0.50)*4.5+(ny+0.08)*(ny+0.08)*9)) * 0.07;
+      // Brow ridge
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*0.9 + (ny-0.27)*(ny-0.27)*22)) * 0.065;
+      // Upper lip philtrum
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*20  + (ny+0.50)*(ny+0.50)*55)) * 0.05;
+      // Lower lip
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*9   + (ny+0.60)*(ny+0.60)*38)) * 0.07;
+      // Chin
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*11  + (ny+0.74)*(ny+0.74)*18)) * 0.055;
+      // Forehead centre
+      disp += Math.max(0, 1 - Math.sqrt(nx*nx*1.2 + (ny-0.52)*(ny-0.52)*5))  * 0.04;
+
+      // Eye sockets — recess
+      const le = Math.max(0, 1 - Math.sqrt((nx+0.30)*(nx+0.30)*20+(ny-0.16)*(ny-0.16)*26));
+      const re = Math.max(0, 1 - Math.sqrt((nx-0.30)*(nx-0.30)*20+(ny-0.16)*(ny-0.16)*26));
+      disp -= Math.max(le, re) * 0.07;
+
+      // Temple hollow
+      const lt = Math.max(0, 1 - Math.sqrt((nx+0.72)*(nx+0.72)*5+(ny-0.18)*(ny-0.18)*5));
+      const rt = Math.max(0, 1 - Math.sqrt((nx-0.72)*(nx-0.72)*5+(ny-0.18)*(ny-0.18)*5));
+      disp -= (lt + rt) * 0.04;
+
+      // Head proportions (slightly wide, moderately deep)
+      const r = 1.0 + Math.max(-0.15, disp);
+      const x3d =  nx * 0.78 * r * SCALE;
+      const y3d = -ny * 1.04 * r * SCALE;   // flip Y so +ny = up on screen
+      const z3d =  nz * 0.88 * r * SCALE;
+
+      // Brightness: facing camera + feature elevation
+      const bright = Math.max(0.12, nz * 0.55 + Math.max(0, disp) * 3.5 + 0.22);
+      // Dot radius: features punch out bigger dots
+      const size   = 1.1 + Math.max(0, disp) * 5.5;
+      // Per-dot organic phase for subtle shimmer
+      const phase  = Math.random() * Math.PI * 2;
+      const jx     = (Math.random() - 0.5) * 1.2;
+      const jy     = (Math.random() - 0.5) * 1.2;
+
+      pts.push({ x3d, y3d, z3d, bright, size, phase, jx, jy });
+    }
   }
 
-  // Returns 0..1 — 1 = face pressing forward (bright), 0 = recessed (dark)
-  function faceDepth(px, py){
-    const nx = (px - FCX) / FW;
-    const ny = (py - FCY) / FH;
+  // Sort back-to-front so near dots overdraw far ones
+  pts.sort((a, b) => a.z3d - b.z3d);
 
-    if(nx*nx + ny*ny > 1.28) return 0.26; // outside head
+  // ── Animation loop ─────────────────────────────────────────────────────
+  let tick = 0;
+  let rot  = 0;
 
-    const nose   = gb(nx, ny,  0,      0.10,  0.18, 0.30) * 1.00;
-    const brow   = gb(nx, ny,  0,     -0.34,  0.90, 0.10) * 0.82;
-    const lCheek = gb(nx, ny, -0.44,   0.06,  0.20, 0.16) * 0.62;
-    const rCheek = gb(nx, ny,  0.44,   0.06,  0.20, 0.16) * 0.62;
-    const lips   = gb(nx, ny,  0,      0.42,  0.24, 0.09) * 0.75;
-    const chin   = gb(nx, ny,  0,      0.70,  0.16, 0.08) * 0.50;
-    const raised = Math.max(nose, brow, lCheek, rCheek, lips, chin);
+  if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval = null; }
 
-    const lEye    = gb(nx, ny, -0.27, -0.20,  0.15, 0.11) * 0.90;
-    const rEye    = gb(nx, ny,  0.27, -0.20,  0.15, 0.11) * 0.90;
-    const recessed = Math.max(lEye, rEye);
+  function frame(){
+    aiMatrixInterval = requestAnimationFrame(frame);
+    tick++;
 
-    const base = nx*nx + ny*ny < 1.0 ? 0.40 : 0.26;
-    return Math.max(0.04, Math.min(1.0, base + raised * 0.60 - recessed * 0.34));
-  }
-
-  if(aiMatrixInterval) clearInterval(aiMatrixInterval);
-  aiMatrixInterval = setInterval(() => {
-    ctx.fillStyle = 'rgba(2,10,5,0.035)';
+    // Fade previous frame (motion trail)
+    ctx.fillStyle = 'rgba(1,5,2,0.28)';
     ctx.fillRect(0, 0, W, H);
 
-    drops.forEach((y, i) => {
-      const px = i * SZ;
-      const py = y * SZ;
-      const d  = faceDepth(px, py);
+    // Slow oscillating Y-axis rotation (±14°, ~9 s period)
+    const targetRot = Math.sin(tick / 265) * 0.245;
+    rot += (targetRot - rot) * 0.018;
+    const cosR = Math.cos(rot), sinR = Math.sin(rot);
 
-      const isLead = Math.random() > (1 - d * 0.4);
-      ctx.fillStyle  = isLead ? '#d4fff0' : '#00ff88';
-      ctx.font       = (isLead ? 'bold ' : '') + SZ + 'px monospace';
-      ctx.globalAlpha = 0.06 + d * 0.94;
-      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
-      ctx.globalAlpha = 1;
+    ctx.shadowColor = '#00ff88';
 
-      if(py > H && Math.random() > 0.972) drops[i] = 0;
-      drops[i]++;
+    pts.forEach(p => {
+      // Rotate around Y axis
+      const x = p.x3d * cosR - p.z3d * sinR;
+      const z = p.x3d * sinR + p.z3d * cosR;
+
+      // Back-face cull
+      if(z < -SCALE * 0.25) return;
+
+      // Perspective divide
+      const fov   = SCALE * 2.8;
+      const depth = fov / (fov + z + SCALE * 0.4);
+
+      const sx = cx + x * depth + p.jx;
+      // Subtle per-dot shimmer breathe
+      const shimmer = Math.sin(tick * 0.038 + p.phase) * 0.7;
+      const sy = cy + p.y3d * depth + p.jy + shimmer;
+
+      if(sx < -2 || sx > W+2 || sy < -2 || sy > H+2) return;
+
+      const alpha = Math.min(0.98, p.bright * depth * 1.55);
+      const r     = Math.max(0.5, p.size * depth);
+
+      ctx.shadowBlur = r * 5 * alpha;
+      ctx.beginPath();
+      ctx.arc(sx, sy, r, 0, 6.283);
+      ctx.fillStyle = `rgba(0,255,128,${alpha})`;
+      ctx.fill();
     });
-  }, 45);
+
+    ctx.shadowBlur = 0;
+  }
+
+  frame();
 }
 
 function stopMatrixAnimation(){
-  if(aiMatrixInterval){ clearInterval(aiMatrixInterval); aiMatrixInterval = null; }
+  if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval = null; }
   if(aiWaveInterval){   clearInterval(aiWaveInterval);   aiWaveInterval   = null; }
   if(aiMouthInterval){  clearInterval(aiMouthInterval);  aiMouthInterval  = null; }
   if(aiTimerInterval){  clearInterval(aiTimerInterval);  aiTimerInterval  = null; }
