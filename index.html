@@ -4535,9 +4535,11 @@ function startMatrixAnimation(){
   const ctx = canvas.getContext('2d');
 
   const dpr  = Math.min(window.devicePixelRatio || 1, 2);
-  const parent = canvas.parentElement;
-  const cssW = (parent?.offsetWidth  || 400);
-  const cssH = (parent?.offsetHeight || 560);
+  // Force canvas to fill the panel — height:100% doesn't resolve on min-height parents
+  const cssW = canvas.parentElement?.offsetWidth  || 400;
+  const cssH = 560;
+  canvas.style.width  = cssW + 'px';
+  canvas.style.height = cssH + 'px';
   canvas.width  = cssW * dpr;
   canvas.height = cssH * dpr;
   ctx.scale(dpr, dpr);
