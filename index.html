@@ -2174,6 +2174,12 @@ body.modal-open{overflow:hidden}
               <div class="call-status idle" id="callStatus">Mic off</div>
             </div>
           </div>
+          <div id="translationBanner" style="display:none; background:linear-gradient(90deg,rgba(0,30,15,.95),rgba(0,20,10,.95)); border:1px solid rgba(0,255,136,.25); border-radius:12px; padding:9px 16px; margin-top:8px; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span style="font-size:12px; font-weight:800; color:#00ff88; letter-spacing:.04em;">🌐 <span id="translationBannerText">Live Translation Active</span></span>
+            <label style="display:flex; align-items:center; gap:6px; margin-left:auto; cursor:pointer; font-size:12px; color:#a7f3d0;">
+              <input type="checkbox" id="autoSendToggle" checked style="accent-color:#00ff88;"> Auto-send to customer
+            </label>
+          </div>
 
           <div class="two">
             <div class="card">
@@ -2239,7 +2245,8 @@ body.modal-open{overflow:hidden}
                 <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.10em; color:#92400e; margin-bottom:8px;" id="translatedLabel">🌐 Spanish Response — for supplier</div>
                 <div style="font-size:16px; line-height:1.75; color:#1c1917;" id="translatedText"></div>
                 <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
-                  <button class="app-btn line" onclick="speakTranslated()">🔊 Speak to supplier</button>
+                  <button class="app-btn line" onclick="speakTranslated()">🔊 Speak locally</button>
+                  <button class="app-btn blue" onclick="sendCurrentToCall()">📞 Send to Call</button>
                 </div>
               </div>
               <div class="feedback-row">
@@ -3862,7 +3869,7 @@ async function startDeepgram(){
 
   // Open streaming connection
   deepgramSocket = new WebSocket(
-    'wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&vad_events=true&encoding=linear16&sample_rate=16000',
+    'wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&vad_events=true&encoding=linear16&sample_rate=16000&detect_language=true',
     ['token', dgKey]
   );
 
@@ -3918,11 +3925,13 @@ async function startDeepgram(){
 
     if(isFinal){
       finalTranscriptBuffer = (finalTranscriptBuffer + ' ' + transcript).trim();
-      
-      // If Spanish/French/Portuguese — show translated English version for rep
+
       if(detectedLanguage !== 'English'){
-        inputBox.value = finalTranscriptBuffer + ' [' + detectedLanguage + ']';
-        document.getElementById('callInfo').textContent = detectedLanguage + ' detected. Generating English rebuttal + ' + detectedLanguage + ' version for call.';
+        // Show raw foreign text immediately, then translate async
+        inputBox.value = '[' + detectedLanguage + '] ' + finalTranscriptBuffer;
+        document.getElementById('callInfo').textContent = '🌐 Translating ' + detectedLanguage + ' → English...';
+        // Translate customer speech to English and speak it to the rep
+        translateAndSpeakToRep(finalTranscriptBuffer, detectedLanguage, inputBox);
       } else {
         inputBox.value = finalTranscriptBuffer;
         document.getElementById('callInfo').textContent = 'Heard: "' + finalTranscriptBuffer + '"';
@@ -3933,7 +3942,7 @@ async function startDeepgram(){
         if(finalTranscriptBuffer.trim()){
           const bufferCopy = finalTranscriptBuffer;
           finalTranscriptBuffer = '';
-          document.getElementById('callInfo').textContent = 'Ready for next objection...';
+          document.getElementById('callInfo').textContent = 'Generating response...';
 
           // Route to bilingual if foreign language, otherwise standard
           if(detectedLanguage !== 'English'){
@@ -4164,11 +4173,20 @@ async function generateTranslatedVersion(englishText, language){
     // Show translated version panel
     const transPanel = document.getElementById('translatedPanel');
     const transText = document.getElementById('translatedText');
+    const transLabel = document.getElementById('translatedLabel');
     if(transPanel && transText){
       transText.textContent = translatedSpanishResponse;
       transPanel.style.display = 'block';
+      if(transLabel) transLabel.textContent = '🌐 ' + language + ' — playing to customer';
     }
-    toast('Translation ready — click Speak or Send to Call.');
+
+    // Auto-send to call if active and auto-send toggle is on
+    const autoSend = document.getElementById('autoSendToggle');
+    if(activeTwilioCall && autoSend && autoSend.checked){
+      await sendCurrentToCall();
+    } else {
+      toast(language + ' translation ready — sending to customer.');
+    }
   } catch(e){
     toast('Translation error.');
   }
@@ -4559,6 +4577,56 @@ function speakTranslated(){
   utterance.rate = 0.92;
   window.speechSynthesis.speak(utterance);
   toast('Speaking response through speakers.');
+}
+
+// Translate customer's foreign speech to English, then speak it to the rep
+async function translateAndSpeakToRep(foreignText, fromLang, inputBox){
+  try {
+    const resp = await fetch('/api/generate-response', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: 'You are a real-time call interpreter. Translate the following ' + fromLang + ' speech to natural English. Return ONLY the English translation.',
+        messages: [{ role: 'user', content: foreignText }],
+        max_tokens: 200
+      })
+    });
+    const data = await resp.json();
+    const englishText = data.reply || foreignText;
+
+    // Update input box with English translation so rep can read it
+    if(inputBox) inputBox.value = '🌐 ' + englishText;
+
+    // Speak the English translation to the rep through their browser
+    speakTranslationToRep(englishText);
+
+    // Update the translation banner
+    showTranslationBanner(fromLang);
+
+    document.getElementById('callInfo').textContent = '🌐 Customer said (in English): "' + englishText.slice(0, 80) + (englishText.length > 80 ? '...' : '') + '"';
+  } catch(e){
+    // Fail silently — don't break the main flow
+  }
+}
+
+// Reads the English translation aloud to the rep via browser TTS
+function speakTranslationToRep(text){
+  if(!window.speechSynthesis || !text) return;
+  if(window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.rate = 1.05;
+  utterance.volume = 1.0;
+  window.speechSynthesis.speak(utterance);
+}
+
+// Shows or updates the live translation banner
+function showTranslationBanner(fromLang){
+  const banner = document.getElementById('translationBanner');
+  const bannerText = document.getElementById('translationBannerText');
+  if(!banner) return;
+  if(bannerText) bannerText.textContent = 'Live Translation: ' + fromLang + ' → English (you hear) | English → ' + fromLang + ' (customer hears)';
+  banner.style.display = 'block';
 }
 
 // ============================================================
