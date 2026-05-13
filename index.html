@@ -1930,7 +1930,7 @@ body.modal-open{overflow:hidden}
             </div>
 
             <!-- FULL-SIZE MATRIX AI AVATAR — replaces form when call is active -->
-            <div id="aiCallStatus" style="display:none;background:linear-gradient(160deg,#020c06 0%,#030f08 50%,#020a0a 100%);border:1px solid rgba(0,255,136,.22);border-radius:20px;overflow:hidden;position:relative;animation:aiGlowPulse 4s ease-in-out infinite;">
+            <div id="aiCallStatus" style="display:none;background:#000;border:1px solid rgba(0,255,136,.22);border-radius:20px;overflow:hidden;position:relative;min-height:560px;animation:aiGlowPulse 4s ease-in-out infinite;">
               <!-- Matrix rain canvas -->
               <canvas id="matrixCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:1;pointer-events:none;"></canvas>
               <!-- Radial glow behind head -->
@@ -4539,84 +4539,112 @@ function startMatrixAnimation(){
   const ctx = canvas.getContext('2d');
 
   const dpr  = Math.min(window.devicePixelRatio || 1, 3);
-  const cssW = canvas.offsetWidth  || 460;
-  const cssH = canvas.offsetHeight || 620;
+  // Use parent dimensions as fallback if canvas hasn't laid out yet
+  const cssW = canvas.offsetWidth  || canvas.parentElement?.offsetWidth  || 400;
+  const cssH = canvas.offsetHeight || canvas.parentElement?.offsetHeight || 560;
   canvas.width  = cssW * dpr;
   canvas.height = cssH * dpr;
   ctx.scale(dpr, dpr);
   const W = cssW, H = cssH;
 
-  const SCALE = Math.min(W, H) * 0.37;
-  const cx = W * 0.50, cy = H * 0.43;
+  // Face is sized to fill most of the canvas
+  const SCALE = Math.min(W, H) * 0.42;
+  const CX = W * 0.50;
+  const CY = H * 0.44;
 
-  // ── Matrix rain setup ──────────────────────────────────────────────────
-  const SZ    = 13;
-  const cols  = Math.floor(W / SZ);
-  const drops = Array.from({length: cols}, () => Math.random() * -(H / SZ));
-  const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ₿∑∆∇∈ABCDEF';
-
-  // Fast 2D face depth map (Gaussian blobs in screen space)
-  // ny: negative = above center (forehead/brow), positive = below center (nose/chin)
-  function faceDepth2D(px, py){
-    const nx = (px - cx) / (SCALE * 0.78);
-    const ny = (py - cy) / (SCALE * 1.04);
-    if(nx*nx + ny*ny > 1.35) return 0;
-    function gb(mx,my,rx,ry){ return Math.max(0, 1-((nx-mx)*(nx-mx))/(rx*rx)-((ny-my)*(ny-my))/(ry*ry)); }
-    const raised = Math.max(
-      gb(0,   0.10, 0.18, 0.30) * 0.95,  // nose
-      gb(0,  -0.34, 0.88, 0.09) * 0.80,  // brow ridge
-      gb(-0.44, 0.06, 0.20, 0.15) * 0.60, // left cheek
-      gb( 0.44, 0.06, 0.20, 0.15) * 0.60, // right cheek
-      gb(0,  0.42, 0.22, 0.09) * 0.72,   // lips
-      gb(0,  0.70, 0.15, 0.07) * 0.48    // chin
-    );
-    const recession = Math.max(
-      gb(-0.28, -0.20, 0.14, 0.10) * 0.85, // left eye socket
-      gb( 0.28, -0.20, 0.14, 0.10) * 0.85  // right eye socket
-    );
-    const base = nx*nx + ny*ny < 1.0 ? 0.32 : 0.14;
-    return Math.max(0, Math.min(1, base + raised * 0.68 - recession * 0.32));
-  }
-
-  // ── 3D face point cloud ────────────────────────────────────────────────
+  // ── Fibonacci sphere point cloud ───────────────────────────────────────
+  // Fibonacci distribution = perfectly even coverage, no pole clustering
+  const N   = 5000;
+  const PHI = Math.PI * (1 + Math.sqrt(5)); // golden angle ≈ 2.39996 rad
   const pts = [];
-  const STEPS = 44;
-  for(let pi = 1; pi < STEPS; pi++){
-    for(let ti = 0; ti <= STEPS * 2; ti++){
-      const phi = (pi / STEPS) * Math.PI, theta = (ti / (STEPS * 2)) * Math.PI * 2;
-      const sinP = Math.sin(phi), cosP = Math.cos(phi);
-      const sinT = Math.sin(theta), cosT = Math.cos(theta);
-      const nx = sinP * cosT, ny = cosP, nz = sinP * sinT;
-      if(nz < -0.10 || ny > 0.90) continue;
 
-      let disp = 0;
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*32  + (ny+0.05)*(ny+0.05)*9))  * 0.09;
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*38  + (ny+0.38)*(ny+0.38)*28)) * 0.14;
-      disp += Math.max(0, 1 - Math.sqrt((nx+0.13)*(nx+0.13)*55+(ny+0.43)*(ny+0.43)*65)) * 0.05;
-      disp += Math.max(0, 1 - Math.sqrt((nx-0.13)*(nx-0.13)*55+(ny+0.43)*(ny+0.43)*65)) * 0.05;
-      disp += Math.max(0, 1 - Math.sqrt((nx+0.50)*(nx+0.50)*4.5+(ny+0.08)*(ny+0.08)*9)) * 0.07;
-      disp += Math.max(0, 1 - Math.sqrt((nx-0.50)*(nx-0.50)*4.5+(ny+0.08)*(ny+0.08)*9)) * 0.07;
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*0.9 + (ny-0.27)*(ny-0.27)*22)) * 0.065;
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*9   + (ny+0.60)*(ny+0.60)*38)) * 0.07;
-      disp += Math.max(0, 1 - Math.sqrt(nx*nx*11  + (ny+0.74)*(ny+0.74)*18)) * 0.055;
-      disp -= Math.max(0, 1 - Math.sqrt((nx+0.30)*(nx+0.30)*20+(ny-0.16)*(ny-0.16)*26)) * 0.07;
-      disp -= Math.max(0, 1 - Math.sqrt((nx-0.30)*(nx-0.30)*20+(ny-0.16)*(ny-0.16)*26)) * 0.07;
-      disp -= Math.max(0, 1 - Math.sqrt((nx+0.72)*(nx+0.72)*5+(ny-0.18)*(ny-0.18)*5))  * 0.04;
-      disp -= Math.max(0, 1 - Math.sqrt((nx-0.72)*(nx-0.72)*5+(ny-0.18)*(ny-0.18)*5))  * 0.04;
+  for(let i = 0; i < N; i++){
+    // Evenly-spaced latitude from top (+1) to bottom (-1)
+    const ny_sph = 1 - (i / (N - 1)) * 2;
+    const r_sph  = Math.sqrt(Math.max(0, 1 - ny_sph * ny_sph));
+    const theta  = PHI * i;
+    const nx_sph = r_sph * Math.cos(theta);
+    const nz_sph = r_sph * Math.sin(theta);
 
-      const r   = 1.0 + Math.max(-0.15, disp);
-      pts.push({
-        x3d:  nx * 0.78 * r * SCALE,
-        y3d: -ny * 1.04 * r * SCALE,
-        z3d:  nz * 0.88 * r * SCALE,
-        bright: Math.max(0.12, nz * 0.55 + Math.max(0, disp) * 3.5 + 0.22),
-        size:   1.1 + Math.max(0, disp) * 5.5,
-        phase:  Math.random() * Math.PI * 2,
-        jx: (Math.random()-0.5)*1.2, jy: (Math.random()-0.5)*1.2
-      });
+    // Keep only the front of the head (nz > 0) and below hairline
+    if(nz_sph < 0.02) continue;
+    if(ny_sph > 0.82) continue;   // above hairline — skip
+
+    // ── Human face feature displacement ───────────────────────────────
+    // Coordinate system: ny_sph +1=top-of-head, -1=chin
+    // Facial landmark ny values (real head proportions):
+    //   brow ridge  ≈ +0.33
+    //   eye centre  ≈ +0.18
+    //   nose tip    ≈ -0.08   ← slightly below equator
+    //   upper lip   ≈ -0.38
+    //   lower lip   ≈ -0.50
+    //   chin        ≈ -0.68
+    const nx = nx_sph, ny = ny_sph;
+
+    function g(mx,my,rx,ry){
+      const dx=(nx-mx)/rx, dy=(ny-my)/ry;
+      return Math.max(0, 1 - dx*dx - dy*dy);
     }
+
+    let disp = 0;
+
+    // Nose tip — biggest protrusion
+    disp += g( 0.00, -0.08, 0.14, 0.13) * 0.22;
+    // Nose bridge (vertical ridge from tip up to brow)
+    disp += g( 0.00,  0.13, 0.08, 0.22) * 0.10;
+    // Left/right nostrils
+    disp += g(-0.10, -0.16, 0.07, 0.06) * 0.08;
+    disp += g( 0.10, -0.16, 0.07, 0.06) * 0.08;
+    // Brow ridge (wide horizontal)
+    disp += g( 0.00,  0.33, 0.75, 0.07) * 0.09;
+    // Left cheekbone
+    disp += g(-0.46, -0.02, 0.18, 0.14) * 0.08;
+    // Right cheekbone
+    disp += g( 0.46, -0.02, 0.18, 0.14) * 0.08;
+    // Upper lip
+    disp += g( 0.00, -0.38, 0.18, 0.06) * 0.07;
+    // Lower lip
+    disp += g( 0.00, -0.50, 0.16, 0.07) * 0.09;
+    // Chin
+    disp += g( 0.00, -0.68, 0.14, 0.08) * 0.06;
+    // Forehead centre (slight dome)
+    disp += g( 0.00,  0.56, 0.50, 0.18) * 0.04;
+
+    // Eye sockets — recessed
+    disp -= g(-0.28,  0.18, 0.16, 0.12) * 0.09;
+    disp -= g( 0.28,  0.18, 0.16, 0.12) * 0.09;
+    // Temple hollows
+    disp -= g(-0.68,  0.16, 0.16, 0.16) * 0.05;
+    disp -= g( 0.68,  0.16, 0.16, 0.16) * 0.05;
+
+    const rd = 1.0 + Math.max(-0.14, disp);
+
+    // Head proportions: slightly wide, moderately deep
+    const x3d =  nx_sph * 0.80 * rd * SCALE;
+    const y3d = -ny_sph * 1.06 * rd * SCALE;  // flip: +ny_sph = up on screen
+    const z3d =  nz_sph * 0.90 * rd * SCALE;
+
+    // Brightness = how much it faces the camera + feature elevation
+    const bright = Math.max(0.10, nz_sph * 0.50 + Math.max(0, disp) * 4.0 + 0.20);
+    // Dot size: features pop with larger dots
+    const size   = 1.0 + Math.max(0, disp) * 6.0;
+
+    pts.push({
+      x3d, y3d, z3d, bright, size,
+      phase: Math.random() * Math.PI * 2,
+      jx: (Math.random() - 0.5) * 0.8,
+      jy: (Math.random() - 0.5) * 0.8
+    });
   }
+
+  // Back-to-front sort so closer dots paint over far ones
   pts.sort((a, b) => a.z3d - b.z3d);
+
+  // ── Matrix rain (background, subtle) ──────────────────────────────────
+  const SZ    = 12;
+  const cols  = Math.floor(W / SZ);
+  const drops = Array.from({length: cols}, () => Math.random() * -(H / SZ) * 1.5);
+  const chars = '01アイウエオカキクケコサシスセソ₿∑∆∇∈ABCDE';
 
   // ── Animation loop ─────────────────────────────────────────────────────
   let tick = 0, rot = 0;
@@ -4626,62 +4654,61 @@ function startMatrixAnimation(){
     aiMatrixInterval = requestAnimationFrame(frame);
     tick++;
 
-    // Soft trail — slower fade keeps rain streaks visible
-    ctx.fillStyle = 'rgba(1,5,2,0.07)';
+    // Clear to near-black each frame (dark trail)
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fillRect(0, 0, W, H);
 
-    // ── Layer 1: Matrix rain (background) ──────────────────────────────
+    // ── Rain layer ───────────────────────────────────────────────────────
     ctx.font = SZ + 'px monospace';
     for(let i = 0; i < cols; i++){
-      const px  = i * SZ;
-      const py  = drops[i] * SZ;
-      const fd  = faceDepth2D(px + SZ * 0.5, py);
-
-      // Characters behind the face glow with it; outside face = dim green rain
-      const isLead = (drops[i] % 1) < 0.18;
-      if(isLead){
-        // Leading character — always bright white-green
-        ctx.fillStyle = fd > 0.25 ? 'rgba(220,255,235,0.95)' : 'rgba(180,255,200,0.85)';
-      } else {
-        // Body of streak: face area lights up the code from within
-        const alpha = Math.min(0.82, 0.06 + fd * 0.76 + (Math.random() < 0.06 ? 0.12 : 0));
-        ctx.fillStyle = `rgba(0,255,110,${alpha})`;
+      const px = i * SZ;
+      const py = drops[i] * SZ;
+      // Rain is dim — face dots will dominate
+      const alpha = Math.random() < 0.5 ? 0.08 + Math.random() * 0.12 : 0;
+      if(alpha > 0){
+        ctx.fillStyle = `rgba(0,200,80,${alpha})`;
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
       }
-      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
-
-      // Advance drop — slightly faster through bright face regions
-      drops[i] += 0.60 + fd * 0.35;
-      if(drops[i] * SZ > H + SZ && Math.random() > 0.972) drops[i] = Math.random() * -28;
+      drops[i] += 0.5;
+      if(drops[i] * SZ > H + SZ && Math.random() > 0.97) drops[i] = Math.random() * -35;
     }
 
-    // ── Layer 2: 3D face dots (poke through) ───────────────────────────
-    const targetRot = Math.sin(tick / 265) * 0.245;
-    rot += (targetRot - rot) * 0.018;
+    // ── 3D face dots ─────────────────────────────────────────────────────
+    const targetRot = Math.sin(tick / 280) * 0.22;  // slow ±13° oscillation
+    rot += (targetRot - rot) * 0.016;
     const cosR = Math.cos(rot), sinR = Math.sin(rot);
 
     ctx.shadowColor = '#00ff88';
+
     for(let i = 0; i < pts.length; i++){
       const p = pts[i];
+
+      // Rotate around Y axis
       const x = p.x3d * cosR - p.z3d * sinR;
       const z = p.x3d * sinR + p.z3d * cosR;
-      if(z < -SCALE * 0.25) continue;
 
-      const fov   = SCALE * 2.8;
-      const depth = fov / (fov + z + SCALE * 0.4);
-      const sx    = cx + x * depth + p.jx;
-      const sy    = cy + p.y3d * depth + p.jy + Math.sin(tick * 0.038 + p.phase) * 0.7;
+      // Discard anything facing away after rotation
+      if(z < -SCALE * 0.20) continue;
+
+      // Perspective projection
+      const fov   = SCALE * 3.0;
+      const depth = fov / (fov + z + SCALE * 0.35);
+
+      const sx = CX + x * depth + p.jx;
+      const sy = CY + p.y3d * depth + p.jy + Math.sin(tick * 0.035 + p.phase) * 0.6;
 
       if(sx < 0 || sx > W || sy < 0 || sy > H) continue;
 
-      const alpha = Math.min(0.97, p.bright * depth * 1.55);
-      const r     = Math.max(0.5, p.size * depth);
+      const alpha = Math.min(0.96, p.bright * depth * 1.6);
+      const r     = Math.max(0.6, p.size * depth);
 
-      ctx.shadowBlur = r * 5 * alpha;
+      ctx.shadowBlur = r * 7 * alpha;
       ctx.beginPath();
-      ctx.arc(sx, sy, r, 0, 6.283);
-      ctx.fillStyle = `rgba(0,255,128,${alpha})`;
+      ctx.arc(sx, sy, r, 0, 6.2832);
+      ctx.fillStyle = `rgba(0,255,130,${alpha})`;
       ctx.fill();
     }
+
     ctx.shadowBlur = 0;
   }
 
@@ -4773,13 +4800,13 @@ async function startAiCall(){
     document.getElementById('aiCallTimer').textContent = '0:00';
     toast('AI call launched — dialing ' + number + '...');
 
-    // Small delay so canvas has correct dimensions after display:block
+    // Wait for layout to fully settle before reading canvas dimensions
     setTimeout(() => {
       startMatrixAnimation();
       startWaveAnimation();
       startMouthAnimation();
       startCallTimer();
-    }, 80);
+    }, 220);
 
   } catch(e) {
     toast('AI call failed: ' + e.message);
