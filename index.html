@@ -1881,6 +1881,11 @@ body.modal-open{overflow:hidden}
             <div id="aiCallerFormCard" style="background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:28px;margin-bottom:20px;">
               <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:16px;">📞 Start an AI Call</div>
 
+              <div style="margin-bottom:16px;">
+                <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Your Company Name</label>
+                <input id="aiCallerCompany" type="text" placeholder="e.g. Acme Payment Solutions" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
+              </div>
+
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
                 <div>
                   <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Customer Name</label>
@@ -4476,8 +4481,9 @@ async function startAiCall(){
     toast('Enter a valid 10-digit phone number.');
     return;
   }
-  const customerName = document.getElementById('aiCallerName').value.trim();
-  const callReason   = document.getElementById('aiCallerObjective').value.trim();
+  const customerName  = document.getElementById('aiCallerName').value.trim();
+  const callReason    = document.getElementById('aiCallerObjective').value.trim();
+  const companyName   = document.getElementById('aiCallerCompany').value.trim();
   const btn = document.getElementById('aiCallBtn');
   btn.disabled = true;
   btn.textContent = 'Dialing...';
@@ -4486,7 +4492,7 @@ async function startAiCall(){
     const resp = await fetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number, customerName, callReason })
+      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName })
     });
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Call failed');
