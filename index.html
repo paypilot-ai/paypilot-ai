@@ -4528,69 +4528,52 @@ let aiCallSeconds   = 0;
 
 function startMatrixAnimation(){
   const canvas = document.getElementById('matrixCanvas');
-  if(!canvas) return;
+  if(!canvas){ console.error('NO CANVAS'); return; }
   const ctx = canvas.getContext('2d');
+  if(!ctx){ console.error('NO CTX'); return; }
 
-  // Canvas has fixed HTML dimensions (280x320) — just read them directly
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const W   = canvas.offsetWidth  || 280;
-  const H   = canvas.offsetHeight || 320;
-  canvas.width  = W * dpr;
-  canvas.height = H * dpr;
-  ctx.scale(dpr, dpr);
+  // Hard-coded dimensions — canvas HTML already has width=280 height=320
+  const W = 280, H = 320;
+  canvas.width  = W;
+  canvas.height = H;
 
-  // Face fills most of the 280x320 canvas
-  const CX = W * 0.50;
-  const CY = H * 0.45;
-  const FW = W * 0.42;   // 118px half-width  → 236px total
-  const FH = H * 0.46;   // 147px half-height → 294px total
+  const CX = W / 2, CY = H * 0.45;
+  const FW = W * 0.42, FH = H * 0.46;
 
-  function faceDepth(px, py, breathe, mouthOpen){
-    const nx = (px - CX) / FW;
-    const ny = (py - CY) / FH;
+  function faceDepth(px, py){
+    const nx = (px - CX) / FW, ny = (py - CY) / FH;
     const r2 = nx*nx + ny*ny;
-    if(r2 > 1.4) return -1; // clearly outside
-    function g(mx, my, rx, ry){
-      const dx=(nx-mx)/rx, dy=(ny-my)/ry;
-      return Math.max(0, 1 - dx*dx - dy*dy);
-    }
+    if(r2 > 1.3) return 0;
+    function g(mx,my,rx,ry){ const dx=(nx-mx)/rx,dy=(ny-my)/ry; return Math.max(0,1-dx*dx-dy*dy); }
     let d = 0;
-    // Prominent features — strong forward protrusion
-    d += g( 0.00, +0.12, 0.18, 0.16) * 1.20 * breathe;  // nose tip
-    d += g( 0.00, -0.04, 0.08, 0.30) * 0.60;             // nose bridge
-    d += g( 0.00, -0.30, 0.90, 0.10) * 0.65;             // brow ridge
-    d += g(-0.42, +0.05, 0.24, 0.18) * 0.62;             // left cheekbone
-    d += g(+0.42, +0.05, 0.24, 0.18) * 0.52;             // right cheek (shadow side)
-    d += g( 0.00, -0.52, 0.60, 0.24) * 0.38;             // forehead
-    // Lips
-    const ls = mouthOpen * 0.08;
-    d += g( 0.00, +0.44 - ls, 0.22, 0.08) * (0.50 + mouthOpen * 0.25);
-    d += g( 0.00, +0.56 + ls, 0.20, 0.09) * (0.58 + mouthOpen * 0.25);
-    d -= g( 0.00, +0.50, 0.15, 0.03 + mouthOpen * 0.06) * mouthOpen * 2.5;
-    d += g( 0.00, +0.72, 0.18, 0.11) * 0.45;             // chin
-    // Deep recesses
-    d -= g(-0.26, -0.16, 0.20, 0.15) * 0.95;             // left eye socket
-    d -= g(+0.26, -0.16, 0.20, 0.15) * 0.80;             // right eye socket (less deep — lit side)
-    d -= g(-0.68, -0.10, 0.20, 0.22) * 0.55;             // left temple
-    d -= g(+0.68, -0.10, 0.20, 0.22) * 0.45;             // right temple
-    // Base face surface
-    const base = r2 < 1.0 ? 0.32 : (r2 < 1.4 ? 0.10 * (1.4 - r2) / 0.4 : 0);
-    // Simulate 3/4 left-lit effect: left side brighter, right falls off
-    const sideLighting = Math.max(0, -nx * 0.18);
-    return Math.max(-1, Math.min(1.0, base + d * 0.80 + sideLighting));
+    d += g( 0.00, +0.12, 0.18, 0.16) * 1.20;  // nose
+    d += g( 0.00, -0.04, 0.08, 0.30) * 0.60;  // nose bridge
+    d += g( 0.00, -0.30, 0.90, 0.10) * 0.65;  // brow
+    d += g(-0.42, +0.05, 0.24, 0.18) * 0.62;  // left cheek
+    d += g(+0.42, +0.05, 0.24, 0.18) * 0.52;  // right cheek
+    d += g( 0.00, -0.52, 0.60, 0.24) * 0.38;  // forehead
+    d += g( 0.00, +0.44, 0.22, 0.08) * 0.50;  // upper lip
+    d += g( 0.00, +0.56, 0.20, 0.09) * 0.58;  // lower lip
+    d += g( 0.00, +0.72, 0.18, 0.11) * 0.45;  // chin
+    d -= g(-0.26, -0.16, 0.20, 0.15) * 0.95;  // left eye
+    d -= g(+0.26, -0.16, 0.20, 0.15) * 0.80;  // right eye
+    d -= g(-0.68, -0.10, 0.20, 0.22) * 0.55;  // left temple
+    d -= g(+0.68, -0.10, 0.20, 0.22) * 0.45;  // right temple
+    const base = r2 < 1.0 ? 0.32 : 0;
+    return Math.max(0, Math.min(1, base + d * 0.80));
   }
 
-  // Mouth animation state
+  // Pre-build depth map for performance
+  const DS = 6;
+  const cols = Math.ceil(W/DS)+1, rows = Math.ceil(H/DS)+1;
+  const depths = new Float32Array(cols * rows);
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++)
+    depths[r*cols+c] = faceDepth(c*DS, r*DS);
+
+  // Mouth state
   let mouthAmp = 0, mouthPhase = 0;
-
-  // Dot grid — 7px spacing, slightly tighter for 280px canvas
-  const DS    = 7;
-  const dCols = Math.ceil(W / DS) + 1;
-  const dRows = Math.ceil(H / DS) + 1;
-
-  // Pre-randomise per-dot flicker offsets so they're stable
-  const flicker = new Float32Array(dCols * dRows);
-  for(let i = 0; i < flicker.length; i++) flicker[i] = Math.random() * Math.PI * 2;
+  const flicker = new Float32Array(cols*rows);
+  for(let i=0;i<flicker.length;i++) flicker[i] = Math.random()*Math.PI*2;
 
   let tick = 0;
   if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval = null; }
@@ -4598,69 +4581,47 @@ function startMatrixAnimation(){
   function frame(){
     aiMatrixInterval = requestAnimationFrame(frame);
     tick++;
-
-    // Full black clear each frame — no trails
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, W, H);
 
-    const breathe = 1.0 + Math.sin(tick * 0.018) * 0.07;
-
-    // Mouth lip sync
-    mouthAmp  += ((window.aiMouthTarget || 0) - mouthAmp) * 0.10;
+    const breathe = 1 + Math.sin(tick*0.018)*0.06;
+    mouthAmp += ((window.aiMouthTarget||0) - mouthAmp)*0.10;
     mouthPhase += 0.52;
-    const mouthOpen = mouthAmp * Math.max(0, 0.5 + 0.5 * Math.sin(mouthPhase) * (0.8 + 0.2 * Math.sin(mouthPhase * 2.1 + 0.5)));
+    const mo = mouthAmp * Math.max(0, 0.5 + 0.5*Math.sin(mouthPhase));
 
-    for(let row = 0; row < dRows; row++){
-      for(let col = 0; col < dCols; col++){
-        const px = col * DS;
-        const py = row * DS;
-        const d  = faceDepth(px, py, breathe, mouthOpen);
+    for(let r=0; r<rows; r++){
+      for(let c=0; c<cols; c++){
+        const px = c*DS, py = r*DS;
+        let d = depths[r*cols+c] * breathe;
 
-        // Per-dot shimmer — slight pulse so the face feels alive
-        const fi = row * dCols + col;
-        const shimmer = 0.88 + Math.sin(tick * 0.048 + flicker[fi]) * 0.12;
-
-        if(d <= -0.05){
-          // Eye sockets / deep shadow — very small dim dot or skip
-          if(d > -0.4 && Math.random() > 0.6){
-            ctx.beginPath();
-            ctx.arc(px, py, 0.8, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0,40,15,0.5)';
-            ctx.fill();
-          }
-          continue;
+        // Apply mouth opening
+        if(mo > 0.01){
+          const nx=(px-CX)/FW, ny=(py-CY)/FH;
+          const mouthG = Math.max(0, 1 - (nx/0.15)**2 - ((ny-0.50)/0.05)**2);
+          d -= mouthG * mo * 1.8;
         }
 
-        if(d < 0.05){
-          // Outside face or edge — tiny near-invisible dot
-          ctx.beginPath();
-          ctx.arc(px, py, 0.9, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(0,${(30 + d * 200)|0},8,0.25)`;
-          ctx.fill();
-          continue;
-        }
+        if(d < 0.04) continue;
 
-        // Inside face — scale dot by depth
-        const t = Math.min(1.0, d);
-        const nx2 = (px - CX) / FW, ny2 = (py - CY) / FH;
-        const lightBoost = Math.max(0, -nx2 * 0.25 + -ny2 * 0.30) * 0.35;
-        const bright = Math.min(1, t + lightBoost) * shimmer;
-        const maxR   = DS * 0.54;
-        const r      = maxR * (0.22 + t * 0.78);
+        const t = Math.min(1, d);
+        const sh = 0.88 + Math.sin(tick*0.05 + flicker[r*cols+c])*0.12;
+        // Left-side lighting boost
+        const nx=(px-CX)/FW;
+        const lit = t * sh * (1 + Math.max(0,-nx)*0.3);
+        const bright = Math.min(1, lit);
 
-        const green = Math.min(255, (60 + bright * 195) | 0);
-        const red   = (bright * 120) | 0;
-        const blue  = (bright * 60)  | 0;
-        const alpha = Math.min(1, 0.45 + bright * 0.55);
+        const radius = DS * 0.48 * (0.25 + t*0.75);
+        const g = Math.min(255, (55 + bright*200)|0);
+        const rv = (bright*115)|0;
+        const alpha = Math.min(1, 0.45 + bright*0.55);
 
         ctx.beginPath();
-        ctx.arc(px, py, r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${red},${green},${blue},${alpha})`;
+        ctx.arc(px, py, radius, 0, 6.283);
+        ctx.fillStyle = `rgba(${rv},${g},${(bright*55)|0},${alpha})`;
         ctx.fill();
       }
     }
   }
-
   frame();
 }
 
