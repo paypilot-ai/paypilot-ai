@@ -73,8 +73,12 @@ module.exports = async function handler(req, res) {
     history.push({ role: 'user', content: transcript });
 
     const messages = [{ role: 'system', content: buildPrompt(n, r, c) }, ...history.slice(-12)];
-    const raw   = await ask(messages);
-    const hangup = raw.includes('[END]');
+    const raw    = await ask(messages);
+    const lower  = raw.toLowerCase();
+    // Hang up if AI used the [END] signal OR reply contains a clear closing phrase
+    const hangup = raw.includes('[END]') ||
+      ['have a great day','goodbye','good day','take care',"i'll let you go",
+       'thanks for your time','nice talking','have a good one','talk soon'].some(p => lower.includes(p));
     const reply  = raw.replace('[END]', '').trim();
 
     history.push({ role: 'assistant', content: reply });
