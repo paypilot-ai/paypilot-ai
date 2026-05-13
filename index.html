@@ -1952,12 +1952,11 @@ body.modal-open{overflow:hidden}
               <!-- Main avatar area -->
               <div style="position:relative;display:flex;flex-direction:column;align-items:center;padding:28px 20px 16px;">
 
-                <!-- Orbital rings + head container -->
-                <div id="faceContainer" style="position:relative;width:280px;height:320px;display:flex;align-items:center;justify-content:center;">
-
+                <!-- Face canvas + scan line -->
+                <div id="faceContainer" style="position:relative;width:280px;height:320px;">
+                  <canvas id="matrixCanvas" width="280" height="320" style="display:block;position:absolute;top:0;left:0;width:280px;height:320px;z-index:1;"></canvas>
                   <!-- Scan line sweeping over head -->
                   <div id="aiScanLine" style="position:absolute;left:50%;transform:translateX(-50%);width:185px;height:2px;background:linear-gradient(to right,transparent 0%,rgba(0,255,136,.7) 40%,rgba(0,255,136,.9) 50%,rgba(0,255,136,.7) 60%,transparent 100%);animation:aiScanLine 3.2s linear infinite;z-index:3;pointer-events:none;border-radius:2px;"></div>
-
                 </div>
 
                 <!-- Status label + call mode indicator -->
@@ -4404,16 +4403,10 @@ let aiTimerInterval = null;
 let aiCallSeconds   = 0;
 
 function startMatrixAnimation(){
-  const container = document.getElementById('faceContainer');
-  if(!container){ return; }
-  let canvas = document.getElementById('matrixCanvas');
-  if(canvas) canvas.remove();
-  canvas = document.createElement('canvas');
-  canvas.id = 'matrixCanvas';
+  const canvas = document.getElementById('matrixCanvas');
+  if(!canvas){ return; }
   canvas.width  = 280;
   canvas.height = 320;
-  canvas.style.cssText = 'position:absolute;top:0;left:0;width:280px;height:320px;pointer-events:none;';
-  container.insertBefore(canvas, container.firstChild);
   const ctx = canvas.getContext('2d');
   const W=280, H=320, CX=W/2, CY=H*0.44, FW=W*0.44, FH=H*0.47;
   function g(nx,ny,mx,my,rx,ry){ const dx=(nx-mx)/rx,dy=(ny-my)/ry; return Math.max(0,1-dx*dx-dy*dy); }
