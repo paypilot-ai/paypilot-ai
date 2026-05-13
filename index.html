@@ -1928,7 +1928,7 @@ body.modal-open{overflow:hidden}
             <!-- FULL-SIZE MATRIX AI AVATAR — replaces form when call is active -->
             <div id="aiCallStatus" style="display:none;background:linear-gradient(160deg,#020c06 0%,#030f08 50%,#020a0a 100%);border:1px solid rgba(0,255,136,.22);border-radius:20px;overflow:hidden;position:relative;animation:aiGlowPulse 4s ease-in-out infinite;">
               <!-- Matrix rain canvas -->
-              <canvas id="matrixCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0.28;pointer-events:none;"></canvas>
+              <canvas id="matrixCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:1;pointer-events:none;"></canvas>
               <!-- Radial glow behind head -->
               <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:340px;height:340px;background:radial-gradient(circle,rgba(0,255,136,.10) 0%,transparent 70%);pointer-events:none;"></div>
 
@@ -1954,20 +1954,20 @@ body.modal-open{overflow:hidden}
                 <div style="position:relative;width:280px;height:320px;display:flex;align-items:center;justify-content:center;perspective:800px;">
 
                   <!-- Pulse rings -->
-                  <div class="ai-pulse-ring" style="width:230px;height:230px;top:45px;left:25px;animation-delay:0s;"></div>
-                  <div class="ai-pulse-ring" style="width:230px;height:230px;top:45px;left:25px;animation-delay:.8s;"></div>
-                  <div class="ai-pulse-ring" style="width:230px;height:230px;top:45px;left:25px;animation-delay:1.6s;"></div>
+                  <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:0s;"></div>
+                  <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:.8s;"></div>
+                  <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:1.6s;"></div>
 
                   <!-- Orbital rings -->
-                  <div style="position:absolute;width:260px;height:260px;top:30px;left:10px;border-radius:50%;border:1px solid rgba(0,255,136,.3);animation:aiOrbit1 9s linear infinite;transform-style:preserve-3d;transform:rotateX(68deg);pointer-events:none;"></div>
-                  <div style="position:absolute;width:240px;height:240px;top:40px;left:20px;border-radius:50%;border:1px dashed rgba(0,255,136,.18);animation:aiOrbit2 14s linear infinite;transform-style:preserve-3d;transform:rotateX(68deg) rotateZ(55deg);pointer-events:none;"></div>
-                  <div style="position:absolute;width:220px;height:220px;top:50px;left:30px;border-radius:50%;border:1px solid rgba(0,255,136,.12);animation:aiOrbit3 18s linear infinite;transform-style:preserve-3d;transform:rotateX(30deg) rotateY(20deg);pointer-events:none;"></div>
+                  <div style="display:none;position:absolute;width:1 9s linear infinite;transform-style:preserve-3d;transform:rotateX(68deg);pointer-events:none;"></div>
+                  <div style="display:none;position:absolute;width:2 14s linear infinite;transform-style:preserve-3d;transform:rotateX(68deg) rotateZ(55deg);pointer-events:none;"></div>
+                  <div style="display:none;position:absolute;width:3 18s linear infinite;transform-style:preserve-3d;transform:rotateX(30deg) rotateY(20deg);pointer-events:none;"></div>
 
                   <!-- Scan line sweeping over head -->
                   <div id="aiScanLine" style="position:absolute;left:50%;transform:translateX(-50%);width:185px;height:2px;background:linear-gradient(to right,transparent 0%,rgba(0,255,136,.7) 40%,rgba(0,255,136,.9) 50%,rgba(0,255,136,.7) 60%,transparent 100%);animation:aiScanLine 3.2s linear infinite;z-index:3;pointer-events:none;border-radius:2px;"></div>
 
                   <!-- The head SVG — detailed wireframe face -->
-                  <svg id="aiHeadSvg" width="185" height="225" viewBox="0 0 185 225" fill="none" xmlns="http://www.w3.org/2000/svg"
+                  <svg id="aiHeadSvg" style="display:none" width="185" height="225" viewBox="0 0 185 225" fill="none" xmlns="http://www.w3.org/2000/svg"
                        style="filter:drop-shadow(0 0 18px #00ff88) drop-shadow(0 0 6px rgba(0,255,136,.6));animation:aiHeadBob 3.8s ease-in-out infinite;z-index:2;">
                     <defs>
                       <radialGradient id="faceBg"     cx="50%" cy="44%" r="56%">
@@ -4328,24 +4328,71 @@ function startMatrixAnimation(){
   const canvas = document.getElementById('matrixCanvas');
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
-  canvas.width  = canvas.offsetWidth  || 520;
-  canvas.height = canvas.offsetHeight || 680;
+  canvas.width  = canvas.offsetWidth  || 460;
+  canvas.height = canvas.offsetHeight || 620;
   const W = canvas.width, H = canvas.height;
-  const cols = Math.floor(W / 13);
+  const SZ = 13;
+  const cols = Math.floor(W / SZ);
   const drops = Array(cols).fill(1);
   const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノABCDEFGHIJKLM₿∑∆∇∈';
+
+  // Gaussian blob helper
+  function gb(px, py, mx, my, rx, ry){
+    return Math.max(0, 1 - ((px-mx)*(px-mx))/(rx*rx) - ((py-my)*(py-my))/(ry*ry));
+  }
+
+  // Face depth map — returns 0..1 (1=most forward/bright, 0=recessed/dark)
+  function faceDepth(px, py){
+    const cx = W * 0.5;
+    const cy = H * 0.44;
+    const fw = W * 0.29; // face half-width in pixels
+    const fh = H * 0.42; // face half-height in pixels
+
+    const nx = (px - cx) / fw; // normalised x   -1..1
+    const ny = (py - cy) / fh; // normalised y   -1..1
+
+    // Outside head silhouette → dim background rain
+    if(nx*nx + ny*ny > 1.25) return 0.28;
+
+    // --- raised features (bright) ---
+    const nose   = gb(nx, ny,  0,      0.10,  0.18, 0.30) * 1.00; // nose tip & bridge
+    const brow   = gb(nx, ny,  0,     -0.34,  0.90, 0.10) * 0.82; // brow ridge (wide)
+    const lCheek = gb(nx, ny, -0.44,   0.06,  0.20, 0.16) * 0.62;
+    const rCheek = gb(nx, ny,  0.44,   0.06,  0.20, 0.16) * 0.62;
+    const lips   = gb(nx, ny,  0,      0.42,  0.24, 0.09) * 0.75;
+    const chin   = gb(nx, ny,  0,      0.70,  0.16, 0.08) * 0.50;
+    const raised = Math.max(nose, brow, lCheek, rCheek, lips, chin);
+
+    // --- recessed features (dark) ---
+    const lEye = gb(nx, ny, -0.27, -0.20,  0.15, 0.11) * 0.90;
+    const rEye = gb(nx, ny,  0.27, -0.20,  0.15, 0.11) * 0.90;
+    const temple = gb(nx, ny,  0,    -0.60,  0.65, 0.12) * 0.30; // forehead taper
+    const recessed = Math.max(lEye, rEye, temple);
+
+    const base = nx*nx + ny*ny < 1.0 ? 0.40 : 0.28;
+    return Math.max(0.04, Math.min(1.0, base + raised * 0.60 - recessed * 0.34));
+  }
+
   if(aiMatrixInterval) clearInterval(aiMatrixInterval);
   aiMatrixInterval = setInterval(() => {
-    ctx.fillStyle = 'rgba(2,12,6,0.04)';
+    // Slow fade — trails persist longer for depth illusion
+    ctx.fillStyle = 'rgba(2,10,5,0.035)';
     ctx.fillRect(0, 0, W, H);
+
     drops.forEach((y, i) => {
-      const bright = Math.random() > 0.92;
-      ctx.fillStyle = bright ? '#afffcf' : '#00ff88';
-      ctx.font = (bright ? 'bold ' : '') + '12px monospace';
-      ctx.globalAlpha = bright ? 1 : 0.7 + Math.random() * 0.3;
-      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 13, y * 13);
+      const px = i * SZ;
+      const py = y * SZ;
+      const d  = faceDepth(px, py);
+
+      // Whiteish leading edge spike in bright areas
+      const isLead = Math.random() > (1 - d * 0.4);
+      ctx.fillStyle = isLead ? '#d4fff0' : '#00ff88';
+      ctx.font = (isLead ? 'bold ' : '') + SZ + 'px monospace';
+      ctx.globalAlpha = 0.06 + d * 0.94;
+      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
       ctx.globalAlpha = 1;
-      if(y * 13 > H && Math.random() > 0.972) drops[i] = 0;
+
+      if(py > H && Math.random() > 0.972) drops[i] = 0;
       drops[i]++;
     });
   }, 45);
