@@ -1658,6 +1658,9 @@ body.modal-open{overflow:hidden}
         <button class="mob-drawer-btn" data-mob-page="compliance" onclick="showPage('compliance',document.querySelector('[data-page=compliance]'));closeMobDrawer()">
           <span class="mob-icon">🛡️</span>Compliance
         </button>
+        <button class="mob-drawer-btn" data-mob-page="guide" onclick="showPage('guide',document.querySelector('[data-page=guide]'));closeMobDrawer()">
+          <span class="mob-icon">📖</span>How to Use
+        </button>
       </div>
     </div>
 
@@ -3535,7 +3538,8 @@ function showPage(id, el){
     analytics:'Analytics',
     settings:'Settings',
     billing:'Billing',
-    compliance:'Compliance'
+    compliance:'Compliance',
+    guide:'How to Use'
   })[id] || id;
 
   // Hide Live pill on AI Caller page (it's about outbound, not live assist)
@@ -3548,7 +3552,7 @@ function showPage(id, el){
   }
 
   // Sync mobile bottom nav
-  const drawerPages = ['scripts','analytics','settings','compliance'];
+  const drawerPages = ['scripts','analytics','settings','compliance','guide'];
   document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.mob-drawer-btn').forEach(b => b.classList.remove('active'));
   if(drawerPages.includes(id)){
