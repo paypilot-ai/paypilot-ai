@@ -4569,52 +4569,48 @@ function startMatrixAnimation(){
   const W = cssW, H = cssH;
 
   const CX = W * 0.50;
-  const CY = H * 0.44;
-  const FW = Math.min(W, H) * 0.50;  // face half-width in screen px
-  const FH = Math.min(W, H) * 0.62;  // face half-height in screen px
+  const CY = H * 0.43;
+  const FW = Math.min(W, H) * 0.52;
+  const FH = Math.min(W, H) * 0.65;
 
-  // ── 2D face depth map (screen-space Gaussian blobs) ───────────────────
-  // nx_s = (px-CX)/FW,  ny_s = (py-CY)/FH
-  // ny_s < 0 → above center (brow/forehead),  ny_s > 0 → below (nose/chin)
   function faceDepth(px, py, breathe){
     const nx = (px - CX) / FW;
     const ny = (py - CY) / FH;
-    if(nx*nx + ny*ny > 1.45) return 0;
-
+    if(nx*nx + ny*ny > 1.5) return 0;
     function g(mx, my, rx, ry){
       const dx=(nx-mx)/rx, dy=(ny-my)/ry;
       return Math.max(0, 1 - dx*dx - dy*dy);
     }
-
     let d = 0;
-    d += g( 0.00, +0.08, 0.16, 0.14) * 0.95 * breathe;  // nose tip (biggest)
-    d += g( 0.00, -0.08, 0.09, 0.26) * 0.55;             // nose bridge
-    d += g(-0.11, +0.18, 0.08, 0.07) * 0.45;             // left nostril
-    d += g(+0.11, +0.18, 0.08, 0.07) * 0.45;             // right nostril
-    d += g( 0.00, -0.33, 0.82, 0.08) * 0.52;             // brow ridge
-    d += g(-0.46, +0.02, 0.20, 0.16) * 0.48;             // left cheekbone
-    d += g(+0.46, +0.02, 0.20, 0.16) * 0.48;             // right cheekbone
-    d += g( 0.00, +0.40, 0.20, 0.07) * 0.42;             // upper lip
-    d += g( 0.00, +0.52, 0.18, 0.08) * 0.52;             // lower lip
-    d += g( 0.00, +0.68, 0.16, 0.09) * 0.38;             // chin
-    d += g( 0.00, -0.55, 0.55, 0.20) * 0.28;             // forehead dome
-
-    // Eye sockets — recess (dark holes)
-    d -= g(-0.28, -0.18, 0.18, 0.13) * 0.72;
-    d -= g(+0.28, -0.18, 0.18, 0.13) * 0.72;
-    // Temple hollows
-    d -= g(-0.70, -0.14, 0.18, 0.18) * 0.38;
-    d -= g(+0.70, -0.14, 0.18, 0.18) * 0.38;
-
-    const base = nx*nx + ny*ny < 1.0 ? 0.28 : 0;
-    return Math.max(-0.5, Math.min(1.0, base + d * 0.72));
+    d += g( 0.00, +0.10, 0.17, 0.15) * 1.0 * breathe;
+    d += g( 0.00, -0.06, 0.09, 0.28) * 0.55;
+    d += g(-0.12, +0.20, 0.08, 0.07) * 0.45;
+    d += g(+0.12, +0.20, 0.08, 0.07) * 0.45;
+    d += g( 0.00, -0.32, 0.85, 0.09) * 0.55;
+    d += g(-0.44, +0.03, 0.22, 0.17) * 0.52;
+    d += g(+0.44, +0.03, 0.22, 0.17) * 0.52;
+    d += g( 0.00, +0.42, 0.21, 0.07) * 0.44;
+    d += g( 0.00, +0.54, 0.19, 0.09) * 0.55;
+    d += g( 0.00, +0.70, 0.17, 0.10) * 0.40;
+    d += g( 0.00, -0.54, 0.56, 0.22) * 0.32;
+    d -= g(-0.27, -0.17, 0.19, 0.14) * 0.78;
+    d -= g(+0.27, -0.17, 0.19, 0.14) * 0.78;
+    d -= g(-0.72, -0.12, 0.19, 0.20) * 0.42;
+    d -= g(+0.72, -0.12, 0.19, 0.20) * 0.42;
+    const base = nx*nx + ny*ny < 1.0 ? 0.30 : 0;
+    return Math.max(-0.5, Math.min(1.0, base + d * 0.74));
   }
 
-  // ── Rain columns ───────────────────────────────────────────────────────
-  const SZ    = 13;
+  // ── Matrix rain ──────────────────────────────────────────────────────
+  const SZ    = 14;
   const cols  = Math.floor(W / SZ);
-  const drops = Array.from({length: cols}, () => Math.random() * -(H / SZ) * 1.8);
+  const drops = Array.from({length: cols}, () => Math.random() * -(H / SZ) * 2);
   const chars = '01アイウエオカキクケコサシスセソタチツナニヌネノ₿∑∆∇∈ABCDEFGH';
+
+  // ── Dot grid ─────────────────────────────────────────────────────────
+  const DS = 9; // dot grid spacing
+  const dCols = Math.ceil(W / DS);
+  const dRows = Math.ceil(H / DS);
 
   let tick = 0;
   if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval = null; }
@@ -4623,61 +4619,73 @@ function startMatrixAnimation(){
     aiMatrixInterval = requestAnimationFrame(frame);
     tick++;
 
-    // Very slow fade — long rain trails
-    ctx.fillStyle = 'rgba(0,0,0,0.055)';
+    ctx.fillStyle = 'rgba(0,0,0,0.14)';
     ctx.fillRect(0, 0, W, H);
 
-    // Subtle breathing on face depth (makes it feel alive/pushing)
-    const breathe = 1.0 + Math.sin(tick * 0.018) * 0.10;
+    const breathe = 1.0 + Math.sin(tick * 0.016) * 0.09;
 
+    // ── Layer 1: Background Matrix rain ──────────────────────────────
+    ctx.font = SZ + 'px monospace';
     for(let i = 0; i < cols; i++){
       const px = i * SZ;
       const py = drops[i] * SZ;
       const d  = faceDepth(px + SZ * 0.5, py, breathe);
+      const isLead = (drops[i] % 1) < 0.18;
 
-      const isLead = (drops[i] % 1) < 0.20;
-
-      if(d < -0.05){
-        // Eye sockets / temples — very dark, code barely visible (recessed)
-        ctx.font = SZ + 'px monospace';
-        ctx.fillStyle = `rgba(0,60,20,${0.06 + Math.random() * 0.04})`;
-        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
-
-      } else if(d > 0.08){
-        // Face surface — code lit by face pressing through
-        const t = Math.min(1, d);  // 0→1 brightness scale
-        const fontSize  = SZ + (t * 3) | 0;
-        const isBold    = t > 0.45;
-
-        if(isLead){
-          // Lead char: bright white-green on face, slightly larger
-          const g = (210 + t * 45) | 0;
-          ctx.font = (isBold ? 'bold ' : '') + (fontSize + 1) + 'px monospace';
-          ctx.fillStyle = `rgba(${180 + t*75|0},255,${g},${0.82 + t * 0.16})`;
-        } else {
-          // Body char: green intensity scales with depth
-          const green = (170 + t * 85) | 0;
-          const blue  = (40  + t * 80) | 0;
-          const alpha = 0.18 + t * 0.68;
-          ctx.font = (isBold ? 'bold ' : '') + fontSize + 'px monospace';
-          ctx.fillStyle = `rgba(0,${green},${blue},${alpha})`;
-        }
-        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
-
+      if(d > 0.05){
+        // Behind the face — dim so dots dominate
+        ctx.fillStyle = isLead
+          ? 'rgba(0,110,30,0.22)'
+          : `rgba(0,70,15,${0.03 + Math.random()*0.04})`;
       } else {
-        // Outside face — normal dim rain
-        ctx.font = SZ + 'px monospace';
-        if(isLead){
-          ctx.fillStyle = 'rgba(160,255,180,0.72)';
-        } else {
-          ctx.fillStyle = `rgba(0,180,65,${0.12 + Math.random() * 0.10})`;
-        }
-        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
+        // Open background — normal rain
+        ctx.fillStyle = isLead
+          ? 'rgba(150,255,170,0.70)'
+          : `rgba(0,185,60,${0.10 + Math.random()*0.08})`;
       }
+      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
 
-      // Rain falls slightly slower where face presses (sheet resistance)
-      drops[i] += d > 0.3 ? 0.40 : (d < 0 ? 0.70 : 0.55);
-      if(drops[i] * SZ > H + SZ && Math.random() > 0.968) drops[i] = Math.random() * -45;
+      drops[i] += d > 0.3 ? 0.42 : 0.62;
+      if(drops[i] * SZ > H + SZ && Math.random() > 0.965) drops[i] = Math.random() * -42;
+    }
+
+    // ── Layer 2: Dot-grid face ────────────────────────────────────────
+    for(let row = 0; row < dRows; row++){
+      for(let col = 0; col < dCols; col++){
+        const px = col * DS + DS * 0.5;
+        const py = row * DS + DS * 0.5;
+        const d  = faceDepth(px, py, breathe);
+
+        if(d <= 0.01) continue;
+
+        const t = Math.min(1, d);
+        // Slight shimmer per dot — each one pulses independently
+        const shimmer = 0.82 + Math.sin(tick * 0.055 + col * 0.83 + row * 0.61) * 0.18;
+        // Upper-left lighting — simulate key light from top-left
+        const nx = (px - CX) / FW, ny = (py - CY) / FH;
+        const lightBoost = Math.max(0, (-nx * 0.3 + -ny * 0.4)) * 0.4;
+
+        const bright = Math.min(1, t + lightBoost);
+        const maxR   = DS * 0.46;
+        const r      = maxR * (0.12 + bright * 0.88);
+
+        const green  = Math.min(255, (130 + bright * 125) | 0);
+        const red    = (bright * 90) | 0;
+        const blue   = (bright * 50) | 0;
+        const alpha  = (0.28 + bright * 0.68) * shimmer;
+
+        // Soft glow halo (larger transparent circle)
+        ctx.beginPath();
+        ctx.arc(px, py, r * 2.6, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${red},${green >> 1},0,${alpha * 0.18})`;
+        ctx.fill();
+
+        // Bright core dot
+        ctx.beginPath();
+        ctx.arc(px, py, r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${Math.min(255,red+40)},${Math.min(255,green+30)},${Math.min(255,blue+20)},${Math.min(1,alpha+0.25)})`;
+        ctx.fill();
+      }
     }
   }
 
