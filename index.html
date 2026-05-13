@@ -4556,7 +4556,6 @@ function startMatrixAnimation(){
   const ctx = canvas.getContext('2d');
 
   const dpr  = Math.min(window.devicePixelRatio || 1, 3);
-  // Use parent dimensions as fallback if canvas hasn't laid out yet
   const cssW = canvas.offsetWidth  || canvas.parentElement?.offsetWidth  || 400;
   const cssH = canvas.offsetHeight || canvas.parentElement?.offsetHeight || 560;
   canvas.width  = cssW * dpr;
@@ -4564,174 +4563,117 @@ function startMatrixAnimation(){
   ctx.scale(dpr, dpr);
   const W = cssW, H = cssH;
 
-  // Face fills most of the canvas
-  const SCALE = Math.min(W, H) * 0.50;
   const CX = W * 0.50;
-  const CY = H * 0.43;
+  const CY = H * 0.44;
+  const FW = Math.min(W, H) * 0.50;  // face half-width in screen px
+  const FH = Math.min(W, H) * 0.62;  // face half-height in screen px
 
-  // ── Fibonacci sphere point cloud ───────────────────────────────────────
-  // Fibonacci distribution = perfectly even coverage, no pole clustering
-  const N   = 5000;
-  const PHI = Math.PI * (1 + Math.sqrt(5)); // golden angle ≈ 2.39996 rad
-  const pts = [];
+  // ── 2D face depth map (screen-space Gaussian blobs) ───────────────────
+  // nx_s = (px-CX)/FW,  ny_s = (py-CY)/FH
+  // ny_s < 0 → above center (brow/forehead),  ny_s > 0 → below (nose/chin)
+  function faceDepth(px, py, breathe){
+    const nx = (px - CX) / FW;
+    const ny = (py - CY) / FH;
+    if(nx*nx + ny*ny > 1.45) return 0;
 
-  for(let i = 0; i < N; i++){
-    // Evenly-spaced latitude from top (+1) to bottom (-1)
-    const ny_sph = 1 - (i / (N - 1)) * 2;
-    const r_sph  = Math.sqrt(Math.max(0, 1 - ny_sph * ny_sph));
-    const theta  = PHI * i;
-    const nx_sph = r_sph * Math.cos(theta);
-    const nz_sph = r_sph * Math.sin(theta);
-
-    // Keep only the front of the head (nz > 0) and below hairline
-    if(nz_sph < 0.02) continue;
-    if(ny_sph > 0.82) continue;   // above hairline — skip
-
-    // ── Human face feature displacement ───────────────────────────────
-    // Coordinate system: ny_sph +1=top-of-head, -1=chin
-    // Facial landmark ny values (real head proportions):
-    //   brow ridge  ≈ +0.33
-    //   eye centre  ≈ +0.18
-    //   nose tip    ≈ -0.08   ← slightly below equator
-    //   upper lip   ≈ -0.38
-    //   lower lip   ≈ -0.50
-    //   chin        ≈ -0.68
-    const nx = nx_sph, ny = ny_sph;
-
-    function g(mx,my,rx,ry){
+    function g(mx, my, rx, ry){
       const dx=(nx-mx)/rx, dy=(ny-my)/ry;
       return Math.max(0, 1 - dx*dx - dy*dy);
     }
 
-    let disp = 0;
+    let d = 0;
+    d += g( 0.00, +0.08, 0.16, 0.14) * 0.95 * breathe;  // nose tip (biggest)
+    d += g( 0.00, -0.08, 0.09, 0.26) * 0.55;             // nose bridge
+    d += g(-0.11, +0.18, 0.08, 0.07) * 0.45;             // left nostril
+    d += g(+0.11, +0.18, 0.08, 0.07) * 0.45;             // right nostril
+    d += g( 0.00, -0.33, 0.82, 0.08) * 0.52;             // brow ridge
+    d += g(-0.46, +0.02, 0.20, 0.16) * 0.48;             // left cheekbone
+    d += g(+0.46, +0.02, 0.20, 0.16) * 0.48;             // right cheekbone
+    d += g( 0.00, +0.40, 0.20, 0.07) * 0.42;             // upper lip
+    d += g( 0.00, +0.52, 0.18, 0.08) * 0.52;             // lower lip
+    d += g( 0.00, +0.68, 0.16, 0.09) * 0.38;             // chin
+    d += g( 0.00, -0.55, 0.55, 0.20) * 0.28;             // forehead dome
 
-    // Nose tip — biggest protrusion
-    disp += g( 0.00, -0.08, 0.14, 0.13) * 0.22;
-    // Nose bridge (vertical ridge from tip up to brow)
-    disp += g( 0.00,  0.13, 0.08, 0.22) * 0.10;
-    // Left/right nostrils
-    disp += g(-0.10, -0.16, 0.07, 0.06) * 0.08;
-    disp += g( 0.10, -0.16, 0.07, 0.06) * 0.08;
-    // Brow ridge (wide horizontal)
-    disp += g( 0.00,  0.33, 0.75, 0.07) * 0.09;
-    // Left cheekbone
-    disp += g(-0.46, -0.02, 0.18, 0.14) * 0.08;
-    // Right cheekbone
-    disp += g( 0.46, -0.02, 0.18, 0.14) * 0.08;
-    // Upper lip
-    disp += g( 0.00, -0.38, 0.18, 0.06) * 0.07;
-    // Lower lip
-    disp += g( 0.00, -0.50, 0.16, 0.07) * 0.09;
-    // Chin
-    disp += g( 0.00, -0.68, 0.14, 0.08) * 0.06;
-    // Forehead centre (slight dome)
-    disp += g( 0.00,  0.56, 0.50, 0.18) * 0.04;
-
-    // Eye sockets — recessed
-    disp -= g(-0.28,  0.18, 0.16, 0.12) * 0.09;
-    disp -= g( 0.28,  0.18, 0.16, 0.12) * 0.09;
+    // Eye sockets — recess (dark holes)
+    d -= g(-0.28, -0.18, 0.18, 0.13) * 0.72;
+    d -= g(+0.28, -0.18, 0.18, 0.13) * 0.72;
     // Temple hollows
-    disp -= g(-0.68,  0.16, 0.16, 0.16) * 0.05;
-    disp -= g( 0.68,  0.16, 0.16, 0.16) * 0.05;
+    d -= g(-0.70, -0.14, 0.18, 0.18) * 0.38;
+    d -= g(+0.70, -0.14, 0.18, 0.18) * 0.38;
 
-    const rd = 1.0 + Math.max(-0.14, disp);
-
-    // Head proportions: slightly wide, moderately deep
-    const x3d =  nx_sph * 0.80 * rd * SCALE;
-    const y3d = -ny_sph * 1.06 * rd * SCALE;  // flip: +ny_sph = up on screen
-    const z3d =  nz_sph * 0.90 * rd * SCALE;
-
-    // Brightness = how much it faces the camera + feature elevation
-    const bright = Math.max(0.10, nz_sph * 0.50 + Math.max(0, disp) * 4.0 + 0.20);
-    // Dot size: features pop with larger dots
-    const size   = 1.0 + Math.max(0, disp) * 6.0;
-
-    pts.push({
-      x3d, y3d, z3d, bright, size,
-      phase: Math.random() * Math.PI * 2,
-      jx: (Math.random() - 0.5) * 0.8,
-      jy: (Math.random() - 0.5) * 0.8
-    });
+    const base = nx*nx + ny*ny < 1.0 ? 0.28 : 0;
+    return Math.max(-0.5, Math.min(1.0, base + d * 0.72));
   }
 
-  // Back-to-front sort so closer dots paint over far ones
-  pts.sort((a, b) => a.z3d - b.z3d);
-
-  // ── Matrix rain (background, subtle) ──────────────────────────────────
-  const SZ    = 12;
+  // ── Rain columns ───────────────────────────────────────────────────────
+  const SZ    = 13;
   const cols  = Math.floor(W / SZ);
-  const drops = Array.from({length: cols}, () => Math.random() * -(H / SZ) * 1.5);
-  const chars = '01アイウエオカキクケコサシスセソ₿∑∆∇∈ABCDE';
+  const drops = Array.from({length: cols}, () => Math.random() * -(H / SZ) * 1.8);
+  const chars = '01アイウエオカキクケコサシスセソタチツナニヌネノ₿∑∆∇∈ABCDEFGH';
 
-  // ── Animation loop ─────────────────────────────────────────────────────
-  let tick = 0, rot = 0;
+  let tick = 0;
   if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval = null; }
 
   function frame(){
     aiMatrixInterval = requestAnimationFrame(frame);
     tick++;
 
-    // Slow fade — keeps rain streaks long and visible
-    ctx.fillStyle = 'rgba(0,0,0,0.065)';
+    // Very slow fade — long rain trails
+    ctx.fillStyle = 'rgba(0,0,0,0.055)';
     ctx.fillRect(0, 0, W, H);
 
-    // ── Rain layer — clearly visible falling code ─────────────────────
-    ctx.font = SZ + 'px monospace';
+    // Subtle breathing on face depth (makes it feel alive/pushing)
+    const breathe = 1.0 + Math.sin(tick * 0.018) * 0.10;
+
     for(let i = 0; i < cols; i++){
       const px = i * SZ;
       const py = drops[i] * SZ;
-      const isLead = (drops[i] % 1) < 0.22;
+      const d  = faceDepth(px + SZ * 0.5, py, breathe);
 
-      if(isLead){
-        // Leading character — brightest, near-white green
-        ctx.fillStyle = 'rgba(200,255,220,0.92)';
+      const isLead = (drops[i] % 1) < 0.20;
+
+      if(d < -0.05){
+        // Eye sockets / temples — very dark, code barely visible (recessed)
+        ctx.font = SZ + 'px monospace';
+        ctx.fillStyle = `rgba(0,60,20,${0.06 + Math.random() * 0.04})`;
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
+
+      } else if(d > 0.08){
+        // Face surface — code lit by face pressing through
+        const t = Math.min(1, d);  // 0→1 brightness scale
+        const fontSize  = SZ + (t * 3) | 0;
+        const isBold    = t > 0.45;
+
+        if(isLead){
+          // Lead char: bright white-green on face, slightly larger
+          const g = (210 + t * 45) | 0;
+          ctx.font = (isBold ? 'bold ' : '') + (fontSize + 1) + 'px monospace';
+          ctx.fillStyle = `rgba(${180 + t*75|0},255,${g},${0.82 + t * 0.16})`;
+        } else {
+          // Body char: green intensity scales with depth
+          const green = (170 + t * 85) | 0;
+          const blue  = (40  + t * 80) | 0;
+          const alpha = 0.18 + t * 0.68;
+          ctx.font = (isBold ? 'bold ' : '') + fontSize + 'px monospace';
+          ctx.fillStyle = `rgba(0,${green},${blue},${alpha})`;
+        }
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
+
       } else {
-        // Body of streak — solid green, clearly readable
-        ctx.fillStyle = `rgba(0,220,90,${0.30 + Math.random() * 0.20})`;
+        // Outside face — normal dim rain
+        ctx.font = SZ + 'px monospace';
+        if(isLead){
+          ctx.fillStyle = 'rgba(160,255,180,0.72)';
+        } else {
+          ctx.fillStyle = `rgba(0,180,65,${0.12 + Math.random() * 0.10})`;
+        }
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
       }
-      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
 
-      drops[i] += 0.55;
-      if(drops[i] * SZ > H + SZ && Math.random() > 0.968) drops[i] = Math.random() * -40;
+      // Rain falls slightly slower where face presses (sheet resistance)
+      drops[i] += d > 0.3 ? 0.40 : (d < 0 ? 0.70 : 0.55);
+      if(drops[i] * SZ > H + SZ && Math.random() > 0.968) drops[i] = Math.random() * -45;
     }
-
-    // ── 3D face dots ─────────────────────────────────────────────────────
-    const targetRot = Math.sin(tick / 280) * 0.22;  // slow ±13° oscillation
-    rot += (targetRot - rot) * 0.016;
-    const cosR = Math.cos(rot), sinR = Math.sin(rot);
-
-    ctx.shadowColor = '#00ff88';
-
-    for(let i = 0; i < pts.length; i++){
-      const p = pts[i];
-
-      // Rotate around Y axis
-      const x = p.x3d * cosR - p.z3d * sinR;
-      const z = p.x3d * sinR + p.z3d * cosR;
-
-      // Discard anything facing away after rotation
-      if(z < -SCALE * 0.20) continue;
-
-      // Perspective projection
-      const fov   = SCALE * 3.0;
-      const depth = fov / (fov + z + SCALE * 0.35);
-
-      const sx = CX + x * depth + p.jx;
-      const sy = CY + p.y3d * depth + p.jy + Math.sin(tick * 0.035 + p.phase) * 0.6;
-
-      if(sx < 0 || sx > W || sy < 0 || sy > H) continue;
-
-      const alpha = Math.min(0.98, p.bright * depth * 1.8);
-      const r     = Math.max(0.8, p.size * depth * 1.2);
-
-      ctx.shadowBlur = r * 9 * alpha;
-      ctx.beginPath();
-      ctx.arc(sx, sy, r, 0, 6.2832);
-      ctx.fillStyle = `rgba(0,255,140,${alpha})`;
-      ctx.fill();
-    }
-
-    ctx.shadowBlur = 0;
   }
 
   frame();
