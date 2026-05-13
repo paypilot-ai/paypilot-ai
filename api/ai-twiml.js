@@ -43,11 +43,18 @@ function gatherTwiml(say, historyB64, retries, n, r, c) {
 </Response>`;
 }
 
+const fs = require('fs');
+function logSpeech(callSid, text) {
+  if (!callSid) return;
+  try { fs.writeFileSync(`/tmp/speech_${callSid.replace(/[^A-Za-z0-9]/g,'')}.json`, JSON.stringify({ text, ts: Date.now() })); } catch(e) {}
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
   const n = req.query?.n || '';
   const r = req.query?.r || '';
   const c = req.query?.c || '';
+  const callSid = req.body?.CallSid || '';
 
   try {
     const prompt = buildPrompt(n, r, c);
@@ -56,6 +63,7 @@ module.exports = async function handler(req, res) {
       { role: 'system', content: prompt },
       { role: 'user',   content: `Give a natural cold call opening. Introduce yourself as Alex from ${company}, and in one sentence say why you're calling. Sound like a real person, not a script. Keep it under 25 words total.` }
     ]);
+    logSpeech(callSid, greeting);
     const history = Buffer.from(JSON.stringify([{ role: 'assistant', content: greeting }])).toString('base64url');
     res.status(200).send(gatherTwiml(greeting, history, 0, n, r, c));
   } catch (e) {

@@ -4533,6 +4533,11 @@ async function endTwilioCall(){
 // ── AI Auto-Caller ──────────────────────────────────────────────
 let activeAiCallSid = null;
 let aiCallPollInterval = null;
+let aiSpeechPollInterval = null;
+let aiMouthTimeout = null;
+let aiLastSpeechTs = 0;
+// Shared mouth state read by canvas animation
+window.aiMouthTarget = 0; // 0=closed, 1=speaking
 
 function startCallStatusPolling(sid){
   if(aiCallPollInterval) clearInterval(aiCallPollInterval);
@@ -4548,6 +4553,35 @@ function startCallStatusPolling(sid){
       }
     } catch(e){}
   }, 3000);
+}
+
+function startSpeechPolling(sid){
+  stopSpeechPolling();
+  aiSpeechPollInterval = setInterval(async () => {
+    if(!sid) return;
+    try {
+      const resp = await fetch('/api/speech-log?sid=' + sid);
+      const data = await resp.json();
+      if(data.ts && data.ts !== aiLastSpeechTs && data.text){
+        aiLastSpeechTs = data.ts;
+        triggerLipSync(data.text);
+      }
+    } catch(e){}
+  }, 1200);
+}
+
+function stopSpeechPolling(){
+  if(aiSpeechPollInterval){ clearInterval(aiSpeechPollInterval); aiSpeechPollInterval = null; }
+  if(aiMouthTimeout){ clearTimeout(aiMouthTimeout); aiMouthTimeout = null; }
+  window.aiMouthTarget = 0;
+}
+
+function triggerLipSync(text){
+  const words = text.trim().split(/\s+/).length;
+  const durationMs = Math.max(1500, Math.min(8000, (words / 2.6) * 1000));
+  window.aiMouthTarget = 1.0;
+  if(aiMouthTimeout) clearTimeout(aiMouthTimeout);
+  aiMouthTimeout = setTimeout(() => { window.aiMouthTarget = 0; }, durationMs);
 }
 let aiMatrixInterval = null;
 let aiWaveInterval  = null;
@@ -4573,7 +4607,7 @@ function startMatrixAnimation(){
   const FW = Math.min(W, H) * 0.52;
   const FH = Math.min(W, H) * 0.65;
 
-  function faceDepth(px, py, breathe){
+  function faceDepth(px, py, breathe, mouthOpen){
     const nx = (px - CX) / FW;
     const ny = (py - CY) / FH;
     if(nx*nx + ny*ny > 1.5) return 0;
@@ -4589,8 +4623,12 @@ function startMatrixAnimation(){
     d += g( 0.00, -0.32, 0.85, 0.09) * 0.55;
     d += g(-0.44, +0.03, 0.22, 0.17) * 0.52;
     d += g(+0.44, +0.03, 0.22, 0.17) * 0.52;
-    d += g( 0.00, +0.42, 0.21, 0.07) * 0.44;
-    d += g( 0.00, +0.54, 0.19, 0.09) * 0.55;
+    // Lips — separated by mouthOpen gap
+    const lipSplit = mouthOpen * 0.07;
+    d += g( 0.00, +0.42 - lipSplit, 0.21, 0.07) * (0.44 + mouthOpen * 0.2);
+    d += g( 0.00, +0.54 + lipSplit, 0.19, 0.09) * (0.55 + mouthOpen * 0.2);
+    // Dark mouth cavity when open
+    d -= g( 0.00, +0.48, 0.14, 0.03 + mouthOpen * 0.05) * mouthOpen * 2.2;
     d += g( 0.00, +0.70, 0.17, 0.10) * 0.40;
     d += g( 0.00, -0.54, 0.56, 0.22) * 0.32;
     d -= g(-0.27, -0.17, 0.19, 0.14) * 0.78;
@@ -4600,6 +4638,9 @@ function startMatrixAnimation(){
     const base = nx*nx + ny*ny < 1.0 ? 0.30 : 0;
     return Math.max(-0.5, Math.min(1.0, base + d * 0.74));
   }
+
+  // Mouth animation state
+  let mouthAmp = 0, mouthPhase = 0;
 
   // ── Matrix rain ──────────────────────────────────────────────────────
   const SZ    = 14;
@@ -4624,12 +4665,17 @@ function startMatrixAnimation(){
 
     const breathe = 1.0 + Math.sin(tick * 0.016) * 0.09;
 
+    // Mouth lip sync — smooth toward target, oscillate at speech rate
+    mouthAmp += ((window.aiMouthTarget || 0) - mouthAmp) * 0.10;
+    mouthPhase += 0.55; // ~5.5 Hz syllable rate at 60fps
+    const mouthOpen = mouthAmp * Math.max(0, 0.5 + 0.5 * Math.sin(mouthPhase) * (0.8 + 0.2 * Math.sin(mouthPhase * 1.9 + 0.7)));
+
     // ── Layer 1: Background Matrix rain ──────────────────────────────
     ctx.font = SZ + 'px monospace';
     for(let i = 0; i < cols; i++){
       const px = i * SZ;
       const py = drops[i] * SZ;
-      const d  = faceDepth(px + SZ * 0.5, py, breathe);
+      const d  = faceDepth(px + SZ * 0.5, py, breathe, mouthOpen);
       const isLead = (drops[i] % 1) < 0.18;
 
       if(d > 0.05){
@@ -4654,7 +4700,7 @@ function startMatrixAnimation(){
       for(let col = 0; col < dCols; col++){
         const px = col * DS + DS * 0.5;
         const py = row * DS + DS * 0.5;
-        const d  = faceDepth(px, py, breathe);
+        const d  = faceDepth(px, py, breathe, mouthOpen);
 
         if(d <= 0.01) continue;
 
@@ -4785,6 +4831,7 @@ async function startAiCall(){
       startCallTimer();
     }, 220);
     startCallStatusPolling(data.callSid);
+    startSpeechPolling(data.callSid);
 
   } catch(e) {
     toast('AI call failed: ' + e.message);
@@ -4795,6 +4842,7 @@ async function startAiCall(){
 
 async function endAiCall(){
   if(aiCallPollInterval){ clearInterval(aiCallPollInterval); aiCallPollInterval = null; }
+  stopSpeechPolling();
   stopMatrixAnimation();
   const sid = activeAiCallSid;
   activeAiCallSid = null;

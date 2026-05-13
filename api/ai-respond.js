@@ -43,10 +43,17 @@ function gatherTwiml(say, historyB64, retries, n, r, c) {
 </Response>`;
 }
 
+const fs = require('fs');
+function logSpeech(callSid, text) {
+  if (!callSid) return;
+  try { fs.writeFileSync(`/tmp/speech_${callSid.replace(/[^A-Za-z0-9]/g,'')}.json`, JSON.stringify({ text, ts: Date.now() })); } catch(e) {}
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
 
   const transcript   = (req.body?.SpeechResult || '').trim();
+  const callSid      = req.body?.CallSid || '';
   const historyParam = req.query?.h || '';
   const retries      = parseInt(req.query?.retries || '0');
   const n            = req.query?.n || '';
@@ -80,6 +87,7 @@ module.exports = async function handler(req, res) {
       ['have a great day','goodbye','good day','take care',"i'll let you go",
        'thanks for your time','nice talking','have a good one','talk soon'].some(p => lower.includes(p));
     const reply  = raw.replace('[END]', '').trim();
+    logSpeech(callSid, reply);
 
     history.push({ role: 'assistant', content: reply });
     while (Buffer.from(JSON.stringify(history)).length > 6000) history.splice(0, 2);
