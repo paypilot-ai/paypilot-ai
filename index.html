@@ -1541,6 +1541,9 @@ body.modal-open{overflow:hidden}
         </div>
       </div>
     </div><!-- /.pricing-grid -->
+    <div style="text-align:center;padding:18px 24px 4px;color:rgba(255,255,255,.42);font-size:12px;line-height:1.7;max-width:620px;margin:0 auto;">
+      All plans are month-to-month subscriptions billed automatically. <strong style="color:rgba(255,255,255,.60);">No refunds.</strong> Your subscription continues until you cancel — cancel anytime from Settings before your next billing date. By subscribing you agree to these terms.
+    </div>
 
     <!-- HOME BILLING BANNER -->
     <div style="padding-bottom:84px;">
@@ -1952,7 +1955,7 @@ body.modal-open{overflow:hidden}
                 <!-- Orbital rings + head container -->
                 <div style="position:relative;width:280px;height:320px;display:flex;align-items:center;justify-content:center;perspective:800px;">
                   <!-- Face canvas — fixed size, inside the avatar box -->
-                  <canvas id="matrixCanvas" width="280" height="320" style="position:absolute;top:0;left:0;width:280px;height:320px;z-index:1;pointer-events:none;border-radius:4px;"></canvas>
+                  <canvas id="matrixCanvas" width="280" height="320" style="position:absolute;top:0;left:0;width:280px;height:320px;z-index:2;pointer-events:none;display:block;"></canvas>
 
                   <!-- Pulse rings -->
                   <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:0s;"></div>
@@ -2555,6 +2558,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
           <div style="margin-bottom:28px;">
             <h2 style="font-family:'Sora',sans-serif;font-size:32px;font-weight:800;letter-spacing:-.04em;color:var(--text);margin:0 0 6px;">Choose your plan</h2>
             <p style="color:var(--text-2);font-size:15px;margin:0;">Simple, transparent pricing. Call minutes billed separately at $0.04/min.</p>
+            <p style="color:var(--text-2);font-size:12px;margin:8px 0 0;padding:10px 14px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-radius:8px;line-height:1.6;"><strong style="color:#ef4444;">No refunds.</strong> Subscriptions renew automatically each month. Your plan stays active until you cancel — cancel anytime in Settings before your next billing date.</p>
           </div>
 
           <!-- Plan cards -->
@@ -4532,10 +4536,15 @@ function startMatrixAnimation(){
   const ctx = canvas.getContext('2d');
   if(!ctx){ console.error('NO CTX'); return; }
 
-  // Hard-coded dimensions — canvas HTML already has width=280 height=320
   const W = 280, H = 320;
   canvas.width  = W;
   canvas.height = H;
+
+  // Immediate paint — confirms canvas is live before animation loop starts
+  ctx.fillStyle = '#001a00';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#00ff88';
+  ctx.fillRect(W/2 - 40, H/2 - 10, 80, 20);
 
   const CX = W / 2, CY = H * 0.45;
   const FW = W * 0.42, FH = H * 0.46;
@@ -4713,10 +4722,11 @@ async function startAiCall(){
     // Wait for layout to fully settle before reading canvas dimensions
     setTimeout(() => {
       startMatrixAnimation();
+
       startWaveAnimation();
       startMouthAnimation();
       startCallTimer();
-    }, 220);
+    }, 600);
     startCallStatusPolling(data.callSid);
     startSpeechPolling(data.callSid);
 
