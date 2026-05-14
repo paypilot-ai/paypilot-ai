@@ -4385,7 +4385,7 @@ function startMatrixAnimation(){
       if(y>=0&&y<H){
         const ch=CHARS[Math.floor(Math.random()*CHARS.length)];
         ctx.font=`bold ${d>0?Math.round(8+d*5):8}px monospace`;
-        ctx.fillStyle=inM&&mo>0.3?'rgba(255,255,80,1)':d>0.65?'rgba(200,255,200,1)':d>0.2?'rgba(0,230,50,1)':'rgba(0,200,50,0.9)';
+        ctx.fillStyle=d>0.65?'rgba(200,255,200,1)':d>0.2?'rgba(0,230,50,1)':'rgba(0,200,50,0.9)';
         ctx.fillText(ch,x-4,y+10);
         trail[i].push({y,ch,d});
         if(trail[i].length>20) trail[i].shift();
@@ -4428,13 +4428,16 @@ async function startPageMatrix(){
   if(!cv){
     cv = document.createElement('canvas');
     cv.id = 'pageMatrixCanvas';
-    cv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:5;pointer-events:none;opacity:0;transition:opacity 1.2s;';
+    cv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:5;pointer-events:none;opacity:0;transition:opacity 1.2s;background:#000;';
     document.body.appendChild(cv);
   }
   cv.width  = window.innerWidth;
   cv.height = window.innerHeight;
   const ctx = cv.getContext('2d');
   if(!ctx) return;
+  // Fill black immediately so no page background bleeds through while image loads
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, cv.width, cv.height);
   requestAnimationFrame(() => cv.style.opacity = '0.96');
 
   // Pre-sample face image brightness into a Float32Array.
