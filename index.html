@@ -4536,9 +4536,13 @@ function startPageMatrix(){
   frame();
 }
 function stopPageMatrix(){
-  const cv=document.getElementById('pageMatrixCanvas');
-  if(cv){ cv.style.opacity='0'; setTimeout(()=>{ if(cv.parentNode) cv.parentNode.removeChild(cv); },1300); }
   if(pageMatrixRaf){ cancelAnimationFrame(pageMatrixRaf); pageMatrixRaf=null; }
+  const cv=document.getElementById('pageMatrixCanvas');
+  if(cv){
+    cv.style.opacity='0';
+    cv.style.pointerEvents='none';
+    setTimeout(()=>{ if(cv.parentNode) cv.parentNode.removeChild(cv); },1300);
+  }
 }
 
 // ── LIVE METRIC TICKER ──────────────────────────────────────────
@@ -4577,7 +4581,6 @@ function stopPageMatrix(){
     });
   }, 60);
 })();
-}
 
 function startWaveAnimation(){
   const bars = document.querySelectorAll('.ai-wave-bar');
