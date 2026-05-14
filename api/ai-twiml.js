@@ -1,18 +1,16 @@
 const OPENAI_KEY = process.env.OPENAI_API_KEY;
 
-// Escape XML special chars then add natural SSML breath pauses
-function toSSML(text) {
-  return String(text)
+// Safe XML escape for plain <Say> text
+function xml(s) {
+  return String(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/([.!?]) {1,2}/g, '$1 <break time="350ms"/> ')
-    .replace(/, /g, ', <break time="120ms"/> ')
-    .replace(/ — /g, ' <break time="220ms"/> ');
+    .replace(/"/g, '&quot;');
 }
 
 function sayTwiml(text) {
-  return `<Say voice="Polly.Joanna-Neural"><speak><prosody rate="95%">${toSSML(text)}</prosody></speak></Say>`;
+  return `<Say voice="Polly.Joanna-Neural">${xml(text)}</Say>`;
 }
 
 function gatherTwiml(say, historyB64, n, r, c) {
