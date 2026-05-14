@@ -76,7 +76,7 @@ function sayTwiml(text) {
 function gatherTwiml(say, historyB64, retries, turns, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="7" speechTimeout="1" language="en-US">
+  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="7" speechTimeout="auto" language="en-US">
     ${sayTwiml(say)}
   </Gather>
   <Hangup/>
@@ -93,7 +93,7 @@ async function ask(messages) {
   const r = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
-    body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 70, temperature: 0.9 })
+    body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 70, temperature: 0.9 })
   });
   const d = await r.json();
   return d.choices?.[0]?.message?.content?.trim() || '';
