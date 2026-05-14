@@ -4467,10 +4467,19 @@ async function startPageMatrix(){
   const ROWS = Math.ceil(H / CS);
   const CHARS = 'アイウエオカキクケコサシスセソタチツテトナニ01'.split('');
 
-  // Per-column rain state
+  // Fine-grid rain (same 9px columns as face)
   const rainY     = Array.from({length: COLS}, () => -Math.random() * H);
   const rainSpd   = Array.from({length: COLS}, () => 2 + Math.random() * 5);
   const rainTrail = Array.from({length: COLS}, () => []);
+
+  // Background rain — larger chars, slower, longer trails, rendered behind everything
+  const BG = 18; // background column spacing
+  const BG_COLS = Math.ceil(W / BG);
+  const bgY      = Array.from({length: BG_COLS}, () => -Math.random() * H * 1.5);
+  const bgSpd    = Array.from({length: BG_COLS}, () => 0.7 + Math.random() * 3.2);
+  const bgTrail  = Array.from({length: BG_COLS}, () => []);
+  // ~30% of columns are "bright foreground" streams, rest are dim background
+  const bgLit    = Array.from({length: BG_COLS}, () => Math.random() < 0.30);
 
   // Face geometry — centered, ~60% screen width
   const fW  = Math.min(Math.round(W * 0.60), 560);
@@ -4513,6 +4522,38 @@ async function startPageMatrix(){
     const oy = mAmp * Math.sin(tick * 0.16) * 7;
 
     ctx.textBaseline = 'top';
+
+    // ── Background rain layer — large chars, long trails, depth ──
+    for(let i = 0; i < BG_COLS; i++){
+      bgY[i] += bgSpd[i];
+      if(bgY[i] > H + 40){
+        bgY[i]   = -20 - Math.random() * 220;
+        bgSpd[i] = 0.7 + Math.random() * 3.2;
+        bgTrail[i] = [];
+        bgLit[i]   = Math.random() < 0.30;
+      }
+      const bx  = i * BG + BG * 0.5;
+      const lit = bgLit[i];
+      const trailMax = lit ? 34 : 22;
+
+      if(bgY[i] >= 0 && bgY[i] <= H){
+        ctx.font = `bold ${lit ? 19 : 16}px monospace`;
+        ctx.fillStyle = lit ? 'rgba(160,255,160,0.82)' : 'rgba(0,185,50,0.60)';
+        ctx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)], bx - (lit?9:7), bgY[i]);
+        bgTrail[i].push({y: bgY[i], ch: CHARS[Math.floor(Math.random()*CHARS.length)]});
+        if(bgTrail[i].length > trailMax) bgTrail[i].shift();
+      }
+
+      for(let t = bgTrail[i].length - 2; t >= 0; t--){
+        const age   = bgTrail[i].length - 1 - t;
+        const alpha = Math.max(0, (lit ? 0.68 : 0.42) - age * (lit ? 0.020 : 0.019));
+        if(alpha <= 0) continue;
+        const gv = Math.min(255, lit ? Math.round(70 + age*7) : Math.round(45 + age*6));
+        ctx.font = `${lit ? 16 : 14}px monospace`;
+        ctx.fillStyle = `rgba(0,${gv},${lit?22:12},${alpha.toFixed(2)})`;
+        ctx.fillText(bgTrail[i][t].ch, bx - (lit?7:6), bgTrail[i][t].y);
+      }
+    }
 
     for(let col = 0; col < COLS; col++){
       const cx = col * CS + CS * 0.5;
