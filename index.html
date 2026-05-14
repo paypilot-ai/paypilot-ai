@@ -1933,53 +1933,11 @@ body.modal-open{overflow:hidden}
             </div>
 
             <!-- FULL-SIZE MATRIX AI AVATAR — replaces form when call is active -->
-            <div id="aiCallStatus" style="display:none;background:transparent;border:none;border-radius:20px;overflow:visible;position:relative;z-index:6;min-height:560px;">
-              <!-- Main avatar area -->
-              <div style="position:relative;display:flex;flex-direction:column;align-items:center;padding:28px 20px 16px;">
-
-                <!-- Face canvas + scan line -->
-                <div id="faceContainer" style="position:relative;width:280px;height:320px;">
-                  <canvas id="matrixCanvas" width="280" height="320" style="position:absolute;top:0;left:0;width:280px;height:320px;z-index:1;display:block;"></canvas>
-                  <!-- Scan line sweeping over head -->
-                  <div id="aiScanLine" style="position:absolute;left:50%;transform:translateX(-50%);width:185px;height:2px;background:linear-gradient(to right,transparent 0%,rgba(0,255,136,.7) 40%,rgba(0,255,136,.9) 50%,rgba(0,255,136,.7) 60%,transparent 100%);animation:aiScanLine 3.2s linear infinite;z-index:3;pointer-events:none;border-radius:2px;"></div>
-                </div>
-
-                <!-- Status label + call mode indicator -->
-                <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
-                  <div id="aiCallStatusText" style="color:#00ff88;font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-family:monospace;">AI CONNECTING...</div>
-                </div>
-
-                <!-- Waveform — 18 bars -->
-                <div id="aiWaveform" style="display:flex;align-items:center;gap:3px;height:36px;margin-top:14px;">
-                  <div class="ai-wave-bar" style="height:4px;"></div>
-                  <div class="ai-wave-bar" style="height:10px;"></div>
-                  <div class="ai-wave-bar" style="height:20px;"></div>
-                  <div class="ai-wave-bar" style="height:28px;"></div>
-                  <div class="ai-wave-bar" style="height:18px;"></div>
-                  <div class="ai-wave-bar" style="height:34px;"></div>
-                  <div class="ai-wave-bar" style="height:24px;"></div>
-                  <div class="ai-wave-bar" style="height:14px;"></div>
-                  <div class="ai-wave-bar" style="height:30px;"></div>
-                  <div class="ai-wave-bar" style="height:36px;"></div>
-                  <div class="ai-wave-bar" style="height:26px;"></div>
-                  <div class="ai-wave-bar" style="height:16px;"></div>
-                  <div class="ai-wave-bar" style="height:32px;"></div>
-                  <div class="ai-wave-bar" style="height:22px;"></div>
-                  <div class="ai-wave-bar" style="height:12px;"></div>
-                  <div class="ai-wave-bar" style="height:28px;"></div>
-                  <div class="ai-wave-bar" style="height:8px;"></div>
-                  <div class="ai-wave-bar" style="height:18px;"></div>
-                </div>
-              </div>
-
-              <!-- Transcript -->
-              <div id="aiCallTranscript" style="font-size:12px;color:#7effa0;line-height:1.9;max-height:150px;overflow-y:auto;margin:0 20px 16px;font-family:monospace;background:rgba(0,255,136,.03);border:1px solid rgba(0,255,136,.12);border-radius:10px;padding:12px;min-height:40px;"></div>
-
-              <!-- Action buttons -->
-              <div style="display:flex;gap:10px;flex-wrap:wrap;padding:0 20px 20px;">
-                <button onclick="endAiCall()" style="flex:1;padding:11px 20px;background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.3);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;letter-spacing:.05em;">■ End Call</button>
-                <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:11px 20px;background:rgba(0,255,136,.1);color:#00ff88;border:1px solid rgba(0,255,136,.28);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;letter-spacing:.05em;">📄 Send Agreement</button>
-              </div>
+            <!-- hidden state holders — never shown, just referenced by JS -->
+            <div id="aiCallStatus" style="display:none;">
+              <div id="aiCallStatusText"></div>
+              <div id="aiCallTranscript"></div>
+              <div id="aiWaveform"></div>
             </div>
           </div>
         </section>
@@ -4613,7 +4571,7 @@ function startCallTimer(){
     aiCallSeconds++;
     const m = Math.floor(aiCallSeconds / 60);
     const s = aiCallSeconds % 60;
-    const el = document.getElementById('aiCallTimer');
+    const el = document.getElementById('hudTimer');
     if(el) el.textContent = m + ':' + String(s).padStart(2,'0');
   }, 1000);
 }
@@ -4645,15 +4603,12 @@ async function startAiCall(){
     if(!resp.ok) throw new Error(data.error || 'Call failed');
 
     activeAiCallSid = data.callSid;
-    // Hide form, show full-size matrix panel
     document.getElementById('aiCallerFormCard').style.display = 'none';
-    document.getElementById('aiCallStatus').style.display = 'block';
-    document.getElementById('aiCallTranscript').innerHTML = '';
+    document.getElementById('callHud').style.display = 'block';
+    document.getElementById('hudStatusText').textContent = 'AI DIALING...';
+    document.getElementById('hudTimer').textContent = '0:00';
+    document.getElementById('hudTranscript').innerHTML = '';
     toast('AI call launched — dialing ' + number + '...');
-    const stEl = document.getElementById('aiCallStatusText');
-    const tmEl = document.getElementById('aiCallTimer');
-    if(stEl) stEl.textContent = 'AI DIALING...';
-    if(tmEl) tmEl.textContent = '0:00';
     window.aiCallActive = true;
     startPageMatrix();
 
@@ -4681,7 +4636,7 @@ async function endAiCall(){
   stopMatrixAnimation();
   const sid = activeAiCallSid;
   activeAiCallSid = null;
-  document.getElementById('aiCallStatus').style.display = 'none';
+  document.getElementById('callHud').style.display = 'none';
   document.getElementById('aiCallerFormCard').style.display = 'block';
   const btn = document.getElementById('aiCallBtn');
   btn.disabled = false;
@@ -4731,7 +4686,7 @@ async function sendAgreement(){
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Failed to send');
     toast('Agreement sent to ' + customerEmail + '!');
-    const box = document.getElementById('aiCallTranscript');
+    const box = document.getElementById('hudTranscript');
     if(box) box.innerHTML += `<div style="color:#00ff88;margin-top:6px;">[ Agreement emailed to ${customerEmail} ]</div>`;
   } catch(e) {
     toast('Send failed: ' + e.message);
@@ -5228,5 +5183,21 @@ function closePrivacyModal(){
   document.body.classList.remove('modal-open');
 }
 </script>
+
+<!-- Floating call HUD — appears during active calls over the Matrix rain -->
+<div id="callHud" style="display:none;position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:20;width:min(480px,92vw);background:rgba(0,0,0,0.7);border:1px solid rgba(0,255,136,.35);border-radius:16px;padding:16px 20px;backdrop-filter:blur(8px);">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:7px;height:7px;border-radius:50%;background:#00ff88;box-shadow:0 0 10px #00ff88;animation:aiStatusBlink 1.1s ease-in-out infinite;"></div>
+      <span id="hudStatusText" style="font-family:monospace;font-size:11px;color:#00ff88;letter-spacing:.18em;text-transform:uppercase;font-weight:700;">AI DIALING...</span>
+    </div>
+    <span id="hudTimer" style="font-family:monospace;font-size:13px;color:#00ff88;font-weight:700;">0:00</span>
+  </div>
+  <div id="hudTranscript" style="font-size:12px;color:#7effa0;font-family:monospace;max-height:80px;overflow-y:auto;margin-bottom:12px;min-height:20px;line-height:1.7;"></div>
+  <div style="display:flex;gap:10px;">
+    <button onclick="endAiCall()" style="flex:1;padding:10px;background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.4);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;">■ End Call</button>
+    <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:10px;background:rgba(0,255,136,.1);color:#00ff88;border:1px solid rgba(0,255,136,.3);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;">📄 Send Agreement</button>
+  </div>
+</div>
 </body>
 </html>
