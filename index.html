@@ -4438,18 +4438,33 @@ function startPageMatrix(){
   if(!ctx) return;
   requestAnimationFrame(() => cv.style.opacity = '0.88');
 
-  // ── Real face photo (foreground) ────────────────────────────────
+  // ── Face photo + mouth canvas overlay (foreground) ──────────────
   let faceWrap = document.getElementById('aiCallerFaceWrap');
   if(!faceWrap){
     faceWrap = document.createElement('div');
     faceWrap.id = 'aiCallerFaceWrap';
-    faceWrap.style.cssText = 'position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);z-index:12;pointer-events:none;opacity:0;transition:opacity 1s;will-change:transform;';
-    const imgSize = Math.min(280, Math.round(window.innerWidth * 0.52));
-    faceWrap.innerHTML = `<img id="aiCallerFaceImg" src="/240_F_790682991_iBTGcSFOXSkIm6eJN8PBli4wyG8iHYG4.jpg"
-      style="width:${imgSize}px;height:${imgSize}px;object-fit:cover;border-radius:50%;
-      border:2px solid rgba(0,255,136,0.75);display:block;
-      box-shadow:0 0 36px rgba(0,255,136,0.45),0 0 72px rgba(0,255,136,0.18);" />`;
+    // Center in the middle of the screen, no circle — natural image
+    faceWrap.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:12;pointer-events:none;opacity:0;transition:opacity 1s;will-change:transform;';
+    const imgW = Math.min(420, Math.round(window.innerWidth * 0.62));
+    faceWrap.innerHTML = `
+      <div style="position:relative;display:inline-block;">
+        <img id="aiCallerFaceImg"
+          src="/240_F_790682991_iBTGcSFOXSkIm6eJN8PBli4wyG8iHYG4.jpg"
+          style="width:${imgW}px;height:auto;display:block;
+          box-shadow:0 0 48px rgba(0,255,136,0.28),0 0 96px rgba(0,255,136,0.10);" />
+        <canvas id="aiCallerMouthCv"
+          style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;"></canvas>
+      </div>`;
     document.body.appendChild(faceWrap);
+
+    // Size mouth canvas once image dimensions are known
+    const fi = faceWrap.querySelector('#aiCallerFaceImg');
+    const syncSize = () => {
+      const mc = document.getElementById('aiCallerMouthCv');
+      if(mc && fi.offsetWidth > 0){ mc.width = fi.offsetWidth; mc.height = fi.offsetHeight; }
+    };
+    fi.onload = syncSize;
+    if(fi.complete && fi.naturalWidth) syncSize();
   }
   requestAnimationFrame(() => faceWrap.style.opacity = '1');
 
@@ -4463,26 +4478,73 @@ function startPageMatrix(){
   if(pageMatrixRaf){ cancelAnimationFrame(pageMatrixRaf); }
   let tick = 0, mAmp = 0;
 
+  // Draw animated lips on the mouth canvas
+  // Image is landscape; lips are at ~50% wide, ~66% tall
+  function drawMouth(mc, amp){
+    if(!mc || mc.width === 0) return;
+    const mctx = mc.getContext('2d');
+    mctx.clearRect(0, 0, mc.width, mc.height);
+    if(amp < 0.03) return;
+
+    const mx   = mc.width  * 0.50;   // horizontal center of mouth
+    const my   = mc.height * 0.665;  // vertical position of mouth seam
+    const mHW  = mc.width  * 0.115;  // half-width of lips
+    const open = amp * mc.height * 0.052; // how wide the mouth opens
+
+    const lipAlpha = Math.min(0.92, amp * 1.1);
+    const lip = `rgba(210,165,148,${lipAlpha.toFixed(2)})`;
+    const dark = `rgba(28,6,6,${Math.min(0.88, amp * 1.0).toFixed(2)})`;
+
+    // Upper lip
+    mctx.beginPath();
+    mctx.moveTo(mx - mHW, my);
+    mctx.bezierCurveTo(mx - mHW*0.45, my - open*0.7,  mx + mHW*0.45, my - open*0.7,  mx + mHW, my);
+    mctx.bezierCurveTo(mx + mHW*0.45, my + open*0.25, mx - mHW*0.45, my + open*0.25, mx - mHW, my);
+    mctx.fillStyle = lip;
+    mctx.fill();
+
+    // Lower lip
+    mctx.beginPath();
+    mctx.moveTo(mx - mHW, my);
+    mctx.bezierCurveTo(mx - mHW*0.45, my + open*1.6,  mx + mHW*0.45, my + open*1.6,  mx + mHW, my);
+    mctx.bezierCurveTo(mx + mHW*0.45, my + open*0.3,  mx - mHW*0.45, my + open*0.3,  mx - mHW, my);
+    mctx.fillStyle = lip;
+    mctx.fill();
+
+    // Dark gap between lips
+    if(open > 1.5){
+      mctx.beginPath();
+      mctx.ellipse(mx, my + open*0.45, mHW*0.68, open*0.52, 0, 0, Math.PI*2);
+      mctx.fillStyle = dark;
+      mctx.fill();
+    }
+  }
+
   function frame(){
     pageMatrixRaf = requestAnimationFrame(frame);
     tick++;
     ctx.fillStyle='rgba(0,0,0,0.14)';
     ctx.fillRect(0,0,W,H);
 
-    // Smooth mouth amplitude and animate the photo
     mAmp += ((window.aiMouthTarget||0) - mAmp) * 0.10;
+
     if(faceWrap){
-      const bobX = mAmp * Math.sin(tick * 0.12) * 4;
-      const bobY = mAmp * Math.sin(tick * 0.17) * 6;
-      const sc   = 1 + mAmp * 0.025;
-      faceWrap.style.transform = `translate(calc(-50% + ${bobX.toFixed(2)}px), calc(-50% + ${bobY.toFixed(2)}px)) scale(${sc.toFixed(4)})`;
-      const faceImg = document.getElementById('aiCallerFaceImg');
-      if(faceImg){
-        const glow = mAmp > 0.1
-          ? `0 0 ${Math.round(36+mAmp*30)}px rgba(0,255,136,${(0.45+mAmp*0.35).toFixed(2)}),0 0 ${Math.round(72+mAmp*50)}px rgba(0,255,136,${(0.18+mAmp*0.18).toFixed(2)})`
-          : '0 0 36px rgba(0,255,136,0.45),0 0 72px rgba(0,255,136,0.18)';
-        faceImg.style.boxShadow = glow;
+      // Subtle talking head-bob
+      const bobX = mAmp * Math.sin(tick * 0.11) * 3;
+      const bobY = mAmp * Math.sin(tick * 0.16) * 5;
+      faceWrap.style.transform = `translate(calc(-50% + ${bobX.toFixed(2)}px), calc(-50% + ${bobY.toFixed(2)}px))`;
+
+      const fi = document.getElementById('aiCallerFaceImg');
+      if(fi){
+        fi.style.boxShadow = `0 0 ${Math.round(48+mAmp*28)}px rgba(0,255,136,${(0.28+mAmp*0.28).toFixed(2)}),0 0 ${Math.round(96+mAmp*48)}px rgba(0,255,136,${(0.10+mAmp*0.14).toFixed(2)})`;
       }
+
+      const mc = document.getElementById('aiCallerMouthCv');
+      // Re-sync size if image just finished loading
+      if(mc && fi && fi.offsetWidth > 0 && mc.width !== fi.offsetWidth){
+        mc.width = fi.offsetWidth; mc.height = fi.offsetHeight;
+      }
+      drawMouth(mc, mAmp);
     }
 
     // ── Falling rain ──
