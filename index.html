@@ -4496,7 +4496,16 @@ async function startPageMatrix(){
     ctx.fillStyle = 'rgba(0,0,0,0.13)';
     ctx.fillRect(0, 0, W, H);
 
-    mAmp += ((window.aiMouthTarget || 0) - mAmp) * 0.09;
+    // Speech simulation: on Vercel, /tmp file sharing between serverless containers
+    // is unreliable so polling often returns nothing. Generate a natural talking
+    // rhythm that always runs during active calls; speech polling overrides when it fires.
+    let mouthTarget = window.aiMouthTarget || 0;
+    if(window.aiCallActive && mouthTarget < 0.15){
+      const env  = Math.max(0, Math.sin(tick * 0.07));   // slow envelope ~0.67 Hz
+      const phon = Math.max(0, Math.sin(tick * 0.25));   // phoneme rhythm ~2.4 Hz
+      mouthTarget = Math.max(mouthTarget, env * phon * 0.85);
+    }
+    mAmp += (mouthTarget - mAmp) * 0.09;
     const ox = mAmp * Math.sin(tick * 0.11) * 5;
     const oy = mAmp * Math.sin(tick * 0.16) * 7;
 
