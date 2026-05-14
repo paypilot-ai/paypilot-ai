@@ -1,45 +1,54 @@
 const OPENAI_KEY = process.env.OPENAI_API_KEY;
 
-function xml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function buildPrompt(customerName, callReason, companyName) {
+function buildPrompt(customerName, companyName, callReason) {
   const company = companyName || 'our company';
-  const name    = customerName ? `, and you're speaking with ${customerName}` : '';
-  const reason  = callReason   ? ` Purpose of the call: ${callReason}.` : '';
+  const who     = customerName ? `You're speaking with ${customerName}.` : '';
+  const why     = callReason   ? `Purpose of call: ${callReason}.` : '';
 
-  return `You are Alex, a real person calling on behalf of ${company}${name}.${reason}
+  return `You are Alex, a sharp, friendly sales rep calling on behalf of ${company}. ${who} ${why}
 
-CRITICAL RULES — follow every one:
-- Every response must be 1-2 SHORT sentences max. Never more.
-- Sound natural and human — like a real person on the phone, not a robot or script.
-- Never use filler phrases like "I understand", "Great question", "Absolutely", "Of course".
-- Never repeat yourself or summarize what they said back to them.
-- NEVER offer to send an email or suggest a follow-up call unless they specifically ask for it — stay on this call and close now.
-- Have a real back-and-forth conversation. Answer their questions directly and confidently.
-- If they push back on price or timing, give ONE sharp reason why it makes sense now and ask a direct question.
-- If they're interested, move toward a commitment on THIS call — not later, not an email.
-- If they say no or want to hang up, acknowledge it in one sentence and close.
-- Always refer to the company as "${company}".
-- HANGUP SIGNAL: When the conversation is clearly over (firm no, goodbye, agreed and confirmed, or asked not to call again) — append [END] on a new line. Never use [END] mid-conversation.`;
+VOICE & STYLE — sound exactly like a confident human on a quick phone call:
+- Use contractions always: "I'll", "you're", "it's", "we've", "don't", "can't"
+- Use natural pivots: "Yeah,", "Look,", "Right —", "Here's the thing —", "Honestly,", "Fair enough —", "Got it —"
+- Vary your openers. Don't start every reply the same way.
+- Short sentences. Phone talk is punchy.
+
+HARD RULES:
+- 1-2 sentences MAX. Never more on a phone call.
+- Never say: "I understand", "Great", "Absolutely", "Certainly", "Of course", "That's a great question", "I appreciate that"
+- Don't echo or summarize what they said — just react and move forward
+- No corporate jargon, no passive voice
+- Never suggest email or a callback unless they ask for it — close on this call
+
+HANDLING COMMON SITUATIONS:
+- Pushback on price/timing → acknowledge in 2 words max, give ONE specific benefit to THEM, ask a direct yes/no question
+- "Who is this?" / "How'd you get my number?" → answer directly and pivot fast: "It's Alex from ${company} — I was just reaching out because [brief reason]. You got 60 seconds?"
+- They're interested / ready → move to commitment now, ask for it directly
+- Firm no / goodbye / "don't call again" → one warm closing line, then append [END] on a new line
+
+HANGUP SIGNAL: append [END] on its own line ONLY when the call is fully and clearly over. Never mid-conversation.`;
 }
 
-async function ask(messages) {
-  const r = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
-    body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 70, temperature: 0.85 })
-  });
-  const d = await r.json();
-  return d.choices?.[0]?.message?.content?.trim() || '';
+// Escape XML special chars in AI text, then add SSML breath pauses
+function toSSML(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/([.!?]) {1,2}/g, '$1 <break time="350ms"/> ')
+    .replace(/, /g, ', <break time="120ms"/> ')
+    .replace(/ — /g, ' <break time="220ms"/> ');
+}
+
+function sayTwiml(text) {
+  return `<Say voice="Polly.Joanna-Neural"><speak><prosody rate="95%">${toSSML(text)}</prosody></speak></Say>`;
 }
 
 function gatherTwiml(say, historyB64, retries, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="8" speechTimeout="auto" language="en-US">
-    <Say voice="Polly.Joanna-Neural">${xml(say)}</Say>
+  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="auto" language="en-US">
+    ${sayTwiml(say)}
   </Gather>
   <Hangup/>
 </Response>`;
@@ -49,6 +58,16 @@ const fs = require('fs');
 function logSpeech(callSid, text) {
   if (!callSid) return;
   try { fs.writeFileSync(`/tmp/speech_${callSid.replace(/[^A-Za-z0-9]/g,'')}.json`, JSON.stringify({ text, ts: Date.now() })); } catch(e) {}
+}
+
+async function ask(messages) {
+  const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
+    body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 80, temperature: 0.9 })
+  });
+  const d = await r.json();
+  return d.choices?.[0]?.message?.content?.trim() || '';
 }
 
 module.exports = async function handler(req, res) {
@@ -69,35 +88,35 @@ module.exports = async function handler(req, res) {
     if (retries >= 1) {
       return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Joanna-Neural">I'll try you again another time — have a great day!</Say>
+  ${sayTwiml("Hey, looks like we got cut off — I'll catch you another time. Take care!")}
   <Hangup/>
 </Response>`);
     }
     const last = history.findLast?.(m => m.role === 'assistant')?.content || "I didn't quite catch that.";
     const h = Buffer.from(JSON.stringify(history)).toString('base64url');
-    return res.status(200).send(gatherTwiml("Sorry, didn't catch that — " + last, h, retries + 1, n, r, c));
+    return res.status(200).send(gatherTwiml("Sorry, I missed that — " + last, h, retries + 1, n, r, c));
   }
 
   try {
     history.push({ role: 'user', content: transcript });
 
-    const messages = [{ role: 'system', content: buildPrompt(n, r, c) }, ...history.slice(-12)];
-    const raw    = await ask(messages);
-    const lower  = raw.toLowerCase();
-    // Hang up if AI used the [END] signal OR reply contains a clear closing phrase
+    const messages = [{ role: 'system', content: buildPrompt(n, c, r) }, ...history.slice(-14)];
+    const raw   = await ask(messages);
+    const lower = raw.toLowerCase();
     const hangup = raw.includes('[END]') ||
-      ['have a great day','goodbye','good day','take care',"i'll let you go",
-       'thanks for your time','nice talking','have a good one','talk soon'].some(p => lower.includes(p));
-    const reply  = raw.replace('[END]', '').trim();
-    logSpeech(callSid, reply);
+      ['have a great day', 'goodbye', 'good day', 'take care', "i'll let you go",
+       'thanks for your time', 'nice talking', 'have a good one', 'talk soon',
+       'good luck', 'all the best', 'best of luck'].some(p => lower.includes(p));
+    const reply = raw.replace(/\[END\]/g, '').trim();
 
+    logSpeech(callSid, reply);
     history.push({ role: 'assistant', content: reply });
     while (Buffer.from(JSON.stringify(history)).length > 6000) history.splice(0, 2);
 
-    if(hangup){
+    if (hangup) {
       return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Joanna-Neural">${xml(reply)}</Say>
+  ${sayTwiml(reply)}
   <Hangup/>
 </Response>`);
     }
@@ -106,6 +125,6 @@ module.exports = async function handler(req, res) {
     res.status(200).send(gatherTwiml(reply, h, 0, n, r, c));
 
   } catch (e) {
-    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="Polly.Joanna-Neural">Sorry, technical issue on my end. Have a great day!</Say><Hangup/></Response>`);
+    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${sayTwiml("Sorry, hit a technical issue on my end — I'll reach back out. Have a good one!")}<Hangup/></Response>`);
   }
 };

@@ -11,9 +11,12 @@ const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
-const SYSTEM_PROMPT     = process.env.AI_SYSTEM_PROMPT ||
-  'You are a professional AI collections agent. Be concise — respond in 1-2 sentences. ' +
-  'Your goal is to collect payment or arrange a payment plan. Be polite and compliant.';
+const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
+  'You are Alex, a sharp and friendly agent on a live phone call. ' +
+  'Speak in 1-2 short sentences — punchy, natural, human. Use contractions. ' +
+  'Use natural pivots like "Yeah,", "Look,", "Here\'s the thing —", "Fair enough —". ' +
+  'Never say "I understand", "Absolutely", "Certainly", or any corporate filler. ' +
+  'Your goal is to collect payment or set up a payment plan. Be direct and helpful.';
 
 const sessions = new Map();
 
