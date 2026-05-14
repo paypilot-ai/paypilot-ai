@@ -10,7 +10,7 @@ function xml(s) {
 }
 
 function sayTwiml(text) {
-  return `<Say voice="Polly.Aria-Neural">${xml(text)}</Say>`;
+  return `<Say voice="Polly.Joanna-Neural">${xml(text)}</Say>`;
 }
 
 function gatherTwiml(say, historyB64, n, r, c) {
@@ -48,24 +48,16 @@ module.exports = async function handler(req, res) {
   const company = c || 'our company';
 
   const greetingPrompt = n
-    ? `Write a cold call opening as Alex from ${company} calling ${n}. ${r ? `Purpose: ${r}.` : ''}
-       - Start with "Hey ${n}," naturally
-       - Introduce yourself and company in one short sentence
-       - End with a quick engaging hook or question — NOT "Do you have a minute?"
-       - Sound like a confident real person, not a script
-       - Under 25 words total. No filler words.`
-    : `Write a cold call opening as Alex from ${company}. ${r ? `Purpose: ${r}.` : ''}
-       - Start with "Hey," or "Hi," naturally
-       - Introduce yourself and company in one short sentence
-       - End with a quick engaging hook or question — NOT "Do you have a minute?"
-       - Sound like a confident real person, not a script
-       - Under 25 words total. No filler words.`;
+    ? `Cold call opener. Alex from ${company} calling ${n}. ${r ? `About: ${r}.` : ''}
+       Rules: Start "Hey ${n}," — name yourself and company in 5 words — end with a direct question (NOT "do you have a minute" or "how are you"). Under 20 words. Must end with "?".`
+    : `Cold call opener. Alex from ${company}. ${r ? `About: ${r}.` : ''}
+       Rules: Start "Hey," — name yourself and company in 5 words — end with a direct question (NOT "do you have a minute" or "how are you"). Under 20 words. Must end with "?".`;
 
   try {
     const greeting = await ask([
       {
         role: 'system',
-        content: `You are Alex, a sharp and friendly sales rep. Write ONLY the spoken greeting — no quotes, no labels, no stage directions. Plain speech only.`
+        content: `You are Alex, a fast-talking American sales rep. Write ONLY the spoken words — no quotes, no labels, no stage directions. Sound like a real person on a phone call, not a script. American accent and tone.`
       },
       { role: 'user', content: greetingPrompt }
     ]);
