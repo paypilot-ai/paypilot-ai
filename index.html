@@ -4438,52 +4438,83 @@ function startPageMatrix(){
   const FCX=W/2, FCY=H*0.40;
   const FRX=Math.min(W*0.20,120), FRY=Math.min(H*0.26,155);
   function faceD(x,y){
-    const nx=(x-FCX)/FRX, ny=(y-FCY)/FRY; // normalised -1..1
-    const r2=nx*nx+ny*ny;
-    // Head shape: oval that narrows toward chin
-    const chinNarrow = ny>0 ? ny*0.18 : 0;
-    if(nx*nx*(1+chinNarrow)+ny*ny > 1.05) return 0;
-    // Base skin brightness — brighter center, fades at edges
-    let b = 0.28 + 0.52*(1-Math.sqrt(nx*nx+ny*ny)*0.82);
-    // ── FOREHEAD broad highlight ──
-    b += 0.12*Math.max(0,1-(nx/0.55)**2-((ny+0.60)/0.22)**2);
-    // ── BROW ridge ──
-    b += 0.08*Math.max(0,1-(nx/0.55)**2-((ny+0.38)/0.08)**2);
-    // ── LEFT eye socket (dark) ──
-    b -= 0.72*Math.max(0,1-((nx+0.36)/0.22)**2-((ny+0.22)/0.13)**2);
-    // ── RIGHT eye socket (dark) ──
-    b -= 0.72*Math.max(0,1-((nx-0.36)/0.22)**2-((ny+0.22)/0.13)**2);
-    // ── LEFT iris bright spot ──
-    b += 0.55*Math.max(0,1-((nx+0.36)/0.09)**2-((ny+0.22)/0.07)**2);
-    // ── RIGHT iris bright spot ──
-    b += 0.55*Math.max(0,1-((nx-0.36)/0.09)**2-((ny+0.22)/0.07)**2);
-    // ── NOSE bridge highlight ──
-    b += 0.35*Math.max(0,1-(nx/0.10)**2-((ny-0.05)/0.32)**2);
-    // ── NOSE tip bright ──
-    b += 0.28*Math.max(0,1-(nx/0.13)**2-((ny-0.24)/0.09)**2);
-    // ── LEFT nostril shadow ──
-    b -= 0.25*Math.max(0,1-((nx+0.16)/0.09)**2-((ny-0.28)/0.07)**2);
-    // ── RIGHT nostril shadow ──
-    b -= 0.25*Math.max(0,1-((nx-0.16)/0.09)**2-((ny-0.28)/0.07)**2);
-    // ── LEFT cheekbone highlight ──
-    b += 0.22*Math.max(0,1-((nx+0.52)/0.20)**2-((ny-0.05)/0.18)**2);
-    // ── RIGHT cheekbone highlight ──
-    b += 0.22*Math.max(0,1-((nx-0.52)/0.20)**2-((ny-0.05)/0.18)**2);
-    // ── PHILTRUM slight shadow ──
-    b -= 0.12*Math.max(0,1-(nx/0.08)**2-((ny-0.38)/0.07)**2);
-    // ── UPPER LIP ──
-    b += 0.20*Math.max(0,1-(nx/0.25)**2-((ny-0.44)/0.055)**2);
-    // ── LOWER LIP fuller ──
-    b += 0.28*Math.max(0,1-(nx/0.28)**2-((ny-0.54)/0.065)**2);
-    // ── MOUTH corners darken ──
-    b -= 0.18*Math.max(0,1-((nx+0.28)/0.07)**2-((ny-0.47)/0.06)**2);
-    b -= 0.18*Math.max(0,1-((nx-0.28)/0.07)**2-((ny-0.47)/0.06)**2);
-    // ── CHIN highlight ──
-    b += 0.18*Math.max(0,1-(nx/0.18)**2-((ny-0.78)/0.10)**2);
-    // ── TEMPLES darker ──
-    b -= 0.30*Math.max(0,1-((nx+0.78)/0.18)**2-((ny+0.10)/0.25)**2);
-    b -= 0.30*Math.max(0,1-((nx-0.78)/0.18)**2-((ny+0.10)/0.25)**2);
-    return Math.max(0,Math.min(1,b));
+    const nx=(x-FCX)/FRX, ny=(y-FCY)/FRY;
+    // Head oval — narrows toward chin
+    const chinN = ny>0 ? ny*0.22 : 0;
+    if(nx*nx*(1+chinN)+ny*ny > 1.02) return -1; // outside — skip
+
+    // ── PRIORITY: specific features override base skin ──
+
+    // Hair — top of head, dark
+    if(ny < -0.72) return 0.04;
+
+    // Eyebrows — dark thick arcs
+    const lBrowD = ((nx+0.36)/0.28)**2 + ((ny+0.38)/0.06)**2;
+    const rBrowD = ((nx-0.36)/0.28)**2 + ((ny+0.38)/0.06)**2;
+    if(lBrowD < 1 || rBrowD < 1) return 0.06;
+
+    // Eye whites (outer socket area) — very dark shadow
+    const lEyeD = ((nx+0.36)/0.24)**2 + ((ny+0.22)/0.14)**2;
+    const rEyeD = ((nx-0.36)/0.24)**2 + ((ny+0.22)/0.14)**2;
+    if(lEyeD < 1) {
+      // Inside eye socket — check for iris, pupil, highlight
+      const lIrisD = ((nx+0.36)/0.10)**2 + ((ny+0.21)/0.09)**2;
+      if(lIrisD < 1){
+        const lPupilD = ((nx+0.36)/0.05)**2 + ((ny+0.21)/0.05)**2;
+        if(lPupilD < 1) return 0.02; // pupil — near black
+        // Iris catch-light
+        const lHL = ((nx+0.30)/0.03)**2 + ((ny+0.17)/0.03)**2;
+        if(lHL < 1) return 0.98; // specular highlight
+        return 0.85; // bright iris
+      }
+      return 0.02; // socket shadow
+    }
+    if(rEyeD < 1){
+      const rIrisD = ((nx-0.36)/0.10)**2 + ((ny+0.21)/0.09)**2;
+      if(rIrisD < 1){
+        const rPupilD = ((nx-0.36)/0.05)**2 + ((ny+0.21)/0.05)**2;
+        if(rPupilD < 1) return 0.02;
+        const rHL = ((nx-0.30)/0.03)**2 + ((ny+0.17)/0.03)**2;
+        if(rHL < 1) return 0.98;
+        return 0.85;
+      }
+      return 0.02;
+    }
+
+    // Nostrils — dark
+    if(((nx+0.15)/0.08)**2+((ny-0.30)/0.07)**2 < 1) return 0.04;
+    if(((nx-0.15)/0.08)**2+((ny-0.30)/0.07)**2 < 1) return 0.04;
+
+    // Mouth opening — dark gap between lips
+    if(Math.abs(nx) < 0.26 && ny > 0.43 && ny < 0.51) return 0.03;
+
+    // ── BASE SKIN with subtle features ──
+    let b = 0.38 + 0.38*(1 - Math.sqrt(nx*nx+ny*ny)*0.80);
+
+    // Forehead center highlight
+    b += 0.14*Math.max(0,1-(nx/0.40)**2-((ny+0.65)/0.20)**2);
+    // Nose bridge & tip
+    b += 0.18*Math.max(0,1-(nx/0.09)**2-((ny-0.05)/0.30)**2);
+    b += 0.12*Math.max(0,1-(nx/0.12)**2-((ny-0.26)/0.08)**2);
+    // Cheekbones
+    b += 0.16*Math.max(0,1-((nx+0.50)/0.18)**2-((ny-0.02)/0.15)**2);
+    b += 0.16*Math.max(0,1-((nx-0.50)/0.18)**2-((ny-0.02)/0.15)**2);
+    // Upper lip cupid's bow
+    b += 0.22*Math.max(0,1-(nx/0.22)**2-((ny-0.42)/0.05)**2);
+    // Lower lip (fuller)
+    b += 0.30*Math.max(0,1-(nx/0.26)**2-((ny-0.52)/0.06)**2);
+    // Mouth corners
+    b -= 0.20*Math.max(0,1-((nx+0.27)/0.06)**2-((ny-0.46)/0.05)**2);
+    b -= 0.20*Math.max(0,1-((nx-0.27)/0.06)**2-((ny-0.46)/0.05)**2);
+    // Chin
+    b += 0.14*Math.max(0,1-(nx/0.16)**2-((ny-0.78)/0.09)**2);
+    // Temple shadows
+    b -= 0.28*Math.max(0,1-((nx+0.75)/0.16)**2-((ny+0.08)/0.22)**2);
+    b -= 0.28*Math.max(0,1-((nx-0.75)/0.16)**2-((ny+0.08)/0.22)**2);
+    // Under-chin shadow
+    b -= 0.20*Math.max(0,1-(nx/0.40)**2-((ny-0.92)/0.08)**2);
+
+    return Math.max(0.10, Math.min(1, b));
   }
 
   if(pageMatrixRaf){ cancelAnimationFrame(pageMatrixRaf); }
@@ -4510,14 +4541,16 @@ function startPageMatrix(){
         for(let r=0;r<ROWS;r++){
           const y=r*14+7;
           const d=faceD(x,y);
-          if(d<0.05) continue;
-          const inM=mo>0.1&&((x-FCX)/(FRX*0.30))**2+((y-FCY-FRY*0.49)/(FRY*0.12))**2<1;
-          const sz=Math.round(10+d*10);
+          if(d<0) continue; // outside face oval
+          if(d<0.06) continue; // very dark zones (pupils, mouth gap, nostrils) — leave empty
+          const inM=mo>0.1&&((x-FCX)/(FRX*0.28))**2+((y-FCY-FRY*0.47)/(FRY*0.10))**2<1;
+          const sz=Math.round(9+d*9);
           ctx.font=`bold ${sz}px monospace`;
-          if(inM&&mo>0.15) ctx.fillStyle=`rgba(255,255,60,${(0.5+d*0.5).toFixed(2)})`;
-          else if(d>0.65) ctx.fillStyle=`rgba(255,255,255,${(0.4+d*0.55).toFixed(2)})`;
-          else if(d>0.35) ctx.fillStyle=`rgba(160,255,160,${(0.3+d*0.5).toFixed(2)})`;
-          else ctx.fillStyle=`rgba(0,200,60,${(0.15+d*0.4).toFixed(2)})`;
+          if(inM&&mo>0.15) ctx.fillStyle=`rgba(255,255,60,${(0.55+d*0.45).toFixed(2)})`;
+          else if(d>0.80) ctx.fillStyle=`rgba(255,255,255,${(0.6+d*0.4).toFixed(2)})`; // eyes/highlights — bright white
+          else if(d>0.55) ctx.fillStyle=`rgba(200,255,200,${(0.5+d*0.45).toFixed(2)})`; // skin highlights — light green-white
+          else if(d>0.35) ctx.fillStyle=`rgba(0,255,70,${(0.35+d*0.5).toFixed(2)})`; // mid skin — green
+          else ctx.fillStyle=`rgba(0,160,40,${(0.20+d*0.5).toFixed(2)})`; // darker skin — dim green
           ctx.fillText(faceGrid[i][r],x-sz*0.35,y);
         }
       }
