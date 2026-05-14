@@ -1934,21 +1934,6 @@ body.modal-open{overflow:hidden}
 
             <!-- FULL-SIZE MATRIX AI AVATAR — replaces form when call is active -->
             <div id="aiCallStatus" style="display:none;background:#000;border:1px solid rgba(0,255,136,.22);border-radius:20px;overflow:hidden;position:relative;z-index:6;min-height:560px;animation:aiGlowPulse 4s ease-in-out infinite;">
-              <!-- Top status bar -->
-              <div style="position:relative;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid rgba(0,255,136,.12);">
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <div style="width:7px;height:7px;border-radius:50%;background:#00ff88;box-shadow:0 0 12px #00ff88;animation:aiStatusBlink 1.1s ease-in-out infinite;"></div>
-                  <span style="font-family:monospace;font-size:10px;color:#00ff88;letter-spacing:.18em;text-transform:uppercase;">Neural Link Active</span>
-                </div>
-                <div id="aiCallTimer" style="font-family:monospace;font-size:13px;color:#00ff88;letter-spacing:.12em;font-weight:700;">0:00</div>
-                <div style="display:flex;gap:2px;align-items:flex-end;">
-                  <div style="width:3px;height:5px;background:#00ff88;border-radius:1px;opacity:.7;"></div>
-                  <div style="width:3px;height:8px;background:#00ff88;border-radius:1px;opacity:.8;"></div>
-                  <div style="width:3px;height:12px;background:#00ff88;border-radius:1px;opacity:.9;"></div>
-                  <div style="width:3px;height:16px;background:#00ff88;border-radius:1px;"></div>
-                </div>
-              </div>
-
               <!-- Main avatar area -->
               <div style="position:relative;display:flex;flex-direction:column;align-items:center;padding:28px 20px 16px;">
 
@@ -4394,13 +4379,31 @@ function startMatrixAnimation(){
     return Math.max(0, Math.min(1, b));
   }
 
-  // Column state
-  const drops = Array.from({length:COLS}, (_,i) => -Math.random()*H);
+  // Column state — start drops at random positions so face is immediately visible
+  const drops = Array.from({length:COLS}, (_,i) => Math.random()*H);
   const speeds = Array.from({length:COLS}, () => 1.2+Math.random()*2.8);
   // Each column keeps a list of {y, char, age} for trail
   const cols = Array.from({length:COLS}, () => []);
 
   let mAmp=0, mPhase=0, tick=0;
+
+  // Seed initial state so face is visible immediately (don't start with black canvas)
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0,0,W,H);
+  for(let i=0;i<COLS;i++){
+    const x=i*CW+CW*0.5;
+    for(let row=0;row<Math.floor(H/10);row++){
+      const y=row*10;
+      const d=faceDepth(x,y);
+      if(d>0.15){
+        const ch=CHARS[Math.floor(Math.random()*CHARS.length)];
+        const g=Math.min(255,Math.round(80+d*175));
+        ctx.font='9px monospace';
+        ctx.fillStyle=`rgba(0,${g},40,${(0.3+d*0.5).toFixed(2)})`;
+        ctx.fillText(ch,x-4,y);
+      }
+    }
+  }
 
   function frame(){
     aiMatrixInterval = requestAnimationFrame(frame);
