@@ -4318,7 +4318,7 @@ function startSpeechPolling(sid){
   aiSpeechPollInterval = setInterval(async () => {
     if(!sid) return;
     try {
-      const resp = await fetch('/api/speech-log?sid=' + sid);
+      const resp = await fetch('/api/call-status?type=speech&sid=' + sid);
       const data = await resp.json();
       if(data.ts && data.ts !== aiLastSpeechTs && data.text){
         aiLastSpeechTs = data.ts;
