@@ -4425,159 +4425,209 @@ function startPageMatrix(){
   cv.height = window.innerHeight;
   const ctx = cv.getContext('2d');
   if(!ctx) return;
-  requestAnimationFrame(() => cv.style.opacity = '0.92');
+  requestAnimationFrame(() => cv.style.opacity = '0.96');
 
   const W=cv.width, H=cv.height;
-  const CW=14, COLS=Math.ceil(W/CW);
+  const CW=13, COLS=Math.ceil(W/CW);
   const CHARS='ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789ABCDEF!@#$%'.split('');
   const drops = Array.from({length:COLS},()=>-Math.random()*H);
   const speeds= Array.from({length:COLS},()=>2+Math.random()*5);
   const trails= Array.from({length:COLS},()=>[]);
 
-  // Realistic face — centered, capped so it looks right on any screen size
-  const FCX=W/2, FCY=H*0.40;
-  const FRX=Math.min(W*0.20,120), FRY=Math.min(H*0.26,155);
+  // Face — large portrait, upper-center
+  const FCX=W/2, FCY=H*0.38;
+  const FRX=Math.min(W*0.24,150), FRY=Math.min(H*0.32,190);
+
+  // Priority-based depth map — returns:
+  //   -1  = outside face
+  //   0   = true black (skip char)
+  //   0–1 = brightness
   function faceD(x,y){
     const nx=(x-FCX)/FRX, ny=(y-FCY)/FRY;
-    // Head oval — narrows toward chin
-    const chinN = ny>0 ? ny*0.22 : 0;
-    if(nx*nx*(1+chinN)+ny*ny > 1.02) return -1; // outside — skip
+    const chinN = ny>0.2 ? (ny-0.2)*0.28 : 0;
+    if(nx*nx*(1+chinN)+ny*ny > 1.03) return -1;
 
-    // ── PRIORITY: specific features override base skin ──
+    // Light from upper-left — adds 3D depth
+    const light = -nx*0.08 - ny*0.05;
 
-    // Hair — top of head, dark
-    if(ny < -0.72) return 0.04;
+    // ── Hair (top of head) — dark, thin code strands ──
+    if(ny < -0.68) return 0.05 + Math.random()*0.03;
 
-    // Eyebrows — dark thick arcs
-    const lBrowD = ((nx+0.36)/0.28)**2 + ((ny+0.38)/0.06)**2;
-    const rBrowD = ((nx-0.36)/0.28)**2 + ((ny+0.38)/0.06)**2;
-    if(lBrowD < 1 || rBrowD < 1) return 0.06;
+    // ── Hairline transition ──
+    if(ny < -0.62 && Math.abs(nx) < 0.55) return 0.10;
 
-    // Eye whites (outer socket area) — very dark shadow
-    const lEyeD = ((nx+0.36)/0.24)**2 + ((ny+0.22)/0.14)**2;
-    const rEyeD = ((nx-0.36)/0.24)**2 + ((ny+0.22)/0.14)**2;
-    if(lEyeD < 1) {
-      // Inside eye socket — check for iris, pupil, highlight
-      const lIrisD = ((nx+0.36)/0.10)**2 + ((ny+0.21)/0.09)**2;
-      if(lIrisD < 1){
-        const lPupilD = ((nx+0.36)/0.05)**2 + ((ny+0.21)/0.05)**2;
-        if(lPupilD < 1) return 0.02; // pupil — near black
-        // Iris catch-light
-        const lHL = ((nx+0.30)/0.03)**2 + ((ny+0.17)/0.03)**2;
-        if(lHL < 1) return 0.98; // specular highlight
-        return 0.85; // bright iris
+    // ── Eyebrows — sharply defined dark arcs ──
+    const lBrow = ((nx+0.35)/0.30)**2 + ((ny+0.36)/0.055)**2;
+    const rBrow = ((nx-0.35)/0.30)**2 + ((ny+0.36)/0.055)**2;
+    if(lBrow < 1 || rBrow < 1) return 0.05;
+
+    // ── Under-brow shadow ──
+    const lUnder = ((nx+0.35)/0.28)**2 + ((ny+0.26)/0.07)**2;
+    const rUnder = ((nx-0.35)/0.28)**2 + ((ny+0.26)/0.07)**2;
+    if(lUnder < 1 || rUnder < 1) return 0.04;
+
+    // ── Eye sockets ──
+    const lSock = ((nx+0.35)/0.26)**2 + ((ny+0.18)/0.13)**2;
+    const rSock = ((nx-0.35)/0.26)**2 + ((ny+0.18)/0.13)**2;
+    if(lSock < 1){
+      const lIris = ((nx+0.35)/0.11)**2 + ((ny+0.17)/0.10)**2;
+      if(lIris < 1){
+        const lPupil = ((nx+0.35)/0.05)**2 + ((ny+0.17)/0.05)**2;
+        if(lPupil < 1) return 0.01; // pupil — black
+        const lHL = ((nx+0.28)/0.025)**2 + ((ny+0.12)/0.025)**2;
+        if(lHL < 1) return 1.0; // catch-light — pure white
+        return 0.88 + light*0.5; // bright glowing iris
       }
-      return 0.02; // socket shadow
+      return 0.03; // socket shadow — nearly black
     }
-    if(rEyeD < 1){
-      const rIrisD = ((nx-0.36)/0.10)**2 + ((ny+0.21)/0.09)**2;
-      if(rIrisD < 1){
-        const rPupilD = ((nx-0.36)/0.05)**2 + ((ny+0.21)/0.05)**2;
-        if(rPupilD < 1) return 0.02;
-        const rHL = ((nx-0.30)/0.03)**2 + ((ny+0.17)/0.03)**2;
-        if(rHL < 1) return 0.98;
-        return 0.85;
+    if(rSock < 1){
+      const rIris = ((nx-0.35)/0.11)**2 + ((ny+0.18)/0.10)**2;
+      if(rIris < 1){
+        const rPupil = ((nx-0.35)/0.05)**2 + ((ny+0.18)/0.05)**2;
+        if(rPupil < 1) return 0.01;
+        const rHL = ((nx-0.28)/0.025)**2 + ((ny+0.13)/0.025)**2;
+        if(rHL < 1) return 1.0;
+        return 0.88 + light*0.5;
       }
-      return 0.02;
+      return 0.03;
     }
 
-    // Nostrils — dark
-    if(((nx+0.15)/0.08)**2+((ny-0.30)/0.07)**2 < 1) return 0.04;
-    if(((nx-0.15)/0.08)**2+((ny-0.30)/0.07)**2 < 1) return 0.04;
+    // ── Nose shadow (asymmetric — cast to right) ──
+    const noseShadow = ((nx-0.10)/0.08)**2 + ((ny-0.15)/0.22)**2;
+    if(noseShadow < 1) return Math.max(0.06, 0.18 - (1-noseShadow)*0.14);
 
-    // Mouth opening — dark gap between lips
-    if(Math.abs(nx) < 0.26 && ny > 0.43 && ny < 0.51) return 0.03;
+    // ── Nostrils ──
+    if(((nx+0.17)/0.07)**2+((ny-0.28)/0.065)**2 < 1) return 0.03;
+    if(((nx-0.17)/0.07)**2+((ny-0.28)/0.065)**2 < 1) return 0.03;
 
-    // ── BASE SKIN with subtle features ──
-    let b = 0.38 + 0.38*(1 - Math.sqrt(nx*nx+ny*ny)*0.80);
+    // ── Mouth opening ──
+    if(Math.abs(nx) < 0.24 && ny > 0.42 && ny < 0.50) return 0.02;
 
-    // Forehead center highlight
-    b += 0.14*Math.max(0,1-(nx/0.40)**2-((ny+0.65)/0.20)**2);
-    // Nose bridge & tip
-    b += 0.18*Math.max(0,1-(nx/0.09)**2-((ny-0.05)/0.30)**2);
-    b += 0.12*Math.max(0,1-(nx/0.12)**2-((ny-0.26)/0.08)**2);
-    // Cheekbones
-    b += 0.16*Math.max(0,1-((nx+0.50)/0.18)**2-((ny-0.02)/0.15)**2);
-    b += 0.16*Math.max(0,1-((nx-0.50)/0.18)**2-((ny-0.02)/0.15)**2);
-    // Upper lip cupid's bow
-    b += 0.22*Math.max(0,1-(nx/0.22)**2-((ny-0.42)/0.05)**2);
-    // Lower lip (fuller)
-    b += 0.30*Math.max(0,1-(nx/0.26)**2-((ny-0.52)/0.06)**2);
-    // Mouth corners
-    b -= 0.20*Math.max(0,1-((nx+0.27)/0.06)**2-((ny-0.46)/0.05)**2);
-    b -= 0.20*Math.max(0,1-((nx-0.27)/0.06)**2-((ny-0.46)/0.05)**2);
+    // ── BASE SKIN — asymmetric lighting ──
+    let b = 0.40 + 0.35*(1-Math.sqrt(nx*nx+ny*ny)*0.78) + light*0.5;
+
+    // Forehead highlight (left-of-center from light direction)
+    b += 0.16*Math.max(0,1-((nx+0.08)/0.38)**2-((ny+0.62)/0.22)**2);
+    // Nose bridge
+    b += 0.20*Math.max(0,1-(nx/0.08)**2-((ny-0.04)/0.28)**2);
+    // Nose tip
+    b += 0.14*Math.max(0,1-(nx/0.11)**2-((ny-0.24)/0.07)**2);
+    // Cheekbone left (lit)
+    b += 0.22*Math.max(0,1-((nx+0.52)/0.20)**2-((ny-0.04)/0.16)**2);
+    // Cheekbone right (shadow)
+    b += 0.10*Math.max(0,1-((nx-0.52)/0.20)**2-((ny-0.04)/0.16)**2);
+    // Philtrum dip
+    b -= 0.14*Math.max(0,1-(nx/0.07)**2-((ny-0.35)/0.06)**2);
+    // Upper lip
+    b += 0.24*Math.max(0,1-(nx/0.20)**2-((ny-0.40)/0.05)**2);
+    // Lower lip (fuller, brighter)
+    b += 0.32*Math.max(0,1-(nx/0.24)**2-((ny-0.50)/0.07)**2);
+    // Mouth corners shadow
+    b -= 0.22*Math.max(0,1-((nx+0.24)/0.06)**2-((ny-0.44)/0.05)**2);
+    b -= 0.22*Math.max(0,1-((nx-0.24)/0.06)**2-((ny-0.44)/0.05)**2);
     // Chin
-    b += 0.14*Math.max(0,1-(nx/0.16)**2-((ny-0.78)/0.09)**2);
+    b += 0.16*Math.max(0,1-(nx/0.14)**2-((ny-0.76)/0.09)**2);
+    // Jaw shadow
+    b -= 0.18*Math.max(0,1-(nx/0.70)**2-((ny-0.88)/0.10)**2);
     // Temple shadows
-    b -= 0.28*Math.max(0,1-((nx+0.75)/0.16)**2-((ny+0.08)/0.22)**2);
-    b -= 0.28*Math.max(0,1-((nx-0.75)/0.16)**2-((ny+0.08)/0.22)**2);
-    // Under-chin shadow
-    b -= 0.20*Math.max(0,1-(nx/0.40)**2-((ny-0.92)/0.08)**2);
+    b -= 0.30*Math.max(0,1-((nx+0.72)/0.18)**2-((ny+0.05)/0.28)**2);
+    b -= 0.30*Math.max(0,1-((nx-0.72)/0.18)**2-((ny+0.05)/0.28)**2);
+    // Neck/below chin fades to dark
+    if(ny > 0.80) b -= (ny-0.80)*1.2;
 
-    return Math.max(0.10, Math.min(1, b));
+    return Math.max(0.07, Math.min(1, b));
   }
 
   if(pageMatrixRaf){ cancelAnimationFrame(pageMatrixRaf); }
 
-  // Pre-build face character grid — refreshed every 6 frames for flicker effect
-  const ROWS = Math.ceil(H/14);
+  const ROWS = Math.ceil(H/13);
   const faceGrid = Array.from({length:COLS}, ()=>Array.from({length:ROWS}, ()=>CHARS[Math.floor(Math.random()*CHARS.length)]));
   let tick = 0;
 
   function frame(){
     pageMatrixRaf = requestAnimationFrame(frame);
     tick++;
-    ctx.fillStyle='rgba(0,0,0,0.13)';
+    ctx.fillStyle='rgba(0,0,0,0.14)';
     ctx.fillRect(0,0,W,H);
     const mo = window.aiMouthTarget||0;
 
-    // ── PERSISTENT FACE LAYER (drawn first, behind rain) ──
+    // ── FACE LAYER ──
     if(window.aiCallActive){
-      if(tick % 6 === 0){
-        for(let i=0;i<COLS;i++) for(let r=0;r<ROWS;r++) if(Math.random()<0.3) faceGrid[i][r]=CHARS[Math.floor(Math.random()*CHARS.length)];
+      // Emergence glow — radial halo behind the face
+      const grd = ctx.createRadialGradient(FCX-FRX*0.08, FCY-FRY*0.05, FRX*0.15, FCX, FCY, FRX*1.9);
+      grd.addColorStop(0,   'rgba(0,80,15,0.18)');
+      grd.addColorStop(0.45,'rgba(0,45,8,0.10)');
+      grd.addColorStop(0.75,'rgba(0,20,4,0.04)');
+      grd.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(FCX-FRX*2.4, FCY-FRY*2.1, FRX*4.8, FRY*4.2);
+
+      // Refresh face character grid every 5 frames (slightly slower = more face-like stability)
+      if(tick % 5 === 0){
+        for(let i=0;i<COLS;i++) for(let r=0;r<ROWS;r++) if(Math.random()<0.25) faceGrid[i][r]=CHARS[Math.floor(Math.random()*CHARS.length)];
       }
+
       for(let i=0;i<COLS;i++){
         const x=i*CW+CW/2;
         for(let r=0;r<ROWS;r++){
-          const y=r*14+7;
+          const y=r*13+6;
           const d=faceD(x,y);
-          if(d<0) continue; // outside face oval
-          if(d<0.06) continue; // very dark zones (pupils, mouth gap, nostrils) — leave empty
-          const inM=mo>0.1&&((x-FCX)/(FRX*0.28))**2+((y-FCY-FRY*0.47)/(FRY*0.10))**2<1;
-          const sz=Math.round(9+d*9);
-          ctx.font=`bold ${sz}px monospace`;
-          if(inM&&mo>0.15) ctx.fillStyle=`rgba(255,255,60,${(0.55+d*0.45).toFixed(2)})`;
-          else if(d>0.80) ctx.fillStyle=`rgba(255,255,255,${(0.6+d*0.4).toFixed(2)})`; // eyes/highlights — bright white
-          else if(d>0.55) ctx.fillStyle=`rgba(200,255,200,${(0.5+d*0.45).toFixed(2)})`; // skin highlights — light green-white
-          else if(d>0.35) ctx.fillStyle=`rgba(0,255,70,${(0.35+d*0.5).toFixed(2)})`; // mid skin — green
-          else ctx.fillStyle=`rgba(0,160,40,${(0.20+d*0.5).toFixed(2)})`; // darker skin — dim green
-          ctx.fillText(faceGrid[i][r],x-sz*0.35,y);
+          if(d<0) continue;   // outside oval
+          if(d<0.06) continue; // true-black zones
+          const inM = mo>0.1 && ((x-FCX)/(FRX*0.26))**2+((y-FCY-FRY*0.46)/(FRY*0.09))**2 < 1;
+          // Size increases with brightness — foreground features feel closer
+          const sz = Math.round(8 + d*11);
+          ctx.font = `bold ${sz}px monospace`;
+          if(inM && mo>0.15){
+            ctx.fillStyle=`rgba(255,255,50,${(0.55+d*0.45).toFixed(2)})`;
+          } else if(d>0.92){
+            ctx.fillStyle=`rgba(240,255,240,${(0.75+d*0.25).toFixed(2)})`; // catch-light / pupil highlight
+          } else if(d>0.78){
+            ctx.fillStyle=`rgba(160,255,200,${(0.65+d*0.30).toFixed(2)})`; // iris glow — cyan-white
+          } else if(d>0.58){
+            ctx.fillStyle=`rgba(220,255,220,${(0.50+d*0.40).toFixed(2)})`; // skin highlight — near white
+          } else if(d>0.38){
+            ctx.fillStyle=`rgba(0,230,65,${(0.38+d*0.45).toFixed(2)})`; // mid skin — bright green
+          } else {
+            ctx.fillStyle=`rgba(0,140,35,${(0.22+d*0.50).toFixed(2)})`; // shadow skin — dim green
+          }
+          ctx.fillText(faceGrid[i][r], x-sz*0.34, y);
         }
       }
     }
 
-    // ── FALLING RAIN ──
+    // ── FALLING RAIN — parts around face ──
     for(let i=0;i<COLS;i++){
-      const x=i*CW+CW/2, y=drops[i];
-      if(y>=0&&y<=H){
-        const ch=CHARS[Math.floor(Math.random()*CHARS.length)];
-        ctx.font='bold 13px monospace';
-        ctx.fillStyle='rgba(200,255,200,1)';
-        ctx.fillText(ch,x-5,y);
-        trails[i].push({y,ch});
-        if(trails[i].length>22) trails[i].shift();
+      const x=i*CW+CW/2;
+      // Check if this column's current drop is over the face
+      let inFace=false;
+      if(window.aiCallActive && drops[i]>0 && drops[i]<H){
+        const fnx=(x-FCX)/FRX, fny=(drops[i]-FCY)/FRY;
+        const chinN=fny>0.2?(fny-0.2)*0.28:0;
+        inFace = fnx*fnx*(1+chinN)+fny*fny < 0.80;
       }
-      const tr=trails[i];
-      for(let t=tr.length-2;t>=0;t--){
-        const age=tr.length-1-t;
-        const alpha=Math.max(0,0.7-age*0.032);
-        if(alpha<=0) continue;
-        const g=Math.min(255,Math.round(80+age*8));
-        ctx.font='12px monospace';
-        ctx.fillStyle=`rgba(0,${g},40,${alpha.toFixed(2)})`;
-        ctx.fillText(tr[t].ch,x-5,tr[t].y);
+      if(!inFace){
+        const y=drops[i];
+        if(y>=0&&y<=H){
+          const ch=CHARS[Math.floor(Math.random()*CHARS.length)];
+          ctx.font='bold 13px monospace';
+          ctx.fillStyle='rgba(200,255,200,1)';
+          ctx.fillText(ch,x-5,y);
+          trails[i].push({y,ch});
+          if(trails[i].length>22) trails[i].shift();
+        }
+        const tr=trails[i];
+        for(let t=tr.length-2;t>=0;t--){
+          const age=tr.length-1-t;
+          const alpha=Math.max(0,0.70-age*0.032);
+          if(alpha<=0) continue;
+          const g=Math.min(255,Math.round(80+age*8));
+          ctx.font='12px monospace';
+          ctx.fillStyle=`rgba(0,${g},40,${alpha.toFixed(2)})`;
+          ctx.fillText(tr[t].ch,x-5,tr[t].y);
+        }
       }
-      drops[i]+=speeds[i];
+      drops[i]+=inFace ? speeds[i]*0.4 : speeds[i]; // slow through face, normal elsewhere
       if(drops[i]>H+30){ drops[i]=-10-Math.random()*120; speeds[i]=2+Math.random()*5; trails[i]=[]; }
     }
   }
