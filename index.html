@@ -4516,43 +4516,41 @@ async function startPageMatrix(){
         for(let row = 0; row < ROWS; row++){
           const cy = row * CS;
           const b = sample(cx, cy, ox, oy);
-          if(b < 0.18) continue; // skip darker pixels — rain shows through
-
           const normX = (cx - (fBX + ox)) / fW;
           const normY = (cy - (fBY + oy)) / fH;
           const inMouth = normX>=MX1 && normX<=MX2 && normY>=MY1 && normY<=MY2;
 
+          // Always draw mouth region when speaking — don't skip on brightness
+          // so animation is visible even where image pixels are dark
+          if(b < 0.18 && !(inMouth && mAmp > 0.06)) continue;
+
           let r, g, bl, alpha;
+          const ch = CHARS[Math.floor(Math.random() * CHARS.length)];
 
           if(inMouth && mAmp > 0.06){
-            // Mouth animation: pulse open/close with a visible dark gap in center
-            const pulse = 0.5 + 0.5 * Math.sin(tick * 0.40); // 0→1 cycling
+            // Mouth open/close cycle
+            const pulse   = 0.5 + 0.5 * Math.sin(tick * 0.40);
             const openAmt = mAmp * pulse;
-            // Normalised position within mouth region
-            const mNX = (normX - MX1) / (MX2 - MX1); // 0-1 across mouth
-            const mNY = (normY - MY1) / (MY2 - MY1); // 0-1 down mouth
-            // Inner gap = center of mouth when open
-            const gapTop = 0.35 - openAmt * 0.25;
-            const gapBot = 0.65 + openAmt * 0.25;
-            const inGap  = mNX > 0.12 && mNX < 0.88 && mNY > gapTop && mNY < gapBot;
+            const mNX = (normX - MX1) / (MX2 - MX1);
+            const mNY = (normY - MY1) / (MY2 - MY1);
+            const gapTop = 0.30 - openAmt * 0.20;
+            const gapBot = 0.70 + openAmt * 0.20;
+            const inGap  = mNX > 0.10 && mNX < 0.90 && mNY > gapTop && mNY < gapBot;
 
-            if(inGap && openAmt > 0.15){
-              // Dark cavity — open mouth interior
+            if(inGap && openAmt > 0.12){
+              // Dark open cavity
               ctx.font = `bold ${CS+1}px monospace`;
-              ctx.fillStyle = `rgba(0,6,0,${(openAmt * 0.85).toFixed(2)})`;
-              ctx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)], col*CS, cy);
+              ctx.fillStyle = `rgba(2,2,2,${Math.min(0.95, openAmt).toFixed(2)})`;
+              ctx.fillText(ch, col*CS, cy);
             } else {
-              // Lip area — bright amber/orange
-              r  = Math.round(255 * b);
-              g  = Math.round(160 * b);
-              bl = 0;
-              alpha = Math.min(1, b * 1.5);
+              // Glowing amber lips
+              const bv = Math.max(0.4, b);
               ctx.font = `bold ${CS+1}px monospace`;
-              ctx.fillStyle = `rgba(${r},${g},${bl},${alpha.toFixed(2)})`;
-              ctx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)], col*CS, cy);
+              ctx.fillStyle = `rgba(255,${Math.round(140*bv)},0,${Math.min(1, bv*1.6).toFixed(2)})`;
+              ctx.fillText(ch, col*CS, cy);
             }
           } else {
-            // Normal face — green, brightness gives 3D depth
+            // Normal face — green depth
             const v = Math.round(100 + 155 * b);
             r  = Math.round(15 * b);
             g  = v;
@@ -4560,7 +4558,7 @@ async function startPageMatrix(){
             alpha = Math.min(1, b * 1.3);
             ctx.font = `bold ${CS+1}px monospace`;
             ctx.fillStyle = `rgba(${r},${g},${bl},${alpha.toFixed(2)})`;
-            ctx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)], col*CS, cy);
+            ctx.fillText(ch, col*CS, cy);
           }
         }
       }
@@ -4575,15 +4573,11 @@ async function startPageMatrix(){
         if(rainTrail[col].length > 20) rainTrail[col].shift();
       }
 
-      // Rain trail — skips face-bright cells so face stays in front
+      // Rain trail falls everywhere — including over the face for full integration
       for(let t = rainTrail[col].length - 2; t >= 0; t--){
         const age   = rainTrail[col].length - 1 - t;
         const alpha = Math.max(0, 0.58 - age * 0.032);
         if(alpha <= 0) continue;
-        if(imgBright && window.aiCallActive){
-          const b2 = sample(cx, rainTrail[col][t].y, ox, oy);
-          if(b2 >= 0.18) continue;
-        }
         ctx.font = '12px monospace';
         ctx.fillStyle = `rgba(0,${Math.min(255, Math.round(65+age*11))},28,${alpha.toFixed(2)})`;
         ctx.fillText(rainTrail[col][t].ch, col*CS, rainTrail[col][t].y);
