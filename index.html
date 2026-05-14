@@ -4529,44 +4529,32 @@ async function startPageMatrix(){
           const normY = (cy - (fBY + oy)) / fH;
           const inMouth = normX>=MX1 && normX<=MX2 && normY>=MY1 && normY<=MY2;
 
-          // Always draw mouth region when speaking — don't skip on brightness
-          // so animation is visible even where image pixels are dark
-          if(b < 0.18 && !(inMouth && mAmp > 0.06)) continue;
+          if(b < 0.18) continue;
 
-          let r, g, bl, alpha;
           const ch = CHARS[Math.floor(Math.random() * CHARS.length)];
 
           if(inMouth && mAmp > 0.06){
-            // Mouth open/close cycle
+            // Mouth open/close: gap cells are simply skipped so the canvas
+            // fade (rgba 0,0,0,0.13 per frame) creates a smooth dark opening
             const pulse   = 0.5 + 0.5 * Math.sin(tick * 0.40);
             const openAmt = mAmp * pulse;
             const mNX = (normX - MX1) / (MX2 - MX1);
             const mNY = (normY - MY1) / (MY2 - MY1);
-            const gapTop = 0.30 - openAmt * 0.20;
-            const gapBot = 0.70 + openAmt * 0.20;
-            const inGap  = mNX > 0.10 && mNX < 0.90 && mNY > gapTop && mNY < gapBot;
+            const gapTop = 0.28 - openAmt * 0.22;
+            const gapBot = 0.72 + openAmt * 0.22;
+            const inGap  = mNX > 0.12 && mNX < 0.88 && mNY > gapTop && mNY < gapBot;
+            if(inGap && openAmt > 0.10) continue; // skip = black gap = open mouth
 
-            if(inGap && openAmt > 0.12){
-              // Dark open cavity
-              ctx.font = `bold ${CS+1}px monospace`;
-              ctx.fillStyle = `rgba(2,2,2,${Math.min(0.95, openAmt).toFixed(2)})`;
-              ctx.fillText(ch, col*CS, cy);
-            } else {
-              // Glowing amber lips
-              const bv = Math.max(0.4, b);
-              ctx.font = `bold ${CS+1}px monospace`;
-              ctx.fillStyle = `rgba(255,${Math.round(140*bv)},0,${Math.min(1, bv*1.6).toFixed(2)})`;
-              ctx.fillText(ch, col*CS, cy);
-            }
+            // Lip edges — same green as rest of face, slightly brighter
+            const v = Math.round(130 + 125 * b);
+            ctx.font = `bold ${CS+1}px monospace`;
+            ctx.fillStyle = `rgba(${Math.round(18*b)},${v},${Math.round(22*b)},${Math.min(1,b*1.4).toFixed(2)})`;
+            ctx.fillText(ch, col*CS, cy);
           } else {
             // Normal face — green depth
             const v = Math.round(100 + 155 * b);
-            r  = Math.round(15 * b);
-            g  = v;
-            bl = Math.round(20 * b);
-            alpha = Math.min(1, b * 1.3);
             ctx.font = `bold ${CS+1}px monospace`;
-            ctx.fillStyle = `rgba(${r},${g},${bl},${alpha.toFixed(2)})`;
+            ctx.fillStyle = `rgba(${Math.round(15*b)},${v},${Math.round(20*b)},${Math.min(1,b*1.3).toFixed(2)})`;
             ctx.fillText(ch, col*CS, cy);
           }
         }
