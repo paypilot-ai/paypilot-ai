@@ -4437,28 +4437,57 @@ async function startPageMatrix(){
   if(!ctx) return;
   requestAnimationFrame(() => cv.style.opacity = '0.96');
 
-  // Load voxel face — pure black bg disappears with 'screen' blend,
-  // face emerges from inside the rain rather than sitting on top
-  const faceImg = new Image();
-  faceImg.crossOrigin = 'anonymous';
-  await new Promise(r => { faceImg.onload = r; faceImg.onerror = r;
-    faceImg.src = '/360_F_288526357_Qsl1UOsDMRnhLF5rmhX9b7nlnVEHH2gX.jpg'; });
+  // Pre-sample face image brightness into a Float32Array.
+  // The face IS rendered as matrix characters — bright pixels become bright green chars,
+  // black background pixels = nothing drawn, letting rain fall through (true integration).
+  let imgBright = null, IW = 1, IH = 1;
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  await new Promise(r => { img.onload = r; img.onerror = r;
+    img.src = '/360_F_288526357_Qsl1UOsDMRnhLF5rmhX9b7nlnVEHH2gX.jpg'; });
+  if(img.naturalWidth > 0){
+    IW = img.naturalWidth; IH = img.naturalHeight;
+    const off = document.createElement('canvas');
+    off.width = IW; off.height = IH;
+    const oc = off.getContext('2d');
+    oc.drawImage(img, 0, 0);
+    const raw = oc.getImageData(0, 0, IW, IH).data;
+    imgBright = new Float32Array(IW * IH);
+    for(let i = 0; i < IW * IH; i++){
+      imgBright[i] = (0.299*raw[i*4] + 0.587*raw[i*4+1] + 0.114*raw[i*4+2]) / 255;
+    }
+  }
 
-  const W=cv.width, H=cv.height;
-  const CW=13, COLS=Math.ceil(W/CW);
-  const CHARS='0101101001101001011010011010011010110100110100101101001101001011'.split('');
-  const drops = Array.from({length:COLS},()=>-Math.random()*H);
-  const speeds= Array.from({length:COLS},()=>2+Math.random()*5);
-  const trails= Array.from({length:COLS},()=>[]);
+  const W = cv.width, H = cv.height;
+  // Fine grid — smaller chars give more facial detail and a 3-D "sculpted" look
+  const CS = 9;
+  const COLS = Math.ceil(W / CS);
+  const ROWS = Math.ceil(H / CS);
+  const CHARS = 'アイウエオカキクケコサシスセソタチツテトナニ01'.split('');
 
-  // Face draw dimensions — centered, ~58% of screen width
-  const fW = Math.min(Math.round(W * 0.58), 520);
-  const fH = faceImg.naturalWidth > 0 ? Math.round(faceImg.naturalHeight / faceImg.naturalWidth * fW) : fW;
+  // Per-column rain state (unified grid — same columns for rain and face)
+  const rainY     = Array.from({length: COLS}, () => -Math.random() * H);
+  const rainSpd   = Array.from({length: COLS}, () => 2 + Math.random() * 5);
+  const rainTrail = Array.from({length: COLS}, () => []);
+
+  // Face geometry — centered, ~56% screen width
+  const fW  = Math.min(Math.round(W * 0.56), 500);
+  const fH  = (img.naturalWidth > 0) ? Math.round(img.naturalHeight / img.naturalWidth * fW) : fW;
   const fBX = (W - fW) / 2;
   const fBY = (H - fH) / 2;
 
-  // Mouth position within the voxel image (~50% wide, ~64% tall)
-  const MRX = 0.50, MRY = 0.64;
+  // Mouth region in normalised face coords (30-70% wide, 60-76% tall)
+  const MX1=0.30, MX2=0.70, MY1=0.60, MY2=0.76;
+
+  // Sample brightness at canvas coord (cx,cy) with current bob offset (ox,oy)
+  function sample(cx, cy, ox, oy){
+    const fx = cx - (fBX + ox);
+    const fy = cy - (fBY + oy);
+    if(fx < 0 || fy < 0 || fx >= fW || fy >= fH) return -1;
+    const px = Math.min(IW-1, Math.round(fx / fW * IW));
+    const py = Math.min(IH-1, Math.round(fy / fH * IH));
+    return imgBright[py * IW + px];
+  }
 
   if(pageMatrixRaf){ cancelAnimationFrame(pageMatrixRaf); }
   let tick = 0, mAmp = 0;
@@ -4466,76 +4495,84 @@ async function startPageMatrix(){
   function frame(){
     pageMatrixRaf = requestAnimationFrame(frame);
     tick++;
-    ctx.fillStyle='rgba(0,0,0,0.14)';
-    ctx.fillRect(0,0,W,H);
+    // Fade to black — persistence of phosphor effect
+    ctx.fillStyle = 'rgba(0,0,0,0.13)';
+    ctx.fillRect(0, 0, W, H);
 
-    // ── Falling rain ──
-    for(let i=0;i<COLS;i++){
-      const x=i*CW+CW/2, y=drops[i];
-      if(y>=0&&y<=H){
-        ctx.font='bold 13px monospace';
-        ctx.fillStyle='rgba(200,255,200,0.9)';
-        ctx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)],x-5,y);
-        trails[i].push({y,ch:CHARS[Math.floor(Math.random()*CHARS.length)]});
-        if(trails[i].length>22) trails[i].shift();
+    mAmp += ((window.aiMouthTarget || 0) - mAmp) * 0.09;
+    // Head bob when speaking — slight 3-D sway
+    const ox = mAmp * Math.sin(tick * 0.11) * 5;
+    const oy = mAmp * Math.sin(tick * 0.16) * 7;
+
+    ctx.textBaseline = 'top';
+
+    for(let col = 0; col < COLS; col++){
+      const cx = col * CS + CS * 0.5;
+
+      // ── Advance rain drop for this column ──
+      rainY[col] += rainSpd[col];
+      if(rainY[col] > H + 30){
+        rainY[col]   = -10 - Math.random() * 100;
+        rainSpd[col] = 2 + Math.random() * 5;
+        rainTrail[col] = [];
       }
-      for(let t=trails[i].length-2;t>=0;t--){
-        const age=trails[i].length-1-t, alpha=Math.max(0,0.65-age*0.030);
-        if(alpha<=0) continue;
-        ctx.font='12px monospace';
-        ctx.fillStyle=`rgba(0,${Math.min(255,Math.round(80+age*8))},40,${alpha.toFixed(2)})`;
-        ctx.fillText(trails[i][t].ch,x-5,trails[i][t].y);
-      }
-      drops[i]+=speeds[i];
-      if(drops[i]>H+30){ drops[i]=-10-Math.random()*120; speeds[i]=2+Math.random()*5; trails[i]=[]; }
-    }
 
-    // ── Face drawn INTO the canvas via screen blend ──
-    if(faceImg.naturalWidth > 0 && window.aiCallActive){
-      mAmp += ((window.aiMouthTarget||0) - mAmp) * 0.10;
-      const bx = mAmp * Math.sin(tick * 0.11) * 6;
-      const by = mAmp * Math.sin(tick * 0.16) * 8;
-      const fx = fBX + bx, fy = fBY + by;
+      // ── Render every row: face chars take priority over rain trail ──
+      if(imgBright && window.aiCallActive){
+        for(let row = 0; row < ROWS; row++){
+          const cy = row * CS;
+          const b = sample(cx, cy, ox, oy);
+          if(b < 0.12) continue; // black bg → skip, rain shows through
 
-      // screen blend: black bg becomes transparent, bright voxels glow through rain
-      ctx.save();
-      ctx.globalCompositeOperation = 'screen';
-      ctx.drawImage(faceImg, fx, fy, fW, fH);
-      ctx.restore();
+          const ch = CHARS[Math.floor(Math.random() * CHARS.length)];
+          const normX = (cx - (fBX + ox)) / fW;
+          const normY = (cy - (fBY + oy)) / fH;
+          const inMouth = normX>=MX1 && normX<=MX2 && normY>=MY1 && normY<=MY2;
 
-      // ── Animated lips drawn directly on canvas ──
-      if(mAmp > 0.03){
-        const mx = fx + fW * MRX;
-        const my = fy + fH * MRY;
-        const mHW  = fW * 0.095;
-        const open = mAmp * fH * 0.042;
-
-        ctx.save();
-        ctx.globalCompositeOperation = 'source-over';
-        const lip  = `rgba(255,195,165,${Math.min(0.88, mAmp * 1.1).toFixed(2)})`;
-        const dark = `rgba(18,4,4,${Math.min(0.82, mAmp).toFixed(2)})`;
-
-        // Upper lip
-        ctx.beginPath();
-        ctx.moveTo(mx-mHW, my);
-        ctx.bezierCurveTo(mx-mHW*.45, my-open*.7, mx+mHW*.45, my-open*.7, mx+mHW, my);
-        ctx.bezierCurveTo(mx+mHW*.45, my+open*.25, mx-mHW*.45, my+open*.25, mx-mHW, my);
-        ctx.fillStyle = lip; ctx.fill();
-
-        // Lower lip
-        ctx.beginPath();
-        ctx.moveTo(mx-mHW, my);
-        ctx.bezierCurveTo(mx-mHW*.45, my+open*1.55, mx+mHW*.45, my+open*1.55, mx+mHW, my);
-        ctx.bezierCurveTo(mx+mHW*.45, my+open*.3,  mx-mHW*.45, my+open*.3,   mx-mHW, my);
-        ctx.fillStyle = lip; ctx.fill();
-
-        // Dark gap between lips
-        if(open > 1){
-          ctx.beginPath();
-          ctx.ellipse(mx, my+open*.42, mHW*.65, open*.48, 0, 0, Math.PI*2);
-          ctx.fillStyle = dark; ctx.fill();
+          let r, g, bl;
+          if(inMouth && mAmp > 0.08){
+            // Speaking: mouth area pulses amber-orange — warm, alive
+            const pulse = 0.65 + 0.35 * Math.sin(tick * 0.38);
+            r  = Math.round(255 * b * pulse);
+            g  = Math.round((120 + 90*b) * pulse);
+            bl = 0;
+          } else {
+            // Depth: brighter pixels (protruding voxels) = brighter/whiter green
+            const v = Math.round(120 + 135 * b);
+            r  = Math.round(18 * b);
+            g  = v;
+            bl = Math.round(22 * b);
+          }
+          ctx.font = `bold ${CS+1}px monospace`;
+          ctx.fillStyle = `rgba(${r},${g},${bl},${Math.min(1, b * 1.35).toFixed(2)})`;
+          ctx.fillText(ch, col * CS, cy);
         }
-        ctx.restore();
+      }
+
+      // ── Rain head (bright white-green leading character) ──
+      const ry = rainY[col];
+      if(ry >= 0 && ry <= H){
+        // Brighten rain head even if it passes through face region — adds depth
+        ctx.font = 'bold 14px monospace';
+        ctx.fillStyle = 'rgba(210,255,210,0.95)';
+        ctx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)], col*CS, ry);
+        rainTrail[col].push({y: ry, ch: CHARS[Math.floor(Math.random()*CHARS.length)]});
+        if(rainTrail[col].length > 20) rainTrail[col].shift();
+      }
+
+      // ── Rain trail (fades; skips face-bright cells so face pops forward) ──
+      for(let t = rainTrail[col].length - 2; t >= 0; t--){
+        const age   = rainTrail[col].length - 1 - t;
+        const alpha = Math.max(0, 0.58 - age * 0.032);
+        if(alpha <= 0) continue;
+        // Skip trail where face is bright — face chars stay in front
+        if(imgBright && window.aiCallActive){
+          const b2 = sample(cx, rainTrail[col][t].y, ox, oy);
+          if(b2 >= 0.12) continue;
+        }
+        ctx.font = '12px monospace';
+        ctx.fillStyle = `rgba(0,${Math.min(255, Math.round(65+age*11))},28,${alpha.toFixed(2)})`;
+        ctx.fillText(rainTrail[col][t].ch, col*CS, rainTrail[col][t].y);
       }
     }
   }
