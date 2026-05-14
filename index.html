@@ -4487,26 +4487,51 @@ function startPageMatrix(){
   }
 
   if(pageMatrixRaf){ cancelAnimationFrame(pageMatrixRaf); }
+
+  // Pre-build face character grid — refreshed every 6 frames for flicker effect
+  const ROWS = Math.ceil(H/14);
+  const faceGrid = Array.from({length:COLS}, ()=>Array.from({length:ROWS}, ()=>CHARS[Math.floor(Math.random()*CHARS.length)]));
+  let tick = 0;
+
   function frame(){
     pageMatrixRaf = requestAnimationFrame(frame);
+    tick++;
     ctx.fillStyle='rgba(0,0,0,0.13)';
     ctx.fillRect(0,0,W,H);
     const mo = window.aiMouthTarget||0;
+
+    // ── PERSISTENT FACE LAYER (drawn first, behind rain) ──
+    if(window.aiCallActive){
+      if(tick % 6 === 0){
+        for(let i=0;i<COLS;i++) for(let r=0;r<ROWS;r++) if(Math.random()<0.3) faceGrid[i][r]=CHARS[Math.floor(Math.random()*CHARS.length)];
+      }
+      for(let i=0;i<COLS;i++){
+        const x=i*CW+CW/2;
+        for(let r=0;r<ROWS;r++){
+          const y=r*14+7;
+          const d=faceD(x,y);
+          if(d<0.05) continue;
+          const inM=mo>0.1&&((x-FCX)/(FRX*0.30))**2+((y-FCY-FRY*0.49)/(FRY*0.12))**2<1;
+          const sz=Math.round(10+d*10);
+          ctx.font=`bold ${sz}px monospace`;
+          if(inM&&mo>0.15) ctx.fillStyle=`rgba(255,255,60,${(0.5+d*0.5).toFixed(2)})`;
+          else if(d>0.65) ctx.fillStyle=`rgba(255,255,255,${(0.4+d*0.55).toFixed(2)})`;
+          else if(d>0.35) ctx.fillStyle=`rgba(160,255,160,${(0.3+d*0.5).toFixed(2)})`;
+          else ctx.fillStyle=`rgba(0,200,60,${(0.15+d*0.4).toFixed(2)})`;
+          ctx.fillText(faceGrid[i][r],x-sz*0.35,y);
+        }
+      }
+    }
+
+    // ── FALLING RAIN ──
     for(let i=0;i<COLS;i++){
       const x=i*CW+CW/2, y=drops[i];
-      const d = window.aiCallActive ? faceD(x,y) : 0;
-      const inMouth = mo>0.1 && ((x-FCX)/(FRX*0.30))**2+((y-FCY-FRY*0.49)/(FRY*0.12))**2<1;
       if(y>=0&&y<=H){
         const ch=CHARS[Math.floor(Math.random()*CHARS.length)];
-        const sz = d>0.2 ? Math.round(13+d*12) : 13;
-        ctx.font=`bold ${sz}px monospace`;
-        if(inMouth && mo>0.15) ctx.fillStyle='rgba(255,255,60,1)';
-        else if(d>0.6) ctx.fillStyle='rgba(255,255,255,1)';
-        else if(d>0.3) ctx.fillStyle=`rgba(180,255,180,1)`;
-        else if(d>0.05) ctx.fillStyle=`rgba(0,255,80,1)`;
-        else ctx.fillStyle='rgba(0,180,40,0.8)';
-        ctx.fillText(ch,x-sz*0.35,y);
-        trails[i].push({y,ch,d});
+        ctx.font='bold 13px monospace';
+        ctx.fillStyle='rgba(200,255,200,1)';
+        ctx.fillText(ch,x-5,y);
+        trails[i].push({y,ch});
         if(trails[i].length>22) trails[i].shift();
       }
       const tr=trails[i];
@@ -4514,11 +4539,9 @@ function startPageMatrix(){
         const age=tr.length-1-t;
         const alpha=Math.max(0,0.7-age*0.032);
         if(alpha<=0) continue;
-        const td=tr[t].d||0;
-        const g=td>0 ? Math.min(255,Math.round(120+td*135)) : Math.min(255,Math.round(80+age*8));
-        const r=td>0 ? Math.round(td*40) : 0;
+        const g=Math.min(255,Math.round(80+age*8));
         ctx.font='12px monospace';
-        ctx.fillStyle=`rgba(${r},${g},40,${alpha.toFixed(2)})`;
+        ctx.fillStyle=`rgba(0,${g},40,${alpha.toFixed(2)})`;
         ctx.fillText(tr[t].ch,x-5,tr[t].y);
       }
       drops[i]+=speeds[i];
