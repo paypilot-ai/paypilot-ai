@@ -36,7 +36,7 @@ module.exports = async function handler(req, res) {
     );
 
     const data = await response.json();
-    if (!response.ok) return res.status(500).json({ error: data.message || 'Twilio error' });
+    if (!response.ok) return res.status(500).json({ error: `Twilio ${data.status || response.status}: ${data.message || 'unknown error'} (code ${data.code || 'none'})` });
 
     return res.status(200).json({ callSid: data.sid, status: data.status, to: e164 });
 
