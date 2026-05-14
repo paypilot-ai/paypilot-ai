@@ -1549,7 +1549,7 @@ body.modal-open{overflow:hidden}
           <p style="margin:0; color:rgba(255,255,255,.68); font-size:16px; line-height:1.8; max-width:520px;">Demo the AI Auto-Caller, live rebuttals, and agreement sending before you pay a cent. Pro plan — $399/mo, 100 AI dials/mo. Call minutes $0.04/min. Additional AI dials $0.10/call. Cancel anytime.</p>
         </div>
         <div style="display:flex; flex-direction:column; gap:12px; min-width:200px;">
-          <button class="btn btn-primary" style="font-size:16px; padding:16px 28px;" onclick="showAuth('pro')">Get Started</button>
+          <button class="btn btn-primary" style="font-size:16px; padding:16px 28px;" onclick="enterPlanDemo('pro');setTimeout(()=>showPage('billing',document.querySelector('[data-page=billing]')),100);">Get Started</button>
         </div>
       </div>
     </div>
@@ -2016,7 +2016,7 @@ body.modal-open{overflow:hidden}
           <div id="demoLimitBanner" style="display:none; margin-bottom:12px; padding:22px; border-radius:20px; background:linear-gradient(135deg,#1e3a5f,#0f172a); color:#fff; text-align:center;">
             <div style="font-size:22px; font-weight:800; margin-bottom:8px;">You've reached your free limit</div>
             <div style="color:rgba(255,255,255,.72); margin-bottom:16px;">Sign up to get unlimited AI responses, live mic transcription, multi-language support, and full analytics.</div>
-            <button class="btn btn-primary" style="padding:14px 28px; font-size:16px;" onclick="showAuth('pro')">Get Full Access</button>
+            <button class="btn btn-primary" style="padding:14px 28px; font-size:16px;" onclick="enterPlanDemo('pro');setTimeout(()=>showPage('billing',document.querySelector('[data-page=billing]')),100);">Get Full Access</button>
           </div>
 
           <!-- CALL PANEL -->
