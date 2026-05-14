@@ -13,14 +13,16 @@ function buildPrompt(customerName, callReason, companyName) {
 
 CRITICAL RULES — follow every one:
 - Every response must be 1-2 SHORT sentences max. Never more.
-- Sound natural and human — like a confident, friendly rep on the phone. Not scripted.
+- Sound natural and human — like a real person on the phone, not a robot or script.
 - Never use filler phrases like "I understand", "Great question", "Absolutely", "Of course".
 - Never repeat yourself or summarize what they said back to them.
-- If they push back on fees or timing, give ONE punchy benefit and move on.
-- If they're open or curious, push toward a clear next step (email them info, quick 5-min call).
-- If they say no or want to hang up, acknowledge it respectfully in one sentence and close.
-- Always refer to the company as "${company}" — never say "your company" or "our solution".
-- HANGUP SIGNAL: When the conversation is clearly over (they firmly said no, said goodbye, agreed and you've confirmed next steps, or asked you not to call again) — append the exact token [END] on a new line after your reply. Do not use [END] mid-conversation.`;
+- NEVER offer to send an email or suggest a follow-up call unless they specifically ask for it — stay on this call and close now.
+- Have a real back-and-forth conversation. Answer their questions directly and confidently.
+- If they push back on price or timing, give ONE sharp reason why it makes sense now and ask a direct question.
+- If they're interested, move toward a commitment on THIS call — not later, not an email.
+- If they say no or want to hang up, acknowledge it in one sentence and close.
+- Always refer to the company as "${company}".
+- HANGUP SIGNAL: When the conversation is clearly over (firm no, goodbye, agreed and confirmed, or asked not to call again) — append [END] on a new line. Never use [END] mid-conversation.`;
 }
 
 async function ask(messages) {
@@ -43,10 +45,17 @@ function gatherTwiml(say, historyB64, retries, n, r, c) {
 </Response>`;
 }
 
+const fs = require('fs');
+function logSpeech(callSid, text) {
+  if (!callSid) return;
+  try { fs.writeFileSync(`/tmp/speech_${callSid.replace(/[^A-Za-z0-9]/g,'')}.json`, JSON.stringify({ text, ts: Date.now() })); } catch(e) {}
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
 
   const transcript   = (req.body?.SpeechResult || '').trim();
+  const callSid      = req.body?.CallSid || '';
   const historyParam = req.query?.h || '';
   const retries      = parseInt(req.query?.retries || '0');
   const n            = req.query?.n || '';
@@ -80,6 +89,7 @@ module.exports = async function handler(req, res) {
       ['have a great day','goodbye','good day','take care',"i'll let you go",
        'thanks for your time','nice talking','have a good one','talk soon'].some(p => lower.includes(p));
     const reply  = raw.replace('[END]', '').trim();
+    logSpeech(callSid, reply);
 
     history.push({ role: 'assistant', content: reply });
     while (Buffer.from(JSON.stringify(history)).length > 6000) history.splice(0, 2);

@@ -1387,7 +1387,7 @@ body.modal-open{overflow:hidden}
       </div>
     </div>
     <div class="nav-actions">
-      <button class="btn btn-ghost" onclick="showPricing()">Get Pricing</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">Get Pricing</button>
       <button class="btn btn-white" onclick="showAuth()">Login</button>
       <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Open Demo</button>
     </div>
@@ -1398,10 +1398,6 @@ body.modal-open{overflow:hidden}
       <div class="eyebrow">AI-powered sales automation</div>
       <h1>Close more deals with <span>AI that calls, talks & closes.</span></h1>
       <p>PayPilot handles the full sales cycle — AI Auto-Caller that dials leads, holds real conversations, and sends agreements on the spot. Plus live rebuttals, script control, and analytics while your reps are on the phone.</p>
-
-      <div class="hero-actions">
-        <button class="btn btn-primary" onclick="showPricing()">See Plans</button>
-      </div>
 
       <div class="hero-metrics">
         <div class="hero-metric"><strong>AI</strong><span>Auto-Caller</span></div>
@@ -1471,31 +1467,11 @@ body.modal-open{overflow:hidden}
       </div>
     </div>
 
-    <div class="pricing-label">Simple, transparent pricing</div>
+    <div id="pricingSection" class="pricing-label">Simple, transparent pricing</div>
 
-    <div class="pricing-grid">
-      <div class="plan">
-        <h3>Starter</h3>
-        <div class="price">
-          <strong>$99</strong>
-          <span>per month</span>
-        </div>
-        <div style="font-size:13px; font-weight:700; color:#64748b; margin-bottom:12px;">Up to 5 users</div>
-        <ul>
-          <li>AI Auto-Caller (up to 25 dials/mo)</li>
-          <li>AI-generated objection responses</li>
-          <li>Script library access</li>
-          <li>Agreement email sending</li>
-          <li>Email support</li>
-          <li style="color:#94a3b8;">Call minutes billed at $0.04/min</li>
-        </ul>
-        <div class="plan-actions">
-          <button class="btn btn-primary" onclick="showPricing('starter')">View Plan</button>
-        </div>
-      </div>
-
+    <div class="pricing-grid" style="grid-template-columns:1fr;max-width:480px;margin:20px auto 0;">
       <div class="plan featured">
-        <div class="plan-tag">Most Popular</div>
+        <div class="plan-tag">Pro Plan</div>
         <h3>Pro</h3>
         <div class="price">
           <strong>$399</strong>
@@ -1515,32 +1491,13 @@ body.modal-open{overflow:hidden}
           <li style="color:#94a3b8;">Additional AI dials at $0.10/call</li>
         </ul>
         <div class="plan-actions">
-          <button class="btn btn-primary" onclick="showPricing('pro')">View Plan</button>
-        </div>
-      </div>
-
-      <div class="plan">
-        <h3>Enterprise</h3>
-        <div class="price">
-          <strong>Custom</strong>
-          <span>pricing</span>
-        </div>
-        <div style="font-size:13px; font-weight:700; color:#64748b; margin-bottom:12px;">25+ users</div>
-        <ul>
-          <li>Everything in Pro</li>
-          <li>AI Auto-Caller with custom voice & persona</li>
-          <li>Live call integration</li>
-          <li>AI trained on your scripts</li>
-          <li>CRM and workflow integrations</li>
-          <li>Team onboarding and rollout</li>
-          <li>Dedicated support</li>
-          <li style="color:#94a3b8;">Call minutes billed at $0.04/min</li>
-        </ul>
-        <div class="plan-actions">
-          <button class="btn btn-primary" onclick="showPricing('enterprise')">View Plan</button>
+          <button class="btn btn-primary" onclick="showAuth('pro')">Get Started</button>
         </div>
       </div>
     </div><!-- /.pricing-grid -->
+    <div style="text-align:center;padding:18px 24px 4px;color:rgba(255,255,255,.42);font-size:12px;line-height:1.7;max-width:620px;margin:0 auto;">
+      All plans are month-to-month subscriptions billed automatically. <strong style="color:rgba(255,255,255,.60);">No refunds.</strong> Your subscription continues until you cancel — cancel anytime from Settings before your next billing date. By subscribing you agree to these terms.
+    </div>
 
     <!-- HOME BILLING BANNER -->
     <div style="padding-bottom:84px;">
@@ -1548,10 +1505,10 @@ body.modal-open{overflow:hidden}
         <div>
           <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.16em; color:rgba(255,255,255,.52); margin-bottom:12px;">Simple billing. No surprises.</div>
           <h3 style="margin:0 0 10px; font-family:'Playfair Display',serif; font-size:38px; color:#fff; letter-spacing:-.04em; line-height:1.1;">Try the AI Caller.<br>No card needed.</h3>
-          <p style="margin:0; color:rgba(255,255,255,.68); font-size:16px; line-height:1.8; max-width:520px;">Demo the AI Auto-Caller, live rebuttals, and agreement sending before you pay a cent. Starter ($99/mo, 25 AI dials/mo), Pro ($399/mo, 100 AI dials/mo), Enterprise (custom). Call minutes $0.04/min. Additional AI dials $0.10/call. Cancel anytime.</p>
+          <p style="margin:0; color:rgba(255,255,255,.68); font-size:16px; line-height:1.8; max-width:520px;">Demo the AI Auto-Caller, live rebuttals, and agreement sending before you pay a cent. Pro plan — $399/mo, 100 AI dials/mo. Call minutes $0.04/min. Additional AI dials $0.10/call. Cancel anytime.</p>
         </div>
         <div style="display:flex; flex-direction:column; gap:12px; min-width:200px;">
-          <button class="btn btn-primary" style="font-size:16px; padding:16px 28px;" onclick="showPricing()">Compare plans</button>
+          <button class="btn btn-primary" style="font-size:16px; padding:16px 28px;" onclick="showAuth('pro')">Get Started</button>
         </div>
       </div>
     </div>
@@ -1673,7 +1630,7 @@ body.modal-open{overflow:hidden}
         </div>
         <div class="topbar-actions">
           <button class="app-btn line" onclick="goHome()">Home</button>
-          <button class="app-btn soft" id="getPricingBtn" onclick="showPricing(currentPlan)">Get Pricing</button>
+
           <button class="app-btn blue" onclick="jumpToAssist()">Generate Response</button>
         </div>
       </div>
@@ -1872,6 +1829,11 @@ body.modal-open{overflow:hidden}
               0%,100% { box-shadow:0 0 30px rgba(0,255,136,.15), inset 0 0 30px rgba(0,255,136,.03); }
               50%     { box-shadow:0 0 60px rgba(0,255,136,.28), inset 0 0 60px rgba(0,255,136,.07); }
             }
+            @keyframes faceGlow {
+              0%,100% { filter:brightness(.88) drop-shadow(0 0 8px rgba(0,255,136,.5)); }
+              50%     { filter:brightness(1.14) drop-shadow(0 0 20px rgba(0,255,136,.85)); }
+            }
+            #matrixCanvas { animation:faceGlow 3.5s ease-in-out infinite; }
             .ai-wave-bar { width:4px; background:#00ff88; border-radius:3px; transition:height .09s ease; }
           </style>
           <div style="max-width:560px; margin:0 auto; padding:32px 0;">
@@ -1931,11 +1893,6 @@ body.modal-open{overflow:hidden}
 
             <!-- FULL-SIZE MATRIX AI AVATAR — replaces form when call is active -->
             <div id="aiCallStatus" style="display:none;background:#000;border:1px solid rgba(0,255,136,.22);border-radius:20px;overflow:hidden;position:relative;min-height:560px;animation:aiGlowPulse 4s ease-in-out infinite;">
-              <!-- Matrix rain canvas -->
-              <canvas id="matrixCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:1;pointer-events:none;"></canvas>
-              <!-- Radial glow behind head -->
-              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:340px;height:340px;background:radial-gradient(circle,rgba(0,255,136,.10) 0%,transparent 70%);pointer-events:none;"></div>
-
               <!-- Top status bar -->
               <div style="position:relative;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid rgba(0,255,136,.12);">
                 <div style="display:flex;align-items:center;gap:8px;">
@@ -1954,137 +1911,11 @@ body.modal-open{overflow:hidden}
               <!-- Main avatar area -->
               <div style="position:relative;display:flex;flex-direction:column;align-items:center;padding:28px 20px 16px;">
 
-                <!-- Orbital rings + head container -->
-                <div style="position:relative;width:280px;height:320px;display:flex;align-items:center;justify-content:center;perspective:800px;">
-
-                  <!-- Pulse rings -->
-                  <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:0s;"></div>
-                  <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:.8s;"></div>
-                  <div class="ai-pulse-ring" style="display:none" style="width:230px;height:230px;top:45px;left:25px;animation-delay:1.6s;"></div>
-
-                  <!-- Orbital rings -->
-                  <div style="display:none;position:absolute;width:1 9s linear infinite;transform-style:preserve-3d;transform:rotateX(68deg);pointer-events:none;"></div>
-                  <div style="display:none;position:absolute;width:2 14s linear infinite;transform-style:preserve-3d;transform:rotateX(68deg) rotateZ(55deg);pointer-events:none;"></div>
-                  <div style="display:none;position:absolute;width:3 18s linear infinite;transform-style:preserve-3d;transform:rotateX(30deg) rotateY(20deg);pointer-events:none;"></div>
-
+                <!-- Face canvas + scan line -->
+                <div id="faceContainer" style="position:relative;width:280px;height:320px;">
+                  <div id="matrixCanvas" style="position:absolute;top:0;left:0;width:280px;height:320px;z-index:1;"></div>
                   <!-- Scan line sweeping over head -->
                   <div id="aiScanLine" style="position:absolute;left:50%;transform:translateX(-50%);width:185px;height:2px;background:linear-gradient(to right,transparent 0%,rgba(0,255,136,.7) 40%,rgba(0,255,136,.9) 50%,rgba(0,255,136,.7) 60%,transparent 100%);animation:aiScanLine 3.2s linear infinite;z-index:3;pointer-events:none;border-radius:2px;"></div>
-
-                  <!-- The head SVG — detailed wireframe face -->
-                  <svg id="aiHeadSvg" style="display:none" width="185" height="225" viewBox="0 0 185 225" fill="none" xmlns="http://www.w3.org/2000/svg"
-                       style="filter:drop-shadow(0 0 18px #00ff88) drop-shadow(0 0 6px rgba(0,255,136,.6));animation:aiHeadBob 3.8s ease-in-out infinite;z-index:2;">
-                    <defs>
-                      <radialGradient id="faceBg"     cx="50%" cy="44%" r="56%">
-                        <stop offset="0%"   stop-color="#031a0a" stop-opacity="1"/>
-                        <stop offset="100%" stop-color="#010603" stop-opacity="1"/>
-                      </radialGradient>
-                      <radialGradient id="foreheadGl" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.22"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="browGl"     cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.42"/>
-                        <stop offset="60%"  stop-color="#00ff88" stop-opacity="0.12"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="socketL"    cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#000000" stop-opacity="0.88"/>
-                        <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="socketR"    cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#000000" stop-opacity="0.88"/>
-                        <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="noseGl"     cx="50%" cy="62%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.72"/>
-                        <stop offset="38%"  stop-color="#00ff88" stop-opacity="0.36"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="cheekLGl"   cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.32"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="cheekRGl"   cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.32"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="lipGl"      cx="50%" cy="50%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.52"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                      <radialGradient id="chinGl"     cx="50%" cy="40%" r="50%">
-                        <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.38"/>
-                        <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                      </radialGradient>
-                    </defs>
-
-                    <!-- FACE SILHOUETTE — fabric draped over head -->
-                    <path d="M92 14 C136 14 164 44 166 82 C168 120 154 160 138 178 C122 196 108 208 92 210 C76 208 62 196 46 178 C30 160 16 120 18 82 C20 44 48 14 92 14 Z" fill="url(#faceBg)"/>
-                    <path d="M92 14 C136 14 164 44 166 82 C168 120 154 160 138 178 C122 196 108 208 92 210 C76 208 62 196 46 178 C30 160 16 120 18 82 C20 44 48 14 92 14 Z" stroke="#00ff88" stroke-width="1.6" fill="none" opacity="0.7"/>
-
-                    <!-- Fabric wrinkle lines radiating outward from face edge -->
-                    <path d="M164 84 L172 76"  stroke="#00ff88" stroke-width="0.55" opacity="0.22" stroke-linecap="round"/>
-                    <path d="M158 148 L166 144" stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-                    <path d="M136 184 L142 192" stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-                    <path d="M20 84 L12 76"    stroke="#00ff88" stroke-width="0.55" opacity="0.22" stroke-linecap="round"/>
-                    <path d="M26 148 L18 144"  stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-                    <path d="M48 184 L42 192"  stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-                    <path d="M62 16 L56 8"     stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-                    <path d="M122 16 L128 8"   stroke="#00ff88" stroke-width="0.55" opacity="0.18" stroke-linecap="round"/>
-
-                    <!-- DEPTH MAP — glow where face presses out, dark where it caves in -->
-
-                    <!-- Forehead dome, gentle forward curve -->
-                    <ellipse cx="92" cy="46" rx="52" ry="32" fill="url(#foreheadGl)"/>
-
-                    <!-- Brow ridge — second most forward feature -->
-                    <ellipse cx="92" cy="66" rx="52" ry="18" fill="url(#browGl)"/>
-
-                    <!-- Eye socket depressions — fabric sinks in here -->
-                    <ellipse cx="66"  cy="82" rx="20" ry="15" fill="url(#socketL)"/>
-                    <ellipse cx="118" cy="82" rx="20" ry="15" fill="url(#socketR)"/>
-                    <!-- Faint eyeball glow seen through fabric -->
-                    <circle cx="66"  cy="81" r="6.5" fill="rgba(0,255,136,0.06)"/>
-                    <circle cx="118" cy="81" r="6.5" fill="rgba(0,255,136,0.06)"/>
-                    <circle cx="66"  cy="80" r="2.8" fill="#00ff88" opacity="0.38"/>
-                    <circle cx="118" cy="80" r="2.8" fill="#00ff88" opacity="0.38"/>
-
-                    <!-- Nose — MOST prominent, brightest -->
-                    <ellipse cx="92" cy="118" rx="26" ry="38" fill="url(#noseGl)"/>
-                    <!-- Nostril openings — dark holes pressing into fabric -->
-                    <ellipse cx="77"  cy="136" rx="6.5" ry="5.5" fill="#010806" opacity="0.95"/>
-                    <ellipse cx="107" cy="136" rx="6.5" ry="5.5" fill="#010806" opacity="0.95"/>
-                    <!-- Nose tip edge — only line on the nose, tight fabric here -->
-                    <path d="M71 130 C78 140 86 142 92 141 C98 142 106 140 113 130" stroke="#00ff88" stroke-width="1.8" fill="none" opacity="0.82" stroke-linecap="round"/>
-
-                    <!-- Cheekbone prominences -->
-                    <ellipse cx="44"  cy="114" rx="30" ry="20" fill="url(#cheekLGl)"/>
-                    <ellipse cx="140" cy="114" rx="30" ry="20" fill="url(#cheekRGl)"/>
-
-                    <!-- Lip glow -->
-                    <ellipse cx="92" cy="156" rx="28" ry="17" fill="url(#lipGl)"/>
-                    <!-- Upper lip Cupid's bow — single tight-fabric line -->
-                    <path d="M74 150 C82 143 89 146 92 148 C95 146 102 143 110 150" stroke="#00ff88" stroke-width="1.6" fill="none" opacity="0.72" stroke-linecap="round"/>
-                    <!-- Animated mouth gap -->
-                    <path id="aiMouth" d="M78 158 Q92 164 106 158" stroke="#00ff88" stroke-width="3" fill="none" opacity="0.98" stroke-linecap="round"/>
-                    <!-- Lower lip arch -->
-                    <path d="M74 158 C82 170 102 170 110 158" stroke="#00ff88" stroke-width="1.1" fill="none" opacity="0.55" stroke-linecap="round"/>
-
-                    <!-- Chin glow -->
-                    <ellipse cx="92" cy="196" rx="22" ry="16" fill="url(#chinGl)"/>
-
-                    <!-- Ears — pressed flat, just their outer curve -->
-                    <path d="M28 74 C16 88 12 104 14 118 C16 130 24 138 32 134" stroke="#00ff88" stroke-width="1.5" fill="none" opacity="0.65" stroke-linecap="round"/>
-                    <path d="M156 74 C168 88 172 104 170 118 C168 130 160 138 152 134" stroke="#00ff88" stroke-width="1.5" fill="none" opacity="0.65" stroke-linecap="round"/>
-
-                    <!-- Neck -->
-                    <path d="M74 210 C68 220 66 225 64 225" stroke="#00ff88" stroke-width="1.2" fill="none" opacity="0.5" stroke-linecap="round"/>
-                    <path d="M110 210 C116 220 118 225 120 225" stroke="#00ff88" stroke-width="1.2" fill="none" opacity="0.5" stroke-linecap="round"/>
-
-                    <!-- Shoulders -->
-                    <path d="M8 225 C30 216 58 218 76 221"  stroke="#00ff88" stroke-width="1.3" fill="none" opacity="0.36" stroke-linecap="round"/>
-                    <path d="M176 225 C154 216 126 218 108 221" stroke="#00ff88" stroke-width="1.3" fill="none" opacity="0.36" stroke-linecap="round"/>
-                  </svg>
                 </div>
 
                 <!-- Status label + call mode indicator -->
@@ -2156,7 +1987,7 @@ body.modal-open{overflow:hidden}
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               <input class="input" id="twilioNumber" placeholder="Supplier phone number (10 digits)" style="flex:1; margin-bottom:0;" />
               <button class="app-btn blue" onclick="startTwilioCall()" id="twilioCallBtn">Call Now</button>
-              <button class="app-btn line" onclick="endTwilioCall()" id="twilioEndBtn" style="display:none;">End Call</button>
+              <button class="app-btn" onclick="endTwilioCall()" id="twilioEndBtn" style="display:none;background:#c0392b;border-color:#c0392b;color:#fff;font-weight:700;">&#9632; End Call</button>
             </div>
             <div style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               <label style="font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.08em;">Supplier language:</label>
@@ -2558,37 +2389,16 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
           <div style="margin-bottom:28px;">
             <h2 style="font-family:'Sora',sans-serif;font-size:32px;font-weight:800;letter-spacing:-.04em;color:var(--text);margin:0 0 6px;">Choose your plan</h2>
             <p style="color:var(--text-2);font-size:15px;margin:0;">Simple, transparent pricing. Call minutes billed separately at $0.04/min.</p>
+            <p style="color:var(--text-2);font-size:12px;margin:8px 0 0;padding:10px 14px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-radius:8px;line-height:1.6;"><strong style="color:#ef4444;">No refunds.</strong> Subscriptions renew automatically each month. Your plan stays active until you cancel — cancel anytime in Settings before your next billing date.</p>
           </div>
 
           <!-- Plan cards -->
-          <div class="billing-grid" style="align-items:stretch;">
+          <div style="max-width:480px;margin:0 auto;">
 
-            <!-- STARTER -->
-            <div style="background:#fff;border-radius:24px;padding:32px;border:1.5px solid #e0eaff;box-shadow:0 4px 24px rgba(13,27,46,.08);display:flex;flex-direction:column;position:relative;overflow:hidden;transition:all .22s ease;">
-              <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#93c5fd,#bfdbfe);"></div>
-              <div style="font-family:'Sora',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:16px;">Starter</div>
-              <div style="display:flex;align-items:flex-end;gap:6px;margin-bottom:6px;">
-                <span style="font-family:'Sora',sans-serif;font-size:58px;font-weight:900;letter-spacing:-.06em;color:var(--text);line-height:1;">$99</span>
-                <span style="font-size:15px;color:var(--muted);font-weight:500;margin-bottom:12px;">/month</span>
-              </div>
-              <div style="font-size:12px;font-weight:700;color:#3b82f6;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:20px;width:fit-content;">Up to 5 users</div>
-              <ul style="padding-left:0;list-style:none;margin:0 0 28px;flex:1;">
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#22c55e;font-size:16px;">✓</span> AI objection responses</li>
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#22c55e;font-size:16px;">✓</span> Script library access</li>
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#22c55e;font-size:16px;">✓</span> Fast response generation</li>
-                <li style="padding:8px 0;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#22c55e;font-size:16px;">✓</span> Email support</li>
-              </ul>
-              <button class="app-btn blue" onclick="fakeStripe('Starter',99)" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px;">Subscribe — $99/mo</button>
-              <button class="app-btn line" onclick="enterPlanDemo('starter')" style="width:100%;padding:12px;font-size:13px;">Preview Demo</button>
-            </div>
-
-            <!-- PRO — featured -->
-            <div style="background:linear-gradient(145deg,#07101f,#0d1e38,#0f2240);border-radius:24px;padding:32px;border:1.5px solid rgba(26,111,255,.40);box-shadow:0 8px 48px rgba(26,111,255,.28),0 0 0 1px rgba(26,111,255,.12);display:flex;flex-direction:column;position:relative;overflow:hidden;transform:scale(1.03);">
+            <!-- PRO -->
+            <div style="background:linear-gradient(145deg,#07101f,#0d1e38,#0f2240);border-radius:24px;padding:32px;border:1.5px solid rgba(26,111,255,.40);box-shadow:0 8px 48px rgba(26,111,255,.28),0 0 0 1px rgba(26,111,255,.12);display:flex;flex-direction:column;position:relative;overflow:hidden;">
               <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#0f5fe8,#1a6fff,#00d4ff);"></div>
               <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(26,111,255,.28),transparent 70%);pointer-events:none;"></div>
-              <div style="position:absolute;bottom:-30px;left:-20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.14),transparent 70%);pointer-events:none;"></div>
-              <!-- Most popular badge -->
-              <div style="position:absolute;top:20px;right:20px;background:linear-gradient(135deg,#0f5fe8,#1a6fff);color:#fff;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;padding:5px 12px;border-radius:999px;box-shadow:0 4px 14px rgba(26,111,255,.50);">Most Popular</div>
               <div style="font-family:'Sora',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.50);margin-bottom:16px;">Pro</div>
               <div style="display:flex;align-items:flex-end;gap:6px;margin-bottom:6px;">
                 <span style="font-family:'Sora',sans-serif;font-size:58px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;">$399</span>
@@ -2596,6 +2406,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               </div>
               <div style="font-size:12px;font-weight:700;color:var(--blue-3);background:rgba(26,111,255,.18);border:1px solid rgba(26,111,255,.30);border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:20px;width:fit-content;">Up to 25 users</div>
               <ul style="padding-left:0;list-style:none;margin:0 0 28px;flex:1;position:relative;z-index:1;">
+                <li style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.80);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:var(--cyan);font-size:16px;">✓</span> AI Auto-Caller (100 dials/mo)</li>
                 <li style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.80);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:var(--cyan);font-size:16px;">✓</span> Live AI during calls</li>
                 <li style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.80);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:var(--cyan);font-size:16px;">✓</span> Stronger objection rebuttals</li>
                 <li style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.80);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:var(--cyan);font-size:16px;">✓</span> Live mic transcription</li>
@@ -2604,24 +2415,6 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               </ul>
               <button onclick="fakeStripe('Pro',399)" style="width:100%;padding:15px;font-size:15px;font-weight:800;border:none;cursor:pointer;border-radius:12px;margin-bottom:10px;background:linear-gradient(135deg,#0f5fe8,#1a6fff,#4d94ff);color:#fff;box-shadow:0 8px 28px rgba(26,111,255,.50),inset 0 1px 0 rgba(255,255,255,.18);transition:all .18s;letter-spacing:-.01em;position:relative;z-index:1;">Subscribe — $399/mo</button>
               <button class="app-btn line" onclick="enterPlanDemo('pro')" style="width:100%;padding:12px;font-size:13px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.70);border:1px solid rgba(255,255,255,.14);position:relative;z-index:1;">Preview Demo</button>
-            </div>
-
-            <!-- ENTERPRISE -->
-            <div style="background:#fff;border-radius:24px;padding:32px;border:1.5px solid #e0eaff;box-shadow:0 4px 24px rgba(13,27,46,.08);display:flex;flex-direction:column;position:relative;overflow:hidden;transition:all .22s ease;">
-              <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#fcd34d,#f0c040);"></div>
-              <div style="font-family:'Sora',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:16px;">Enterprise</div>
-              <div style="display:flex;align-items:flex-end;gap:6px;margin-bottom:6px;">
-                <span style="font-family:'Sora',sans-serif;font-size:44px;font-weight:900;letter-spacing:-.04em;color:var(--text);line-height:1;">Custom</span>
-              </div>
-              <div style="font-size:12px;font-weight:700;color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:20px;width:fit-content;">25+ users</div>
-              <ul style="padding-left:0;list-style:none;margin:0 0 28px;flex:1;">
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#f59e0b;font-size:16px;">✓</span> Everything in Pro</li>
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#f59e0b;font-size:16px;">✓</span> Live call integration</li>
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#f59e0b;font-size:16px;">✓</span> AI trained on your scripts</li>
-                <li style="padding:8px 0;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#f59e0b;font-size:16px;">✓</span> Dedicated support</li>
-              </ul>
-              <button class="app-btn blue" onclick="fakeStripe('Enterprise',0)" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px;">Contact Sales</button>
-              <button class="app-btn line" onclick="enterPlanDemo('enterprise')" style="width:100%;padding:12px;font-size:13px;">Preview Demo</button>
             </div>
 
           </div>
@@ -3111,23 +2904,12 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
     </div>
 
     <div class="price-note" id="pricingText">
-      <strong>Pro</strong> is the best fit for most users.
-
-      <br><br>
-
-      It gives you live AI help during calls, better rebuttals, support for multiple languages, and performance tracking so you can see what is working.
-
-      <br><br>
-
-      <strong>Starter</strong> is best if you want a lower-cost version with basic AI help.
-
-      <br><br>
-
-      <strong>Enterprise</strong> is best for teams that want custom setup, deeper integrations, and AI trained on their own process.
+      <strong>Pro — $399/month</strong><br><br>
+      Live AI help during calls, stronger rebuttals, multi-language support, performance analytics, and priority support. Up to 25 users. 100 AI dials/mo included. Call minutes billed at $0.04/min.
     </div>
 
     <div class="tool-row" style="margin-top:18px">
-      <button class="app-btn blue" onclick="enterPlanDemo(currentPricingPlan || 'pro'); hidePricing();">Open Selected Demo</button>
+      <button class="app-btn blue" onclick="hidePricing(); showAuth('pro');">Subscribe — $399/mo</button>
       <button class="app-btn line" onclick="hidePricing()">Close</button>
     </div>
   </div>
@@ -3284,26 +3066,11 @@ const MASTER_EMAIL = 'info@paypilotai.live';
 const MASTER_PASS  = 'icyunv220';
 
   const TESTER_ACCOUNTS = [
-  { email: 'tester1@paypilot.ai',  password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester2@paypilot.ai',  password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester3@paypilot.ai',  password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester4@paypilot.ai',  password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester5@paypilot.ai',  password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester6@paypilot.ai',  password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester7@paypilot.ai',  password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester8@paypilot.ai',  password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester9@paypilot.ai',  password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester10@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester11@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester12@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester13@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester14@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester15@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester16@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester17@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester18@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester19@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
-  { email: 'tester20@paypilot.ai', password: 'Tester2024!', plan: 'pro' },
+  { email: 'user1@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
+  { email: 'user2@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
+  { email: 'user3@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
+  { email: 'user4@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
+  { email: 'user5@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
 ];
 
 function loginDemo(){
@@ -3334,52 +3101,7 @@ function loginDemo(){
 }
 
 function enterTesterApp(){
-  currentPlan = 'pro';
-  isLiveUser = true;
-  demoResponseCount = 0;
-  document.getElementById('home').style.display = 'none';
-  document.getElementById('auth').classList.add('hidden');
-  document.getElementById('app').style.display = 'block';
-  hidePricing();
-
-  const cfg = planConfigs['pro'];
-  document.getElementById('planPill').textContent = 'Pro — Tester';
-  const lp = document.getElementById('livePill');
-  if(lp){ lp.textContent = '🟢 Live'; lp.style.background = '#dcfce7'; lp.style.color = '#166534'; }
-  document.getElementById('metricPlan').textContent = 'Pro';
-  document.getElementById('metricCalls').textContent = cfg.calls;
-  document.getElementById('metricResponses').textContent = cfg.responses;
-  document.getElementById('metricClose').textContent = cfg.close;
-  document.getElementById('analyticsQuality').textContent = cfg.quality;
-  document.getElementById('analyticsTime').textContent = cfg.time;
-  document.getElementById('analyticsSolved').textContent = cfg.solved;
-  document.getElementById('analyticsAdoption').textContent = cfg.adoption;
-
-  const banner = document.getElementById('planBanner');
-  banner.textContent = 'PayPilot Pro — Tester Access. Full Pro features unlocked.';
-  banner.style.background = 'linear-gradient(135deg,#dcfce7,#d1fae5)';
-  banner.style.color = '#064e3b';
-
-  document.getElementById('nextStepBox').innerHTML = '<span class="kpi-label">Recommended approach</span><strong>Acknowledge → Reframe → Soft close</strong><div class="subtle" style="margin-top:0">Start by validating the concern, then shift to speed and value before asking a soft commitment question.</div>';
-
-  document.getElementById('starterAssistNote').style.display = 'none';
-  document.getElementById('starterAnalyticsNote').style.display = 'none';
-  document.getElementById('enterpriseDashboardCard').style.display = 'none';
-
-  document.getElementById('managerTable').innerHTML = '<tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr><tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr><tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>';
-
-  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
-  // Hide billing + pricing from paid accounts
-  const billingBtn = document.querySelector('.side-btn[data-page="billing"]');
-  if(billingBtn) billingBtn.style.display = 'none';
-  const billingMob = document.querySelector('.mob-nav-btn[data-mob-page="billing"]');
-  if(billingMob) billingMob.style.display = 'none';
-  const pricingBtn = document.getElementById('getPricingBtn');
-  if(pricingBtn) pricingBtn.style.display = 'none';
-  showPage('dashboard');
-  resetDemoState();
-  toast('Welcome, tester! Full Pro access unlocked.');
+  enterRealApp();
 }
 
 function enterRealApp(){
@@ -3583,54 +3305,18 @@ function jumpToAssist(){
 // PRICING MODAL — using CSS class toggle instead of inline style
 // ============================================================
 function showPricing(plan){
-  currentPricingPlan = plan || currentPlan || "pro";
+  currentPricingPlan = 'pro';
   const text = document.getElementById('pricingText');
-
-  if(currentPricingPlan === 'starter'){
-    text.innerHTML = `
-      <strong>Starter — $99/month</strong><br><br>
-      Best for solo reps or small teams that want simple AI help without paying for the full platform.<br><br>
-      You get:<br>
-      • AI-generated objection responses<br>
-      • Script library access<br>
-      • Fast response generation<br>
-      • Email support<br><br>
-      Demo includes:<br>
-      • Simplified dashboard<br>
-      • Core AI response demo<br>
-      • Basic analytics preview
-    `;
-  } else if(currentPricingPlan === 'enterprise'){
-    text.innerHTML = `
-      <strong>Enterprise — Custom Pricing</strong><br><br>
-      Best for larger teams that want PayPilot built around their exact workflow.<br><br>
-      You get:<br>
-      • AI trained on your scripts<br>
-      • CRM and workflow integrations<br>
-      • Team onboarding<br>
-      • Dedicated support<br><br>
-      Demo includes:<br>
-      • Enterprise dashboard view<br>
-      • Rollout and training panel<br>
-      • Enterprise-style analytics
-    `;
-  } else {
-    text.innerHTML = `
-      <strong>Pro — $399/month</strong><br><br>
-      This is the best option for most users.<br><br>
-      You get:<br>
-      • Live AI help during calls<br>
-      • Better rebuttals for objections<br>
-      • Multi-language response support<br>
-      • Performance analytics<br>
-      • Priority support<br><br>
-      Demo includes:<br>
-      • Full upgraded workspace<br>
-      • Live assist view<br>
-      • Full analytics layout
-    `;
-  }
-
+  text.innerHTML = `
+    <strong>Pro — $399/month</strong><br><br>
+    The complete platform for sales teams. Live AI help during calls, stronger rebuttals, multi-language support, performance analytics, and priority support.<br><br>
+    • AI Auto-Caller (100 dials/mo included)<br>
+    • Live AI assist during calls<br>
+    • Multi-language response support<br>
+    • Performance and usage analytics<br>
+    • Up to 25 users · Priority support<br><br>
+    <span style="color:#94a3b8;font-size:12px;">Call minutes $0.04/min · Additional AI dials $0.10/call</span>
+  `;
   document.getElementById('pricingModal').classList.add('open');
   document.body.classList.add('modal-open');
 }
@@ -4506,10 +4192,15 @@ async function endTwilioCall(){
   if(!activeTwilioCall){ stopDeepgram(); return; }
 
   try {
-    const accountSid = ''; // handled server-side
     toast('Ending call...');
+    const sidToEnd = activeTwilioCall;
     stopDeepgram();
     activeTwilioCall = null;
+    fetch('/api/end-call', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callSid: sidToEnd })
+    }).catch(() => {});
     updateSendToCallBtn();
     document.getElementById('twilioStatus').className = 'call-status idle';
     document.getElementById('twilioStatus').textContent = 'Call ended';
@@ -4528,6 +4219,11 @@ async function endTwilioCall(){
 // ── AI Auto-Caller ──────────────────────────────────────────────
 let activeAiCallSid = null;
 let aiCallPollInterval = null;
+let aiSpeechPollInterval = null;
+let aiMouthTimeout = null;
+let aiLastSpeechTs = 0;
+// Shared mouth state read by canvas animation
+window.aiMouthTarget = 0; // 0=closed, 1=speaking
 
 function startCallStatusPolling(sid){
   if(aiCallPollInterval) clearInterval(aiCallPollInterval);
@@ -4544,6 +4240,35 @@ function startCallStatusPolling(sid){
     } catch(e){}
   }, 3000);
 }
+
+function startSpeechPolling(sid){
+  stopSpeechPolling();
+  aiSpeechPollInterval = setInterval(async () => {
+    if(!sid) return;
+    try {
+      const resp = await fetch('/api/speech-log?sid=' + sid);
+      const data = await resp.json();
+      if(data.ts && data.ts !== aiLastSpeechTs && data.text){
+        aiLastSpeechTs = data.ts;
+        triggerLipSync(data.text);
+      }
+    } catch(e){}
+  }, 1200);
+}
+
+function stopSpeechPolling(){
+  if(aiSpeechPollInterval){ clearInterval(aiSpeechPollInterval); aiSpeechPollInterval = null; }
+  if(aiMouthTimeout){ clearTimeout(aiMouthTimeout); aiMouthTimeout = null; }
+  window.aiMouthTarget = 0;
+}
+
+function triggerLipSync(text){
+  const words = text.trim().split(/\s+/).length;
+  const durationMs = Math.max(1500, Math.min(8000, (words / 2.6) * 1000));
+  window.aiMouthTarget = 1.0;
+  if(aiMouthTimeout) clearTimeout(aiMouthTimeout);
+  aiMouthTimeout = setTimeout(() => { window.aiMouthTarget = 0; }, durationMs);
+}
 let aiMatrixInterval = null;
 let aiWaveInterval  = null;
 let aiMouthInterval = null;
@@ -4551,134 +4276,51 @@ let aiTimerInterval = null;
 let aiCallSeconds   = 0;
 
 function startMatrixAnimation(){
-  const canvas = document.getElementById('matrixCanvas');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  const dpr  = Math.min(window.devicePixelRatio || 1, 3);
-  const cssW = canvas.offsetWidth  || canvas.parentElement?.offsetWidth  || 400;
-  const cssH = canvas.offsetHeight || canvas.parentElement?.offsetHeight || 560;
-  canvas.width  = cssW * dpr;
-  canvas.height = cssH * dpr;
-  ctx.scale(dpr, dpr);
-  const W = cssW, H = cssH;
-
-  const CX = W * 0.50;
-  const CY = H * 0.44;
-  const FW = Math.min(W, H) * 0.50;  // face half-width in screen px
-  const FH = Math.min(W, H) * 0.62;  // face half-height in screen px
-
-  // ── 2D face depth map (screen-space Gaussian blobs) ───────────────────
-  // nx_s = (px-CX)/FW,  ny_s = (py-CY)/FH
-  // ny_s < 0 → above center (brow/forehead),  ny_s > 0 → below (nose/chin)
-  function faceDepth(px, py, breathe){
-    const nx = (px - CX) / FW;
-    const ny = (py - CY) / FH;
-    if(nx*nx + ny*ny > 1.45) return 0;
-
-    function g(mx, my, rx, ry){
-      const dx=(nx-mx)/rx, dy=(ny-my)/ry;
-      return Math.max(0, 1 - dx*dx - dy*dy);
-    }
-
-    let d = 0;
-    d += g( 0.00, +0.08, 0.16, 0.14) * 0.95 * breathe;  // nose tip (biggest)
-    d += g( 0.00, -0.08, 0.09, 0.26) * 0.55;             // nose bridge
-    d += g(-0.11, +0.18, 0.08, 0.07) * 0.45;             // left nostril
-    d += g(+0.11, +0.18, 0.08, 0.07) * 0.45;             // right nostril
-    d += g( 0.00, -0.33, 0.82, 0.08) * 0.52;             // brow ridge
-    d += g(-0.46, +0.02, 0.20, 0.16) * 0.48;             // left cheekbone
-    d += g(+0.46, +0.02, 0.20, 0.16) * 0.48;             // right cheekbone
-    d += g( 0.00, +0.40, 0.20, 0.07) * 0.42;             // upper lip
-    d += g( 0.00, +0.52, 0.18, 0.08) * 0.52;             // lower lip
-    d += g( 0.00, +0.68, 0.16, 0.09) * 0.38;             // chin
-    d += g( 0.00, -0.55, 0.55, 0.20) * 0.28;             // forehead dome
-
-    // Eye sockets — recess (dark holes)
-    d -= g(-0.28, -0.18, 0.18, 0.13) * 0.72;
-    d -= g(+0.28, -0.18, 0.18, 0.13) * 0.72;
-    // Temple hollows
-    d -= g(-0.70, -0.14, 0.18, 0.18) * 0.38;
-    d -= g(+0.70, -0.14, 0.18, 0.18) * 0.38;
-
-    const base = nx*nx + ny*ny < 1.0 ? 0.28 : 0;
-    return Math.max(-0.5, Math.min(1.0, base + d * 0.72));
+  const el = document.getElementById('matrixCanvas');
+  if(!el) return;
+  if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval=null; }
+  const DS=8, W=280, H=320, CX=140, CY=150, RX=112, RY=140;
+  function dotB(x,y){
+    const dx=(x-CX)/RX, dy=(y-CY)/RY, r2=dx*dx+dy*dy;
+    if(r2>1) return -1;
+    let b=0.25+0.65*(1-Math.sqrt(r2)*0.75);
+    b+=Math.max(0,1-((x-CX)/28)**2-((y-155)/35)**2)*0.45;
+    b+=Math.max(0,1-((x-CX)/88)**2-((y-105)/13)**2)*0.25;
+    b-=Math.max(0,1-((x-102)/23)**2-((y-118)/17)**2)*0.65;
+    b-=Math.max(0,1-((x-178)/23)**2-((y-118)/17)**2)*0.65;
+    b-=Math.max(0,1-((x-60)/17)**2-((y-132)/22)**2)*0.38;
+    b-=Math.max(0,1-((x-220)/17)**2-((y-132)/22)**2)*0.38;
+    return Math.max(0,Math.min(1,b));
   }
-
-  // ── Rain columns ───────────────────────────────────────────────────────
-  const SZ    = 13;
-  const cols  = Math.floor(W / SZ);
-  const drops = Array.from({length: cols}, () => Math.random() * -(H / SZ) * 1.8);
-  const chars = '01アイウエオカキクケコサシスセソタチツナニヌネノ₿∑∆∇∈ABCDEFGH';
-
-  let tick = 0;
-  if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval = null; }
-
+  let openDots='', closedDots='';
+  for(let y=DS;y<H;y+=DS){
+    for(let x=DS;x<W;x+=DS){
+      const b=dotB(x,y);
+      if(b<0.04) continue;
+      const rad=(DS*0.44*(0.3+b*0.7)).toFixed(1);
+      const g=Math.min(255,(80+b*175)|0);
+      const rr=(b*30)|0;
+      const a=(0.45+b*0.55).toFixed(2);
+      const circle=`<circle cx="${x}" cy="${y}" r="${rad}" fill="rgb(${rr},${g},0)" opacity="${a}"/>`;
+      const inMouth=((x-CX)/34)**2+((y-210)/20)**2<1;
+      if(inMouth){ closedDots+=circle; }
+      else{ openDots+=circle; closedDots+=circle; }
+    }
+  }
+  el.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" style="display:block;"><g id="svgFaceOpen">${openDots}</g><g id="svgFaceClose" style="display:none">${closedDots}</g></svg>`;
+  const openG=el.querySelector('#svgFaceOpen');
+  const closeG=el.querySelector('#svgFaceClose');
+  let mAmp=0, mPhase=0;
   function frame(){
-    aiMatrixInterval = requestAnimationFrame(frame);
-    tick++;
-
-    // Very slow fade — long rain trails
-    ctx.fillStyle = 'rgba(0,0,0,0.055)';
-    ctx.fillRect(0, 0, W, H);
-
-    // Subtle breathing on face depth (makes it feel alive/pushing)
-    const breathe = 1.0 + Math.sin(tick * 0.018) * 0.10;
-
-    for(let i = 0; i < cols; i++){
-      const px = i * SZ;
-      const py = drops[i] * SZ;
-      const d  = faceDepth(px + SZ * 0.5, py, breathe);
-
-      const isLead = (drops[i] % 1) < 0.20;
-
-      if(d < -0.05){
-        // Eye sockets / temples — very dark, code barely visible (recessed)
-        ctx.font = SZ + 'px monospace';
-        ctx.fillStyle = `rgba(0,60,20,${0.06 + Math.random() * 0.04})`;
-        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
-
-      } else if(d > 0.08){
-        // Face surface — code lit by face pressing through
-        const t = Math.min(1, d);  // 0→1 brightness scale
-        const fontSize  = SZ + (t * 3) | 0;
-        const isBold    = t > 0.45;
-
-        if(isLead){
-          // Lead char: bright white-green on face, slightly larger
-          const g = (210 + t * 45) | 0;
-          ctx.font = (isBold ? 'bold ' : '') + (fontSize + 1) + 'px monospace';
-          ctx.fillStyle = `rgba(${180 + t*75|0},255,${g},${0.82 + t * 0.16})`;
-        } else {
-          // Body char: green intensity scales with depth
-          const green = (170 + t * 85) | 0;
-          const blue  = (40  + t * 80) | 0;
-          const alpha = 0.18 + t * 0.68;
-          ctx.font = (isBold ? 'bold ' : '') + fontSize + 'px monospace';
-          ctx.fillStyle = `rgba(0,${green},${blue},${alpha})`;
-        }
-        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
-
-      } else {
-        // Outside face — normal dim rain
-        ctx.font = SZ + 'px monospace';
-        if(isLead){
-          ctx.fillStyle = 'rgba(160,255,180,0.72)';
-        } else {
-          ctx.fillStyle = `rgba(0,180,65,${0.12 + Math.random() * 0.10})`;
-        }
-        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], px, py);
-      }
-
-      // Rain falls slightly slower where face presses (sheet resistance)
-      drops[i] += d > 0.3 ? 0.40 : (d < 0 ? 0.70 : 0.55);
-      if(drops[i] * SZ > H + SZ && Math.random() > 0.968) drops[i] = Math.random() * -45;
-    }
+    aiMatrixInterval=requestAnimationFrame(frame);
+    mAmp+=((window.aiMouthTarget||0)-mAmp)*0.12;
+    mPhase+=0.5;
+    const speaking=mAmp*Math.max(0,0.5+0.5*Math.sin(mPhase))>0.3;
+    if(openG) openG.style.display=speaking?'':'none';
+    if(closeG) closeG.style.display=speaking?'none':'';
   }
-
   frame();
 }
-
 function stopMatrixAnimation(){
   if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval = null; }
   if(aiWaveInterval){   clearInterval(aiWaveInterval);   aiWaveInterval   = null; }
@@ -4767,11 +4409,13 @@ async function startAiCall(){
     // Wait for layout to fully settle before reading canvas dimensions
     setTimeout(() => {
       startMatrixAnimation();
+
       startWaveAnimation();
       startMouthAnimation();
       startCallTimer();
-    }, 220);
+    }, 600);
     startCallStatusPolling(data.callSid);
+    startSpeechPolling(data.callSid);
 
   } catch(e) {
     toast('AI call failed: ' + e.message);
@@ -4782,6 +4426,7 @@ async function startAiCall(){
 
 async function endAiCall(){
   if(aiCallPollInterval){ clearInterval(aiCallPollInterval); aiCallPollInterval = null; }
+  stopSpeechPolling();
   stopMatrixAnimation();
   const sid = activeAiCallSid;
   activeAiCallSid = null;
