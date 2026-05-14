@@ -3757,11 +3757,7 @@ async function fakeStripe(plan, amount){
 // LIVE TRANSCRIPTION
 // ============================================================
 let micActive = false;
-let deepgramSocket = null;
-let mediaStream = null;
-let audioProcessor = null;
-let audioContext = null;
-let dgKey = ''; // Loaded securely from server at runtime
+let recognition = null;
 let finalTranscriptBuffer = '';
 let autoGenTimer = null;
 
@@ -3774,91 +3770,52 @@ async function toggleMic(){
 }
 
 async function startDeepgram(){
-  // Fetch key securely from backend
-  if(!dgKey){
-    try {
-      const resp = await fetch('/api/deepgram-token');
-      if(!resp.ok){ toast('Could not connect to server. Try again.'); return; }
-      const data = await resp.json();
-      dgKey = data.key;
-    } catch(e){
-      toast('Could not reach server. Check your connection.');
-      return;
-    }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    toast('Speech recognition not supported. Please use Chrome or Edge.');
+    return;
   }
 
-  // Request mic access
+  // Prompt for mic permission before starting recognition
   try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    stream.getTracks().forEach(t => t.stop());
   } catch(e){
     toast('Mic access denied. Allow mic in your browser settings.');
     return;
   }
 
-  // Open streaming connection
-  deepgramSocket = new WebSocket(
-    'wss://api.deepgram.com/v1/listen?punctuate=true&interim_results=true&endpointing=1200&utterance_end_ms=2000&vad_events=true&encoding=linear16&sample_rate=16000&detect_language=true',
-    ['token', dgKey]
-  );
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
 
-  deepgramSocket.onopen = () => {
-    micActive = true;
-    setMicUI(true);
-    toast('PayPilot is listening — speak naturally.');
+  micActive = true;
+  setMicUI(true);
+  toast('PayPilot is listening — speak naturally.');
+  document.getElementById('callInfo').textContent = 'Listening...';
 
-    // Stream mic audio as linear16 PCM — most reliable with Deepgram
-    audioContext = new AudioContext({ sampleRate: 16000 });
-    const source = audioContext.createMediaStreamSource(mediaStream);
-    const bufferSize = 4096;
-    audioProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
-    source.connect(audioProcessor);
-    audioProcessor.connect(audioContext.destination);
+  recognition.onresult = (event) => {
+    let interimTranscript = '';
+    let newFinal = '';
 
-    audioProcessor.onaudioprocess = (e) => {
-      if(!deepgramSocket || deepgramSocket.readyState !== WebSocket.OPEN) return;
-      const float32 = e.inputBuffer.getChannelData(0);
-      const int16 = new Int16Array(float32.length);
-      for(let i = 0; i < float32.length; i++){
-        int16[i] = Math.max(-32768, Math.min(32767, float32[i] * 32768));
+    for(let i = event.resultIndex; i < event.results.length; i++){
+      const result = event.results[i];
+      if(result.isFinal){
+        newFinal += result[0].transcript;
+      } else {
+        interimTranscript += result[0].transcript;
       }
-      deepgramSocket.send(int16.buffer);
-    };
-  };
-
-  deepgramSocket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-
-    const transcript = data?.channel?.alternatives?.[0]?.transcript;
-    if(!transcript || !transcript.trim()) return;
-
-    // Auto-detect language from Deepgram
-    const detectedLang = data?.channel?.detected_language;
-    if(detectedLang && detectedLang !== 'en'){
-      const langMap = { 'es': 'Spanish', 'fr': 'French', 'pt': 'Portuguese' };
-      const mapped = langMap[detectedLang];
-      if(mapped && mapped !== detectedLanguage){
-        detectedLanguage = mapped;
-        // Auto-switch language selector
-        const langEl = document.getElementById('langSelect');
-        if(langEl) langEl.value = mapped;
-        toast('Language detected: ' + mapped + ' — auto-switching.');
-        document.getElementById('callInfo').textContent = mapped + ' detected — translating automatically.';
-      }
-    } else if(detectedLang === 'en'){
-      detectedLanguage = 'English';
     }
 
-    const isFinal = data.is_final;
     const inputBox = document.getElementById('assistInput');
 
-    if(isFinal){
-      finalTranscriptBuffer = (finalTranscriptBuffer + ' ' + transcript).trim();
+    if(newFinal){
+      finalTranscriptBuffer = (finalTranscriptBuffer + ' ' + newFinal).trim();
 
       if(detectedLanguage !== 'English'){
-        // Show raw foreign text immediately, then translate async
         inputBox.value = '[' + detectedLanguage + '] ' + finalTranscriptBuffer;
-        document.getElementById('callInfo').textContent = '🌐 Translating ' + detectedLanguage + ' → English...';
-        // Translate customer speech to English and speak it to the rep
+        document.getElementById('callInfo').textContent = 'Translating ' + detectedLanguage + ' → English...';
         translateAndSpeakToRep(finalTranscriptBuffer, detectedLanguage, inputBox);
       } else {
         inputBox.value = finalTranscriptBuffer;
@@ -3872,7 +3829,6 @@ async function startDeepgram(){
           finalTranscriptBuffer = '';
           document.getElementById('callInfo').textContent = 'Generating response...';
 
-          // Route to bilingual if foreign language, otherwise standard
           if(detectedLanguage !== 'English'){
             document.getElementById('assistInput').value = '';
             generateBilingualResponse(bufferCopy);
@@ -3883,20 +3839,38 @@ async function startDeepgram(){
           }
         }
       }, 1500);
-
     } else {
-      inputBox.value = (finalTranscriptBuffer + ' ' + transcript).trim();
+      inputBox.value = (finalTranscriptBuffer + ' ' + interimTranscript).trim();
     }
   };
 
-  deepgramSocket.onerror = () => {
-    toast('Connection error. Please try again.');
-    stopDeepgram();
+  recognition.onerror = (event) => {
+    if(event.error === 'not-allowed'){
+      toast('Mic access denied. Allow mic in your browser settings.');
+      stopDeepgram();
+    } else if(event.error === 'no-speech'){
+      // Silence timeout — onend will auto-restart
+    } else {
+      toast('Mic error: ' + event.error + '. Click mic to try again.');
+      stopDeepgram();
+    }
   };
 
-  deepgramSocket.onclose = () => {
-    if(micActive) stopDeepgram();
+  recognition.onend = () => {
+    // Web Speech API stops after silence — restart automatically if still active
+    if(micActive){
+      try { recognition.start(); } catch(e){}
+    }
   };
+
+  try {
+    recognition.start();
+  } catch(e){
+    toast('Could not start mic. Try again.');
+    micActive = false;
+    setMicUI(false);
+    recognition = null;
+  }
 }
 
 function stopDeepgram(){
@@ -3904,13 +3878,10 @@ function stopDeepgram(){
   setMicUI(false);
   clearTimeout(autoGenTimer);
 
-  if(audioProcessor){ 
-    try { audioProcessor.disconnect(); } catch(e){}
-    audioProcessor = null; 
+  if(recognition){
+    try { recognition.stop(); } catch(e){}
+    recognition = null;
   }
-  if(audioContext){ audioContext.close(); audioContext = null; }
-  if(mediaStream){ mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
-  if(deepgramSocket){ deepgramSocket.close(); deepgramSocket = null; }
 
   document.getElementById('callInfo').textContent = 'Mic stopped. Click the mic button to listen again.';
   toast('Mic stopped.');
