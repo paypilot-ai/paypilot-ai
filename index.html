@@ -3546,8 +3546,8 @@ async function generateResponse(inputId, outputId){
 
   } catch(e){
     output.classList.remove('loading');
-    output.textContent = 'Connection error. Please try again.';
-    toast('Could not reach server. Check your connection.');
+    output.textContent = 'Error: ' + (e.message || 'Could not reach server. Please try again.');
+    toast(e.message || 'Could not reach server.');
   }
 }
 
