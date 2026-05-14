@@ -4796,6 +4796,28 @@ async function endAiCall(){
   toast('AI call ended.');
 }
 
+function aiFileSelected(input) {
+  const file = input.files[0];
+  const label = document.getElementById('aiAgreementFileName');
+  const wrap  = document.getElementById('aiAgreementLabel');
+  if (!file) {
+    label.textContent = 'Click to attach PDF, Word, or image';
+    wrap.style.borderColor = '#e2e8f0';
+    wrap.style.color = '#94a3b8';
+    return;
+  }
+  const mb = (file.size / 1024 / 1024).toFixed(1);
+  if (file.size > 10 * 1024 * 1024) {
+    toast('File too large — max 10 MB.');
+    input.value = '';
+    label.textContent = 'Click to attach PDF, Word, or image';
+    return;
+  }
+  label.textContent = '✓ ' + file.name + ' (' + mb + ' MB)';
+  wrap.style.borderColor = '#3b82f6';
+  wrap.style.color = '#1d4ed8';
+}
+
 async function sendAgreement(){
   const customerEmail = document.getElementById('aiCallerEmail').value.trim();
   const customerName  = document.getElementById('aiCallerName').value.trim();
