@@ -3073,10 +3073,19 @@ function showAuth(plan){
   document.getElementById('home').style.display='none';
   document.getElementById('auth').classList.remove('hidden');
   document.getElementById('app').style.display='none';
-  // Pre-select the plan in the auth dropdown if provided
   if(plan){
     const sel = document.getElementById('loginPlan');
     if(sel) sel.value = plan;
+    // Sign-up context — change title and button
+    const title = document.querySelector('.auth-title');
+    const btn = document.querySelector('#auth .app-btn.blue');
+    if(title) title.textContent = 'Get Started';
+    if(btn) btn.textContent = 'Create Account';
+  } else {
+    const title = document.querySelector('.auth-title');
+    const btn = document.querySelector('#auth .app-btn.blue');
+    if(title) title.textContent = 'Welcome back';
+    if(btn) btn.textContent = 'Login';
   }
 }
 
