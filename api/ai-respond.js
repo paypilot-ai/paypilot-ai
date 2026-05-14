@@ -1,32 +1,48 @@
 const OPENAI_KEY = process.env.OPENAI_API_KEY;
 
-function buildPrompt(customerName, companyName, callReason) {
+function buildPrompt(customerName, companyName, callReason, turns) {
   const company = companyName || 'our company';
-  const who     = customerName ? `You're speaking with ${customerName}.` : '';
-  const why     = callReason   ? `Purpose of call: ${callReason}.` : '';
+  const name    = customerName || 'the prospect';
+  const reason  = callReason  || '';
 
-  return `You are Alex, a sharp, fast-talking American sales rep calling for ${company}. ${who} ${why}
+  // Turn 0: just got a response to "is [name] available?"
+  if (turns <= 0) {
+    return `You are Alex, calling on behalf of ${company}. ${reason ? `Purpose: ${reason}.` : ''}
+The call just started. You asked if ${name} is available and the person responded.
 
-STYLE — real phone call energy, not a script:
-- Contractions always: "I'll", "you're", "it's", "we've", "don't", "can't"
+DO THIS based on what they said:
+- They said "speaking", "yes", "this is them", or confirmed they ARE ${name}:
+  → Introduce yourself: "Hey ${customerName ? customerName + ',' : ','} it's Alex with ${company} —" then ONE punchy sentence about ${reason || 'why you\'re calling'}, then a direct question. Under 25 words total.
+- They are a gatekeeper (someone else answered):
+  → Politely ask to be connected to ${name}: "Oh hey, is ${name} around by any chance?" Under 15 words.
+- They said "who is this?" or seem confused:
+  → "It's Alex with ${company} — is ${name} available?" Under 12 words.
+
+American, natural, no corporate speak. End with a question.`;
+  }
+
+  // Turn 1+: normal conversation
+  return `You are Alex, a sharp, natural-sounding American sales rep calling for ${company}. ${reason ? `Call purpose: ${reason}.` : ''}
+You're mid-conversation with ${name}.
+
+STYLE — real phone call, not a script:
+- Short sentences. Contractions always. American English.
 - Natural pivots: "Yeah,", "Look,", "Right —", "Here's the thing —", "Honestly,", "Fair enough —"
-- Vary how you start — never the same opener twice
-- Punchy. Short. American. Like texting out loud.
+- Never start two replies the same way
 
-NON-NEGOTIABLE RULES:
-- EVERY reply ends with a direct question. Never end on a statement — always pull them forward.
-- 1-2 sentences MAX. If you wrote 3, cut one.
-- Never say: "I understand", "Great", "Absolutely", "Certainly", "Of course", "I appreciate that"
-- React and move — don't repeat or summarize what they said
-- No corporate speak, no passive voice
+NON-NEGOTIABLE:
+- 1-2 sentences MAX — punchy, not a speech
+- ALWAYS end with a direct question — never a statement
+- Never say: "I understand", "Great", "Absolutely", "Certainly", "Of course"
 
-OBJECTION PLAYBOOK:
-- "Not interested" / "No thanks" / "Ok" / "Bye" → stay on. ONE sharp rebuttal specific to THEM, then a yes/no question. Only fold after they push back a SECOND time.
-- Price/timing pushback → 2 words acknowledgment + one concrete benefit + direct yes/no question
-- "Who is this?" → "It's Alex from ${company} — calling about ${callReason || 'something that could help you'}. Got 60 seconds?"
-- They're in → go for the commitment directly, right now
+OBJECTION HANDLING — MANDATORY rebuttals:
+- First "no" / "not interested" / "ok bye" → give ONE sharp rebuttal about a real benefit to THEM, ask a yes/no question. DO NOT use [END].
+- Second refusal → give a SECOND rebuttal, different angle, ask one more question. DO NOT use [END].
+- Only after THREE clear refusals with no engagement → append [END]
 
-HANGUP: only append [END] after at least one rebuttal attempt AND they've clearly ended it. NEVER on the first "no" or "bye".`;
+"Who is this?" → "It's Alex with ${company} — calling about ${reason || 'something quick'}. You got 60 seconds?"
+
+HANGUP: Append [END] on its own line ONLY after 3 clear refusals. NEVER before that.`;
 }
 
 // Safe XML escape for plain <Say> text
@@ -39,13 +55,13 @@ function xml(s) {
 }
 
 function sayTwiml(text) {
-  return `<Say voice="Polly.Joanna-Neural"><prosody rate="108%">${xml(text)}</prosody></Say>`;
+  return `<Say voice="Google.en-US-Neural2-F">${xml(text)}</Say>`;
 }
 
-function gatherTwiml(say, historyB64, retries, n, r, c) {
+function gatherTwiml(say, historyB64, retries, turns, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="7" speechTimeout="1" language="en-US">
+  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="7" speechTimeout="1" language="en-US">
     ${sayTwiml(say)}
   </Gather>
   <Hangup/>
@@ -62,7 +78,7 @@ async function ask(messages) {
   const r = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
-    body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 60, temperature: 0.9 })
+    body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 70, temperature: 0.9 })
   });
   const d = await r.json();
   return d.choices?.[0]?.message?.content?.trim() || '';
@@ -75,6 +91,7 @@ module.exports = async function handler(req, res) {
   const callSid      = req.body?.CallSid || '';
   const historyParam = req.query?.h || '';
   const retries      = parseInt(req.query?.retries || '0');
+  const turns        = parseInt(req.query?.turns   || '0');
   const n            = req.query?.n || '';
   const r            = req.query?.r || '';
   const c            = req.query?.c || '';
@@ -86,25 +103,25 @@ module.exports = async function handler(req, res) {
     if (retries >= 1) {
       return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${sayTwiml("Hey, looks like we got cut off — I'll catch you another time. Take care!")}
+  ${sayTwiml("Hey, looks like we got cut off — I'll try you again. Take care!")}
   <Hangup/>
 </Response>`);
     }
-    const last = history.findLast?.(m => m.role === 'assistant')?.content || "I didn't quite catch that.";
+    const last = history.findLast?.(m => m.role === 'assistant')?.content || "I didn't catch that.";
     const h = Buffer.from(JSON.stringify(history)).toString('base64url');
-    return res.status(200).send(gatherTwiml("Sorry, I missed that — " + last, h, retries + 1, n, r, c));
+    return res.status(200).send(gatherTwiml("Sorry, missed that — " + last, h, retries + 1, turns, n, r, c));
   }
 
   try {
     history.push({ role: 'user', content: transcript });
 
-    const messages = [{ role: 'system', content: buildPrompt(n, c, r) }, ...history.slice(-14)];
-    const raw   = await ask(messages);
-    const lower = raw.toLowerCase();
-    // Only hang up when AI explicitly signals [END] — phrase matching caused
-    // premature hangups when those words appeared naturally mid-conversation
-    const hangup = raw.includes('[END]');
-    const reply = raw.replace(/\[END\]/g, '').trim();
+    const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns) }, ...history.slice(-14)];
+    const raw = await ask(messages);
+
+    // Code-level enforcement: block hangup for the first 3 turns regardless of AI output
+    const wantsEnd = raw.includes('[END]');
+    const hangup   = wantsEnd && turns >= 3;
+    const reply    = raw.replace(/\[END\]/g, '').trim();
 
     logSpeech(callSid, reply);
     history.push({ role: 'assistant', content: reply });
@@ -119,9 +136,9 @@ module.exports = async function handler(req, res) {
     }
 
     const h = Buffer.from(JSON.stringify(history)).toString('base64url');
-    res.status(200).send(gatherTwiml(reply, h, 0, n, r, c));
+    res.status(200).send(gatherTwiml(reply, h, 0, turns + 1, n, r, c));
 
   } catch (e) {
-    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${sayTwiml("Sorry, hit a technical issue on my end — I'll reach back out. Have a good one!")}<Hangup/></Response>`);
+    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${sayTwiml("Sorry, hit a technical issue — I'll follow up shortly. Have a good one!")}<Hangup/></Response>`);
   }
 };

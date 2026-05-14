@@ -10,13 +10,13 @@ function xml(s) {
 }
 
 function sayTwiml(text) {
-  return `<Say voice="Polly.Joanna-Neural"><prosody rate="108%">${xml(text)}</prosody></Say>`;
+  return `<Say voice="Google.en-US-Neural2-F">${xml(text)}</Say>`;
 }
 
 function gatherTwiml(say, historyB64, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="7" speechTimeout="1" language="en-US">
+  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="7" speechTimeout="1" language="en-US">
     ${sayTwiml(say)}
   </Gather>
   <Hangup/>
@@ -27,7 +27,7 @@ async function ask(messages) {
   const r = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
-    body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 60, temperature: 0.9 })
+    body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 40, temperature: 0.85 })
   });
   const d = await r.json();
   return d.choices?.[0]?.message?.content?.trim() || '';
@@ -41,23 +41,22 @@ function logSpeech(callSid, text) {
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
-  const n       = req.query?.n || '';   // customer name
-  const r       = req.query?.r || '';   // call reason
-  const c       = req.query?.c || '';   // company name
+  const n       = req.query?.n || '';
+  const r       = req.query?.r || '';
+  const c       = req.query?.c || '';
   const callSid = req.body?.CallSid || '';
   const company = c || 'our company';
 
+  // Opening line just asks for the customer — no pitch yet
   const greetingPrompt = n
-    ? `Cold call opener. Alex from ${company} calling ${n}. ${r ? `About: ${r}.` : ''}
-       Rules: Start "Hey ${n}," — name yourself and company in 5 words — end with a direct question (NOT "do you have a minute" or "how are you"). Under 20 words. Must end with "?".`
-    : `Cold call opener. Alex from ${company}. ${r ? `About: ${r}.` : ''}
-       Rules: Start "Hey," — name yourself and company in 5 words — end with a direct question (NOT "do you have a minute" or "how are you"). Under 20 words. Must end with "?".`;
+    ? `Write a single short sentence asking if ${n} is available. Start with "Hi," — do NOT introduce yourself or pitch anything. Just ask for ${n} by name. Under 10 words.`
+    : `Write a single short sentence asking who you're speaking with. Start with "Hi," — do NOT introduce yourself or pitch anything. Under 10 words.`;
 
   try {
     const greeting = await ask([
       {
         role: 'system',
-        content: `You are Alex, a fast-talking American sales rep. Write ONLY the spoken words — no quotes, no labels, no stage directions. Sound like a real person on a phone call, not a script. American accent and tone.`
+        content: `You are placing a phone call. Write ONLY the spoken words — no quotes, no labels. Natural American English.`
       },
       { role: 'user', content: greetingPrompt }
     ]);
@@ -67,8 +66,8 @@ module.exports = async function handler(req, res) {
     res.status(200).send(gatherTwiml(greeting, history, n, r, c));
   } catch (e) {
     const fallback = n
-      ? `Hey ${n}, this is Alex from ${company} — got a quick second?`
-      : `Hey, this is Alex from ${company} — do you have a quick second?`;
+      ? `Hi, is ${n} available?`
+      : `Hi there, who am I speaking with?`;
     const history = Buffer.from(JSON.stringify([{ role: 'assistant', content: fallback }])).toString('base64url');
     res.status(200).send(gatherTwiml(fallback, history, n, r, c));
   }
