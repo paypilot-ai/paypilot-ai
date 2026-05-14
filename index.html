@@ -4626,9 +4626,11 @@ async function startAiCall(){
     document.getElementById('aiCallerFormCard').style.display = 'none';
     document.getElementById('aiCallStatus').style.display = 'block';
     document.getElementById('aiCallTranscript').innerHTML = '';
-    document.getElementById('aiCallStatusText').textContent = 'AI DIALING...';
-    document.getElementById('aiCallTimer').textContent = '0:00';
     toast('AI call launched — dialing ' + number + '...');
+    const stEl = document.getElementById('aiCallStatusText');
+    const tmEl = document.getElementById('aiCallTimer');
+    if(stEl) stEl.textContent = 'AI DIALING...';
+    if(tmEl) tmEl.textContent = '0:00';
     startPageMatrix();
 
     // Wait for layout to fully settle before reading canvas dimensions
