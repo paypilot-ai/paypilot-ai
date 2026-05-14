@@ -2,7 +2,7 @@
 // Vercel serverless function — Google Places Text Search
 // Requires GOOGLE_PLACES_KEY in your Vercel environment variables
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // CORS headers — allows your frontend to call this
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');

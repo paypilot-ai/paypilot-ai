@@ -3762,11 +3762,14 @@ async function startDeepgram(){
   if(!dgKey){
     try {
       const resp = await fetch('/api/deepgram-token');
-      if(!resp.ok){ toast('Could not connect to server. Try again.'); return; }
-      const data = await resp.json();
+      const data = await resp.json().catch(() => ({}));
+      if(!resp.ok || !data.key){
+        toast(data.error || 'Mic service unavailable — check server config.');
+        return;
+      }
       dgKey = data.key;
     } catch(e){
-      toast('Could not reach server. Check your connection.');
+      toast('Could not reach server: ' + e.message);
       return;
     }
   }
@@ -3775,7 +3778,7 @@ async function startDeepgram(){
   try {
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   } catch(e){
-    toast('Mic access denied. Allow mic in your browser settings.');
+    toast('Mic access denied — allow mic in your browser settings.');
     return;
   }
 
