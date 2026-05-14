@@ -1387,7 +1387,7 @@ body.modal-open{overflow:hidden}
       </div>
     </div>
     <div class="nav-actions">
-      <button class="btn btn-ghost" onclick="showPricing()">Get Pricing</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">Get Pricing</button>
       <button class="btn btn-white" onclick="showAuth()">Login</button>
       <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Open Demo</button>
     </div>
@@ -1400,7 +1400,7 @@ body.modal-open{overflow:hidden}
       <p>PayPilot handles the full sales cycle — AI Auto-Caller that dials leads, holds real conversations, and sends agreements on the spot. Plus live rebuttals, script control, and analytics while your reps are on the phone.</p>
 
       <div class="hero-actions">
-        <button class="btn btn-primary" onclick="showPricing()">See Plans</button>
+        <button class="btn btn-primary" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">See Plans</button>
       </div>
 
       <div class="hero-metrics">
@@ -1471,7 +1471,7 @@ body.modal-open{overflow:hidden}
       </div>
     </div>
 
-    <div class="pricing-label">Simple, transparent pricing</div>
+    <div id="pricingSection" class="pricing-label">Simple, transparent pricing</div>
 
     <div class="pricing-grid">
       <div class="plan">
@@ -1554,7 +1554,7 @@ body.modal-open{overflow:hidden}
           <p style="margin:0; color:rgba(255,255,255,.68); font-size:16px; line-height:1.8; max-width:520px;">Demo the AI Auto-Caller, live rebuttals, and agreement sending before you pay a cent. Starter ($99/mo, 25 AI dials/mo), Pro ($399/mo, 100 AI dials/mo), Enterprise (custom). Call minutes $0.04/min. Additional AI dials $0.10/call. Cancel anytime.</p>
         </div>
         <div style="display:flex; flex-direction:column; gap:12px; min-width:200px;">
-          <button class="btn btn-primary" style="font-size:16px; padding:16px 28px;" onclick="showPricing()">Compare plans</button>
+          <button class="btn btn-primary" style="font-size:16px; padding:16px 28px;" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">Compare plans</button>
         </div>
       </div>
     </div>
@@ -3401,8 +3401,47 @@ function jumpToAssist(){
 // PRICING MODAL — using CSS class toggle instead of inline style
 // ============================================================
 function showPricing(plan){
-  currentPricingPlan = plan || currentPlan || "pro";
+  currentPricingPlan = plan || null;
   const text = document.getElementById('pricingText');
+
+  if(!plan){
+    text.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center;">
+        <div style="padding:16px;border:1px solid #e2e8f0;border-radius:12px;">
+          <div style="font-weight:800;font-size:15px;margin-bottom:6px;">Starter</div>
+          <div style="font-size:26px;font-weight:900;color:#1d4ed8;margin-bottom:6px;">$99<span style="font-size:13px;font-weight:500;color:#64748b;">/mo</span></div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:10px;">Up to 5 users</div>
+          <ul style="text-align:left;font-size:12px;color:#475569;padding-left:14px;line-height:1.9;margin:0 0 12px;">
+            <li>25 AI dials/mo</li><li>AI objection responses</li><li>Script library</li><li>Agreement sending</li><li>Email support</li>
+          </ul>
+          <button class="app-btn line" onclick="enterPlanDemo('starter');hidePricing();" style="width:100%;font-size:12px;padding:8px;">Preview Demo</button>
+        </div>
+        <div style="padding:16px;border:2px solid #1a6fff;border-radius:12px;background:linear-gradient(160deg,#f0f5ff,#fff);">
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#1a6fff;margin-bottom:4px;">Most Popular</div>
+          <div style="font-weight:800;font-size:15px;margin-bottom:6px;">Pro</div>
+          <div style="font-size:26px;font-weight:900;color:#1d4ed8;margin-bottom:6px;">$399<span style="font-size:13px;font-weight:500;color:#64748b;">/mo</span></div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:10px;">Up to 20 users</div>
+          <ul style="text-align:left;font-size:12px;color:#475569;padding-left:14px;line-height:1.9;margin:0 0 12px;">
+            <li>100 AI dials/mo</li><li>Live AI assist</li><li>Multi-language support</li><li>Performance analytics</li><li>Priority support</li>
+          </ul>
+          <button class="app-btn blue" onclick="enterPlanDemo('pro');hidePricing();" style="width:100%;font-size:12px;padding:8px;">Preview Demo</button>
+        </div>
+        <div style="padding:16px;border:1px solid #e2e8f0;border-radius:12px;">
+          <div style="font-weight:800;font-size:15px;margin-bottom:6px;">Enterprise</div>
+          <div style="font-size:26px;font-weight:900;color:#1d4ed8;margin-bottom:6px;">Custom</div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:10px;">Unlimited users</div>
+          <ul style="text-align:left;font-size:12px;color:#475569;padding-left:14px;line-height:1.9;margin:0 0 12px;">
+            <li>Unlimited AI dials</li><li>AI trained on your scripts</li><li>CRM integrations</li><li>Team onboarding</li><li>Dedicated support</li>
+          </ul>
+          <button class="app-btn line" onclick="enterPlanDemo('enterprise');hidePricing();" style="width:100%;font-size:12px;padding:8px;">Preview Demo</button>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:10px;">Call minutes billed at $0.04/min · Additional AI dials $0.10/call</div>
+    `;
+    document.getElementById('pricingModal').classList.add('open');
+    document.body.classList.add('modal-open');
+    return;
+  }
 
   if(currentPricingPlan === 'starter'){
     text.innerHTML = `
