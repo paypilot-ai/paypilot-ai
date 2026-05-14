@@ -10,7 +10,14 @@ module.exports = async function handler(req, res) {
   const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
   if (!accountSid || !authToken || !fromNumber) {
-    return res.status(500).json({ error: 'Twilio credentials not configured' });
+    return res.status(500).json({
+      error: 'Twilio credentials not configured',
+      has_sid: !!accountSid,
+      has_token: !!authToken,
+      has_number: !!fromNumber,
+      sid_preview: accountSid ? accountSid.slice(0,6) + '...' : 'MISSING',
+      number_preview: fromNumber || 'MISSING'
+    });
   }
 
   const { toNumber, customerName, callReason, companyName } = req.body || {};
@@ -34,7 +41,11 @@ module.exports = async function handler(req, res) {
     );
 
     const data = await response.json();
-    if (!response.ok) return res.status(500).json({ error: `Twilio ${data.status || response.status}: ${data.message || 'unknown error'} (code ${data.code || 'none'})` });
+    if (!response.ok) return res.status(500).json({
+      error: `Twilio ${data.status || response.status}: ${data.message || 'unknown error'} (code ${data.code || 'none'})`,
+      sid_used: accountSid.slice(0,6) + '...' + accountSid.slice(-4),
+      sid_length: accountSid.length
+    });
 
     return res.status(200).json({ callSid: data.sid, status: data.status, to: e164 });
   } catch (e) {
