@@ -4449,6 +4449,7 @@ function stopMatrixAnimation(){
   if(aiWaveInterval){   clearInterval(aiWaveInterval);   aiWaveInterval   = null; }
   if(aiMouthInterval){  clearInterval(aiMouthInterval);  aiMouthInterval  = null; }
   if(aiTimerInterval){  clearInterval(aiTimerInterval);  aiTimerInterval  = null; }
+  window.aiCallActive = false;
   stopPageMatrix();
 }
 
@@ -4474,19 +4475,39 @@ function startPageMatrix(){
   const drops = Array.from({length:COLS},()=>-Math.random()*H);
   const speeds= Array.from({length:COLS},()=>2+Math.random()*5);
   const trails= Array.from({length:COLS},()=>[]);
+
+  // Face centered on screen
+  const FCX=W/2, FCY=H*0.38, FRX=W*0.13, FRY=H*0.22;
+  function faceD(x,y){
+    const dx=(x-FCX)/FRX, dy=(y-FCY)/FRY, r2=dx*dx+dy*dy;
+    if(r2>1) return 0;
+    let b=0.3+0.55*(1-Math.sqrt(r2)*0.8);
+    b+=Math.max(0,1-((x-FCX)/(FRX*0.24))**2-((y-FCY-FRY*0.05)/(FRY*0.22))**2)*0.5;
+    b-=Math.max(0,1-((x-FCX-FRX*0.32)/(FRX*0.19))**2-((y-FCY-FRY*0.1)/(FRY*0.11))**2)*0.65;
+    b-=Math.max(0,1-((x-FCX+FRX*0.32)/(FRX*0.19))**2-((y-FCY-FRY*0.1)/(FRY*0.11))**2)*0.65;
+    return Math.max(0,Math.min(1,b));
+  }
+
   if(pageMatrixRaf){ cancelAnimationFrame(pageMatrixRaf); }
   function frame(){
     pageMatrixRaf = requestAnimationFrame(frame);
     ctx.fillStyle='rgba(0,0,0,0.13)';
     ctx.fillRect(0,0,W,H);
+    const mo = window.aiMouthTarget||0;
     for(let i=0;i<COLS;i++){
       const x=i*CW+CW/2, y=drops[i];
+      const d = window.aiCallActive ? faceD(x,y) : 0;
+      const inMouth = mo>0.1 && ((x-FCX)/(FRX*0.28))**2+((y-FCY+FRY*0.35)/(FRY*0.14))**2<1;
       if(y>=0&&y<=H){
         const ch=CHARS[Math.floor(Math.random()*CHARS.length)];
-        ctx.font='bold 13px monospace';
-        ctx.fillStyle='rgba(200,255,200,1)';
-        ctx.fillText(ch,x-5,y);
-        trails[i].push({y,ch});
+        const sz = d>0.3 ? Math.round(13+d*8) : 13;
+        ctx.font=`bold ${sz}px monospace`;
+        if(inMouth && mo>0.2) ctx.fillStyle='rgba(255,255,80,1)';
+        else if(d>0.5) ctx.fillStyle='rgba(255,255,255,1)';
+        else if(d>0.15) ctx.fillStyle=`rgba(${Math.round(d*80)},255,${Math.round(d*60)},1)`;
+        else ctx.fillStyle='rgba(0,220,60,1)';
+        ctx.fillText(ch,x-sz*0.35,y);
+        trails[i].push({y,ch,d});
         if(trails[i].length>22) trails[i].shift();
       }
       const tr=trails[i];
@@ -4494,9 +4515,11 @@ function startPageMatrix(){
         const age=tr.length-1-t;
         const alpha=Math.max(0,0.7-age*0.032);
         if(alpha<=0) continue;
-        const g=Math.min(255,Math.round(80+age*8));
+        const td=tr[t].d||0;
+        const g=td>0 ? Math.min(255,Math.round(120+td*135)) : Math.min(255,Math.round(80+age*8));
+        const r=td>0 ? Math.round(td*40) : 0;
         ctx.font='12px monospace';
-        ctx.fillStyle=`rgba(0,${g},40,${alpha.toFixed(2)})`;
+        ctx.fillStyle=`rgba(${r},${g},40,${alpha.toFixed(2)})`;
         ctx.fillText(tr[t].ch,x-5,tr[t].y);
       }
       drops[i]+=speeds[i];
@@ -4631,6 +4654,7 @@ async function startAiCall(){
     const tmEl = document.getElementById('aiCallTimer');
     if(stEl) stEl.textContent = 'AI DIALING...';
     if(tmEl) tmEl.textContent = '0:00';
+    window.aiCallActive = true;
     startPageMatrix();
 
     // Wait for layout to fully settle before reading canvas dimensions
