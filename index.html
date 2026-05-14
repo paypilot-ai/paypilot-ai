@@ -1630,7 +1630,7 @@ body.modal-open{overflow:hidden}
         </div>
         <div class="topbar-actions">
           <button class="app-btn line" onclick="goHome()">Home</button>
-          <button class="app-btn soft" id="getPricingBtn" onclick="showPricing(currentPlan)">Get Pricing</button>
+
           <button class="app-btn blue" onclick="jumpToAssist()">Generate Response</button>
         </div>
       </div>
@@ -2909,7 +2909,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
     </div>
 
     <div class="tool-row" style="margin-top:18px">
-      <button class="app-btn blue" onclick="enterPlanDemo(currentPricingPlan || 'pro'); hidePricing();">Open Selected Demo</button>
+      <button class="app-btn blue" onclick="hidePricing(); showAuth('pro');">Subscribe — $399/mo</button>
       <button class="app-btn line" onclick="hidePricing()">Close</button>
     </div>
   </div>
