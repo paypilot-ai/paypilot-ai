@@ -1939,7 +1939,7 @@ body.modal-open{overflow:hidden}
 
                 <!-- Face canvas + scan line -->
                 <div id="faceContainer" style="position:relative;width:280px;height:320px;">
-                  <div id="matrixCanvas" style="position:absolute;top:0;left:0;width:280px;height:320px;z-index:1;"></div>
+                  <canvas id="matrixCanvas" width="280" height="320" style="position:absolute;top:0;left:0;width:280px;height:320px;z-index:1;display:block;"></canvas>
                   <!-- Scan line sweeping over head -->
                   <div id="aiScanLine" style="position:absolute;left:50%;transform:translateX(-50%);width:185px;height:2px;background:linear-gradient(to right,transparent 0%,rgba(0,255,136,.7) 40%,rgba(0,255,136,.9) 50%,rgba(0,255,136,.7) 60%,transparent 100%);animation:aiScanLine 3.2s linear infinite;z-index:3;pointer-events:none;border-radius:2px;"></div>
                 </div>
@@ -4348,16 +4348,9 @@ let aiTimerInterval = null;
 let aiCallSeconds   = 0;
 
 function startMatrixAnimation(){
-  const el = document.getElementById('matrixCanvas');
-  if(!el) return;
+  const canvas = document.getElementById('matrixCanvas');
+  if(!canvas) return;
   if(aiMatrixInterval){ cancelAnimationFrame(aiMatrixInterval); aiMatrixInterval=null; }
-
-  // Build canvas inside the div
-  el.innerHTML = '';
-  const canvas = document.createElement('canvas');
-  canvas.width = 280; canvas.height = 320;
-  canvas.style.cssText = 'display:block;width:280px;height:320px;';
-  el.appendChild(canvas);
   const ctx = canvas.getContext('2d');
   if(!ctx) return;
 
