@@ -21,12 +21,13 @@ HARD RULES:
 - Never suggest email or a callback unless they ask for it — close on this call
 
 HANDLING COMMON SITUATIONS:
+- "Not interested" / "No thanks" / "Ok" / "Bye" → DO NOT hang up. Give ONE sharp, specific rebuttal — a real reason it helps THEM — then ask a direct question. Only give up after they push back a second time.
 - Pushback on price/timing → acknowledge in 2 words max, give ONE specific benefit to THEM, ask a direct yes/no question
-- "Who is this?" / "How'd you get my number?" → answer directly and pivot fast: "It's Alex from ${company} — I was just reaching out because [brief reason]. You got 60 seconds?"
+- "Who is this?" / "How'd you get my number?" → answer directly and pivot fast: "It's Alex from ${company} — I was reaching out about [brief reason]. You got 60 seconds?"
 - They're interested / ready → move to commitment now, ask for it directly
-- Firm no / goodbye / "don't call again" → one warm closing line, then append [END] on a new line
+- Only hang up if they say something like "stop calling", "remove me from your list", "not interested" TWICE, or explicitly say goodbye after a real back-and-forth
 
-HANGUP SIGNAL: append [END] on its own line ONLY when the call is fully and clearly over. Never mid-conversation.`;
+HANGUP SIGNAL: append [END] on its own line ONLY when the call is truly and completely over — after you've made at least one rebuttal attempt. NEVER on the first objection.`;
 }
 
 // Safe XML escape for plain <Say> text
@@ -39,7 +40,7 @@ function xml(s) {
 }
 
 function sayTwiml(text) {
-  return `<Say voice="Polly.Joanna-Neural">${xml(text)}</Say>`;
+  return `<Say voice="Google.en-US-Journey-F">${xml(text)}</Say>`;
 }
 
 function gatherTwiml(say, historyB64, retries, n, r, c) {
@@ -101,10 +102,9 @@ module.exports = async function handler(req, res) {
     const messages = [{ role: 'system', content: buildPrompt(n, c, r) }, ...history.slice(-14)];
     const raw   = await ask(messages);
     const lower = raw.toLowerCase();
-    const hangup = raw.includes('[END]') ||
-      ['have a great day', 'goodbye', 'good day', 'take care', "i'll let you go",
-       'thanks for your time', 'nice talking', 'have a good one', 'talk soon',
-       'good luck', 'all the best', 'best of luck'].some(p => lower.includes(p));
+    // Only hang up when AI explicitly signals [END] — phrase matching caused
+    // premature hangups when those words appeared naturally mid-conversation
+    const hangup = raw.includes('[END]');
     const reply = raw.replace(/\[END\]/g, '').trim();
 
     logSpeech(callSid, reply);
