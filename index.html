@@ -3877,12 +3877,15 @@ async function startDeepgram(){
   };
 
   deepgramSocket.onerror = () => {
-    toast('Connection error. Please try again.');
+    toast('Mic failed: Deepgram connection rejected — check DEEPGRAM_API_KEY in Vercel settings.');
     stopDeepgram();
   };
 
-  deepgramSocket.onclose = () => {
-    if(micActive) stopDeepgram();
+  deepgramSocket.onclose = (e) => {
+    if(micActive){
+      if(e.code === 1008 || e.code === 1002) toast('Mic auth failed — invalid Deepgram API key (code ' + e.code + ').');
+      stopDeepgram();
+    }
   };
 }
 
