@@ -4423,7 +4423,7 @@ function stopMatrixAnimation(){
 
 // ── FULL-PAGE MATRIX OVERLAY ────────────────────────────────────
 let pageMatrixRaf = null;
-function startPageMatrix(){
+async function startPageMatrix(){
   let cv = document.getElementById('pageMatrixCanvas');
   if(!cv){
     cv = document.createElement('canvas');
@@ -4447,119 +4447,122 @@ function startPageMatrix(){
   // Face — large, centered portrait
   const FCX=W/2, FCY=H*0.38;
   const FRX=Math.min(W*0.30,200), FRY=Math.min(H*0.38,240);
-  // Fine 7px grid for face — ~57 chars across so features are clearly visible
   const FCW=7, FCH=8;
   const fCOLS=Math.ceil(W/FCW), fROWS=Math.ceil(H/FCH);
 
-  // Returns -1 (outside oval, skip) or 0.12..1.0 brightness
-  // NO black zones — everything stays green, shadows are just dim
-  function faceD(x,y){
-    const nx=(x-FCX)/FRX, ny=(y-FCY)/FRY;
+  // Load the reference photo and pre-sample pixel brightness
+  let imgBright = null, IW = 1, IH = 1;
+  try {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    await new Promise(resolve => { img.onload = resolve; img.onerror = resolve; img.src = '/240_F_790682991_iBTGcSFOXSkIm6eJN8PBli4wyG8iHYG4.jpg'; });
+    if (img.naturalWidth > 0) {
+      IW = img.naturalWidth; IH = img.naturalHeight;
+      const off = document.createElement('canvas');
+      off.width = IW; off.height = IH;
+      const oc = off.getContext('2d');
+      oc.drawImage(img, 0, 0);
+      const raw = oc.getImageData(0, 0, IW, IH).data;
+      imgBright = new Float32Array(IW * IH);
+      for (let i = 0; i < IW * IH; i++) imgBright[i] = (0.299*raw[i*4] + 0.587*raw[i*4+1] + 0.114*raw[i*4+2]) / 255;
+    }
+  } catch(e) {}
+
+  // Returns -1 (outside oval) or 0.12..1.0 brightness driven by the photo
+  // ox/oy are speaking-motion offsets applied to the face position
+  function faceD(x, y, ox=0, oy=0){
+    const ax=x-ox, ay=y-oy;
+    const nx=(ax-FCX)/FRX, ny=(ay-FCY)/FRY;
     const chinN = ny>0.10 ? (ny-0.10)*0.22 : 0;
     if(nx*nx*(1+chinN)+ny*ny > 1.05) return -1;
 
-    // ── IRISES — the dominant feature, very bright ──
+    if (imgBright) {
+      const px = Math.round((ax-(FCX-FRX))/(FRX*2)*IW);
+      const py = Math.round((ay-(FCY-FRY))/(FRY*2)*IH);
+      if(px<0||px>=IW||py<0||py>=IH) return 0.15;
+      return Math.max(0.12, imgBright[py*IW+px]);
+    }
+
+    // Mathematical fallback (used when image fails to load)
     const lIris = ((nx+0.36)/0.14)**2 + ((ny+0.18)/0.12)**2;
     const rIris = ((nx-0.36)/0.14)**2 + ((ny+0.18)/0.12)**2;
     if(lIris < 1 || rIris < 1){
-      // Pupil center — dim but NOT black, keeps green
       const lPup = ((nx+0.36)/0.06)**2 + ((ny+0.18)/0.06)**2;
       const rPup = ((nx-0.36)/0.06)**2 + ((ny+0.18)/0.06)**2;
       if(lPup < 1 || rPup < 1) return 0.30;
-      return 0.95; // bright glowing iris
+      return 0.95;
     }
-
-    // ── BASE brightness — center brighter, edges dim ──
     let b = 0.28 + 0.38*(1 - Math.sqrt(nx*nx+ny*ny)*0.75);
-
-    // Forehead
     b += 0.20*Math.max(0,1-(nx/0.45)**2-((ny+0.62)/0.26)**2);
-    // Brow bone (slight ridge)
     b += 0.12*Math.max(0,1-(nx/0.52)**2-((ny+0.35)/0.06)**2);
-    // Eye socket regions — slightly dimmer to frame the bright eyes
     b -= 0.18*Math.max(0,1-((nx+0.36)/0.28)**2-((ny+0.20)/0.18)**2);
     b -= 0.18*Math.max(0,1-((nx-0.36)/0.28)**2-((ny+0.20)/0.18)**2);
-    // Nose bridge
     b += 0.22*Math.max(0,1-(nx/0.08)**2-((ny-0.05)/0.30)**2);
-    // Nose tip
     b += 0.16*Math.max(0,1-(nx/0.12)**2-((ny-0.26)/0.08)**2);
-    // Nose sides dim
     b -= 0.14*Math.max(0,1-((nx+0.18)/0.09)**2-((ny-0.15)/0.22)**2);
     b -= 0.14*Math.max(0,1-((nx-0.18)/0.09)**2-((ny-0.15)/0.22)**2);
-    // Cheekbones bright
     b += 0.26*Math.max(0,1-((nx+0.52)/0.22)**2-((ny-0.06)/0.18)**2);
     b += 0.26*Math.max(0,1-((nx-0.52)/0.22)**2-((ny-0.06)/0.18)**2);
-    // Upper lip
     b += 0.22*Math.max(0,1-(nx/0.24)**2-((ny-0.42)/0.05)**2);
-    // Lower lip
     b += 0.28*Math.max(0,1-(nx/0.26)**2-((ny-0.52)/0.07)**2);
-    // Mouth line dim
     b -= 0.16*Math.max(0,1-(nx/0.22)**2-((ny-0.46)/0.025)**2);
-    // Chin
     b += 0.16*Math.max(0,1-(nx/0.16)**2-((ny-0.76)/0.09)**2);
-    // Temple dims
     b -= 0.24*Math.max(0,1-((nx+0.72)/0.18)**2-((ny+0.05)/0.32)**2);
     b -= 0.24*Math.max(0,1-((nx-0.72)/0.18)**2-((ny+0.05)/0.32)**2);
-    // Skull top fade
     if(ny < -0.65) b = Math.max(0.12, b - (-0.65-ny)*2.5);
-
     return Math.max(0.12, Math.min(1, b));
   }
 
   if(pageMatrixRaf){ cancelAnimationFrame(pageMatrixRaf); }
 
-  // Fine-resolution face grid (independent of rain grid)
   const faceGrid = Array.from({length:fCOLS}, ()=>Array.from({length:fROWS}, ()=>CHARS[Math.floor(Math.random()*CHARS.length)]));
   let tick = 0;
+  let mAmp = 0; // smoothed mouth-open value, drives head-bob
 
   function frame(){
     pageMatrixRaf = requestAnimationFrame(frame);
     tick++;
     ctx.fillStyle='rgba(0,0,0,0.14)';
     ctx.fillRect(0,0,W,H);
-    const mo = window.aiMouthTarget||0;
+
+    // Smooth toward the current speech target and compute speaking motion
+    mAmp += ((window.aiMouthTarget||0) - mAmp) * 0.10;
+    const faceOX = mAmp * Math.sin(tick * 0.12) * 2.5;
+    const faceOY = mAmp * Math.sin(tick * 0.18) * 3.5;
+    const cx = FCX + faceOX, cy = FCY + faceOY;
 
     // ── FACE LAYER — all Matrix green, drawn on top of rain ──
     if(window.aiCallActive){
-      // Subtle green glow behind face (same color as rain so it blends)
-      const grd = ctx.createRadialGradient(FCX, FCY, FRX*0.3, FCX, FCY, FRX*1.8);
+      const grd = ctx.createRadialGradient(cx, cy, FRX*0.3, cx, cy, FRX*1.8);
       grd.addColorStop(0,   'rgba(0,60,10,0.14)');
       grd.addColorStop(0.55,'rgba(0,30,5,0.06)');
       grd.addColorStop(1,   'rgba(0,0,0,0)');
       ctx.fillStyle = grd;
-      ctx.fillRect(FCX-FRX*2.2, FCY-FRY*2.0, FRX*4.4, FRY*4.0);
+      ctx.fillRect(cx-FRX*2.2, cy-FRY*2.0, FRX*4.4, FRY*4.0);
 
-      // Refresh face chars every 4 frames
       if(tick % 4 === 0){
         for(let i=0;i<fCOLS;i++) for(let r=0;r<fROWS;r++) if(Math.random()<0.18) faceGrid[i][r]=CHARS[Math.floor(Math.random()*CHARS.length)];
       }
 
-      // Fine 7px grid — face IS the Matrix code, just brighter in feature areas
       for(let i=0;i<fCOLS;i++){
         const x=i*FCW+FCW/2;
         for(let r=0;r<fROWS;r++){
           const y=r*FCH+FCH/2;
-          const d=faceD(x,y);
-          if(d<0) continue; // outside oval — rain handles those pixels
-          const inM = mo>0.1 && ((x-FCX)/(FRX*0.26))**2+((y-FCY-FRY*0.45)/(FRY*0.09))**2 < 1;
+          const d=faceD(x,y,faceOX,faceOY);
+          if(d<0) continue;
+          const inM = mAmp>0.1 && ((x-cx)/(FRX*0.26))**2+((y-cy-FRY*0.45)/(FRY*0.09))**2 < 1;
           ctx.font = 'bold 7px monospace';
-          if(inM && mo>0.15){
-            // Speaking — mouth glows yellow
+          if(inM && mAmp>0.15){
             ctx.fillStyle=`rgba(255,220,30,${(0.55+d*0.45).toFixed(2)})`;
           } else if(d>0.88){
-            // Eyes / peak highlights — near white green (same as rain head)
             ctx.fillStyle=`rgba(200,255,200,${(0.92).toFixed(2)})`;
           } else if(d>0.68){
-            // Cheeks, forehead, nose — bright green
             ctx.fillStyle=`rgba(0,240,60,${(0.75+d*0.20).toFixed(2)})`;
           } else if(d>0.45){
-            // General face — standard Matrix green
             ctx.fillStyle=`rgba(0,190,40,${(0.60+d*0.28).toFixed(2)})`;
           } else if(d>0.25){
-            // Shadows — dim green
             ctx.fillStyle=`rgba(0,120,20,${(0.45+d*0.30).toFixed(2)})`;
           } else {
-            // Edge/temple — very dim
             ctx.fillStyle=`rgba(0,70,10,${(0.32+d*0.30).toFixed(2)})`;
           }
           ctx.fillText(faceGrid[i][r], x-3, y+3);
