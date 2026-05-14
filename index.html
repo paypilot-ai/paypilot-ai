@@ -4423,7 +4423,8 @@ function stopMatrixAnimation(){
 
 // ── FULL-PAGE MATRIX OVERLAY ────────────────────────────────────
 let pageMatrixRaf = null;
-async function startPageMatrix(){
+function startPageMatrix(){
+  // ── Matrix rain canvas (background) ────────────────────────────
   let cv = document.getElementById('pageMatrixCanvas');
   if(!cv){
     cv = document.createElement('canvas');
@@ -4435,7 +4436,22 @@ async function startPageMatrix(){
   cv.height = window.innerHeight;
   const ctx = cv.getContext('2d');
   if(!ctx) return;
-  requestAnimationFrame(() => cv.style.opacity = '0.96');
+  requestAnimationFrame(() => cv.style.opacity = '0.88');
+
+  // ── Real face photo (foreground) ────────────────────────────────
+  let faceWrap = document.getElementById('aiCallerFaceWrap');
+  if(!faceWrap){
+    faceWrap = document.createElement('div');
+    faceWrap.id = 'aiCallerFaceWrap';
+    faceWrap.style.cssText = 'position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);z-index:12;pointer-events:none;opacity:0;transition:opacity 1s;will-change:transform;';
+    const imgSize = Math.min(280, Math.round(window.innerWidth * 0.52));
+    faceWrap.innerHTML = `<img id="aiCallerFaceImg" src="/240_F_790682991_iBTGcSFOXSkIm6eJN8PBli4wyG8iHYG4.jpg"
+      style="width:${imgSize}px;height:${imgSize}px;object-fit:cover;border-radius:50%;
+      border:2px solid rgba(0,255,136,0.75);display:block;
+      box-shadow:0 0 36px rgba(0,255,136,0.45),0 0 72px rgba(0,255,136,0.18);" />`;
+    document.body.appendChild(faceWrap);
+  }
+  requestAnimationFrame(() => faceWrap.style.opacity = '1');
 
   const W=cv.width, H=cv.height;
   const CW=13, COLS=Math.ceil(W/CW);
@@ -4444,80 +4460,8 @@ async function startPageMatrix(){
   const speeds= Array.from({length:COLS},()=>2+Math.random()*5);
   const trails= Array.from({length:COLS},()=>[]);
 
-  // Face — large, centered portrait
-  const FCX=W/2, FCY=H*0.38;
-  const FRX=Math.min(W*0.30,200), FRY=Math.min(H*0.38,240);
-  const FCW=7, FCH=8;
-  const fCOLS=Math.ceil(W/FCW), fROWS=Math.ceil(H/FCH);
-
-  // Load the reference photo and pre-sample pixel brightness
-  let imgBright = null, IW = 1, IH = 1;
-  try {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    await new Promise(resolve => { img.onload = resolve; img.onerror = resolve; img.src = '/240_F_790682991_iBTGcSFOXSkIm6eJN8PBli4wyG8iHYG4.jpg'; });
-    if (img.naturalWidth > 0) {
-      IW = img.naturalWidth; IH = img.naturalHeight;
-      const off = document.createElement('canvas');
-      off.width = IW; off.height = IH;
-      const oc = off.getContext('2d');
-      oc.drawImage(img, 0, 0);
-      const raw = oc.getImageData(0, 0, IW, IH).data;
-      imgBright = new Float32Array(IW * IH);
-      for (let i = 0; i < IW * IH; i++) imgBright[i] = (0.299*raw[i*4] + 0.587*raw[i*4+1] + 0.114*raw[i*4+2]) / 255;
-    }
-  } catch(e) {}
-
-  // Returns -1 (outside oval) or 0.12..1.0 brightness driven by the photo
-  // ox/oy are speaking-motion offsets applied to the face position
-  function faceD(x, y, ox=0, oy=0){
-    const ax=x-ox, ay=y-oy;
-    const nx=(ax-FCX)/FRX, ny=(ay-FCY)/FRY;
-    const chinN = ny>0.10 ? (ny-0.10)*0.22 : 0;
-    if(nx*nx*(1+chinN)+ny*ny > 1.05) return -1;
-
-    if (imgBright) {
-      const px = Math.round((ax-(FCX-FRX))/(FRX*2)*IW);
-      const py = Math.round((ay-(FCY-FRY))/(FRY*2)*IH);
-      if(px<0||px>=IW||py<0||py>=IH) return 0.15;
-      return Math.max(0.12, imgBright[py*IW+px]);
-    }
-
-    // Mathematical fallback (used when image fails to load)
-    const lIris = ((nx+0.36)/0.14)**2 + ((ny+0.18)/0.12)**2;
-    const rIris = ((nx-0.36)/0.14)**2 + ((ny+0.18)/0.12)**2;
-    if(lIris < 1 || rIris < 1){
-      const lPup = ((nx+0.36)/0.06)**2 + ((ny+0.18)/0.06)**2;
-      const rPup = ((nx-0.36)/0.06)**2 + ((ny+0.18)/0.06)**2;
-      if(lPup < 1 || rPup < 1) return 0.30;
-      return 0.95;
-    }
-    let b = 0.28 + 0.38*(1 - Math.sqrt(nx*nx+ny*ny)*0.75);
-    b += 0.20*Math.max(0,1-(nx/0.45)**2-((ny+0.62)/0.26)**2);
-    b += 0.12*Math.max(0,1-(nx/0.52)**2-((ny+0.35)/0.06)**2);
-    b -= 0.18*Math.max(0,1-((nx+0.36)/0.28)**2-((ny+0.20)/0.18)**2);
-    b -= 0.18*Math.max(0,1-((nx-0.36)/0.28)**2-((ny+0.20)/0.18)**2);
-    b += 0.22*Math.max(0,1-(nx/0.08)**2-((ny-0.05)/0.30)**2);
-    b += 0.16*Math.max(0,1-(nx/0.12)**2-((ny-0.26)/0.08)**2);
-    b -= 0.14*Math.max(0,1-((nx+0.18)/0.09)**2-((ny-0.15)/0.22)**2);
-    b -= 0.14*Math.max(0,1-((nx-0.18)/0.09)**2-((ny-0.15)/0.22)**2);
-    b += 0.26*Math.max(0,1-((nx+0.52)/0.22)**2-((ny-0.06)/0.18)**2);
-    b += 0.26*Math.max(0,1-((nx-0.52)/0.22)**2-((ny-0.06)/0.18)**2);
-    b += 0.22*Math.max(0,1-(nx/0.24)**2-((ny-0.42)/0.05)**2);
-    b += 0.28*Math.max(0,1-(nx/0.26)**2-((ny-0.52)/0.07)**2);
-    b -= 0.16*Math.max(0,1-(nx/0.22)**2-((ny-0.46)/0.025)**2);
-    b += 0.16*Math.max(0,1-(nx/0.16)**2-((ny-0.76)/0.09)**2);
-    b -= 0.24*Math.max(0,1-((nx+0.72)/0.18)**2-((ny+0.05)/0.32)**2);
-    b -= 0.24*Math.max(0,1-((nx-0.72)/0.18)**2-((ny+0.05)/0.32)**2);
-    if(ny < -0.65) b = Math.max(0.12, b - (-0.65-ny)*2.5);
-    return Math.max(0.12, Math.min(1, b));
-  }
-
   if(pageMatrixRaf){ cancelAnimationFrame(pageMatrixRaf); }
-
-  const faceGrid = Array.from({length:fCOLS}, ()=>Array.from({length:fROWS}, ()=>CHARS[Math.floor(Math.random()*CHARS.length)]));
-  let tick = 0;
-  let mAmp = 0; // smoothed mouth-open value, drives head-bob
+  let tick = 0, mAmp = 0;
 
   function frame(){
     pageMatrixRaf = requestAnimationFrame(frame);
@@ -4525,52 +4469,23 @@ async function startPageMatrix(){
     ctx.fillStyle='rgba(0,0,0,0.14)';
     ctx.fillRect(0,0,W,H);
 
-    // Smooth toward the current speech target and compute speaking motion
+    // Smooth mouth amplitude and animate the photo
     mAmp += ((window.aiMouthTarget||0) - mAmp) * 0.10;
-    const faceOX = mAmp * Math.sin(tick * 0.12) * 2.5;
-    const faceOY = mAmp * Math.sin(tick * 0.18) * 3.5;
-    const cx = FCX + faceOX, cy = FCY + faceOY;
-
-    // ── FACE LAYER — all Matrix green, drawn on top of rain ──
-    if(window.aiCallActive){
-      const grd = ctx.createRadialGradient(cx, cy, FRX*0.3, cx, cy, FRX*1.8);
-      grd.addColorStop(0,   'rgba(0,60,10,0.14)');
-      grd.addColorStop(0.55,'rgba(0,30,5,0.06)');
-      grd.addColorStop(1,   'rgba(0,0,0,0)');
-      ctx.fillStyle = grd;
-      ctx.fillRect(cx-FRX*2.2, cy-FRY*2.0, FRX*4.4, FRY*4.0);
-
-      if(tick % 4 === 0){
-        for(let i=0;i<fCOLS;i++) for(let r=0;r<fROWS;r++) if(Math.random()<0.18) faceGrid[i][r]=CHARS[Math.floor(Math.random()*CHARS.length)];
-      }
-
-      for(let i=0;i<fCOLS;i++){
-        const x=i*FCW+FCW/2;
-        for(let r=0;r<fROWS;r++){
-          const y=r*FCH+FCH/2;
-          const d=faceD(x,y,faceOX,faceOY);
-          if(d<0) continue;
-          const inM = mAmp>0.1 && ((x-cx)/(FRX*0.26))**2+((y-cy-FRY*0.45)/(FRY*0.09))**2 < 1;
-          ctx.font = 'bold 7px monospace';
-          if(inM && mAmp>0.15){
-            ctx.fillStyle=`rgba(255,220,30,${(0.55+d*0.45).toFixed(2)})`;
-          } else if(d>0.88){
-            ctx.fillStyle=`rgba(200,255,200,${(0.92).toFixed(2)})`;
-          } else if(d>0.68){
-            ctx.fillStyle=`rgba(0,240,60,${(0.75+d*0.20).toFixed(2)})`;
-          } else if(d>0.45){
-            ctx.fillStyle=`rgba(0,190,40,${(0.60+d*0.28).toFixed(2)})`;
-          } else if(d>0.25){
-            ctx.fillStyle=`rgba(0,120,20,${(0.45+d*0.30).toFixed(2)})`;
-          } else {
-            ctx.fillStyle=`rgba(0,70,10,${(0.32+d*0.30).toFixed(2)})`;
-          }
-          ctx.fillText(faceGrid[i][r], x-3, y+3);
-        }
+    if(faceWrap){
+      const bobX = mAmp * Math.sin(tick * 0.12) * 4;
+      const bobY = mAmp * Math.sin(tick * 0.17) * 6;
+      const sc   = 1 + mAmp * 0.025;
+      faceWrap.style.transform = `translate(calc(-50% + ${bobX.toFixed(2)}px), calc(-50% + ${bobY.toFixed(2)}px)) scale(${sc.toFixed(4)})`;
+      const faceImg = document.getElementById('aiCallerFaceImg');
+      if(faceImg){
+        const glow = mAmp > 0.1
+          ? `0 0 ${Math.round(36+mAmp*30)}px rgba(0,255,136,${(0.45+mAmp*0.35).toFixed(2)}),0 0 ${Math.round(72+mAmp*50)}px rgba(0,255,136,${(0.18+mAmp*0.18).toFixed(2)})`
+          : '0 0 36px rgba(0,255,136,0.45),0 0 72px rgba(0,255,136,0.18)';
+        faceImg.style.boxShadow = glow;
       }
     }
 
-    // ── FALLING RAIN — flows through everything including face ──
+    // ── Falling rain ──
     for(let i=0;i<COLS;i++){
       const x=i*CW+CW/2, y=drops[i];
       if(y>=0&&y<=H){
@@ -4604,6 +4519,11 @@ function stopPageMatrix(){
     cv.style.opacity='0';
     cv.style.pointerEvents='none';
     setTimeout(()=>{ if(cv.parentNode) cv.parentNode.removeChild(cv); },1300);
+  }
+  const fw=document.getElementById('aiCallerFaceWrap');
+  if(fw){
+    fw.style.opacity='0';
+    setTimeout(()=>{ if(fw.parentNode) fw.parentNode.removeChild(fw); },1300);
   }
 }
 
