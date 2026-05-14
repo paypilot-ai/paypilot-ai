@@ -2393,34 +2393,12 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
           </div>
 
           <!-- Plan cards -->
-          <div class="billing-grid" style="align-items:stretch;">
+          <div style="max-width:480px;margin:0 auto;">
 
-            <!-- STARTER -->
-            <div style="background:#fff;border-radius:24px;padding:32px;border:1.5px solid #e0eaff;box-shadow:0 4px 24px rgba(13,27,46,.08);display:flex;flex-direction:column;position:relative;overflow:hidden;transition:all .22s ease;">
-              <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#93c5fd,#bfdbfe);"></div>
-              <div style="font-family:'Sora',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:16px;">Starter</div>
-              <div style="display:flex;align-items:flex-end;gap:6px;margin-bottom:6px;">
-                <span style="font-family:'Sora',sans-serif;font-size:58px;font-weight:900;letter-spacing:-.06em;color:var(--text);line-height:1;">$99</span>
-                <span style="font-size:15px;color:var(--muted);font-weight:500;margin-bottom:12px;">/month</span>
-              </div>
-              <div style="font-size:12px;font-weight:700;color:#3b82f6;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:20px;width:fit-content;">Up to 5 users</div>
-              <ul style="padding-left:0;list-style:none;margin:0 0 28px;flex:1;">
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#22c55e;font-size:16px;">✓</span> AI objection responses</li>
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#22c55e;font-size:16px;">✓</span> Script library access</li>
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#22c55e;font-size:16px;">✓</span> Fast response generation</li>
-                <li style="padding:8px 0;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#22c55e;font-size:16px;">✓</span> Email support</li>
-              </ul>
-              <button class="app-btn blue" onclick="fakeStripe('Starter',99)" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px;">Subscribe — $99/mo</button>
-              <button class="app-btn line" onclick="enterPlanDemo('starter')" style="width:100%;padding:12px;font-size:13px;">Preview Demo</button>
-            </div>
-
-            <!-- PRO — featured -->
-            <div style="background:linear-gradient(145deg,#07101f,#0d1e38,#0f2240);border-radius:24px;padding:32px;border:1.5px solid rgba(26,111,255,.40);box-shadow:0 8px 48px rgba(26,111,255,.28),0 0 0 1px rgba(26,111,255,.12);display:flex;flex-direction:column;position:relative;overflow:hidden;transform:scale(1.03);">
+            <!-- PRO -->
+            <div style="background:linear-gradient(145deg,#07101f,#0d1e38,#0f2240);border-radius:24px;padding:32px;border:1.5px solid rgba(26,111,255,.40);box-shadow:0 8px 48px rgba(26,111,255,.28),0 0 0 1px rgba(26,111,255,.12);display:flex;flex-direction:column;position:relative;overflow:hidden;">
               <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#0f5fe8,#1a6fff,#00d4ff);"></div>
               <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(26,111,255,.28),transparent 70%);pointer-events:none;"></div>
-              <div style="position:absolute;bottom:-30px;left:-20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.14),transparent 70%);pointer-events:none;"></div>
-              <!-- Most popular badge -->
-              <div style="position:absolute;top:20px;right:20px;background:linear-gradient(135deg,#0f5fe8,#1a6fff);color:#fff;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;padding:5px 12px;border-radius:999px;box-shadow:0 4px 14px rgba(26,111,255,.50);">Most Popular</div>
               <div style="font-family:'Sora',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.50);margin-bottom:16px;">Pro</div>
               <div style="display:flex;align-items:flex-end;gap:6px;margin-bottom:6px;">
                 <span style="font-family:'Sora',sans-serif;font-size:58px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;">$399</span>
@@ -2428,6 +2406,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               </div>
               <div style="font-size:12px;font-weight:700;color:var(--blue-3);background:rgba(26,111,255,.18);border:1px solid rgba(26,111,255,.30);border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:20px;width:fit-content;">Up to 25 users</div>
               <ul style="padding-left:0;list-style:none;margin:0 0 28px;flex:1;position:relative;z-index:1;">
+                <li style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.80);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:var(--cyan);font-size:16px;">✓</span> AI Auto-Caller (100 dials/mo)</li>
                 <li style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.80);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:var(--cyan);font-size:16px;">✓</span> Live AI during calls</li>
                 <li style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.80);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:var(--cyan);font-size:16px;">✓</span> Stronger objection rebuttals</li>
                 <li style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.80);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:var(--cyan);font-size:16px;">✓</span> Live mic transcription</li>
@@ -2436,24 +2415,6 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               </ul>
               <button onclick="fakeStripe('Pro',399)" style="width:100%;padding:15px;font-size:15px;font-weight:800;border:none;cursor:pointer;border-radius:12px;margin-bottom:10px;background:linear-gradient(135deg,#0f5fe8,#1a6fff,#4d94ff);color:#fff;box-shadow:0 8px 28px rgba(26,111,255,.50),inset 0 1px 0 rgba(255,255,255,.18);transition:all .18s;letter-spacing:-.01em;position:relative;z-index:1;">Subscribe — $399/mo</button>
               <button class="app-btn line" onclick="enterPlanDemo('pro')" style="width:100%;padding:12px;font-size:13px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.70);border:1px solid rgba(255,255,255,.14);position:relative;z-index:1;">Preview Demo</button>
-            </div>
-
-            <!-- ENTERPRISE -->
-            <div style="background:#fff;border-radius:24px;padding:32px;border:1.5px solid #e0eaff;box-shadow:0 4px 24px rgba(13,27,46,.08);display:flex;flex-direction:column;position:relative;overflow:hidden;transition:all .22s ease;">
-              <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#fcd34d,#f0c040);"></div>
-              <div style="font-family:'Sora',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:16px;">Enterprise</div>
-              <div style="display:flex;align-items:flex-end;gap:6px;margin-bottom:6px;">
-                <span style="font-family:'Sora',sans-serif;font-size:44px;font-weight:900;letter-spacing:-.04em;color:var(--text);line-height:1;">Custom</span>
-              </div>
-              <div style="font-size:12px;font-weight:700;color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:20px;width:fit-content;">25+ users</div>
-              <ul style="padding-left:0;list-style:none;margin:0 0 28px;flex:1;">
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#f59e0b;font-size:16px;">✓</span> Everything in Pro</li>
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#f59e0b;font-size:16px;">✓</span> Live call integration</li>
-                <li style="padding:8px 0;border-bottom:1px solid #f0f4f8;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#f59e0b;font-size:16px;">✓</span> AI trained on your scripts</li>
-                <li style="padding:8px 0;color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:10px;"><span style="color:#f59e0b;font-size:16px;">✓</span> Dedicated support</li>
-              </ul>
-              <button class="app-btn blue" onclick="fakeStripe('Enterprise',0)" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px;">Contact Sales</button>
-              <button class="app-btn line" onclick="enterPlanDemo('enterprise')" style="width:100%;padding:12px;font-size:13px;">Preview Demo</button>
             </div>
 
           </div>
@@ -2943,19 +2904,8 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
     </div>
 
     <div class="price-note" id="pricingText">
-      <strong>Pro</strong> is the best fit for most users.
-
-      <br><br>
-
-      It gives you live AI help during calls, better rebuttals, support for multiple languages, and performance tracking so you can see what is working.
-
-      <br><br>
-
-      <strong>Starter</strong> is best if you want a lower-cost version with basic AI help.
-
-      <br><br>
-
-      <strong>Enterprise</strong> is best for teams that want custom setup, deeper integrations, and AI trained on their own process.
+      <strong>Pro — $399/month</strong><br><br>
+      Live AI help during calls, stronger rebuttals, multi-language support, performance analytics, and priority support. Up to 25 users. 100 AI dials/mo included. Call minutes billed at $0.04/min.
     </div>
 
     <div class="tool-row" style="margin-top:18px">
@@ -3355,93 +3305,18 @@ function jumpToAssist(){
 // PRICING MODAL — using CSS class toggle instead of inline style
 // ============================================================
 function showPricing(plan){
-  currentPricingPlan = plan || null;
+  currentPricingPlan = 'pro';
   const text = document.getElementById('pricingText');
-
-  if(!plan){
-    text.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center;">
-        <div style="padding:16px;border:1px solid #e2e8f0;border-radius:12px;">
-          <div style="font-weight:800;font-size:15px;margin-bottom:6px;">Starter</div>
-          <div style="font-size:26px;font-weight:900;color:#1d4ed8;margin-bottom:6px;">$99<span style="font-size:13px;font-weight:500;color:#64748b;">/mo</span></div>
-          <div style="font-size:12px;color:#64748b;margin-bottom:10px;">Up to 5 users</div>
-          <ul style="text-align:left;font-size:12px;color:#475569;padding-left:14px;line-height:1.9;margin:0 0 12px;">
-            <li>25 AI dials/mo</li><li>AI objection responses</li><li>Script library</li><li>Agreement sending</li><li>Email support</li>
-          </ul>
-          <button class="app-btn line" onclick="enterPlanDemo('starter');hidePricing();" style="width:100%;font-size:12px;padding:8px;">Preview Demo</button>
-        </div>
-        <div style="padding:16px;border:2px solid #1a6fff;border-radius:12px;background:linear-gradient(160deg,#f0f5ff,#fff);">
-          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#1a6fff;margin-bottom:4px;">Most Popular</div>
-          <div style="font-weight:800;font-size:15px;margin-bottom:6px;">Pro</div>
-          <div style="font-size:26px;font-weight:900;color:#1d4ed8;margin-bottom:6px;">$399<span style="font-size:13px;font-weight:500;color:#64748b;">/mo</span></div>
-          <div style="font-size:12px;color:#64748b;margin-bottom:10px;">Up to 20 users</div>
-          <ul style="text-align:left;font-size:12px;color:#475569;padding-left:14px;line-height:1.9;margin:0 0 12px;">
-            <li>100 AI dials/mo</li><li>Live AI assist</li><li>Multi-language support</li><li>Performance analytics</li><li>Priority support</li>
-          </ul>
-          <button class="app-btn blue" onclick="enterPlanDemo('pro');hidePricing();" style="width:100%;font-size:12px;padding:8px;">Preview Demo</button>
-        </div>
-        <div style="padding:16px;border:1px solid #e2e8f0;border-radius:12px;">
-          <div style="font-weight:800;font-size:15px;margin-bottom:6px;">Enterprise</div>
-          <div style="font-size:26px;font-weight:900;color:#1d4ed8;margin-bottom:6px;">Custom</div>
-          <div style="font-size:12px;color:#64748b;margin-bottom:10px;">Unlimited users</div>
-          <ul style="text-align:left;font-size:12px;color:#475569;padding-left:14px;line-height:1.9;margin:0 0 12px;">
-            <li>Unlimited AI dials</li><li>AI trained on your scripts</li><li>CRM integrations</li><li>Team onboarding</li><li>Dedicated support</li>
-          </ul>
-          <button class="app-btn line" onclick="enterPlanDemo('enterprise');hidePricing();" style="width:100%;font-size:12px;padding:8px;">Preview Demo</button>
-        </div>
-      </div>
-      <div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:10px;">Call minutes billed at $0.04/min · Additional AI dials $0.10/call</div>
-    `;
-    document.getElementById('pricingModal').classList.add('open');
-    document.body.classList.add('modal-open');
-    return;
-  }
-
-  if(currentPricingPlan === 'starter'){
-    text.innerHTML = `
-      <strong>Starter — $99/month</strong><br><br>
-      Best for solo reps or small teams that want simple AI help without paying for the full platform.<br><br>
-      You get:<br>
-      • AI-generated objection responses<br>
-      • Script library access<br>
-      • Fast response generation<br>
-      • Email support<br><br>
-      Demo includes:<br>
-      • Simplified dashboard<br>
-      • Core AI response demo<br>
-      • Basic analytics preview
-    `;
-  } else if(currentPricingPlan === 'enterprise'){
-    text.innerHTML = `
-      <strong>Enterprise — Custom Pricing</strong><br><br>
-      Best for larger teams that want PayPilot built around their exact workflow.<br><br>
-      You get:<br>
-      • AI trained on your scripts<br>
-      • CRM and workflow integrations<br>
-      • Team onboarding<br>
-      • Dedicated support<br><br>
-      Demo includes:<br>
-      • Enterprise dashboard view<br>
-      • Rollout and training panel<br>
-      • Enterprise-style analytics
-    `;
-  } else {
-    text.innerHTML = `
-      <strong>Pro — $399/month</strong><br><br>
-      This is the best option for most users.<br><br>
-      You get:<br>
-      • Live AI help during calls<br>
-      • Better rebuttals for objections<br>
-      • Multi-language response support<br>
-      • Performance analytics<br>
-      • Priority support<br><br>
-      Demo includes:<br>
-      • Full upgraded workspace<br>
-      • Live assist view<br>
-      • Full analytics layout
-    `;
-  }
-
+  text.innerHTML = `
+    <strong>Pro — $399/month</strong><br><br>
+    The complete platform for sales teams. Live AI help during calls, stronger rebuttals, multi-language support, performance analytics, and priority support.<br><br>
+    • AI Auto-Caller (100 dials/mo included)<br>
+    • Live AI assist during calls<br>
+    • Multi-language response support<br>
+    • Performance and usage analytics<br>
+    • Up to 25 users · Priority support<br><br>
+    <span style="color:#94a3b8;font-size:12px;">Call minutes $0.04/min · Additional AI dials $0.10/call</span>
+  `;
   document.getElementById('pricingModal').classList.add('open');
   document.body.classList.add('modal-open');
 }
