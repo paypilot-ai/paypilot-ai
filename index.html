@@ -1878,6 +1878,19 @@ body.modal-open{overflow:hidden}
             .ai-wave-bar { width:4px; background:#00ff88; border-radius:3px; transition:height .09s ease; }
           </style>
           <div style="max-width:560px; margin:0 auto; padding:32px 0;">
+
+            <!-- AI Avatar face — always visible, animates during call -->
+            <div style="text-align:center;margin-bottom:28px;">
+              <div id="aiAvatarInner" style="position:relative;display:inline-block;will-change:transform;">
+                <img id="aiCallerFaceImg"
+                  src="/240_F_790682991_iBTGcSFOXSkIm6eJN8PBli4wyG8iHYG4.jpg"
+                  style="width:min(340px,72vw);height:auto;display:block;
+                  box-shadow:0 0 32px rgba(0,255,136,0.18),0 0 64px rgba(0,255,136,0.07);" />
+                <canvas id="aiCallerMouthCv"
+                  style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;"></canvas>
+              </div>
+            </div>
+
             <div style="margin-bottom:28px;">
               <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#6b7fa3;margin-bottom:8px;">Enterprise Feature</div>
               <h2 style="margin:0 0 8px;font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:#0f172a;">AI Auto-Caller</h2>
@@ -3294,6 +3307,9 @@ function showPage(id, el){
     guide:'How to Use'
   })[id] || id;
 
+  // Start/stop face animation when entering/leaving AI Caller
+  if(id === 'aicaller') startFaceLoop(); else stopFaceLoop();
+
   // Hide Live pill on AI Caller page (it's about outbound, not live assist)
   const lp2 = document.getElementById('livePill');
   if(lp2) lp2.style.display = (id === 'aicaller') ? 'none' : '';
@@ -4246,6 +4262,85 @@ async function endTwilioCall(){
   }
 }
 
+// ── AI Avatar face animation ────────────────────────────────────
+let faceLoopRaf = null;
+
+function drawMouth(mc, amp){
+  if(!mc || mc.width === 0) return;
+  const mctx = mc.getContext('2d');
+  mctx.clearRect(0, 0, mc.width, mc.height);
+  if(amp < 0.03) return;
+
+  // Mouth at ~50% wide, ~66% tall in the image
+  const mx   = mc.width  * 0.50;
+  const my   = mc.height * 0.665;
+  const mHW  = mc.width  * 0.115;
+  const open = amp * mc.height * 0.052;
+
+  const lip  = `rgba(210,165,148,${Math.min(0.92, amp * 1.1).toFixed(2)})`;
+  const dark = `rgba(28,6,6,${Math.min(0.88, amp).toFixed(2)})`;
+
+  // Upper lip
+  mctx.beginPath();
+  mctx.moveTo(mx - mHW, my);
+  mctx.bezierCurveTo(mx - mHW*0.45, my - open*0.7,  mx + mHW*0.45, my - open*0.7,  mx + mHW, my);
+  mctx.bezierCurveTo(mx + mHW*0.45, my + open*0.25, mx - mHW*0.45, my + open*0.25, mx - mHW, my);
+  mctx.fillStyle = lip; mctx.fill();
+
+  // Lower lip
+  mctx.beginPath();
+  mctx.moveTo(mx - mHW, my);
+  mctx.bezierCurveTo(mx - mHW*0.45, my + open*1.6,  mx + mHW*0.45, my + open*1.6,  mx + mHW, my);
+  mctx.bezierCurveTo(mx + mHW*0.45, my + open*0.3,  mx - mHW*0.45, my + open*0.3,  mx - mHW, my);
+  mctx.fillStyle = lip; mctx.fill();
+
+  // Dark gap
+  if(open > 1.5){
+    mctx.beginPath();
+    mctx.ellipse(mx, my + open*0.45, mHW*0.68, open*0.52, 0, 0, Math.PI*2);
+    mctx.fillStyle = dark; mctx.fill();
+  }
+}
+
+function startFaceLoop(){
+  if(faceLoopRaf) return;
+  const fi = document.getElementById('aiCallerFaceImg');
+  const mc = document.getElementById('aiCallerMouthCv');
+  const ai = document.getElementById('aiAvatarInner');
+  if(!fi || !mc || !ai) return;
+
+  const syncSize = () => {
+    if(fi.offsetWidth > 0){ mc.width = fi.offsetWidth; mc.height = fi.offsetHeight; }
+  };
+  if(fi.complete && fi.naturalWidth) syncSize(); else fi.onload = syncSize;
+
+  let tick = 0, mAmp = 0;
+  function loop(){
+    faceLoopRaf = requestAnimationFrame(loop);
+    tick++;
+    mAmp += ((window.aiMouthTarget||0) - mAmp) * 0.10;
+    if(mc.width !== fi.offsetWidth && fi.offsetWidth > 0) syncSize();
+
+    // Head bob while speaking
+    const bx = mAmp * Math.sin(tick * 0.11) * 3;
+    const by = mAmp * Math.sin(tick * 0.16) * 5;
+    ai.style.transform = `translate(${bx.toFixed(2)}px,${by.toFixed(2)}px)`;
+
+    fi.style.boxShadow = `0 0 ${Math.round(32+mAmp*28)}px rgba(0,255,136,${(0.18+mAmp*0.30).toFixed(2)}),0 0 ${Math.round(64+mAmp*48)}px rgba(0,255,136,${(0.07+mAmp*0.14).toFixed(2)})`;
+
+    drawMouth(mc, mAmp);
+  }
+  loop();
+}
+
+function stopFaceLoop(){
+  if(faceLoopRaf){ cancelAnimationFrame(faceLoopRaf); faceLoopRaf = null; }
+  const ai = document.getElementById('aiAvatarInner');
+  if(ai) ai.style.transform = '';
+  const mc = document.getElementById('aiCallerMouthCv');
+  if(mc){ const c = mc.getContext('2d'); if(c) c.clearRect(0,0,mc.width,mc.height); }
+}
+
 // ── AI Auto-Caller ──────────────────────────────────────────────
 let activeAiCallSid = null;
 let aiCallPollInterval = null;
@@ -4424,6 +4519,7 @@ function stopMatrixAnimation(){
 // ── FULL-PAGE MATRIX OVERLAY ────────────────────────────────────
 let pageMatrixRaf = null;
 function startPageMatrix(){
+  // ── Matrix rain canvas (background) ────────────────────────────
   let cv = document.getElementById('pageMatrixCanvas');
   if(!cv){
     cv = document.createElement('canvas');
@@ -4435,7 +4531,7 @@ function startPageMatrix(){
   cv.height = window.innerHeight;
   const ctx = cv.getContext('2d');
   if(!ctx) return;
-  requestAnimationFrame(() => cv.style.opacity = '0.96');
+  requestAnimationFrame(() => cv.style.opacity = '0.88');
 
   const W=cv.width, H=cv.height;
   const CW=13, COLS=Math.ceil(W/CW);
@@ -4444,72 +4540,7 @@ function startPageMatrix(){
   const speeds= Array.from({length:COLS},()=>2+Math.random()*5);
   const trails= Array.from({length:COLS},()=>[]);
 
-  // Face — large, centered portrait
-  const FCX=W/2, FCY=H*0.38;
-  const FRX=Math.min(W*0.30,200), FRY=Math.min(H*0.38,240);
-  // Fine 7px grid for face — ~57 chars across so features are clearly visible
-  const FCW=7, FCH=8;
-  const fCOLS=Math.ceil(W/FCW), fROWS=Math.ceil(H/FCH);
-
-  // Returns -1 (outside oval, skip) or 0.12..1.0 brightness
-  // NO black zones — everything stays green, shadows are just dim
-  function faceD(x,y){
-    const nx=(x-FCX)/FRX, ny=(y-FCY)/FRY;
-    const chinN = ny>0.10 ? (ny-0.10)*0.22 : 0;
-    if(nx*nx*(1+chinN)+ny*ny > 1.05) return -1;
-
-    // ── IRISES — the dominant feature, very bright ──
-    const lIris = ((nx+0.36)/0.14)**2 + ((ny+0.18)/0.12)**2;
-    const rIris = ((nx-0.36)/0.14)**2 + ((ny+0.18)/0.12)**2;
-    if(lIris < 1 || rIris < 1){
-      // Pupil center — dim but NOT black, keeps green
-      const lPup = ((nx+0.36)/0.06)**2 + ((ny+0.18)/0.06)**2;
-      const rPup = ((nx-0.36)/0.06)**2 + ((ny+0.18)/0.06)**2;
-      if(lPup < 1 || rPup < 1) return 0.30;
-      return 0.95; // bright glowing iris
-    }
-
-    // ── BASE brightness — center brighter, edges dim ──
-    let b = 0.28 + 0.38*(1 - Math.sqrt(nx*nx+ny*ny)*0.75);
-
-    // Forehead
-    b += 0.20*Math.max(0,1-(nx/0.45)**2-((ny+0.62)/0.26)**2);
-    // Brow bone (slight ridge)
-    b += 0.12*Math.max(0,1-(nx/0.52)**2-((ny+0.35)/0.06)**2);
-    // Eye socket regions — slightly dimmer to frame the bright eyes
-    b -= 0.18*Math.max(0,1-((nx+0.36)/0.28)**2-((ny+0.20)/0.18)**2);
-    b -= 0.18*Math.max(0,1-((nx-0.36)/0.28)**2-((ny+0.20)/0.18)**2);
-    // Nose bridge
-    b += 0.22*Math.max(0,1-(nx/0.08)**2-((ny-0.05)/0.30)**2);
-    // Nose tip
-    b += 0.16*Math.max(0,1-(nx/0.12)**2-((ny-0.26)/0.08)**2);
-    // Nose sides dim
-    b -= 0.14*Math.max(0,1-((nx+0.18)/0.09)**2-((ny-0.15)/0.22)**2);
-    b -= 0.14*Math.max(0,1-((nx-0.18)/0.09)**2-((ny-0.15)/0.22)**2);
-    // Cheekbones bright
-    b += 0.26*Math.max(0,1-((nx+0.52)/0.22)**2-((ny-0.06)/0.18)**2);
-    b += 0.26*Math.max(0,1-((nx-0.52)/0.22)**2-((ny-0.06)/0.18)**2);
-    // Upper lip
-    b += 0.22*Math.max(0,1-(nx/0.24)**2-((ny-0.42)/0.05)**2);
-    // Lower lip
-    b += 0.28*Math.max(0,1-(nx/0.26)**2-((ny-0.52)/0.07)**2);
-    // Mouth line dim
-    b -= 0.16*Math.max(0,1-(nx/0.22)**2-((ny-0.46)/0.025)**2);
-    // Chin
-    b += 0.16*Math.max(0,1-(nx/0.16)**2-((ny-0.76)/0.09)**2);
-    // Temple dims
-    b -= 0.24*Math.max(0,1-((nx+0.72)/0.18)**2-((ny+0.05)/0.32)**2);
-    b -= 0.24*Math.max(0,1-((nx-0.72)/0.18)**2-((ny+0.05)/0.32)**2);
-    // Skull top fade
-    if(ny < -0.65) b = Math.max(0.12, b - (-0.65-ny)*2.5);
-
-    return Math.max(0.12, Math.min(1, b));
-  }
-
   if(pageMatrixRaf){ cancelAnimationFrame(pageMatrixRaf); }
-
-  // Fine-resolution face grid (independent of rain grid)
-  const faceGrid = Array.from({length:fCOLS}, ()=>Array.from({length:fROWS}, ()=>CHARS[Math.floor(Math.random()*CHARS.length)]));
   let tick = 0;
 
   function frame(){
@@ -4517,57 +4548,8 @@ function startPageMatrix(){
     tick++;
     ctx.fillStyle='rgba(0,0,0,0.14)';
     ctx.fillRect(0,0,W,H);
-    const mo = window.aiMouthTarget||0;
 
-    // ── FACE LAYER — all Matrix green, drawn on top of rain ──
-    if(window.aiCallActive){
-      // Subtle green glow behind face (same color as rain so it blends)
-      const grd = ctx.createRadialGradient(FCX, FCY, FRX*0.3, FCX, FCY, FRX*1.8);
-      grd.addColorStop(0,   'rgba(0,60,10,0.14)');
-      grd.addColorStop(0.55,'rgba(0,30,5,0.06)');
-      grd.addColorStop(1,   'rgba(0,0,0,0)');
-      ctx.fillStyle = grd;
-      ctx.fillRect(FCX-FRX*2.2, FCY-FRY*2.0, FRX*4.4, FRY*4.0);
-
-      // Refresh face chars every 4 frames
-      if(tick % 4 === 0){
-        for(let i=0;i<fCOLS;i++) for(let r=0;r<fROWS;r++) if(Math.random()<0.18) faceGrid[i][r]=CHARS[Math.floor(Math.random()*CHARS.length)];
-      }
-
-      // Fine 7px grid — face IS the Matrix code, just brighter in feature areas
-      for(let i=0;i<fCOLS;i++){
-        const x=i*FCW+FCW/2;
-        for(let r=0;r<fROWS;r++){
-          const y=r*FCH+FCH/2;
-          const d=faceD(x,y);
-          if(d<0) continue; // outside oval — rain handles those pixels
-          const inM = mo>0.1 && ((x-FCX)/(FRX*0.26))**2+((y-FCY-FRY*0.45)/(FRY*0.09))**2 < 1;
-          ctx.font = 'bold 7px monospace';
-          if(inM && mo>0.15){
-            // Speaking — mouth glows yellow
-            ctx.fillStyle=`rgba(255,220,30,${(0.55+d*0.45).toFixed(2)})`;
-          } else if(d>0.88){
-            // Eyes / peak highlights — near white green (same as rain head)
-            ctx.fillStyle=`rgba(200,255,200,${(0.92).toFixed(2)})`;
-          } else if(d>0.68){
-            // Cheeks, forehead, nose — bright green
-            ctx.fillStyle=`rgba(0,240,60,${(0.75+d*0.20).toFixed(2)})`;
-          } else if(d>0.45){
-            // General face — standard Matrix green
-            ctx.fillStyle=`rgba(0,190,40,${(0.60+d*0.28).toFixed(2)})`;
-          } else if(d>0.25){
-            // Shadows — dim green
-            ctx.fillStyle=`rgba(0,120,20,${(0.45+d*0.30).toFixed(2)})`;
-          } else {
-            // Edge/temple — very dim
-            ctx.fillStyle=`rgba(0,70,10,${(0.32+d*0.30).toFixed(2)})`;
-          }
-          ctx.fillText(faceGrid[i][r], x-3, y+3);
-        }
-      }
-    }
-
-    // ── FALLING RAIN — flows through everything including face ──
+    // ── Falling rain ──
     for(let i=0;i<COLS;i++){
       const x=i*CW+CW/2, y=drops[i];
       if(y>=0&&y<=H){
@@ -4601,6 +4583,11 @@ function stopPageMatrix(){
     cv.style.opacity='0';
     cv.style.pointerEvents='none';
     setTimeout(()=>{ if(cv.parentNode) cv.parentNode.removeChild(cv); },1300);
+  }
+  const fw=document.getElementById('aiCallerFaceWrap');
+  if(fw){
+    fw.style.opacity='0';
+    setTimeout(()=>{ if(fw.parentNode) fw.parentNode.removeChild(fw); },1300);
   }
 }
 
