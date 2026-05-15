@@ -1,18 +1,16 @@
-const OPENAI_KEY = (process.env.OPENAI_API_KEY || '').trim().replace(/^=+/, '');
+export const config = { runtime: 'edge' };
 
-// Safe XML escape for plain <Say> text
+const VOICE = 'Polly.Ruth-Neural';
+
 function xml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function sayTwiml(text) {
-  return `<Say voice="Polly.Ruth-Neural">${xml(text)}</Say>`;
+  return `<Say voice="${VOICE}">${xml(text)}</Say>`;
 }
-
+function b64enc(obj) {
+  return btoa(JSON.stringify(obj)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
 function gatherTwiml(say, historyB64, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -23,52 +21,38 @@ function gatherTwiml(say, historyB64, n, r, c) {
 </Response>`;
 }
 
-async function ask(messages) {
-  const r = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_KEY}` },
-    body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 40, temperature: 0.85 })
-  });
-  const d = await r.json();
-  return d.choices?.[0]?.message?.content?.trim() || '';
-}
+export default async function handler(req) {
+  const url = new URL(req.url);
+  const n = url.searchParams.get('n') || '';
+  const r = url.searchParams.get('r') || '';
+  const c = url.searchParams.get('c') || '';
 
-const fs = require('fs');
-function logSpeech(callSid, text) {
-  if (!callSid) return;
-  try { fs.writeFileSync(`/tmp/speech_${callSid.replace(/[^A-Za-z0-9]/g,'')}.json`, JSON.stringify({ text, ts: Date.now() })); } catch(e) {}
-}
-
-module.exports = async function handler(req, res) {
-  res.setHeader('Content-Type', 'text/xml');
-  const n       = req.query?.n || '';
-  const r       = req.query?.r || '';
-  const c       = req.query?.c || '';
-  const callSid = req.body?.CallSid || '';
-  const company = c || 'our company';
-
-  // Opening line just asks for the customer — no pitch yet
+  const apiKey = process.env.OPENAI_API_KEY;
   const greetingPrompt = n
-    ? `Write a single short sentence asking if ${n} is available. Start with "Hi," — do NOT introduce yourself or pitch anything. Just ask for ${n} by name. Under 10 words.`
-    : `Write a single short sentence asking who you're speaking with. Start with "Hi," — do NOT introduce yourself or pitch anything. Under 10 words.`;
+    ? `Ask if ${n} is available. Start with "Hi," — just ask for them by name. Under 10 words.`
+    : `Ask who you're speaking with. Start with "Hi," — under 10 words.`;
 
   try {
-    const greeting = await ask([
-      {
-        role: 'system',
-        content: `You are placing a phone call. Write ONLY the spoken words — no quotes, no labels. Natural American English.`
-      },
-      { role: 'user', content: greetingPrompt }
-    ]);
-
-    logSpeech(callSid, greeting);
-    const history = Buffer.from(JSON.stringify([{ role: 'assistant', content: greeting }])).toString('base64url');
-    res.status(200).send(gatherTwiml(greeting, history, n, r, c));
-  } catch (e) {
-    const fallback = n
-      ? `Hi, is ${n} available?`
-      : `Hi there, who am I speaking with?`;
-    const history = Buffer.from(JSON.stringify([{ role: 'assistant', content: fallback }])).toString('base64url');
-    res.status(200).send(gatherTwiml(fallback, history, n, r, c));
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        max_tokens: 30,
+        temperature: 0.7,
+        messages: [
+          { role: 'system', content: 'Write only the spoken words. No quotes, no labels. Natural casual English.' },
+          { role: 'user', content: greetingPrompt }
+        ]
+      })
+    });
+    const d = await resp.json();
+    const greeting = d.choices?.[0]?.message?.content?.trim() || (n ? `Hi, is ${n} available?` : 'Hi there, who am I speaking with?');
+    const history = b64enc([{ role: 'assistant', content: greeting }]);
+    return new Response(gatherTwiml(greeting, history, n, r, c), { headers: { 'Content-Type': 'text/xml' } });
+  } catch {
+    const fallback = n ? `Hi, is ${n} available?` : 'Hi there, who am I speaking with?';
+    const history = b64enc([{ role: 'assistant', content: fallback }]);
+    return new Response(gatherTwiml(fallback, history, n, r, c), { headers: { 'Content-Type': 'text/xml' } });
   }
-};
+}
