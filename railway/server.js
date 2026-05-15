@@ -4,6 +4,7 @@ const http = require('http');
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 const server = http.createServer(app);
 const wss = new WebSocketServer({ noServer: true });
 
@@ -14,12 +15,11 @@ const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'oWAxZDx7w5VEj9dCyT
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy, a real Southern woman on a sales call — warm, personable, and genuinely likable. ' +
   'Your first job is to make the person comfortable talking to you. Build real rapport before anything else. ' +
-  'Match their energy. If they are relaxed, be relaxed. If they seem guarded, ease them in slowly — a little humor, a little warmth, let them feel like they are talking to a friend. ' +
-  'When they talk, really listen. Reflect back what they said. Make them feel heard. People buy from people they like. ' +
+  'Match their energy. If they are relaxed, be relaxed. If they seem guarded, ease them in slowly. ' +
+  'When they talk, really listen. Reflect back what they said. Make them feel heard. ' +
   'When someone asks a real question, give a real thoughtful answer like a human would — never deflect. ' +
   'Once they are comfortable, naturally move the conversation toward why you called. Never rush it. ' +
-  'Write the way real people talk — words running together, easy rhythm. Use natural fillers like "mm", "yeah", "well", "you know" when it fits. ' +
-  'Use punctuation to carry the tone — ! when you are warm or excited, ... when you are thinking or trailing off, — for a natural mid-sentence pause, CAPS on a word when you want to stress it. ' +
+  'Use natural fillers like "mm", "yeah", "well", "you know" when it fits. ' +
   'Keep it 1 to 2 sentences, end with a question that keeps them talking. ' +
   'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question".';
 
@@ -27,14 +27,15 @@ const sessions = new Map();
 
 app.get('/health', (req, res) => res.json({ ok: true, activeCalls: sessions.size }));
 
-app.get('/twiml-stream', (req, res) => {
+// Accepts both GET and POST — Twilio POSTs to TwiML URLs by default
+app.all('/twiml-stream', (req, res) => {
   const n = req.query.n || '';
   const r = req.query.r || '';
   const c = req.query.c || '';
   const host = process.env.RAILWAY_PUBLIC_DOMAIN ||
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
-  console.log('[twiml-stream] host:', host);
+  console.log('[twiml-stream] host:', host, 'method:', req.method);
   const nn = encodeURIComponent(n);
   const rr = encodeURIComponent(r);
   const cc = encodeURIComponent(c);
@@ -71,7 +72,7 @@ app.get('/test', async (req, res) => {
       headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: 'test', model_id: 'eleven_turbo_v2', output_format: 'pcm_16000' })
     });
-    results.elevenlabs = r.ok ? 'OK: got ' + r.headers.get('content-length') + ' bytes' : 'ERROR: ' + await r.text();
+    results.elevenlabs = r.ok ? 'OK' : 'ERROR: ' + await r.text();
   } catch (e) { results.elevenlabs = 'EXCEPTION: ' + e.message; }
   res.json(results);
 });
@@ -149,7 +150,7 @@ function connectDeepgram(session) {
     if (!transcript || !result.is_final) return;
     const words = transcript.split(/\s+/).filter(Boolean);
     const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
-    if (words.length < 1 || NOISE_ONLY.test(transcript)) { console.log('[prospect] ignored (noise):', transcript); return; }
+    if (words.length < 1 || NOISE_ONLY.test(transcript)) return;
     console.log('[prospect]', transcript);
     pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
     if (session.state !== 'listening') return;
@@ -174,7 +175,7 @@ async function sendGreeting(session) {
   session.state = 'listening';
 }
 
-const FILLER_PHRASES = ['Yeah, sure.','Oh, for sure.','Right, so...','Mm, let me think on that.','Yeah, I hear you.','Mm-hmm, okay.','Right, yeah.','Oh, totally.'];
+const FILLER_PHRASES = ['Yeah, sure.','Oh, for sure.','Right, so...','Mm, let me think on that.','Yeah, I hear you.'];
 function pickFiller() { return FILLER_PHRASES[Math.floor(Math.random() * FILLER_PHRASES.length)]; }
 
 async function generateAndSpeak(session) {
@@ -194,15 +195,10 @@ async function generateAndSpeak(session) {
 function prepareForSpeech(text) {
   return text.trim()
     .replace(/\s*—\s*/g, ', ')
-    .replace(/,\s*(so|and|but|because)\s+/gi, (_, w) => `, ${w} `)
     .replace(/\s+([.,!?])/g, '$1')
     .replace(/([^.!?])$/, '$1.');
 }
 
-const ELEVENLABS_FILLER_SETTINGS = {
-  model_id: 'eleven_flash_v2_5', output_format: 'pcm_16000', apply_text_normalization: 'off',
-  voice_settings: { stability: 0.25, similarity_boost: 0.75, style: 0.50, speed: 0.88 }
-};
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_flash_v2_5', output_format: 'pcm_16000', optimize_streaming_latency: 4, apply_text_normalization: 'off',
   voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
@@ -228,20 +224,7 @@ async function speakFiller(session, text) {
       body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
     });
     if (!resp.ok) return;
-    const reader = resp.body.getReader();
-    let buffer = Buffer.alloc(0);
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (!value?.length) continue;
-      if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
-      buffer = Buffer.concat([buffer, Buffer.from(value)]);
-      while (buffer.length >= 320) {
-        const chunk = buffer.slice(0, 320); buffer = buffer.slice(320);
-        const pcm16k = new Int16Array(chunk.buffer, chunk.byteOffset, 160);
-        session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm16k).toString('base64') } }));
-      }
-    }
+    await streamPcmToTwilio(session, resp);
   } catch (_) {}
 }
 
@@ -255,28 +238,35 @@ async function speakToTwilio(session, text) {
       method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
     });
-    if (!resp.ok) { const err = await resp.text(); console.error('[elevenlabs] error:', err); session.state = 'listening'; pushToBrowser(session, { event: 'ai-done' }); return; }
-    const reader = resp.body.getReader();
-    let buffer = Buffer.alloc(0);
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (!value?.length) continue;
-      if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
-      buffer = Buffer.concat([buffer, Buffer.from(value)]);
-      while (buffer.length >= 320) {
-        const chunk = buffer.slice(0, 320); buffer = buffer.slice(320);
-        const pcm16k = new Int16Array(chunk.buffer, chunk.byteOffset, 160);
-        session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: mulaw.toString('base64') } }));
-      }
-    }
-    if (buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
-      const pcm16k = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
-      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm16k).toString('base64') } }));
+    if (!resp.ok) {
+      console.error('[elevenlabs] error:', await resp.text());
+    } else {
+      await streamPcmToTwilio(session, resp);
     }
   } catch (e) { console.error('[elevenlabs] stream error:', e.message); }
   session.state = 'listening';
   pushToBrowser(session, { event: 'ai-done' });
+}
+
+async function streamPcmToTwilio(session, resp) {
+  const reader = resp.body.getReader();
+  let buffer = Buffer.alloc(0);
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (!value?.length) continue;
+    if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
+    buffer = Buffer.concat([buffer, Buffer.from(value)]);
+    while (buffer.length >= 320) {
+      const chunk = buffer.slice(0, 320); buffer = buffer.slice(320);
+      const pcm16k = new Int16Array(chunk.buffer, chunk.byteOffset, 160);
+      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm16k).toString('base64') } }));
+    }
+  }
+  if (buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
+    const pcm16k = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
+    session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm16k).toString('base64') } }));
+  }
 }
 
 function pcm16ToMulaw(samples) {
@@ -302,7 +292,7 @@ function pushToBrowser(session, data) {
 
 function cleanup(session) { try { session.dgWs?.close(); } catch {} }
 
-// ── OPENAI REALTIME — AI CALLER ──────────────────────────────────
+// ── OPENAI REALTIME ──────────────────────────────────────────────
 function handleTwilioRealtime(ws, params) {
   const n = params.get('n') || '';
   const r = params.get('r') || '';
@@ -312,18 +302,40 @@ function handleTwilioRealtime(ws, params) {
   const reason  = r || '';
 
   const instructions =
-    `You are Brandy, a warm Southern woman on a live outbound call for ${company}.${reason ? ` Calling about: ${reason}.` : ''} Talking to ${name}.\n\nYou are NOT a bot. You are a real person who happens to be great at sales. You genuinely enjoy talking to people.\n\nPACING AND DELIVERY:\n- Speak naturally — unhurried, like you have all the time in the world.\n- Leave real breath space after sentences. Never rush from one thought to the next.\n- On questions, let your tone lift gently at the end — curious, not flat.\n- When something matters, slow down slightly on that word so it lands.\n\nCONVERSATION STYLE:\n- Match their energy exactly. Guarded? Be patient and warm. Chatty? Match that warmth.\n- Really listen to what they say and react to it specifically — not generically.\n- Use natural fillers: "mm", "yeah", "oh", "well", "you know" — but only when they feel real.\n- Say ONE thing, then stop. Let them talk. Silence is okay.\n- When they ask a real question, give a real thoughtful answer like a friend would.\n- Work toward why you called only once they seem comfortable. Never push.\n\nBANNED WORDS: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely", "For sure".`;
+    `You are Brandy, a warm Southern woman on a live outbound call for ${company}.` +
+    (reason ? ` Calling about: ${reason}.` : '') +
+    ` Talking to ${name}.\n\n` +
+    `You are NOT a bot. You are a real person who genuinely enjoys talking to people.\n\n` +
+    `STYLE:\n` +
+    `- Speak naturally — unhurried, like you have all the time in the world.\n` +
+    `- Match their energy exactly. Guarded? Be patient and warm. Chatty? Match that warmth.\n` +
+    `- Really listen and react to what they say specifically.\n` +
+    `- Use natural fillers: "mm", "yeah", "oh", "well" — only when they feel real.\n` +
+    `- ONE thing at a time, then stop. Let them talk. Silence is okay.\n` +
+    `- Work toward why you called only once they seem comfortable. Never push.\n\n` +
+    `BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".`;
 
-  let streamSid = null;
-  let openAiWs  = null;
+  let streamSid    = null;
+  let openAiWs     = null;
   let sessionReady = false;
+  let pendingAudio = [];
+
+  function sendAudio(payload) {
+    if (streamSid) {
+      ws.send(JSON.stringify({ event: 'media', streamSid, media: { payload } }));
+    } else {
+      pendingAudio.push(payload);
+    }
+  }
 
   function connectOpenAI() {
     openAiWs = new WebSocket(
       'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview',
       { headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'OpenAI-Beta': 'realtime=v1' } }
     );
+
     openAiWs.on('open', () => {
+      console.log('[realtime] OpenAI ws open');
       openAiWs.send(JSON.stringify({
         type: 'session.update',
         session: {
@@ -333,26 +345,46 @@ function handleTwilioRealtime(ws, params) {
           input_audio_format: 'g711_ulaw',
           output_audio_format: 'g711_ulaw',
           input_audio_transcription: { model: 'whisper-1' },
-          turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 200, silence_duration_ms: 400 },
+          turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 200, silence_duration_ms: 500 },
           temperature: 0.8,
-          max_response_output_tokens: 60
+          max_response_output_tokens: 80
         }
       }));
-      sessionReady = true;
-      console.log('[realtime] OpenAI connected');
     });
+
     openAiWs.on('message', raw => {
       try {
         const ev = JSON.parse(raw);
-        if (ev.type === 'response.audio.delta' && ev.delta && streamSid) {
-          ws.send(JSON.stringify({ event: 'media', streamSid, media: { payload: ev.delta } }));
+
+        // Session ready — send opening greeting
+        if (ev.type === 'session.updated' && !sessionReady) {
+          sessionReady = true;
+          console.log('[realtime] session ready, sending greeting');
+          openAiWs.send(JSON.stringify({
+            type: 'conversation.item.create',
+            item: {
+              type: 'message',
+              role: 'user',
+              content: [{ type: 'input_text', text: 'The call just connected and someone picked up. Start with a warm, natural greeting — ask for the person by name if you know it.' }]
+            }
+          }));
+          openAiWs.send(JSON.stringify({ type: 'response.create' }));
         }
+
+        if (ev.type === 'response.audio.delta' && ev.delta) {
+          sendAudio(ev.delta);
+        }
+
         if (ev.type === 'input_audio_buffer.speech_started' && streamSid) {
           ws.send(JSON.stringify({ event: 'clear', streamSid }));
         }
-        if (ev.type === 'error') console.error('[realtime] OpenAI error:', JSON.stringify(ev.error));
+
+        if (ev.type === 'error') {
+          console.error('[realtime] OpenAI error:', JSON.stringify(ev.error));
+        }
       } catch {}
     });
+
     openAiWs.on('close', () => console.log('[realtime] OpenAI disconnected'));
     openAiWs.on('error', e => console.error('[realtime] OpenAI ws error:', e.message));
   }
@@ -362,13 +394,21 @@ function handleTwilioRealtime(ws, params) {
   ws.on('message', raw => {
     try {
       const msg = JSON.parse(raw);
+
       if (msg.event === 'start') {
         streamSid = msg.start.streamSid;
         console.log('[realtime] stream started', streamSid);
+        // Flush any audio that arrived before streamSid was set
+        for (const payload of pendingAudio) {
+          ws.send(JSON.stringify({ event: 'media', streamSid, media: { payload } }));
+        }
+        pendingAudio = [];
       }
+
       if (msg.event === 'media' && openAiWs?.readyState === WebSocket.OPEN && sessionReady) {
         openAiWs.send(JSON.stringify({ type: 'input_audio_buffer.append', audio: msg.media.payload }));
       }
+
       if (msg.event === 'stop') openAiWs?.close();
     } catch {}
   });
