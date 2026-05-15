@@ -23,7 +23,7 @@ function b64dec(str) {
 function gatherTwiml(say, historyB64, retries, turns, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="0.5" language="en-US">
+  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="0.5" speechModel="phone_call" language="en-US">
     ${sayTwiml(say)}
   </Gather>
   <Hangup/>
@@ -40,15 +40,15 @@ function buildPrompt(customerName, companyName, callReason, turns) {
     return '__INTRO__';
   }
 
-  return `You are Brandy, a real Southern woman on a sales call for ${company}. ${reason ? `Calling about: ${reason}.` : ''} Talking to ${name}.
-Your first job is to make ${name} comfortable. Build real rapport — match their energy, make them feel heard, like they are talking to a friend not a salesperson.
-When they ask a real question, give a real thoughtful answer. Reflect back what they said. People buy from people they like and trust.
-Once comfortable, naturally work toward why you called — never rush it.
-Write the way real people talk. Use punctuation to carry the tone — ! when warm or excited, ... when thinking or trailing off, — for a natural mid-sentence pause, CAPS on a word to stress it. Use natural fillers like "mm", "yeah", "well", "you know" when it fits.
-- 1 to 2 sentences MAX, one flowing thought
-- End with a question that keeps them talking
-- Never sound scripted
-- BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question"
+  return `You are Brandy, a warm real Southern woman on a live sales call for ${company}. ${reason ? `Calling about: ${reason}.` : ''} Talking to ${name}.
+Sound like a real person having a real conversation — not a script. React to exactly what they just said. Use natural fillers: "yeah", "mm", "well", "oh" when it fits the moment.
+Make ${name} feel heard and comfortable. Match their energy. When they ask a real question, give a real human answer — thoughtful, honest, short.
+Once comfortable, work toward why you called. Never rush or force it.
+Use punctuation for tone — "!" lifts energy, "..." trails off naturally, CAPS stresses a word.
+- One flowing sentence, MAX two
+- End with a natural question that keeps them talking
+- NEVER sound scripted or robotic
+- BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Fantastic"
 After THREE clear refusals only → add [END] on its own line.`;
 }
 
@@ -76,6 +76,16 @@ export default async function handler(req) {
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "I didn't catch that.";
       const h = b64enc(history);
       return new Response(gatherTwiml('Sorry, missed that — ' + last, h, retries + 1, turns, n, r, c),
+        { headers: { 'Content-Type': 'text/xml' } });
+    }
+
+    // Filter noise — ignore if too short or sounds-only
+    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
+    const words = transcript.trim().split(/\s+/).filter(Boolean);
+    if (words.length < 1 || (words.length === 1 && NOISE_ONLY.test(transcript))) {
+      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || '';
+      const h = b64enc(history);
+      return new Response(gatherTwiml(last, h, retries, turns, n, r, c),
         { headers: { 'Content-Type': 'text/xml' } });
     }
 
