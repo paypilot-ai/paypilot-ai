@@ -19,6 +19,7 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'When someone asks a real question, give a real thoughtful answer like a human would — never deflect. ' +
   'Once they are comfortable, naturally move the conversation toward why you called. Never rush it. ' +
   'Write the way real people talk — words running together, easy rhythm. Use natural fillers like "mm", "yeah", "well", "you know" when it fits. ' +
+  'Use punctuation to carry the tone — ! when you are warm or excited, ... when you are thinking or trailing off, — for a natural mid-sentence pause, CAPS on a word when you want to stress it. ' +
   'Keep it 1 to 2 sentences, end with a question that keeps them talking. ' +
   'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question".';
 
@@ -244,14 +245,14 @@ function prepareForSpeech(text) {
 const ELEVENLABS_FILLER_SETTINGS = {
   model_id: 'eleven_flash_v2_5',
   output_format: 'pcm_16000',
-  voice_settings: { stability: 0.30, similarity_boost: 0.80, style: 0.40, speed: 0.95 }
+  voice_settings: { stability: 0.25, similarity_boost: 0.75, style: 0.50, speed: 0.93 }
 };
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
   output_format: 'pcm_16000',
   optimize_streaming_latency: 2,
-  voice_settings: { stability: 0.20, similarity_boost: 0.80, style: 0.55, use_speaker_boost: true, speed: 0.92 }
+  voice_settings: { stability: 0.15, similarity_boost: 0.75, style: 0.70, use_speaker_boost: true, speed: 0.91 }
 };
 
 async function callOpenAI(messages) {
