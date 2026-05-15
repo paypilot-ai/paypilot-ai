@@ -43,8 +43,8 @@ module.exports = async function handler(req, res) {
     const history  = Buffer.from(JSON.stringify([{ role: 'assistant', content: greeting }])).toString('base64')
       .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 
-    const actionUrl = `https://paypilot-ai.vercel.app/api/ai-respond?h=${history}&retries=0&turns=0`
-      + `&n=${encodeURIComponent(n)}&r=${encodeURIComponent(r)}&c=${encodeURIComponent(c)}`;
+    const actionUrl = `https://paypilot-ai.vercel.app/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0`
+      + `&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
 
     function xmlEsc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${actionUrl}" method="POST" timeout="5" speechTimeout="auto" language="en-US"><Say voice="Polly.Ruth-Neural">${xmlEsc(greeting)}</Say></Gather><Hangup/></Response>`;
