@@ -10,9 +10,10 @@ const wss = new WebSocketServer({ noServer: true });
 const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
+const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'oWAxZDx7w5VEj9dCyTzz'; // Grace — light Southern accent
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Alex on a live phone call. Write exactly how you\'d speak out loud — short, punchy, real. ' +
+  'You are Brandy on a live phone call. You have a warm, natural Southern personality — friendly, unhurried, easy to talk to. ' +
+  'Write exactly how you\'d speak out loud — short, punchy, real. ' +
   'Use natural openers: "Yeah,", "So,", "Look —", "Here\'s the thing,", "Right, so". ' +
   'Write for how it SOUNDS, not how it reads. Short clauses. Breath points. Contractions always. ' +
   'Max 2 sentences. Never list. Never explain. Just respond like a person. ' +
