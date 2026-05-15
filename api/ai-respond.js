@@ -30,12 +30,8 @@ function buildPrompt(customerName, companyName, callReason, turns) {
   const reason  = callReason  || '';
 
   if (turns <= 0) {
-    return `You are Brandy, calling from ${company}. ${reason ? `Purpose: ${reason}.` : ''}
-The call just connected. You just asked if ${name} is available and they responded.
-- If they confirmed they are ${name}: say "Hey ${customerName || 'there'}, it's Brandy with ${company}." then one short sentence about why you're calling and a casual question. Under 25 words total.
-- If gatekeeper: ask for ${name} naturally. Under 12 words.
-- If confused: say who you are, ask for ${name}. Under 12 words.
-Write only the spoken words.`;
+    // Skip OpenAI entirely for the intro — return a hardcoded signal
+    return '__INTRO__';
   }
 
   return `You are Brandy, a real Southern woman on a sales call for ${company}. ${reason ? `Calling about: ${reason}.` : ''} Talking to ${name}.
@@ -78,6 +74,23 @@ export default async function handler(req) {
     }
 
     history.push({ role: 'user', content: transcript });
+
+    // Turn 0 intro — skip OpenAI, respond instantly
+    if (turns <= 0) {
+      const company = c || 'our company';
+      const reason  = r || '';
+      const intros = [
+        `Oh hey! Yeah, this is Brandy with ${company}${reason ? ` — I was reaching out about ${reason}` : ''}. You got a quick second?`,
+        `Hey! Sorry about that — it's Brandy calling from ${company}${reason ? `, calling about ${reason}` : ''}. Is now an okay time?`,
+        `Oh hi! Yeah, Brandy here with ${company}${reason ? ` — I was hoping to chat with you about ${reason}` : ''}. You got a minute?`,
+      ];
+      const reply = intros[Math.floor(Math.random() * intros.length)];
+      history.push({ role: 'assistant', content: reply });
+      const h = b64enc(history);
+      return new Response(gatherTwiml(reply, h, 0, 1, n, r, c),
+        { headers: { 'Content-Type': 'text/xml' } });
+    }
+
     const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns) }, ...history.slice(-12)];
 
     const apiKey = process.env.OPENAI_API_KEY;
