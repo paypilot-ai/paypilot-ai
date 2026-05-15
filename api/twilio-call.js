@@ -5,9 +5,9 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken  = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+  const accountSid = (process.env.TWILIO_ACCOUNT_SID || '').trim();
+  const authToken  = (process.env.TWILIO_AUTH_TOKEN  || '').trim();
+  const fromNumber = (process.env.TWILIO_PHONE_NUMBER || '').trim();
 
   if (!accountSid || !authToken || !fromNumber) {
     return res.status(500).json({
