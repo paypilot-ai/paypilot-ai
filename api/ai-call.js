@@ -28,15 +28,33 @@ module.exports = async function handler(req, res) {
 
   try {
     const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
-    const params = new URLSearchParams({ n: customerName || '', r: callReason || '', c: companyName || '' });
-    const twimlUrl = `https://paypilot-ai.vercel.app/api/ai-twiml?${params}`;
+
+    // Build greeting inline — no round-trip to ai-twiml.js
+    const n = customerName || '';
+    const r = callReason   || '';
+    const c = companyName  || '';
+    const greetings = [
+      n ? `Hey, is ${n} around?`         : 'Hey there, who am I speaking with?',
+      n ? `Hi there, can I speak with ${n}?` : 'Hi, who am I speaking with?',
+      n ? `Hey, is ${n} available?`      : 'Hi there, who am I speaking with?',
+      n ? `Hi, is ${n} there?`           : 'Hey, who do I have the pleasure of speaking with?',
+    ];
+    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+    const history  = Buffer.from(JSON.stringify([{ role: 'assistant', content: greeting }])).toString('base64')
+      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+
+    const actionUrl = `https://paypilot-ai.vercel.app/api/ai-respond?h=${history}&retries=0&turns=0`
+      + `&n=${encodeURIComponent(n)}&r=${encodeURIComponent(r)}&c=${encodeURIComponent(c)}`;
+
+    function xmlEsc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${actionUrl}" method="POST" timeout="5" speechTimeout="auto" language="en-US"><Say voice="Polly.Ruth-Neural">${xmlEsc(greeting)}</Say></Gather><Hangup/></Response>`;
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
       {
         method: 'POST',
         headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
+        body: new URLSearchParams({ To: e164, From: fromNumber, Twiml: twiml }).toString()
       }
     );
 
