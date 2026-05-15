@@ -2998,7 +2998,6 @@ const planConfigs = {
     label: "Starter Plan",
     planName: "Starter",
     banner: "Starter Plan — Core AI objection help and scripts.",
-    calls: "18", responses: "41", close: "63%",
     quality: "74%", time: "5.8m", solved: "23", adoption: "61%",
     nextStepTitle: "Simple objection handling",
     nextStepBody: "Keep the response short, clear, and easy to say on a live call. Starter is designed for fast help without extra layers.",
@@ -3017,7 +3016,6 @@ const planConfigs = {
     label: "Pro Plan",
     planName: "Pro",
     banner: "Pro Plan — Live assist, stronger rebuttals, and full analytics.",
-    calls: "43", responses: "127", close: "81%",
     quality: "89%", time: "4.2m", solved: "67", adoption: "94%",
     nextStepTitle: "Acknowledge → Reframe → Soft close",
     nextStepBody: "Start by validating the fee concern, then shift to speed, visibility, and reduced manual effort before asking a soft commitment question.",
@@ -3036,7 +3034,6 @@ const planConfigs = {
     label: "Enterprise Plan",
     planName: "Enterprise",
     banner: "Enterprise Plan — Custom AI training, rollout support, and deeper integrations.",
-    calls: "112", responses: "318", close: "88%",
     quality: "94%", time: "3.7m", solved: "146", adoption: "98%",
     nextStepTitle: "Coach + personalize + roll out at scale",
     nextStepBody: "Enterprise focuses on repeatable team performance, custom training, and better AI guidance built around your real workflow.",
@@ -3189,9 +3186,6 @@ function enterRealApp(){
   const lp = document.getElementById('livePill');
   if(lp){ lp.textContent = '🟢 Live'; lp.style.background = '#dcfce7'; lp.style.color = '#166534'; }
   document.getElementById('metricPlan').textContent = 'Pro';
-  document.getElementById('metricCalls').textContent = cfg.calls;
-  document.getElementById('metricResponses').textContent = cfg.responses;
-  document.getElementById('metricClose').textContent = cfg.close;
   document.getElementById('analyticsQuality').textContent = cfg.quality;
   document.getElementById('analyticsTime').textContent = cfg.time;
   document.getElementById('analyticsSolved').textContent = cfg.solved;
@@ -3240,9 +3234,6 @@ function applyPlanDemo(plan){
 
   document.getElementById('planPill').textContent = cfg.label;
   document.getElementById('metricPlan').textContent = cfg.planName;
-  document.getElementById('metricCalls').textContent = cfg.calls;
-  document.getElementById('metricResponses').textContent = cfg.responses;
-  document.getElementById('metricClose').textContent = cfg.close;
   document.getElementById('analyticsQuality').textContent = cfg.quality;
   document.getElementById('analyticsTime').textContent = cfg.time;
   document.getElementById('analyticsSolved').textContent = cfg.solved;
