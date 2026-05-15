@@ -136,7 +136,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=700&utterance_end_ms=1800';
+    '&interim_results=false&endpointing=500&utterance_end_ms=1200';
 
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
@@ -238,9 +238,16 @@ function prepareForSpeech(text) {
     .replace(/([^.!?])$/, '$1.');
 }
 
-const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_multilingual_v2',
+const ELEVENLABS_FILLER_SETTINGS = {
+  model_id: 'eleven_flash_v2_5',
   output_format: 'pcm_16000',
+  voice_settings: { stability: 0.30, similarity_boost: 0.80, style: 0.40, speed: 0.95 }
+};
+
+const ELEVENLABS_VOICE_SETTINGS = {
+  model_id: 'eleven_turbo_v2_5',
+  output_format: 'pcm_16000',
+  optimize_streaming_latency: 2,
   voice_settings: { stability: 0.20, similarity_boost: 0.80, style: 0.55, use_speaker_boost: true, speed: 0.92 }
 };
 
@@ -268,7 +275,7 @@ async function speakFiller(session, text) {
       {
         method: 'POST',
         headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_FILLER_SETTINGS })
       }
     );
     if (!resp.ok) return;
