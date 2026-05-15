@@ -1910,17 +1910,25 @@ body.modal-open{overflow:hidden}
               </div>
 
               <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:20px;">
-                <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:12px;">📄 Agreement (Optional — send if sale closes)</div>
+                <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:12px;">✉️ Email (optional — send after close)</div>
                 <div style="margin-bottom:12px;">
-                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Your Email (reply-to sender)</label>
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Your Email (reply-to)</label>
                   <input id="aiSenderEmail" type="email" placeholder="you@yourcompany.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
                 </div>
                 <div style="margin-bottom:12px;">
                   <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Customer Email</label>
                   <input id="aiCallerEmail" type="email" placeholder="customer@email.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
                 </div>
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Subject</label>
+                  <input id="aiEmailSubject" type="text" placeholder="e.g. Your agreement, Follow-up from our call" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Message (optional)</label>
+                  <textarea id="aiEmailMessage" placeholder="Add a personal note, instructions, or any details..." style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;min-height:72px;resize:vertical;font-family:inherit;"></textarea>
+                </div>
                 <div>
-                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Agreement Document</label>
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Attachment (optional)</label>
                   <label id="aiAgreementLabel" for="aiCallerAgreement" style="display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;padding:10px 14px;border:2px dashed #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;cursor:pointer;background:#fff;transition:border-color .2s,color .2s;">
                     <span style="font-size:18px;">📎</span>
                     <span id="aiAgreementFileName">Click to attach PDF, Word, or image</span>
@@ -2083,6 +2091,38 @@ body.modal-open{overflow:hidden}
                 <div id="memoryList"></div>
               </div>
             </div>
+          </div>
+
+          <!-- SEND EMAIL PANEL -->
+          <div class="card" style="margin-top:16px;">
+            <div class="card-title" style="margin-bottom:14px;">✉️ Send Email to Customer</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+              <div>
+                <label class="label">To (customer email)</label>
+                <input class="input" id="quickEmailTo" type="email" placeholder="customer@email.com" style="margin-bottom:0;"/>
+              </div>
+              <div>
+                <label class="label">Your email (reply-to)</label>
+                <input class="input" id="quickEmailFrom" type="email" placeholder="you@yourcompany.com" style="margin-bottom:0;"/>
+              </div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <label class="label">Subject</label>
+              <input class="input" id="quickEmailSubject" type="text" placeholder="e.g. Agreement, Follow-up, Quote, Payment info" style="margin-bottom:0;"/>
+            </div>
+            <div style="margin-bottom:12px;">
+              <label class="label">Message</label>
+              <textarea class="textarea" id="quickEmailBody" placeholder="Type your message here..." style="min-height:90px;margin-bottom:0;"></textarea>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label class="label">Attachment (optional)</label>
+              <label id="quickEmailFileLabel" for="quickEmailFile" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:2px dashed #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;cursor:pointer;background:#fff;transition:border-color .2s,color .2s;">
+                <span style="font-size:18px;">📎</span>
+                <span id="quickEmailFileName">Click to attach a file (PDF, Word, image)</span>
+              </label>
+              <input id="quickEmailFile" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display:none;" onchange="quickEmailFileSelected(this)"/>
+            </div>
+            <button class="app-btn blue" id="quickEmailSendBtn" onclick="sendQuickEmail()" style="width:100%;padding:12px;">Send Email</button>
           </div>
 
           <!-- Starter-only note -->
@@ -4775,39 +4815,107 @@ async function sendAgreement(){
   const customerName  = document.getElementById('aiCallerName').value.trim();
   const callReason    = document.getElementById('aiCallerObjective').value.trim();
   const senderEmail   = document.getElementById('aiSenderEmail').value.trim();
+  const subject       = (document.getElementById('aiEmailSubject') || {}).value?.trim() || '';
+  const message       = (document.getElementById('aiEmailMessage') || {}).value?.trim() || '';
   const fileInput     = document.getElementById('aiCallerAgreement');
   const file          = fileInput && fileInput.files[0];
 
   if(!customerEmail){ toast('Enter the customer email first.'); return; }
-  if(!file){          toast('Attach an agreement file first.');  return; }
 
   const btn = document.getElementById('sendAgreementBtn');
   btn.textContent = 'Sending...';
   btn.disabled = true;
 
   try {
-    const fileContent = await new Promise((res, rej) => {
-      const reader = new FileReader();
-      reader.onload = e => res(e.target.result.split(',')[1]);
-      reader.onerror = rej;
-      reader.readAsDataURL(file);
-    });
+    let fileContent = null;
+    if(file){
+      fileContent = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const payload = { customerName, customerEmail, callReason, senderEmail, subject, message };
+    if(fileContent) { payload.fileContent = fileContent; payload.fileName = file.name; }
 
     const resp = await fetch('/api/send-agreement', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customerName, customerEmail, callReason, senderEmail, fileContent, fileName: file.name })
+      body: JSON.stringify(payload)
     });
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Failed to send');
-    toast('Agreement sent to ' + customerEmail + '!');
+    toast('Email sent to ' + customerEmail + '!');
     const box = document.getElementById('hudTranscript');
-    if(box) box.innerHTML += `<div style="color:#00ff88;margin-top:6px;">[ Agreement emailed to ${customerEmail} ]</div>`;
+    if(box) box.innerHTML += `<div style="color:#00ff88;margin-top:6px;">[ Email sent to ${customerEmail} ]</div>`;
   } catch(e) {
     toast('Send failed: ' + e.message);
   } finally {
-    btn.textContent = '📄 Send Agreement';
+    btn.textContent = '✉️ Send Email';
     btn.disabled = false;
+  }
+}
+
+async function sendQuickEmail(){
+  const to      = document.getElementById('quickEmailTo').value.trim();
+  const from    = document.getElementById('quickEmailFrom').value.trim();
+  const subject = document.getElementById('quickEmailSubject').value.trim();
+  const message = document.getElementById('quickEmailBody').value.trim();
+  const fileInput = document.getElementById('quickEmailFile');
+  const file    = fileInput && fileInput.files[0];
+
+  if(!to)      { toast('Enter the customer email.'); return; }
+  if(!subject) { toast('Enter a subject line.'); return; }
+  if(!message && !file){ toast('Add a message or attach a file.'); return; }
+
+  const btn = document.getElementById('quickEmailSendBtn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    let fileContent = null;
+    if(file){
+      fileContent = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const payload = { customerEmail: to, senderEmail: from, subject, message };
+    if(fileContent){ payload.fileContent = fileContent; payload.fileName = file.name; }
+
+    const resp = await fetch('/api/send-agreement', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.error || 'Failed to send');
+    toast('Email sent to ' + to + '!');
+    document.getElementById('quickEmailBody').value = '';
+    document.getElementById('quickEmailSubject').value = '';
+    document.getElementById('quickEmailFile').value = '';
+    document.getElementById('quickEmailFileName').textContent = 'Click to attach a file (PDF, Word, image)';
+    document.getElementById('quickEmailFileLabel').style.borderColor = '';
+  } catch(e){
+    toast('Send failed: ' + e.message);
+  } finally {
+    btn.textContent = 'Send Email';
+    btn.disabled = false;
+  }
+}
+
+function quickEmailFileSelected(input){
+  const label = document.getElementById('quickEmailFileName');
+  const wrap  = document.getElementById('quickEmailFileLabel');
+  if(input.files[0]){
+    label.textContent = input.files[0].name;
+    wrap.style.borderColor = '#1a6fff';
+    wrap.style.color = '#1a6fff';
   }
 }
 
@@ -5311,7 +5419,7 @@ function closePrivacyModal(){
   <div id="hudTranscript" style="font-size:12px;color:#7effa0;font-family:monospace;max-height:60px;overflow-y:auto;margin-bottom:10px;min-height:0;line-height:1.7;padding:0 4px;text-shadow:0 0 6px rgba(0,255,136,.6);"></div>
   <div style="display:flex;gap:10px;">
     <button onclick="endAiCall()" style="flex:1;padding:10px;background:rgba(239,68,68,.2);color:#f87171;border:1px solid rgba(239,68,68,.5);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(239,68,68,.5);">■ End Call</button>
-    <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:10px;background:rgba(0,255,136,.12);color:#00ff88;border:1px solid rgba(0,255,136,.4);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(0,255,136,.5);">📄 Send Agreement</button>
+    <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:10px;background:rgba(0,255,136,.12);color:#00ff88;border:1px solid rgba(0,255,136,.4);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(0,255,136,.5);">✉️ Send Email</button>
   </div>
 </div>
 </body>
