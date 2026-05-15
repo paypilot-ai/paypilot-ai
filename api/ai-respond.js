@@ -4,7 +4,13 @@ function xmlEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function say(text) {
-  return `<Say voice="${VOICE}">${xmlEsc(text)}</Say>`;
+  const escaped = xmlEsc(text)
+    .replace(/\.{3}/g, '<break time="500ms"/>')
+    .replace(/—/g, '<break time="300ms"/>')
+    .replace(/\.(?=\s|$)/g, '.<break time="400ms"/>')
+    .replace(/!(?=\s|$)/g,  '!<break time="300ms"/>')
+    .replace(/,(?=\s)/g,    ',<break time="200ms"/>');
+  return `<Say voice="${VOICE}"><prosody rate="90%" pitch="+4%">${escaped}</prosody></Say>`;
 }
 function b64enc(obj) {
   return Buffer.from(JSON.stringify(obj)).toString('base64')
@@ -63,16 +69,14 @@ module.exports = async function handler(req, res) {
         return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say("Hey, looks like we got cut off. I'll try you again!")}<Hangup/></Response>`);
       }
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "I didn't catch that.";
-      const h = b64enc(history);
-      return res.status(200).send(gather(say('Sorry, missed that. ' + last), h, retries + 1, turns, n, r, c));
+      return res.status(200).send(gather(say('Sorry, missed that — ' + last), b64enc(history), retries + 1, turns, n, r, c));
     }
 
     const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|aah+|oop+|yep|nope|yeah|nah|ok|okay)\s*[.?!]?$/i;
     const words = transcript.split(/\s+/).filter(Boolean);
     if (words.length < 1 || (words.length === 1 && NOISE_ONLY.test(transcript))) {
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || '';
-      const h = b64enc(history);
-      return res.status(200).send(gather(say(last), h, retries, turns, n, r, c));
+      return res.status(200).send(gather(say(last), b64enc(history), retries, turns, n, r, c));
     }
 
     history.push({ role: 'user', content: transcript });
@@ -88,8 +92,7 @@ module.exports = async function handler(req, res) {
       ];
       const reply = intros[Math.floor(Math.random() * intros.length)];
       history.push({ role: 'assistant', content: reply });
-      const h = b64enc(history);
-      return res.status(200).send(gather(say(reply), h, 0, 1, n, r, c));
+      return res.status(200).send(gather(say(reply), b64enc(history), 0, 1, n, r, c));
     }
 
     const messages = [{ role: 'system', content: buildPrompt(n, c, r) }, ...history.slice(-12)];
@@ -102,31 +105,27 @@ module.exports = async function handler(req, res) {
 
     if (!resp.ok) {
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || 'So where were we?';
-      const h = b64enc(history.slice(0, -1));
-      return res.status(200).send(gather(say(last), h, 0, turns, n, r, c));
+      return res.status(200).send(gather(say(last), b64enc(history.slice(0,-1)), 0, turns, n, r, c));
     }
 
     const d = await resp.json();
     const raw = d.choices?.[0]?.message?.content?.trim() || '';
     const wantsEnd = raw.includes('[END]');
-    const hangup   = wantsEnd && turns >= 3;
     const reply    = raw.replace(/\[END\]/g, '').trim();
 
     if (!reply) {
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || 'Sorry, what was that?';
-      const h = b64enc(history.slice(0, -1));
-      return res.status(200).send(gather(say(last), h, 0, turns, n, r, c));
+      return res.status(200).send(gather(say(last), b64enc(history.slice(0,-1)), 0, turns, n, r, c));
     }
 
     history.push({ role: 'assistant', content: reply });
     while (Buffer.byteLength(JSON.stringify(history)) > 5500) history.splice(0, 2);
 
-    if (hangup) {
+    if (wantsEnd && turns >= 3) {
       return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say(reply)}<Hangup/></Response>`);
     }
 
-    const h = b64enc(history);
-    return res.status(200).send(gather(say(reply), h, 0, turns + 1, n, r, c));
+    return res.status(200).send(gather(say(reply), b64enc(history), 0, turns + 1, n, r, c));
 
   } catch (err) {
     console.error('ai-respond error:', err.message);

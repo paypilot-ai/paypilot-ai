@@ -3,11 +3,28 @@ const VOICE = 'Polly.Ruth-Neural';
 function xmlEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
+function say(text) {
+  const escaped = xmlEsc(text)
+    .replace(/\.{3}/g, '<break time="500ms"/>')
+    .replace(/—/g, '<break time="300ms"/>')
+    .replace(/\.(?=\s|$)/g, '.<break time="400ms"/>')
+    .replace(/!(?=\s|$)/g,  '!<break time="300ms"/>')
+    .replace(/,(?=\s)/g,    ',<break time="200ms"/>');
+  return `<Say voice="${VOICE}"><prosody rate="90%" pitch="+4%">${escaped}</prosody></Say>`;
+}
 function b64enc(obj) {
-  const s = encodeURIComponent(JSON.stringify(obj))
-    .replace(/%([0-9A-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
-  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  return Buffer.from(JSON.stringify(obj)).toString('base64')
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+function gatherTwiml(sayXml, historyB64, n, r, c) {
+  const action = `/api/ai-respond?h=${historyB64}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Gather input="speech" action="${action}" method="POST" timeout="7" speechTimeout="auto" speechModel="phone_call" language="en-US">
+    ${sayXml}
+  </Gather>
+  <Hangup/>
+</Response>`;
 }
 
 const GREETINGS = [
@@ -27,13 +44,5 @@ module.exports = async function handler(req, res) {
   const greeting = n ? template.replace('{name}', xmlEsc(n)) : 'Hey there, who am I speaking with?';
 
   const history = b64enc([{ role: 'assistant', content: greeting }]);
-  const action = `/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
-
-  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Gather input="speech" action="${action}" method="POST" timeout="7" speechTimeout="auto" speechModel="phone_call" language="en-US">
-    <Say voice="${VOICE}">${greeting}</Say>
-  </Gather>
-  <Hangup/>
-</Response>`);
+  res.status(200).send(gatherTwiml(say(greeting), history, n, r, c));
 };
