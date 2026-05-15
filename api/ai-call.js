@@ -35,10 +35,8 @@ module.exports = async function handler(req, res) {
 
     const railwayUrl = (process.env.RAILWAY_WS_URL || 'wss://paypilot-ai-production.up.railway.app')
       .replace(/^https?/, 'wss').replace(/^wss?:/, 'wss:');
-    const streamUrl = `${railwayUrl}/twilio-realtime?n=${n}&r=${r}&c=${c}`;
-
-    // &amp; required in XML attribute values
-    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${streamUrl}"/></Connect></Response>`;
+    // &amp; required in XML attribute values — bare & makes TwiML invalid
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${railwayUrl}/twilio-realtime?n=${n}&amp;r=${r}&amp;c=${c}"/></Connect></Response>`;
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
