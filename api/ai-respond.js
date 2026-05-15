@@ -9,17 +9,16 @@ function sayTwiml(text) {
   return `<Say voice="${VOICE}">${xml(text)}</Say>`;
 }
 function b64enc(obj) {
-  const str = JSON.stringify(obj);
-  const bytes = new TextEncoder().encode(str);
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  const s = encodeURIComponent(JSON.stringify(obj))
+    .replace(/%([0-9A-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 }
 function b64dec(str) {
-  const binary = atob(str.replace(/-/g,'+').replace(/_/g,'/'));
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return JSON.parse(new TextDecoder().decode(bytes));
+  let s = str.replace(/-/g,'+').replace(/_/g,'/');
+  s += '===='.slice(0, (4 - s.length % 4) % 4);
+  return JSON.parse(decodeURIComponent(
+    atob(s).replace(/[\x80-\xFF]/g, c => '%' + ('0' + c.charCodeAt(0).toString(16)).slice(-2).toUpperCase())
+  ));
 }
 function gatherTwiml(say, historyB64, retries, turns, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>

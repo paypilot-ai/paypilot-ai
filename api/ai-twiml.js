@@ -9,11 +9,9 @@ function sayTwiml(text) {
   return `<Say voice="${VOICE}">${xml(text)}</Say>`;
 }
 function b64enc(obj) {
-  const str = JSON.stringify(obj);
-  const bytes = new TextEncoder().encode(str);
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  const s = encodeURIComponent(JSON.stringify(obj))
+    .replace(/%([0-9A-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 }
 function gatherTwiml(say, historyB64, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>

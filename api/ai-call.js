@@ -40,7 +40,8 @@ module.exports = async function handler(req, res) {
       n ? `Hi, is ${n} there?`           : 'Hey, who do I have the pleasure of speaking with?',
     ];
     const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-    const history  = Buffer.from(JSON.stringify([{ role: 'assistant', content: greeting }])).toString('base64')
+    const historyJson = JSON.stringify([{ role: 'assistant', content: greeting }]);
+    const history = Buffer.from(encodeURIComponent(historyJson).replace(/%([0-9A-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))).toString('base64')
       .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 
     const actionUrl = `https://paypilot-ai.vercel.app/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0`
