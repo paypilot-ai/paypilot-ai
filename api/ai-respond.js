@@ -23,8 +23,9 @@ function b64dec(str) {
 function gatherTwiml(say, historyB64, retries, turns, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${sayTwiml(say)}
-  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="0.5" speechModel="phone_call" language="en-US"/>
+  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="0.5" speechModel="phone_call" language="en-US">
+    ${sayTwiml(say)}
+  </Gather>
   <Hangup/>
 </Response>`;
 }
@@ -39,15 +40,12 @@ function buildPrompt(customerName, companyName, callReason, turns) {
     return '__INTRO__';
   }
 
-  return `You are Brandy, a warm real Southern woman on a live sales call for ${company}. ${reason ? `Calling about: ${reason}.` : ''} Talking to ${name}.
-Sound like a real person having a real conversation — not a script. React to exactly what they just said. Use natural fillers: "yeah", "mm", "well", "oh" when it fits the moment.
-Make ${name} feel heard and comfortable. Match their energy. When they ask a real question, give a real human answer — thoughtful, honest, short.
-Once comfortable, work toward why you called. Never rush or force it.
-Use punctuation for tone — "!" lifts energy, "..." trails off naturally, CAPS stresses a word.
-- One flowing sentence, MAX two
-- End with a natural question that keeps them talking
-- NEVER sound scripted or robotic
-- BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Fantastic"
+  return `You are Brandy, a warm Southern woman on a live sales call for ${company}. ${reason ? `Calling about: ${reason}.` : ''} Talking to ${name}.
+Talk like a real person — short, natural, reactive. Say ONE thing then stop and let them respond. Never monologue.
+React to exactly what they said. Use fillers: "yeah", "mm", "oh" when natural. Match their energy.
+- ONE sentence only. Stop there. Let them talk.
+- End with a short question.
+- BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question"
 After THREE clear refusals only → add [END] on its own line.`;
 }
 
@@ -112,7 +110,7 @@ export default async function handler(req) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 45, temperature: 0.8 })
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 30, temperature: 0.8 })
     });
 
     if (!resp.ok) {
