@@ -2349,7 +2349,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
                 <div class="avatar" id="avatarBox" style="flex-shrink:0;width:72px;height:72px;font-size:28px;border-radius:20px;">?</div>
                 <div>
                   <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.03em;" id="profileNameView">Your Name</div>
-                  <div style="color:rgba(255,255,255,.50);font-size:13px;margin-top:2px;">Supplier Hub Sales</div>
+                  <div style="color:rgba(255,255,255,.50);font-size:13px;margin-top:2px;" id="profileRoleView">Your Role</div>
                   <div style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 10px;border-radius:999px;background:rgba(26,111,255,.20);border:1px solid rgba(26,111,255,.30);">
                     <span style="width:6px;height:6px;border-radius:50%;background:#00d4ff;"></span>
                     <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.70);text-transform:uppercase;letter-spacing:.12em;">Pro Plan</span>
@@ -2358,7 +2358,10 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               </div>
 
               <label class="label" style="color:var(--text-2);font-size:11px;">Full Name</label>
-              <input class="input" id="profileName" value="" placeholder="Enter your name" style="border:1.5px solid #dbeafe;background:#f8fbff;color:var(--text);font-size:15px;font-weight:500;" />
+              <input class="input" id="profileName" value="" placeholder="Enter your name" oninput="document.getElementById('profileNameView').textContent=this.value||'Your Name'" style="border:1.5px solid #dbeafe;background:#f8fbff;color:var(--text);font-size:15px;font-weight:500;" />
+
+              <label class="label" style="color:var(--text-2);font-size:11px;">Role / Title</label>
+              <input class="input" id="profileRole" value="" placeholder="e.g. Sales Rep, Account Manager" oninput="document.getElementById('profileRoleView').textContent=this.value||'Your Role'" style="border:1.5px solid #dbeafe;background:#f8fbff;color:var(--text);font-size:15px;font-weight:500;" />
 
               <label class="label" style="color:var(--text-2);font-size:11px;">Bio</label>
               <textarea class="textarea" id="profileBio" style="border:1.5px solid #dbeafe;background:#f8fbff;color:var(--text);font-size:14px;min-height:90px;">Charismatic sales rep using AI to move faster on live calls.</textarea>
