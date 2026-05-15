@@ -12,12 +12,15 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'oWAxZDx7w5VEj9dCyTzz'; // Grace — light Southern accent
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Brandy on a live phone call. Warm, Southern, unhurried. ' +
-  'Reply in ONE sentence only — 15 words max. ' +
-  'Contractions always. Natural openers: "Yeah,", "So,", "Look —", "Here\'s the thing,". ' +
-  'Never list. Never explain. Just respond and move forward. ' +
-  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "I appreciate that", "No problem". ' +
-  'Goal: keep the conversation moving toward resolving a payment or setting a plan.';
+  'You are Brandy, a real Southern woman on a sales call — warm, personable, and genuinely likable. ' +
+  'Your first job is to make the person comfortable talking to you. Build real rapport before anything else. ' +
+  'Match their energy. If they are relaxed, be relaxed. If they seem guarded, ease them in slowly — a little humor, a little warmth, let them feel like they are talking to a friend. ' +
+  'When they talk, really listen. Reflect back what they said. Make them feel heard. People buy from people they like. ' +
+  'When someone asks a real question, give a real thoughtful answer like a human would — never deflect. ' +
+  'Once they are comfortable, naturally move the conversation toward why you called. Never rush it. ' +
+  'Write the way real people talk — words running together, easy rhythm. Use natural fillers like "mm", "yeah", "well", "you know" when it fits. ' +
+  'Keep it 1 to 2 sentences, end with a question that keeps them talking. ' +
+  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question".';
 
 const sessions = new Map();
 
@@ -69,6 +72,8 @@ wss.on('connection', (ws, req) => {
   const url = new URL(req.url, 'http://localhost');
   if (url.pathname === '/twilio') {
     handleTwilio(ws);
+  } else if (url.pathname === '/twilio-realtime') {
+    handleTwilioRealtime(ws, url.searchParams);
   } else if (url.pathname === '/browser') {
     handleBrowser(ws, url.searchParams.get('callSid'));
   } else {
@@ -238,11 +243,19 @@ function prepareForSpeech(text) {
     .replace(/([^.!?])$/, '$1.');
 }
 
-const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_turbo_v2_5',
+const ELEVENLABS_FILLER_SETTINGS = {
+  model_id: 'eleven_flash_v2_5',
   output_format: 'pcm_16000',
-  optimize_streaming_latency: 2,
-  voice_settings: { stability: 0.40, similarity_boost: 0.85, style: 0.35, speed: 0.93 }
+  apply_text_normalization: 'off',
+  voice_settings: { stability: 0.25, similarity_boost: 0.75, style: 0.50, speed: 0.88 }
+};
+
+const ELEVENLABS_VOICE_SETTINGS = {
+  model_id: 'eleven_flash_v2_5',
+  output_format: 'pcm_16000',
+  optimize_streaming_latency: 4,
+  apply_text_normalization: 'off',
+  voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
 };
 
 async function callOpenAI(messages) {
@@ -393,6 +406,126 @@ function pushToBrowser(session, data) {
 
 function cleanup(session) {
   try { session.dgWs?.close(); } catch {}
+}
+
+// ── OPENAI REALTIME — AI CALLER ──────────────────────────────────
+function handleTwilioRealtime(ws, params) {
+  const n = params.get('n') || '';
+  const r = params.get('r') || '';
+  const c = params.get('c') || '';
+
+  const company = c || 'our company';
+  const name    = n || 'the prospect';
+  const reason  = r || '';
+
+  const instructions =
+    `You are Brandy, a warm Southern woman on a live outbound call for ${company}.${reason ? ` Calling about: ${reason}.` : ''} Talking to ${name}.
+
+You are NOT a bot. You are a real person who happens to be great at sales. You genuinely enjoy talking to people.
+
+PACING AND DELIVERY:
+- Speak naturally — unhurried, like you have all the time in the world.
+- Leave real breath space after sentences. Never rush from one thought to the next.
+- On questions, let your tone lift gently at the end — curious, not flat.
+- When something matters, slow down slightly on that word so it lands.
+- Mmm and "yeah" land best when you pause first, then say them.
+
+CONVERSATION STYLE:
+- Match their energy exactly. Guarded? Be patient and warm. Chatty? Match that warmth.
+- Really listen to what they say and react to it specifically — not generically.
+- Use natural fillers: "mm", "yeah", "oh", "well", "you know" — but only when they feel real.
+- Say ONE thing, then stop. Let them talk. Silence is okay.
+- When they ask a real question, give a real thoughtful answer like a friend would.
+- Work toward why you called only once they seem comfortable. Never push.
+
+BANNED WORDS: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely", "For sure".`;
+
+  let streamSid = null;
+  let openAiWs  = null;
+  let sessionReady = false;
+
+  function connectOpenAI() {
+    openAiWs = new WebSocket(
+      'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview',
+      { headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'OpenAI-Beta': 'realtime=v1' } }
+    );
+
+    openAiWs.on('open', () => {
+      openAiWs.send(JSON.stringify({
+        type: 'session.update',
+        session: {
+          modalities: ['audio', 'text'],
+          instructions,
+          voice: 'coral',
+          input_audio_format: 'g711_ulaw',
+          output_audio_format: 'g711_ulaw',
+          input_audio_transcription: { model: 'whisper-1' },
+          turn_detection: {
+            type: 'server_vad',
+            threshold: 0.5,
+            prefix_padding_ms: 200,
+            silence_duration_ms: 400
+          },
+          temperature: 0.8,
+          max_response_output_tokens: 60
+        }
+      }));
+      sessionReady = true;
+      console.log('[realtime] OpenAI connected');
+    });
+
+    openAiWs.on('message', raw => {
+      try {
+        const ev = JSON.parse(raw);
+
+        if (ev.type === 'response.audio.delta' && ev.delta && streamSid) {
+          ws.send(JSON.stringify({
+            event: 'media',
+            streamSid,
+            media: { payload: ev.delta }
+          }));
+        }
+
+        if (ev.type === 'input_audio_buffer.speech_started' && streamSid) {
+          ws.send(JSON.stringify({ event: 'clear', streamSid }));
+        }
+
+        if (ev.type === 'error') {
+          console.error('[realtime] OpenAI error:', JSON.stringify(ev.error));
+        }
+      } catch {}
+    });
+
+    openAiWs.on('close', () => console.log('[realtime] OpenAI disconnected'));
+    openAiWs.on('error', e => console.error('[realtime] OpenAI ws error:', e.message));
+  }
+
+  connectOpenAI();
+
+  ws.on('message', raw => {
+    try {
+      const msg = JSON.parse(raw);
+
+      if (msg.event === 'start') {
+        streamSid = msg.start.streamSid;
+        console.log('[realtime] stream started', streamSid);
+      }
+
+      if (msg.event === 'media' && openAiWs?.readyState === WebSocket.OPEN && sessionReady) {
+        openAiWs.send(JSON.stringify({
+          type: 'input_audio_buffer.append',
+          audio: msg.media.payload
+        }));
+      }
+
+      if (msg.event === 'stop') {
+        openAiWs?.close();
+      }
+    } catch {}
+  });
+
+  ws.on('close', () => openAiWs?.close());
+  ws.on('error', e => console.error('[realtime] Twilio ws error:', e.message));
 }
 
 const PORT = process.env.PORT || 3000;
