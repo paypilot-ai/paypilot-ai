@@ -71,7 +71,10 @@ server.on('upgrade', (req, socket, head) => {
 
 wss.on('connection', (ws, req) => {
   const url = new URL(req.url, 'http://localhost');
-  if (url.pathname === '/twilio') {
+  if (url.pathname === '/ws-test') {
+    ws.send(JSON.stringify({ ok: true, msg: 'WebSocket connection works' }));
+    ws.close();
+  } else if (url.pathname === '/twilio') {
     handleTwilio(ws);
   } else if (url.pathname === '/twilio-realtime') {
     handleTwilioRealtime(ws, url.searchParams);
