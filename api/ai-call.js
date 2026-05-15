@@ -3,6 +3,17 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // Debug: GET returns current config so you can verify Railway URL
+  if (req.method === 'GET') {
+    const rawUrl = process.env.RAILWAY_WS_URL || '';
+    return res.status(200).json({
+      RAILWAY_WS_URL: rawUrl || '(not set — will use TwiML fallback)',
+      TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
+      OPENAI_configured: !!process.env.OPENAI_API_KEY,
+    });
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const accountSid = (process.env.TWILIO_ACCOUNT_SID || '').trim();
@@ -12,11 +23,7 @@ module.exports = async function handler(req, res) {
   if (!accountSid || !authToken || !fromNumber) {
     return res.status(500).json({
       error: 'Twilio credentials not configured',
-      has_sid: !!accountSid,
-      has_token: !!authToken,
-      has_number: !!fromNumber,
-      sid_preview: accountSid ? accountSid.slice(0,6) + '...' : 'MISSING',
-      number_preview: fromNumber || 'MISSING'
+      has_sid: !!accountSid, has_token: !!authToken, has_number: !!fromNumber,
     });
   }
 
@@ -29,16 +36,55 @@ module.exports = async function handler(req, res) {
   try {
     const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
 
-    const n = customerName || '';
-    const r = callReason   || '';
-    const c = companyName  || '';
+    const n = encodeURIComponent(customerName || '');
+    const r = encodeURIComponent(callReason   || '');
+    const c = encodeURIComponent(companyName  || '');
 
-    // Stream audio directly to Railway → OpenAI Realtime (ChatGPT voice quality)
-    const railwayUrl = (process.env.RAILWAY_WS_URL || 'wss://paypilot-ai-production.up.railway.app')
-      .replace(/^http/, 'ws');
-    const streamUrl = `${railwayUrl}/twilio-realtime?n=${encodeURIComponent(n)}&r=${encodeURIComponent(r)}&c=${encodeURIComponent(c)}`;
+    // Check if Railway is reachable; fall back to TwiML if not
+    const rawWsUrl = (process.env.RAILWAY_WS_URL || '').trim();
+    let twiml, mode;
 
-    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${streamUrl}"/></Connect></Response>`;
+    if (rawWsUrl) {
+      const railwayWs   = rawWsUrl.replace(/^https?:\/\//, 'wss://').replace(/^wss?:\/\//, 'wss://');
+      const railwayHttp = rawWsUrl.replace(/^wss?:\/\//, 'https://').replace(/^https?:\/\//, 'https://');
+
+      let railwayUp = false;
+      try {
+        const probe = await fetch(`${railwayHttp}/health`, { signal: AbortSignal.timeout(3000) });
+        railwayUp = probe.ok;
+      } catch (_) { railwayUp = false; }
+
+      if (railwayUp) {
+        // Real-time stream: ChatGPT-quality voice via OpenAI Realtime API
+        twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${railwayWs}/twilio-realtime?n=${n}&amp;r=${r}&amp;c=${c}"/></Connect></Response>`;
+        mode = 'realtime';
+      } else {
+        console.warn('[ai-call] Railway unreachable at', railwayHttp, '— falling back to TwiML');
+        mode = 'twiml-fallback';
+      }
+    } else {
+      mode = 'twiml-fallback';
+    }
+
+    if (mode === 'twiml-fallback') {
+      // Fallback: Polly TTS + Twilio speech recognition (always works)
+      const host = req.headers['x-forwarded-host'] || req.headers.host || 'paypilot-ai.vercel.app';
+      const proto = req.headers['x-forwarded-proto'] || 'https';
+      const twimlUrl = `${proto}://${host}/api/ai-twiml?n=${n}&r=${r}&c=${c}`;
+      twiml = null; // use Url param instead
+
+      const response = await fetch(
+        `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code, mode });
+      return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode });
+    }
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
@@ -50,13 +96,9 @@ module.exports = async function handler(req, res) {
     );
 
     const data = await response.json();
-    if (!response.ok) return res.status(500).json({
-      error: `Twilio ${data.status || response.status}: ${data.message || 'unknown error'} (code ${data.code || 'none'})`,
-      sid_used: accountSid.slice(0,6) + '...' + accountSid.slice(-4),
-      sid_length: accountSid.length
-    });
+    if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code, mode });
+    return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode });
 
-    return res.status(200).json({ callSid: data.sid, status: data.status, to: e164 });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }

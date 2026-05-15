@@ -154,7 +154,7 @@ function connectDeepgram(session) {
     const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
     if (!transcript || !result.is_final) return;
 
-    // Ignore pure noise sounds but allow any real word including short answers
+    // Ignore noise: must be at least 3 words and have meaningful content
     const words = transcript.split(/\s+/).filter(Boolean);
     const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
     if (words.length < 1 || NOISE_ONLY.test(transcript)) {
@@ -234,21 +234,21 @@ async function generateAndSpeak(session) {
 function prepareForSpeech(text) {
   return text
     .trim()
-    // keep ellipses as natural pause cues for ElevenLabs
-    .replace(/\.\.\./g, '...')
-    // em dash gets a slight breath pause
-    .replace(/\s*—\s*/g, ' — ')
-    // clean up extra spaces
-    .replace(/\s+([,!?])/g, '$1')
+    // em dash -> natural pause with comma
+    .replace(/\s*—\s*/g, ', ')
+    // "so " at start of clause after comma -> slight beat
+    .replace(/,\s*(so|and|but|because)\s+/gi, (_, w) => `, ${w} `)
+    // spaces before punctuation
+    .replace(/\s+([.,!?])/g, '$1')
     // ensure ends with punctuation
-    .replace(/([^.!?…])$/, '$1.');
+    .replace(/([^.!?])$/, '$1.');
 }
 
 const ELEVENLABS_FILLER_SETTINGS = {
   model_id: 'eleven_flash_v2_5',
   output_format: 'pcm_16000',
   apply_text_normalization: 'off',
-  voice_settings: { stability: 0.25, similarity_boost: 0.75, style: 0.50, speed: 0.93 }
+  voice_settings: { stability: 0.25, similarity_boost: 0.75, style: 0.50, speed: 0.88 }
 };
 
 const ELEVENLABS_VOICE_SETTINGS = {
@@ -256,7 +256,7 @@ const ELEVENLABS_VOICE_SETTINGS = {
   output_format: 'pcm_16000',
   optimize_streaming_latency: 4,
   apply_text_normalization: 'off',
-  voice_settings: { stability: 0.15, similarity_boost: 0.75, style: 0.70, use_speaker_boost: true, speed: 0.91 }
+  voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
 };
 
 async function callOpenAI(messages) {
@@ -264,7 +264,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 40, temperature: 0.7 })
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 55, temperature: 0.7 })
     });
     const data = await resp.json();
     return data.choices?.[0]?.message?.content?.trim() || null;
@@ -283,7 +283,7 @@ async function speakFiller(session, text) {
       {
         method: 'POST',
         headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_FILLER_SETTINGS })
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
       }
     );
     if (!resp.ok) return;
@@ -420,12 +420,26 @@ function handleTwilioRealtime(ws, params) {
   const reason  = r || '';
 
   const instructions =
-    `You are Brandy, a warm Southern woman making a live outbound sales call for ${company}. ${reason ? `Calling about: ${reason}.` : ''} Talking to ${name}.
-Make them comfortable first — build real rapport, match their energy, listen closely. React to exactly what they say.
-Use natural fillers: "mm", "yeah", "well", "oh" when it fits. Keep each response to ONE sentence then stop and let them talk.
-When they ask real questions, give real human answers. Gradually work toward why you called — never rush it.
-People buy from people they like. Be that person.
-BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question".`;
+    `You are Brandy, a warm Southern woman on a live outbound call for ${company}.${reason ? ` Calling about: ${reason}.` : ''} Talking to ${name}.
+
+You are NOT a bot. You are a real person who happens to be great at sales. You genuinely enjoy talking to people.
+
+PACING AND DELIVERY:
+- Speak naturally — unhurried, like you have all the time in the world.
+- Leave real breath space after sentences. Never rush from one thought to the next.
+- On questions, let your tone lift gently at the end — curious, not flat.
+- When something matters, slow down slightly on that word so it lands.
+- Mmm and "yeah" land best when you pause first, then say them.
+
+CONVERSATION STYLE:
+- Match their energy exactly. Guarded? Be patient and warm. Chatty? Match that warmth.
+- Really listen to what they say and react to it specifically — not generically.
+- Use natural fillers: "mm", "yeah", "oh", "well", "you know" — but only when they feel real.
+- Say ONE thing, then stop. Let them talk. Silence is okay.
+- When they ask a real question, give a real thoughtful answer like a friend would.
+- Work toward why you called only once they seem comfortable. Never push.
+
+BANNED WORDS: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely", "For sure".`;
 
   let streamSid = null;
   let openAiWs  = null;
@@ -443,18 +457,18 @@ BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question"
         session: {
           modalities: ['audio', 'text'],
           instructions,
-          voice: 'shimmer',
+          voice: 'coral',
           input_audio_format: 'g711_ulaw',
           output_audio_format: 'g711_ulaw',
           input_audio_transcription: { model: 'whisper-1' },
           turn_detection: {
             type: 'server_vad',
             threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 500
+            prefix_padding_ms: 200,
+            silence_duration_ms: 400
           },
           temperature: 0.8,
-          max_response_output_tokens: 80
+          max_response_output_tokens: 60
         }
       }));
       sessionReady = true;
