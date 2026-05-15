@@ -6,11 +6,11 @@ function xml(s) {
 
 function sayTwiml(text) {
   const escaped = xml(text)
-    .replace(/\.{3}/g, '<break time="400ms"/>')          // ... = thinking pause
-    .replace(/—/g,     '<break time="250ms"/>')           // — = mid-sentence pause
-    .replace(/\.\s*/g, '.<break time="300ms"/> ')        // period = sentence gap
-    .replace(/!\s*/g,  '!<break time="250ms"/> ')        // ! = warm pause
-    .replace(/,\s*/g,  ',<break time="150ms"/> ');       // , = breath
+    .replace(/\.{3}/g, '<break time="400ms"/>')
+    .replace(/—/g,     '<break time="250ms"/>')
+    .replace(/\.\s*/g, '.<break time="300ms"/> ')
+    .replace(/!\s*/g,  '!<break time="250ms"/> ')
+    .replace(/,\s*/g,  ',<break time="150ms"/> ');
   return `<Say voice="${VOICE}"><prosody rate="92%" pitch="+3%">${escaped}</prosody></Say>`;
 }
 

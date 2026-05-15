@@ -41,11 +41,6 @@ function buildPrompt(customerName, companyName, callReason, turns) {
   const name    = customerName || 'the prospect';
   const reason  = callReason  || '';
 
-  if (turns <= 0) {
-    // Skip OpenAI entirely for the intro — return a hardcoded signal
-    return '__INTRO__';
-  }
-
   return `You are Brandy, a real Southern woman on a live call for ${company}.${reason ? ` Calling about: ${reason}.` : ''} Talking to ${name}.
 
 You are NOT a bot. You are a real person who genuinely enjoys talking to people.
@@ -89,7 +84,6 @@ export default async function handler(req) {
         { headers: { 'Content-Type': 'text/xml' } });
     }
 
-    // Filter noise — ignore filler sounds and very short non-words
     const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|aah+|oop+|yep|nope|yeah|nah|ok|okay)\s*[.?!]?$/i;
     const words = transcript.trim().split(/\s+/).filter(Boolean);
     if (words.length < 1 || (words.length === 1 && NOISE_ONLY.test(transcript.trim()))) {
@@ -101,7 +95,6 @@ export default async function handler(req) {
 
     history.push({ role: 'user', content: transcript });
 
-    // Turn 0 intro — skip OpenAI, respond instantly
     if (turns <= 0) {
       const company = c || 'our company';
       const reason  = r || '';
@@ -128,9 +121,7 @@ export default async function handler(req) {
     });
 
     if (!resp.ok) {
-      const errText = await resp.text();
-      console.error('OpenAI error', resp.status, errText);
-      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "So where were we?";
+      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || 'So where were we?';
       const h = b64enc(history.slice(0, -1));
       return new Response(gatherTwiml(last, h, 0, turns, n, r, c),
         { headers: { 'Content-Type': 'text/xml' } });
@@ -143,8 +134,7 @@ export default async function handler(req) {
     const reply    = raw.replace(/\[END\]/g, '').trim();
 
     if (!reply) {
-      console.error('Empty reply from OpenAI', JSON.stringify(d));
-      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "Sorry, what was that?";
+      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || 'Sorry, what was that?';
       const h = b64enc(history.slice(0, -1));
       return new Response(gatherTwiml(last, h, 0, turns, n, r, c),
         { headers: { 'Content-Type': 'text/xml' } });
@@ -163,9 +153,8 @@ export default async function handler(req) {
       { headers: { 'Content-Type': 'text/xml' } });
 
   } catch (err) {
-    console.error('ai-respond fatal:', err?.message || err);
     return new Response(
-      `<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="${VOICE}">Sorry about that, let me call you right back!</Say><Hangup/></Response>`,
+      `<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="Polly.Ruth-Neural">Sorry about that, let me call you right back!</Say><Hangup/></Response>`,
       { status: 200, headers: { 'Content-Type': 'text/xml' } }
     );
   }
