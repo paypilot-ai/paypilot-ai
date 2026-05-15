@@ -135,7 +135,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=600&utterance_end_ms=1200';
+    '&interim_results=false&endpointing=300&utterance_end_ms=800';
 
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
@@ -191,7 +191,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 120 })
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 100, temperature: 0.7 })
     });
     const data = await resp.json();
     return data.choices?.[0]?.message?.content?.trim() || null;
@@ -217,7 +217,8 @@ async function speakToTwilio(session, text) {
           text,
           model_id: 'eleven_turbo_v2',
           output_format: 'pcm_16000',
-          voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+          optimize_streaming_latency: 4,
+          voice_settings: { stability: 0.45, similarity_boost: 0.75, speed: 1.05 }
         })
       }
     );

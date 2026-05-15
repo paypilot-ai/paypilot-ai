@@ -3494,18 +3494,62 @@ RULES:
 // TYPETEXT
 // ============================================================
 function typeText(el, text){
-  el.classList.add('loading');
-  el.textContent = '';
+  el.classList.remove('loading');
+  el.textContent = text;
   lastGeneratedText = text;
-  let i = 0;
-  const timer = setInterval(()=>{
-    el.textContent += text.charAt(i);
-    i++;
-    if(i >= text.length){
-      clearInterval(timer);
-      el.classList.remove('loading');
+}
+
+async function streamResponse(inputId, outputId, system, chatMessages, maxTokens){
+  const output = document.getElementById(outputId);
+  output.classList.add('loading');
+  output.textContent = '';
+  lastGeneratedText = '';
+
+  try {
+    const resp = await fetch('/api/generate-response', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system, messages: chatMessages, max_tokens: maxTokens || 120 })
+    });
+
+    if (!resp.ok) {
+      const data = await resp.json();
+      throw new Error(data.error || 'Server error');
     }
-  }, 4);
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let full = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const payload = line.slice(6).trim();
+        if (payload === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(payload);
+          if (parsed.token) {
+            full += parsed.token;
+            output.textContent = full;
+          }
+        } catch (_) {}
+      }
+    }
+
+    output.classList.remove('loading');
+    lastGeneratedText = full;
+    return full;
+  } catch (e) {
+    output.classList.remove('loading');
+    output.textContent = 'Error: ' + e.message;
+    throw e;
+  }
 }
 
 // ============================================================
@@ -3541,52 +3585,20 @@ async function generateResponse(inputId, outputId){
   const objectionType = detectObjectionType(text);
   objectionCounts[objectionType] = (objectionCounts[objectionType] || 0) + 1;
 
-  // Show generating state
-  output.classList.add('loading');
-  output.textContent = 'Generating...';
-
   // Add to conversation memory
   conversationMemory.push({ role: 'user', content: `Supplier said: "${text}"` });
 
-  // Build messages array with system prompt + memory
   const systemPrompt = buildSystemPrompt(tone, language, objectionType);
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    ...conversationMemory.slice(-6) // last 3 exchanges for context
-  ];
+  const chatMessages = conversationMemory.slice(-6);
 
   try {
-    // Split system prompt from messages to match backend format
-    const systemMsg = messages.find(m => m.role === 'system');
-    const chatMessages = messages.filter(m => m.role !== 'system');
+    const reply = await streamResponse(inputId, outputId, systemPrompt, chatMessages, 120);
 
-    const resp = await fetch('/api/generate-response', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system: systemMsg ? systemMsg.content : '',
-        messages: chatMessages,
-        max_tokens: 120
-      })
-    });
-
-    const data = await resp.json();
-    if(!resp.ok){ throw new Error(data.error || 'Server error'); }
-    const reply = data.reply || 'Could not generate a response. Please try again.';
-
-    // Store reply in memory
     conversationMemory.push({ role: 'assistant', content: reply });
     sessionHistory.push({ objection: text, reply, type: objectionType, tone, language, time: new Date().toLocaleTimeString() });
 
-    lastGeneratedText = reply;
-    typeText(output, reply);
-
-    // Update objection insights in analytics
     updateObjectionInsights();
-
   } catch(e){
-    output.classList.remove('loading');
-    output.textContent = 'Error: ' + (e.message || 'Could not reach server. Please try again.');
     toast(e.message || 'Could not reach server.');
   }
 }
