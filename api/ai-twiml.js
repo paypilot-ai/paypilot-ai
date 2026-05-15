@@ -1,4 +1,4 @@
-const OPENAI_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_KEY = (process.env.OPENAI_API_KEY || '').trim();
 
 // Safe XML escape for plain <Say> text
 function xml(s) {
