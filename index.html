@@ -1910,17 +1910,25 @@ body.modal-open{overflow:hidden}
               </div>
 
               <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:20px;">
-                <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:12px;">📄 Agreement (Optional — send if sale closes)</div>
+                <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:12px;">✉️ Email (optional — send after close)</div>
                 <div style="margin-bottom:12px;">
-                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Your Email (reply-to sender)</label>
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Your Email (reply-to)</label>
                   <input id="aiSenderEmail" type="email" placeholder="you@yourcompany.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
                 </div>
                 <div style="margin-bottom:12px;">
                   <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Customer Email</label>
                   <input id="aiCallerEmail" type="email" placeholder="customer@email.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
                 </div>
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Subject</label>
+                  <input id="aiEmailSubject" type="text" placeholder="e.g. Your agreement, Follow-up from our call" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Message (optional)</label>
+                  <textarea id="aiEmailMessage" placeholder="Add a personal note, instructions, or any details..." style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;min-height:72px;resize:vertical;font-family:inherit;"></textarea>
+                </div>
                 <div>
-                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Agreement Document</label>
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Attachment (optional)</label>
                   <label id="aiAgreementLabel" for="aiCallerAgreement" style="display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;padding:10px 14px;border:2px dashed #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;cursor:pointer;background:#fff;transition:border-color .2s,color .2s;">
                     <span style="font-size:18px;">📎</span>
                     <span id="aiAgreementFileName">Click to attach PDF, Word, or image</span>
@@ -1994,7 +2002,7 @@ body.modal-open{overflow:hidden}
           </div>
           <div class="call-panel" id="callPanel" style="padding:14px 20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-              <div class="subtle" id="callInfo">Click the mic and PayPilot will start listening. Responses generate automatically.</div>
+              <div class="subtle" id="callInfo">Click the mic to transcribe. Click Generate response when ready.</div>
               <div class="call-status idle" id="callStatus">Mic off</div>
             </div>
           </div>
@@ -2059,6 +2067,7 @@ body.modal-open{overflow:hidden}
                 <button class="app-btn line" onclick="saveToHistory()">Save</button>
                 <button class="app-btn line" id="speakBtn" onclick="speakResponse()">🔊 Speak</button>
                 <button class="app-btn blue" id="sendToCallBtn" onclick="sendCurrentToCall()" style="display:none;">📞 Send to Call</button>
+
                 <button class="app-btn line" onclick="submitFeedback('up')" title="This response was helpful">👍</button>
                 <button class="app-btn line" onclick="submitFeedback('down')" title="This response needs work">👎</button>
                 <button class="app-btn soft" onclick="clearCallMemory()" title="Start fresh for next call">New Call</button>
@@ -2083,6 +2092,38 @@ body.modal-open{overflow:hidden}
                 <div id="memoryList"></div>
               </div>
             </div>
+          </div>
+
+          <!-- SEND EMAIL PANEL -->
+          <div class="card" style="margin-top:16px;">
+            <div class="card-title" style="margin-bottom:14px;">✉️ Send Email to Customer</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+              <div>
+                <label class="label">To (customer email)</label>
+                <input class="input" id="quickEmailTo" type="email" placeholder="customer@email.com" style="margin-bottom:0;"/>
+              </div>
+              <div>
+                <label class="label">Your email (reply-to)</label>
+                <input class="input" id="quickEmailFrom" type="email" placeholder="you@yourcompany.com" style="margin-bottom:0;"/>
+              </div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <label class="label">Subject</label>
+              <input class="input" id="quickEmailSubject" type="text" placeholder="e.g. Agreement, Follow-up, Quote, Payment info" style="margin-bottom:0;"/>
+            </div>
+            <div style="margin-bottom:12px;">
+              <label class="label">Message</label>
+              <textarea class="textarea" id="quickEmailBody" placeholder="Type your message here..." style="min-height:90px;margin-bottom:0;"></textarea>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label class="label">Attachment (optional)</label>
+              <label id="quickEmailFileLabel" for="quickEmailFile" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:2px dashed #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;cursor:pointer;background:#fff;transition:border-color .2s,color .2s;">
+                <span style="font-size:18px;">📎</span>
+                <span id="quickEmailFileName">Click to attach a file (PDF, Word, image)</span>
+              </label>
+              <input id="quickEmailFile" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display:none;" onchange="quickEmailFileSelected(this)"/>
+            </div>
+            <button class="app-btn blue" id="quickEmailSendBtn" onclick="sendQuickEmail()" style="width:100%;padding:12px;">Send Email</button>
           </div>
 
           <!-- Starter-only note -->
@@ -3228,7 +3269,7 @@ function applyPlanDemo(plan){
   if(plan === 'starter'){
     managerTable.innerHTML = `
       <tr><td>Sean</td><td>18</td><td>74%</td><td>⚡ Building</td></tr>
-      <tr><td>Alex</td><td>12</td><td>69%</td><td>↗ Learning</td></tr>
+      <tr><td>Brandy</td><td>12</td><td>69%</td><td>↗ Learning</td></tr>
       <tr><td>Tori</td><td>9</td><td>71%</td><td>✅ Steady</td></tr>
     `;
   } else if(plan === 'enterprise'){
@@ -3407,65 +3448,98 @@ function detectObjectionType(text){
   return 'general';
 }
 
-function buildSystemPrompt(tone, language, objectionType){
-  const planContext = {
-    starter: 'Keep responses short, clear, and simple. One or two sentences max.',
-    pro: 'Give confident, value-focused responses with a smooth soft close.',
-    enterprise: 'Focus on operational efficiency, team rollout, and measurable business value.'
-  }[currentPlan] || 'Give confident, value-focused responses.';
+function buildSystemPrompt(tone, language){
+  const toneGuide = {
+    'Confident': 'Sound assured and direct, like you\'ve had this conversation a hundred times.',
+    'Warm': 'Lead with a little empathy — acknowledge what they said before you pivot.',
+    'Direct': 'Get right to it, no warm-up.',
+    'Calm': 'Stay even, unhurried, like nothing rattles you.'
+  }[tone] || 'Sound natural and confident.';
 
   const langInstruction = language !== 'English'
-    ? `IMPORTANT: Respond entirely in ${language}. Do not use English at all.`
-    : 'Respond in English.';
+    ? `Respond entirely in ${language}.`
+    : '';
 
-  const toneGuide = {
-    'Confident': 'Be direct, assured, and professional.',
-    'Warm': 'Be empathetic and understanding before pivoting to value.',
-    'Direct': 'Get straight to the point with no filler.',
-    'Calm': 'Stay measured, patient, and reassuring.'
-  }[tone] || 'Be professional and confident.';
+  return `You are Brandy, a live sales rep helping a payment processing company enroll suppliers into electronic payments (direct deposit / ACH). You're on the phone RIGHT NOW. ${toneGuide} ${langInstruction}
 
-  return `You are PayPilot AI, an elite real-time sales coach helping payment reps handle live supplier calls.
+STYLE: Talk exactly like a real person on a call — short sentences, contractions, natural rhythm. 2-3 sentences max. Respond directly to what they just said. End with a soft next step.
+BANNED words: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "I appreciate that", "No problem", "Totally understandable".
 
-TONE: ${toneGuide}
-PLAN CONTEXT: ${planContext}
-LANGUAGE: ${langInstruction}
+EXAMPLE RESPONSES (use as tone reference only — always respond to what was actually said):
+- Fee objection: "Yeah, the fee's the first thing everyone asks about. Most suppliers find it pays for itself once they're not chasing checks or manually reconciling — want me to walk you through it real quick?"
+- Checks preference: "Yeah, a lot of people start there. The real difference is you'd get payment detail with every transaction so there's no manual matching, and it clears faster. If you ever want to take a look, setup's about two minutes."
+- Not interested: "Fair enough, I won't push. Before I let you go though, can I just confirm your payment info is current? Don't want any delays on your end."
+- Needs approval: "Yeah, for sure — what usually helps is a one-liner for them: faster payments, remittance detail on every one, less check handling. Want me to send over the setup so it's ready when they have a minute?"
+- Security concern: "Yeah, it's a fair thing to ask. We're PCI DSS compliant, data's encrypted end-to-end, no stored account numbers. I can send over the security doc right now if that'd help."
 
-YOUR SCRIPT LIBRARY (use these as your foundation):
-- Opening: ${scriptLibrary.opening}
-- Gatekeeper: ${scriptLibrary.gatekeeper}
-- Fee Rebuttal: ${scriptLibrary.feeRebuttal}
-- Not Interested: ${scriptLibrary.notInterested}
-- Owner Approval: ${scriptLibrary.ownerApproval}
-- Check Preference: ${scriptLibrary.checkPreference}
-
-OBJECTION TYPE DETECTED: ${objectionType}
-
-RULES:
-1. Return ONLY the spoken rebuttal — no labels, no quotes, no explanation
-2. Sound natural and human, like a real sales rep talking on the phone
-3. Keep it concise — 2-4 sentences maximum
-4. Always end with either a soft close or a next step
-5. Use the script library as your foundation but make it feel natural, not robotic
-6. If there is conversation history, acknowledge what was already discussed`;
+Return ONLY the spoken words. No labels, no quotes, no explanation.`;
 }
 
 // ============================================================
 // TYPETEXT
 // ============================================================
 function typeText(el, text){
-  el.classList.add('loading');
-  el.textContent = '';
+  el.classList.remove('loading');
+  el.textContent = text;
   lastGeneratedText = text;
-  let i = 0;
-  const timer = setInterval(()=>{
-    el.textContent += text.charAt(i);
-    i++;
-    if(i >= text.length){
-      clearInterval(timer);
-      el.classList.remove('loading');
+}
+
+const UI_FILLERS = [
+  'Yeah, one sec...', 'Right, let me think...', 'Oh, for sure...', 'Mm, okay...', 'Yeah, so...', 'Sure, hang on...', 'Right, yeah...', 'Mm-hmm...'
+];
+
+async function streamResponse(inputId, outputId, system, chatMessages, maxTokens){
+  const output = document.getElementById(outputId);
+  output.classList.add('loading');
+  output.textContent = UI_FILLERS[Math.floor(Math.random() * UI_FILLERS.length)];
+  lastGeneratedText = '';
+
+  try {
+    const resp = await fetch('/api/generate-response', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system, messages: chatMessages, max_tokens: maxTokens || 120 })
+    });
+
+    if (!resp.ok) {
+      const data = await resp.json();
+      throw new Error(data.error || 'Server error');
     }
-  }, 10);
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let full = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const payload = line.slice(6).trim();
+        if (payload === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(payload);
+          if (parsed.token) {
+            if (!full) output.textContent = ''; // clear filler on first real token
+            full += parsed.token;
+            output.textContent = full;
+          }
+        } catch (_) {}
+      }
+    }
+
+    output.classList.remove('loading');
+    lastGeneratedText = full;
+    return full;
+  } catch (e) {
+    output.classList.remove('loading');
+    output.textContent = 'Error: ' + e.message;
+    throw e;
+  }
 }
 
 // ============================================================
@@ -3497,56 +3571,20 @@ async function generateResponse(inputId, outputId){
   const tone = toneEl ? toneEl.value : 'Confident';
   const language = langEl ? langEl.value : 'English';
 
-  // Detect objection type
   const objectionType = detectObjectionType(text);
   objectionCounts[objectionType] = (objectionCounts[objectionType] || 0) + 1;
 
-  // Show generating state
-  output.classList.add('loading');
-  output.textContent = 'Generating...';
-
-  // Add to conversation memory
   conversationMemory.push({ role: 'user', content: `Supplier said: "${text}"` });
 
-  // Build messages array with system prompt + memory
-  const systemPrompt = buildSystemPrompt(tone, language, objectionType);
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    ...conversationMemory.slice(-6) // last 3 exchanges for context
-  ];
+  const systemPrompt = buildSystemPrompt(tone, language);
+  const chatMessages = conversationMemory.slice(-6);
 
   try {
-    // Split system prompt from messages to match backend format
-    const systemMsg = messages.find(m => m.role === 'system');
-    const chatMessages = messages.filter(m => m.role !== 'system');
-
-    const resp = await fetch('/api/generate-response', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        system: systemMsg ? systemMsg.content : '',
-        messages: chatMessages,
-        max_tokens: 300
-      })
-    });
-
-    const data = await resp.json();
-    if(!resp.ok){ throw new Error(data.error || 'Server error'); }
-    const reply = data.reply || 'Could not generate a response. Please try again.';
-
-    // Store reply in memory
+    const reply = await streamResponse(inputId, outputId, systemPrompt, chatMessages, 120);
     conversationMemory.push({ role: 'assistant', content: reply });
     sessionHistory.push({ objection: text, reply, type: objectionType, tone, language, time: new Date().toLocaleTimeString() });
-
-    lastGeneratedText = reply;
-    typeText(output, reply);
-
-    // Update objection insights in analytics
     updateObjectionInsights();
-
   } catch(e){
-    output.classList.remove('loading');
-    output.textContent = 'Error: ' + (e.message || 'Could not reach server. Please try again.');
     toast(e.message || 'Could not reach server.');
   }
 }
@@ -3576,10 +3614,10 @@ async function translateResponse(){
     const resp = await fetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         system: systemMsg ? systemMsg.content : '',
         messages: chatMessages,
-        max_tokens: 300
+        max_tokens: 120
       })
     });
     const data = await resp.json();
@@ -3806,23 +3844,7 @@ async function startDeepgram(){
         document.getElementById('callInfo').textContent = 'Heard: "' + finalTranscriptBuffer + '"';
       }
 
-      clearTimeout(autoGenTimer);
-      autoGenTimer = setTimeout(() => {
-        if(finalTranscriptBuffer.trim()){
-          const bufferCopy = finalTranscriptBuffer;
-          finalTranscriptBuffer = '';
-          document.getElementById('callInfo').textContent = 'Generating response...';
-
-          if(detectedLanguage !== 'English'){
-            document.getElementById('assistInput').value = '';
-            generateBilingualResponse(bufferCopy);
-          } else {
-            document.getElementById('assistInput').value = bufferCopy;
-            generateResponse('assistInput', 'assistResponse');
-            setTimeout(() => { document.getElementById('assistInput').value = ''; }, 100);
-          }
-        }
-      }, 1500);
+      document.getElementById('callInfo').textContent = 'Ready — click Generate response when you want a rebuttal.';
     } else {
       inputBox.value = (finalTranscriptBuffer + ' ' + interimTranscript).trim();
     }
@@ -3994,45 +4016,15 @@ async function generateBilingualResponse(text){
   objectionCounts[objectionType] = (objectionCounts[objectionType] || 0) + 1;
 
   const output = document.getElementById('assistResponse');
-  output.classList.add('loading');
-  output.textContent = 'Generating...';
-
   conversationMemory.push({ role: 'user', content: 'Supplier said: "' + text + '"' });
 
-  const systemPrompt = buildSystemPrompt(tone, 'English', objectionType);
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    ...conversationMemory.slice(-6)
-  ];
-
   try {
-    const systemMsg = messages.find(m => m.role === 'system');
-    const chatMessages = messages.filter(m => m.role !== 'system');
-
-    const resp = await fetch('/api/generate-response', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        system: systemMsg ? systemMsg.content : '',
-        messages: chatMessages,
-        max_tokens: 300
-      })
-    });
-
-    const data = await resp.json();
-    if(!resp.ok) throw new Error(data.error || 'Server error');
-    const englishReply = data.reply || '';
-
+    const systemPrompt = buildSystemPrompt(tone, 'English');
+    const chatMessages = conversationMemory.slice(-6);
+    const englishReply = await streamResponse('assistInput', 'assistResponse', systemPrompt, chatMessages, 120);
     conversationMemory.push({ role: 'assistant', content: englishReply });
-    lastGeneratedText = englishReply;
-    typeText(output, englishReply);
     updateObjectionInsights();
-
-    // Step 2 — If foreign language detected, also translate for the supplier
-    if(detectedLanguage !== 'English'){
-      await generateTranslatedVersion(englishReply, detectedLanguage);
-    }
-
+    if(detectedLanguage !== 'English') await generateTranslatedVersion(englishReply, detectedLanguage);
   } catch(e){
     output.classList.remove('loading');
     output.textContent = 'Connection error. Please try again.';
@@ -4791,39 +4783,107 @@ async function sendAgreement(){
   const customerName  = document.getElementById('aiCallerName').value.trim();
   const callReason    = document.getElementById('aiCallerObjective').value.trim();
   const senderEmail   = document.getElementById('aiSenderEmail').value.trim();
+  const subject       = (document.getElementById('aiEmailSubject') || {}).value?.trim() || '';
+  const message       = (document.getElementById('aiEmailMessage') || {}).value?.trim() || '';
   const fileInput     = document.getElementById('aiCallerAgreement');
   const file          = fileInput && fileInput.files[0];
 
   if(!customerEmail){ toast('Enter the customer email first.'); return; }
-  if(!file){          toast('Attach an agreement file first.');  return; }
 
   const btn = document.getElementById('sendAgreementBtn');
   btn.textContent = 'Sending...';
   btn.disabled = true;
 
   try {
-    const fileContent = await new Promise((res, rej) => {
-      const reader = new FileReader();
-      reader.onload = e => res(e.target.result.split(',')[1]);
-      reader.onerror = rej;
-      reader.readAsDataURL(file);
-    });
+    let fileContent = null;
+    if(file){
+      fileContent = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const payload = { customerName, customerEmail, callReason, senderEmail, subject, message };
+    if(fileContent) { payload.fileContent = fileContent; payload.fileName = file.name; }
 
     const resp = await fetch('/api/send-agreement', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customerName, customerEmail, callReason, senderEmail, fileContent, fileName: file.name })
+      body: JSON.stringify(payload)
     });
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Failed to send');
-    toast('Agreement sent to ' + customerEmail + '!');
+    toast('Email sent to ' + customerEmail + '!');
     const box = document.getElementById('hudTranscript');
-    if(box) box.innerHTML += `<div style="color:#00ff88;margin-top:6px;">[ Agreement emailed to ${customerEmail} ]</div>`;
+    if(box) box.innerHTML += `<div style="color:#00ff88;margin-top:6px;">[ Email sent to ${customerEmail} ]</div>`;
   } catch(e) {
     toast('Send failed: ' + e.message);
   } finally {
-    btn.textContent = '📄 Send Agreement';
+    btn.textContent = '✉️ Send Email';
     btn.disabled = false;
+  }
+}
+
+async function sendQuickEmail(){
+  const to      = document.getElementById('quickEmailTo').value.trim();
+  const from    = document.getElementById('quickEmailFrom').value.trim();
+  const subject = document.getElementById('quickEmailSubject').value.trim();
+  const message = document.getElementById('quickEmailBody').value.trim();
+  const fileInput = document.getElementById('quickEmailFile');
+  const file    = fileInput && fileInput.files[0];
+
+  if(!to)      { toast('Enter the customer email.'); return; }
+  if(!subject) { toast('Enter a subject line.'); return; }
+  if(!message && !file){ toast('Add a message or attach a file.'); return; }
+
+  const btn = document.getElementById('quickEmailSendBtn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    let fileContent = null;
+    if(file){
+      fileContent = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const payload = { customerEmail: to, senderEmail: from, subject, message };
+    if(fileContent){ payload.fileContent = fileContent; payload.fileName = file.name; }
+
+    const resp = await fetch('/api/send-agreement', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data.error || 'Failed to send');
+    toast('Email sent to ' + to + '!');
+    document.getElementById('quickEmailBody').value = '';
+    document.getElementById('quickEmailSubject').value = '';
+    document.getElementById('quickEmailFile').value = '';
+    document.getElementById('quickEmailFileName').textContent = 'Click to attach a file (PDF, Word, image)';
+    document.getElementById('quickEmailFileLabel').style.borderColor = '';
+  } catch(e){
+    toast('Send failed: ' + e.message);
+  } finally {
+    btn.textContent = 'Send Email';
+    btn.disabled = false;
+  }
+}
+
+function quickEmailFileSelected(input){
+  const label = document.getElementById('quickEmailFileName');
+  const wrap  = document.getElementById('quickEmailFileLabel');
+  if(input.files[0]){
+    label.textContent = input.files[0].name;
+    wrap.style.borderColor = '#1a6fff';
+    wrap.style.color = '#1a6fff';
   }
 }
 
@@ -5327,7 +5387,7 @@ function closePrivacyModal(){
   <div id="hudTranscript" style="font-size:12px;color:#7effa0;font-family:monospace;max-height:60px;overflow-y:auto;margin-bottom:10px;min-height:0;line-height:1.7;padding:0 4px;text-shadow:0 0 6px rgba(0,255,136,.6);"></div>
   <div style="display:flex;gap:10px;">
     <button onclick="endAiCall()" style="flex:1;padding:10px;background:rgba(239,68,68,.2);color:#f87171;border:1px solid rgba(239,68,68,.5);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(239,68,68,.5);">■ End Call</button>
-    <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:10px;background:rgba(0,255,136,.12);color:#00ff88;border:1px solid rgba(0,255,136,.4);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(0,255,136,.5);">📄 Send Agreement</button>
+    <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:10px;background:rgba(0,255,136,.12);color:#00ff88;border:1px solid rgba(0,255,136,.4);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(0,255,136,.5);">✉️ Send Email</button>
   </div>
 </div>
 </body>

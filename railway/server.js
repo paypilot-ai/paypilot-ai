@@ -10,13 +10,14 @@ const wss = new WebSocketServer({ noServer: true });
 const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
+const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'oWAxZDx7w5VEj9dCyTzz'; // Grace — light Southern accent
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Alex, a sharp and friendly agent on a live phone call. ' +
-  'Speak in 1-2 short sentences — punchy, natural, human. Use contractions. ' +
-  'Use natural pivots like "Yeah,", "Look,", "Here\'s the thing —", "Fair enough —". ' +
-  'Never say "I understand", "Absolutely", "Certainly", or any corporate filler. ' +
-  'Your goal is to collect payment or set up a payment plan. Be direct and helpful.';
+  'You are Brandy on a live phone call. Warm, Southern, unhurried. ' +
+  'Reply in ONE sentence only — 15 words max. ' +
+  'Contractions always. Natural openers: "Yeah,", "So,", "Look —", "Here\'s the thing,". ' +
+  'Never list. Never explain. Just respond and move forward. ' +
+  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "I appreciate that", "No problem". ' +
+  'Goal: keep the conversation moving toward resolving a payment or setting a plan.';
 
 const sessions = new Map();
 
@@ -135,7 +136,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=600&utterance_end_ms=1200';
+    '&interim_results=false&endpointing=700&utterance_end_ms=1800';
 
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
@@ -146,6 +147,14 @@ function connectDeepgram(session) {
     const result = JSON.parse(data);
     const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
     if (!transcript || !result.is_final) return;
+
+    // Ignore noise: must be at least 3 words and have meaningful content
+    const words = transcript.split(/\s+/).filter(Boolean);
+    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|yeah|yep|ok|okay|right|sure|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
+    if (words.length < 3 || NOISE_ONLY.test(transcript)) {
+      console.log('[prospect] ignored (noise):', transcript);
+      return;
+    }
 
     console.log('[prospect]', transcript);
     pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
@@ -173,25 +182,75 @@ async function sendGreeting(session) {
   session.state = 'listening';
 }
 
+const FILLER_PHRASES = [
+  'Yeah, sure.',
+  'Oh, for sure.',
+  'Right, so...',
+  'Yeah, good question.',
+  'Mm, let me think on that.',
+  'Yeah, I hear you.',
+  'Sure, one sec.',
+  'Mm-hmm, okay.',
+  'Right, yeah.',
+  'Oh, totally.',
+];
+
+function pickFiller() {
+  return FILLER_PHRASES[Math.floor(Math.random() * FILLER_PHRASES.length)];
+}
+
 async function generateAndSpeak(session) {
   const messages = [
     { role: 'system', content: SYSTEM_PROMPT },
     ...session.history.slice(-12)
   ];
+
+  // Fire filler immediately (don't await) to fill silence while OpenAI runs
+  speakFiller(session, pickFiller()).catch(() => {});
+
+  // Get OpenAI reply — this is the actual bottleneck
   const reply = await callOpenAI(messages);
+
   if (!reply) { session.state = 'listening'; return; }
+
+  // Clear any filler audio still playing before speaking the real response
+  if (session.twilioWs?.readyState === WebSocket.OPEN) {
+    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+  }
+
   session.history.push({ role: 'assistant', content: reply });
   pushToBrowser(session, { event: 'ai-response', text: reply });
   await speakToTwilio(session, reply);
   session.state = 'listening';
 }
 
+// Make text sound more natural when spoken by ElevenLabs
+function prepareForSpeech(text) {
+  return text
+    .trim()
+    // em dash -> natural pause with comma
+    .replace(/\s*—\s*/g, ', ')
+    // "so " at start of clause after comma -> slight beat
+    .replace(/,\s*(so|and|but|because)\s+/gi, (_, w) => `, ${w} `)
+    // spaces before punctuation
+    .replace(/\s+([.,!?])/g, '$1')
+    // ensure ends with punctuation
+    .replace(/([^.!?])$/, '$1.');
+}
+
+const ELEVENLABS_VOICE_SETTINGS = {
+  model_id: 'eleven_turbo_v2_5',
+  output_format: 'pcm_16000',
+  optimize_streaming_latency: 2,
+  voice_settings: { stability: 0.40, similarity_boost: 0.85, style: 0.35, speed: 0.93 }
+};
+
 async function callOpenAI(messages) {
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 120 })
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 55, temperature: 0.7 })
     });
     const data = await resp.json();
     return data.choices?.[0]?.message?.content?.trim() || null;
@@ -199,6 +258,42 @@ async function callOpenAI(messages) {
     console.error('[openai] error:', e.message);
     return null;
   }
+}
+
+async function speakFiller(session, text) {
+  if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
+  pushToBrowser(session, { event: 'ai-speaking', text });
+  try {
+    const resp = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream`,
+      {
+        method: 'POST',
+        headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
+      }
+    );
+    if (!resp.ok) return;
+    const reader = resp.body.getReader();
+    let buffer = Buffer.alloc(0);
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value?.length) continue;
+      if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
+      buffer = Buffer.concat([buffer, Buffer.from(value)]);
+      while (buffer.length >= 320) {
+        const chunk = buffer.slice(0, 320);
+        buffer = buffer.slice(320);
+        const pcm16k = new Int16Array(chunk.buffer, chunk.byteOffset, 160);
+        const mulaw = pcm16ToMulaw(pcm16k);
+        session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: mulaw.toString('base64') } }));
+      }
+    }
+    if (buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
+      const pcm16k = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
+      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm16k).toString('base64') } }));
+    }
+  } catch (_) {}
 }
 
 async function speakToTwilio(session, text) {
@@ -213,12 +308,7 @@ async function speakToTwilio(session, text) {
       {
         method: 'POST',
         headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          model_id: 'eleven_turbo_v2',
-          output_format: 'pcm_16000',
-          voice_settings: { stability: 0.5, similarity_boost: 0.75 }
-        })
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
       }
     );
 
