@@ -5,8 +5,9 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method === 'GET') {
+    const railwayUrl = (process.env.RAILWAY_WS_URL || '').trim();
     return res.status(200).json({
-      mode: 'twiml',
+      RAILWAY_WS_URL: railwayUrl || '(not set)',
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
     });
@@ -19,10 +20,7 @@ module.exports = async function handler(req, res) {
   const fromNumber = (process.env.TWILIO_PHONE_NUMBER || '').trim();
 
   if (!accountSid || !authToken || !fromNumber) {
-    return res.status(500).json({
-      error: 'Twilio credentials not configured',
-      has_sid: !!accountSid, has_token: !!authToken, has_number: !!fromNumber,
-    });
+    return res.status(500).json({ error: 'Twilio credentials not configured' });
   }
 
   const { toNumber, customerName, callReason, companyName } = req.body || {};
@@ -31,12 +29,43 @@ module.exports = async function handler(req, res) {
   const cleaned = toNumber.replace(/\D/g, '');
   const e164 = cleaned.startsWith('1') ? '+' + cleaned : '+1' + cleaned;
 
+  const n = encodeURIComponent(customerName || '');
+  const r = encodeURIComponent(callReason   || '');
+  const c = encodeURIComponent(companyName  || '');
+
   try {
     const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
-    const n = encodeURIComponent(customerName || '');
-    const r = encodeURIComponent(callReason   || '');
-    const c = encodeURIComponent(companyName  || '');
 
+    // Try Railway realtime path first
+    const rawRailway = (process.env.RAILWAY_WS_URL || '').trim();
+    const railwayHttp = rawRailway
+      ? rawRailway.replace(/^wss?:\/\//, 'https://').replace(/^https?:\/\//, 'https://')
+      : '';
+
+    if (railwayHttp) {
+      let railwayUp = false;
+      try {
+        const probe = await fetch(`${railwayHttp}/health`, { signal: AbortSignal.timeout(4000) });
+        railwayUp = probe.ok;
+      } catch (_) {}
+
+      if (railwayUp) {
+        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}`;
+        const response = await fetch(
+          `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
+          {
+            method: 'POST',
+            headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
+          }
+        );
+        const data = await response.json();
+        if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code, mode: 'realtime' });
+        return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode: 'realtime' });
+      }
+    }
+
+    // Fallback: Polly TwiML path
     const host  = req.headers['x-forwarded-host'] || req.headers.host || 'paypilot-ai.vercel.app';
     const proto = req.headers['x-forwarded-proto'] || 'https';
     const twimlUrl = `${proto}://${host}/api/ai-twiml?n=${n}&r=${r}&c=${c}`;
@@ -49,10 +78,10 @@ module.exports = async function handler(req, res) {
         body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
       }
     );
-
     const data = await response.json();
-    if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code });
-    return res.status(200).json({ callSid: data.sid, status: data.status, to: e164 });
+    if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code, mode: 'twiml' });
+    return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode: 'twiml' });
+
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
