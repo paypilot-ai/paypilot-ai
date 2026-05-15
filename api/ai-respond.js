@@ -86,14 +86,31 @@ export default async function handler(req) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.8 })
     });
+
+    if (!resp.ok) {
+      const errText = await resp.text();
+      console.error('OpenAI error', resp.status, errText);
+      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "So where were we?";
+      const h = b64enc(history.slice(0, -1));
+      return new Response(gatherTwiml(last, h, 0, turns, n, r, c),
+        { headers: { 'Content-Type': 'text/xml' } });
+    }
+
     const d = await resp.json();
     const raw   = d.choices?.[0]?.message?.content?.trim() || '';
     const wantsEnd = raw.includes('[END]');
     const hangup   = wantsEnd && turns >= 3;
     const reply    = raw.replace(/\[END\]/g, '').trim();
 
+    if (!reply) {
+      console.error('Empty reply from OpenAI', JSON.stringify(d));
+      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "Sorry, what was that?";
+      const h = b64enc(history.slice(0, -1));
+      return new Response(gatherTwiml(last, h, 0, turns, n, r, c),
+        { headers: { 'Content-Type': 'text/xml' } });
+    }
+
     history.push({ role: 'assistant', content: reply });
-    // trim history if too large
     while (new TextEncoder().encode(JSON.stringify(history)).length > 5500) history.splice(0, 2);
 
     if (hangup) {
@@ -105,8 +122,11 @@ export default async function handler(req) {
     return new Response(gatherTwiml(reply, h, 0, turns + 1, n, r, c),
       { headers: { 'Content-Type': 'text/xml' } });
 
-  } catch {
-    return new Response(`<?xml version="1.0" encoding="UTF-8"?><Response>${sayTwiml("Sorry, hit a snag — I'll follow up shortly. Have a good one!")}<Hangup/></Response>`,
+  } catch (err) {
+    console.error('ai-respond exception:', err?.message || err);
+    const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "Hey, you still there?";
+    const h = b64enc(history);
+    return new Response(gatherTwiml(last, h, 0, turns, n, r, c),
       { headers: { 'Content-Type': 'text/xml' } });
   }
 }
