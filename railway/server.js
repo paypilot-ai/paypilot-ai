@@ -32,12 +32,16 @@ app.get('/twiml-stream', (req, res) => {
   const n = req.query.n || '';
   const r = req.query.r || '';
   const c = req.query.c || '';
-  const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+  // Railway sets RAILWAY_PUBLIC_DOMAIN; fall back to forwarded host
+  const host = process.env.RAILWAY_PUBLIC_DOMAIN ||
+               req.headers['x-forwarded-host'] ||
+               req.headers.host || '';
+  console.log('[twiml-stream] host:', host, 'headers:', JSON.stringify(req.headers));
   const nn = encodeURIComponent(n);
   const rr = encodeURIComponent(r);
   const cc = encodeURIComponent(c);
-  // &amp; required in XML attributes — bare & makes TwiML invalid
   const wsUrl = `wss://${host}/twilio-realtime?n=${nn}&amp;r=${rr}&amp;c=${cc}`;
+  console.log('[twiml-stream] wsUrl:', wsUrl);
   res.setHeader('Content-Type', 'text/xml');
   res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}"/></Connect></Response>`);
 });
