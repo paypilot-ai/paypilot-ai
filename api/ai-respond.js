@@ -1,4 +1,4 @@
-const OPENAI_KEY = (process.env.OPENAI_API_KEY || '').trim();
+const OPENAI_KEY = (process.env.OPENAI_API_KEY || '').trim().replace(/^=+/, '');
 
 function buildPrompt(customerName, companyName, callReason, turns) {
   const company = companyName || 'our company';

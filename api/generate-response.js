@@ -1,7 +1,7 @@
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = (process.env.OPENAI_API_KEY || '').trim();
+  const apiKey = (process.env.OPENAI_API_KEY || '').trim().replace(/^=+/, '');
   if (!apiKey) return res.status(500).json({ error: 'OpenAI key not configured' });
 
   const body = req.body || {};
