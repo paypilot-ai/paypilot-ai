@@ -26,6 +26,7 @@ module.exports = async function handler(req, res) {
   const cleaned = toNumber.replace(/\D/g, '');
   const e164 = cleaned.startsWith('1') ? '+' + cleaned : '+1' + cleaned;
 
+  console.log('twilio-call: sid_len=' + accountSid.length + ' token_len=' + authToken.length + ' number=' + fromNumber);
   try {
     const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
     const twimlUrl = `https://paypilot-ai.vercel.app/api/ai-twiml`;
