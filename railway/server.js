@@ -148,10 +148,10 @@ function connectDeepgram(session) {
     const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
     if (!transcript || !result.is_final) return;
 
-    // Ignore noise: must be at least 3 words and have meaningful content
+    // Ignore pure noise sounds but allow any real word including short answers
     const words = transcript.split(/\s+/).filter(Boolean);
-    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|yeah|yep|ok|okay|right|sure|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
-    if (words.length < 3 || NOISE_ONLY.test(transcript)) {
+    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
+    if (words.length < 1 || NOISE_ONLY.test(transcript)) {
       console.log('[prospect] ignored (noise):', transcript);
       return;
     }
