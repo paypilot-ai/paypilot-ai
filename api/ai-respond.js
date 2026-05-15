@@ -1,5 +1,3 @@
-export const config = { runtime: 'edge' };
-
 const VOICE = 'Polly.Ruth-Neural';
 
 function xmlEsc(s) {
@@ -9,16 +7,13 @@ function say(text) {
   return `<Say voice="${VOICE}">${xmlEsc(text)}</Say>`;
 }
 function b64enc(obj) {
-  const s = encodeURIComponent(JSON.stringify(obj))
-    .replace(/%([0-9A-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
-  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  return Buffer.from(JSON.stringify(obj)).toString('base64')
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 }
 function b64dec(str) {
   let s = str.replace(/-/g,'+').replace(/_/g,'/');
   s += '===='.slice(0, (4 - s.length % 4) % 4);
-  return JSON.parse(decodeURIComponent(
-    atob(s).replace(/[\x80-\xFF]/g, c => '%' + ('0' + c.charCodeAt(0).toString(16)).slice(-2).toUpperCase())
-  ));
+  return JSON.parse(Buffer.from(s, 'base64').toString('utf8'));
 }
 function gather(sayXml, historyB64, retries, turns, n, r, c) {
   const action = `/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
@@ -38,7 +33,7 @@ function buildPrompt(customerName, companyName, callReason) {
   return `You are Brandy, a real Southern woman on a live call for ${company}.${reason ? ` Calling about: ${reason}.` : ''} Talking to ${name}.
 
 You are NOT a bot. You are a real person who genuinely enjoys talking to people.
-Make ${name} comfortable first — match their energy, listen closely, reflect back what they say.
+Make ${name} comfortable first — match their energy, listen closely.
 Once they seem comfortable, naturally work toward why you called.
 
 Rules:
@@ -48,40 +43,36 @@ Rules:
 - After THREE clear refusals → add [END] on its own line.`;
 }
 
-export default async function handler(req) {
+module.exports = async function handler(req, res) {
+  res.setHeader('Content-Type', 'text/xml');
   try {
-    const url = new URL(req.url);
-    const n       = url.searchParams.get('n') || '';
-    const r       = url.searchParams.get('r') || '';
-    const c       = url.searchParams.get('c') || '';
-    const retries = parseInt(url.searchParams.get('retries') || '0');
-    const turns   = parseInt(url.searchParams.get('turns')   || '0');
-    const historyParam = url.searchParams.get('h') || '';
+    const n       = (req.query.n || '').trim();
+    const r       = (req.query.r || '').trim();
+    const c       = (req.query.c || '').trim();
+    const retries = parseInt(req.query.retries || '0');
+    const turns   = parseInt(req.query.turns   || '0');
+    const historyParam = req.query.h || '';
 
-    const formData = await req.formData();
-    const transcript = (formData.get('SpeechResult') || '').trim();
+    const transcript = ((req.body && req.body.SpeechResult) || '').trim();
 
     let history = [];
     try { if (historyParam) history = b64dec(historyParam); } catch {}
 
     if (!transcript) {
       if (retries >= 1) {
-        return new Response(`<?xml version="1.0" encoding="UTF-8"?><Response>${say("Hey, looks like we got cut off. I'll try you again!")}<Hangup/></Response>`,
-          { headers: { 'Content-Type': 'text/xml' } });
+        return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say("Hey, looks like we got cut off. I'll try you again!")}<Hangup/></Response>`);
       }
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "I didn't catch that.";
       const h = b64enc(history);
-      return new Response(gather(say('Sorry, missed that. ' + last), h, retries + 1, turns, n, r, c),
-        { headers: { 'Content-Type': 'text/xml' } });
+      return res.status(200).send(gather(say('Sorry, missed that. ' + last), h, retries + 1, turns, n, r, c));
     }
 
     const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|aah+|oop+|yep|nope|yeah|nah|ok|okay)\s*[.?!]?$/i;
-    const words = transcript.trim().split(/\s+/).filter(Boolean);
-    if (words.length < 1 || (words.length === 1 && NOISE_ONLY.test(transcript.trim()))) {
+    const words = transcript.split(/\s+/).filter(Boolean);
+    if (words.length < 1 || (words.length === 1 && NOISE_ONLY.test(transcript))) {
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || '';
       const h = b64enc(history);
-      return new Response(gather(say(last), h, retries, turns, n, r, c),
-        { headers: { 'Content-Type': 'text/xml' } });
+      return res.status(200).send(gather(say(last), h, retries, turns, n, r, c));
     }
 
     history.push({ role: 'user', content: transcript });
@@ -98,8 +89,7 @@ export default async function handler(req) {
       const reply = intros[Math.floor(Math.random() * intros.length)];
       history.push({ role: 'assistant', content: reply });
       const h = b64enc(history);
-      return new Response(gather(say(reply), h, 0, 1, n, r, c),
-        { headers: { 'Content-Type': 'text/xml' } });
+      return res.status(200).send(gather(say(reply), h, 0, 1, n, r, c));
     }
 
     const messages = [{ role: 'system', content: buildPrompt(n, c, r) }, ...history.slice(-12)];
@@ -113,8 +103,7 @@ export default async function handler(req) {
     if (!resp.ok) {
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || 'So where were we?';
       const h = b64enc(history.slice(0, -1));
-      return new Response(gather(say(last), h, 0, turns, n, r, c),
-        { headers: { 'Content-Type': 'text/xml' } });
+      return res.status(200).send(gather(say(last), h, 0, turns, n, r, c));
     }
 
     const d = await resp.json();
@@ -126,26 +115,21 @@ export default async function handler(req) {
     if (!reply) {
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || 'Sorry, what was that?';
       const h = b64enc(history.slice(0, -1));
-      return new Response(gather(say(last), h, 0, turns, n, r, c),
-        { headers: { 'Content-Type': 'text/xml' } });
+      return res.status(200).send(gather(say(last), h, 0, turns, n, r, c));
     }
 
     history.push({ role: 'assistant', content: reply });
-    while (new TextEncoder().encode(JSON.stringify(history)).length > 5500) history.splice(0, 2);
+    while (Buffer.byteLength(JSON.stringify(history)) > 5500) history.splice(0, 2);
 
     if (hangup) {
-      return new Response(`<?xml version="1.0" encoding="UTF-8"?><Response>${say(reply)}<Hangup/></Response>`,
-        { headers: { 'Content-Type': 'text/xml' } });
+      return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say(reply)}<Hangup/></Response>`);
     }
 
     const h = b64enc(history);
-    return new Response(gather(say(reply), h, 0, turns + 1, n, r, c),
-      { headers: { 'Content-Type': 'text/xml' } });
+    return res.status(200).send(gather(say(reply), h, 0, turns + 1, n, r, c));
 
   } catch (err) {
-    return new Response(
-      `<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="${VOICE}">Sorry about that, I'll call you right back!</Say><Hangup/></Response>`,
-      { status: 200, headers: { 'Content-Type': 'text/xml' } }
-    );
+    console.error('ai-respond error:', err.message);
+    return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say("Sorry about that, I'll call you right back!")}<Hangup/></Response>`);
   }
-}
+};
