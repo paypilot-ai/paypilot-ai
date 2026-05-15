@@ -140,7 +140,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=500&utterance_end_ms=1200';
+    '&interim_results=false&endpointing=200&utterance_end_ms=800';
 
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
@@ -245,13 +245,15 @@ function prepareForSpeech(text) {
 const ELEVENLABS_FILLER_SETTINGS = {
   model_id: 'eleven_flash_v2_5',
   output_format: 'pcm_16000',
+  apply_text_normalization: 'off',
   voice_settings: { stability: 0.25, similarity_boost: 0.75, style: 0.50, speed: 0.93 }
 };
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_turbo_v2_5',
+  model_id: 'eleven_flash_v2_5',
   output_format: 'pcm_16000',
-  optimize_streaming_latency: 2,
+  optimize_streaming_latency: 4,
+  apply_text_normalization: 'off',
   voice_settings: { stability: 0.15, similarity_boost: 0.75, style: 0.70, use_speaker_boost: true, speed: 0.91 }
 };
 
@@ -260,7 +262,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 55, temperature: 0.7 })
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 40, temperature: 0.7 })
     });
     const data = await resp.json();
     return data.choices?.[0]?.message?.content?.trim() || null;
