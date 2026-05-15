@@ -1776,22 +1776,7 @@ body.modal-open{overflow:hidden}
                   </thead>
                   <tbody id="managerTable">
                     <tr>
-                      <td style="padding:10px 10px 10px 0;border-top:1px solid #f0f4f8;font-weight:700;color:#0d1b2e;font-size:14px;">Sean</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;color:#3a5070;font-size:14px;font-weight:600;">43</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;font-size:14px;"><span style="background:#dcfce7;color:#15803d;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;">91%</span></td>
-                      <td style="padding:10px 0 10px 10px;border-top:1px solid #f0f4f8;font-size:14px;font-weight:700;color:#0d1b2e;">🔥 Hot</td>
-                    </tr>
-                    <tr>
-                      <td style="padding:10px 10px 10px 0;border-top:1px solid #f0f4f8;font-weight:700;color:#0d1b2e;font-size:14px;">Cory</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;color:#3a5070;font-size:14px;font-weight:600;">31</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;font-size:14px;"><span style="background:#dbeafe;color:#1d4ed8;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;">84%</span></td>
-                      <td style="padding:10px 0 10px 10px;border-top:1px solid #f0f4f8;font-size:14px;font-weight:700;color:#0d1b2e;">✅ Strong</td>
-                    </tr>
-                    <tr>
-                      <td style="padding:10px 10px 10px 0;border-top:1px solid #f0f4f8;font-weight:700;color:#0d1b2e;font-size:14px;">Jess</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;color:#3a5070;font-size:14px;font-weight:600;">26</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;font-size:14px;"><span style="background:#fef9c3;color:#854d0e;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;">78%</span></td>
-                      <td style="padding:10px 0 10px 10px;border-top:1px solid #f0f4f8;font-size:14px;font-weight:700;color:#0d1b2e;">↗ Improving</td>
+                      <td colspan="4" style="padding:18px 0;color:#6b7fa3;font-size:14px;text-align:center;">No rep data yet — calls will appear here.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -2361,9 +2346,9 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
 
               <!-- Avatar + name hero -->
               <div style="display:flex;align-items:center;gap:18px;margin-bottom:24px;padding:20px;border-radius:18px;background:linear-gradient(135deg,#07101f,#0d1e38);border:1px solid rgba(26,111,255,.20);">
-                <div class="avatar" id="avatarBox" style="flex-shrink:0;width:72px;height:72px;font-size:28px;border-radius:20px;">S</div>
+                <div class="avatar" id="avatarBox" style="flex-shrink:0;width:72px;height:72px;font-size:28px;border-radius:20px;">?</div>
                 <div>
-                  <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.03em;" id="profileNameView">Sean</div>
+                  <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.03em;" id="profileNameView">Your Name</div>
                   <div style="color:rgba(255,255,255,.50);font-size:13px;margin-top:2px;">Supplier Hub Sales</div>
                   <div style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 10px;border-radius:999px;background:rgba(26,111,255,.20);border:1px solid rgba(26,111,255,.30);">
                     <span style="width:6px;height:6px;border-radius:50%;background:#00d4ff;"></span>
@@ -2373,7 +2358,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               </div>
 
               <label class="label" style="color:var(--text-2);font-size:11px;">Full Name</label>
-              <input class="input" id="profileName" value="Sean" style="border:1.5px solid #dbeafe;background:#f8fbff;color:var(--text);font-size:15px;font-weight:500;" />
+              <input class="input" id="profileName" value="" placeholder="Enter your name" style="border:1.5px solid #dbeafe;background:#f8fbff;color:var(--text);font-size:15px;font-weight:500;" />
 
               <label class="label" style="color:var(--text-2);font-size:11px;">Bio</label>
               <textarea class="textarea" id="profileBio" style="border:1.5px solid #dbeafe;background:#f8fbff;color:var(--text);font-size:14px;min-height:90px;">Charismatic sales rep using AI to move faster on live calls.</textarea>
@@ -3194,9 +3179,6 @@ function enterRealApp(){
   document.getElementById('starterAnalyticsNote').style.display = 'none';
   document.getElementById('enterpriseDashboardCard').style.display = 'none';
 
-  // Update manager table
-  document.getElementById('managerTable').innerHTML = '<tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr><tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr><tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>';
-
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
   // Hide billing + pricing from live/paid accounts
@@ -3208,7 +3190,7 @@ function enterRealApp(){
   if(pricingBtn2) pricingBtn2.style.display = 'none';
   showPage('dashboard');
   resetDemoState();
-  toast('Welcome back, Sean.');
+  toast('Welcome back!');
 }
 
 function enterPlanDemo(plan){
@@ -3245,26 +3227,8 @@ function applyPlanDemo(plan){
     <div class="script-item"><b>${o[0]}</b><span class="subtle">${o[1]}</span></div>
   `).join('');
 
-  const managerTable = document.getElementById('managerTable');
-  if(plan === 'starter'){
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>18</td><td>74%</td><td>⚡ Building</td></tr>
-      <tr><td>Brandy</td><td>12</td><td>69%</td><td>↗ Learning</td></tr>
-      <tr><td>Tori</td><td>9</td><td>71%</td><td>✅ Steady</td></tr>
-    `;
-  } else if(plan === 'enterprise'){
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>112</td><td>95%</td><td>🔥 Elite</td></tr>
-      <tr><td>Cory</td><td>98</td><td>91%</td><td>✅ Strong</td></tr>
-      <tr><td>Jess</td><td>87</td><td>89%</td><td>↗ Growing</td></tr>
-    `;
-  } else {
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr>
-      <tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr>
-      <tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>
-    `;
-  }
+  document.getElementById('managerTable').innerHTML =
+    '<tr><td colspan="4" style="padding:18px 0;color:#6b7fa3;font-size:14px;text-align:center;">No rep data yet — calls will appear here.</td></tr>';
 
   // Sync billing current plan display
   const billingPlanName = document.getElementById('billingPlanName');
@@ -3721,7 +3685,7 @@ function saveSettings(){
 }
 
 function resetSettings(){
-  document.getElementById('profileName').value = 'Sean';
+  document.getElementById('profileName').value = '';
   document.getElementById('profileBio').value = 'Charismatic sales rep using AI to move faster on live calls.';
   document.getElementById('profileCompany').value = 'PayPilot AI';
   document.getElementById('profilePlan').value = currentPlan;
