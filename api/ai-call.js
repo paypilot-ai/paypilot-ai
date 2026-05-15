@@ -28,15 +28,24 @@ module.exports = async function handler(req, res) {
 
   try {
     const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
-    const params = new URLSearchParams({ n: customerName || '', r: callReason || '', c: companyName || '' });
-    const twimlUrl = `https://paypilot-ai.vercel.app/api/ai-twiml?${params}`;
+
+    const n = encodeURIComponent(customerName || '');
+    const r = encodeURIComponent(callReason   || '');
+    const c = encodeURIComponent(companyName  || '');
+
+    const railwayUrl = (process.env.RAILWAY_WS_URL || 'wss://paypilot-ai-production.up.railway.app')
+      .replace(/^https?/, 'wss').replace(/^wss?:/, 'wss:');
+    const streamUrl = `${railwayUrl}/twilio-realtime?n=${n}&r=${r}&c=${c}`;
+
+    // &amp; required in XML attribute values
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${streamUrl}"/></Connect></Response>`;
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
       {
         method: 'POST',
         headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
+        body: new URLSearchParams({ To: e164, From: fromNumber, Twiml: twiml }).toString()
       }
     );
 
