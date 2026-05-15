@@ -2067,7 +2067,7 @@ body.modal-open{overflow:hidden}
                 <button class="app-btn line" onclick="saveToHistory()">Save</button>
                 <button class="app-btn line" id="speakBtn" onclick="speakResponse()">🔊 Speak</button>
                 <button class="app-btn blue" id="sendToCallBtn" onclick="sendCurrentToCall()" style="display:none;">📞 Send to Call</button>
-                <button class="app-btn soft" id="refineBtn" onclick="refineWithAI()" style="display:none;">✨ Refine with AI</button>
+
                 <button class="app-btn line" onclick="submitFeedback('up')" title="This response was helpful">👍</button>
                 <button class="app-btn line" onclick="submitFeedback('down')" title="This response needs work">👎</button>
                 <button class="app-btn soft" onclick="clearCallMemory()" title="Start fresh for next call">New Call</button>
@@ -3460,53 +3460,19 @@ function buildSystemPrompt(tone, language){
     ? `Respond entirely in ${language}.`
     : '';
 
-  return `You are a real sales rep on a live call. ${toneGuide} ${langInstruction}
-Talk like a person, not a script — short sentences, contractions, natural rhythm. 2-3 sentences max. End with a next step or soft close. Return only the spoken words.`;
-}
+  return `You are a live sales rep helping a payment processing company enroll suppliers into electronic payments (direct deposit / ACH). You're on the phone RIGHT NOW. ${toneGuide} ${langInstruction}
 
-// Map objection type -> instant smart reply (by plan)
-const instantReplies = {
-  fee: {
-    starter: "Yeah, I hear that a lot. Most folks find the fee more than covers itself once they're not chasing checks or manually reconciling payments. Want me to walk you through it real quick?",
-    pro: "Yeah, the fee's the first thing everyone asks about. Here's the thing — most suppliers end up saving more on check handling and payment delays than they pay in the fee. Want me to show you what the setup looks like? Takes about two minutes.",
-    enterprise: "Yeah, fair. At your volume, that fee typically comes out ahead once you factor in check handling, faster clearing, and the remittance data cleaning up your reconciliation. I can walk you through the numbers — takes two minutes."
-  },
-  check_preference: {
-    starter: "Yeah, totally fair. The main thing you'd get on top of checks is just faster delivery and a remittance that comes with every payment — less hunting things down.",
-    pro: "Yeah, a lot of people start there. The real difference is you'd get payment detail with every transaction so there's no manual matching, and it clears faster. If you ever want to take a look, setup's about two minutes.",
-    enterprise: "Sure, no rush. When your team's ready, we can layer automated remittance matching on top of what you've got — cuts reconciliation time pretty significantly. The option's always open."
-  },
-  not_interested: {
-    starter: "Fair enough. Hey, before I let you go — can I just make sure your payment info's current so there aren't any delays on your next check?",
-    pro: "Fair enough, I won't push. Before I let you go though, can I just confirm your payment details are up to date? Don't want any delays on your end. And if things change down the road, we'll still be here.",
-    enterprise: "Fair enough. Before I hang up, let me just make sure your remittance setup's current so your team doesn't hit any hiccups on the next payment cycle."
-  },
-  owner_approval: {
-    starter: "Yeah, makes sense. Quick thing to pass along — payments get there faster, you get a remittance with each one, less manual work. I can shoot over the setup steps if that helps.",
-    pro: "Yeah, for sure. What usually helps is giving them a one-liner: faster payments, remittance detail on every one, less check handling. Want me to send over the setup so it's ready when they have a minute?",
-    enterprise: "Yeah, smart move. I can put together a quick summary for whoever's approving — faster clearing, automated remittance matching, reduced AP overhead. Want me to send that over now?"
-  },
-  security: {
-    starter: "Yeah, totally get it. We're PCI-compliant, we don't store account numbers, same encryption layer your bank uses. Happy to send over the security info if you want to look it over.",
-    pro: "Yeah, it's a fair thing to ask. We're PCI DSS compliant — data's encrypted end-to-end, no stored account numbers. I can send over the security documentation right now if that'd help.",
-    enterprise: "Yeah, good thing to verify. We're SOC 2 Type II and PCI DSS certified — full encryption, no stored account numbers, audit trail on every transaction. I can have the full security package sent over today."
-  },
-  timing: {
-    starter: "Yeah, no worries. When's a better time — later today or sometime next week?",
-    pro: "Yeah, of course. When's a better time to connect — later today or early next week? I can also shoot over a quick overview so you've got something to look at before we talk.",
-    enterprise: "Sure. What does your calendar look like this week? I can send a quick brief in the meantime so your team's got context going in."
-  },
-  already_has_solution: {
-    starter: "Oh yeah, makes sense. The main thing we'd add is remittance detail on every payment — makes reconciliation a lot cleaner. Worth a quick look?",
-    pro: "Yeah, most of our clients had something already. The difference is usually the remittance data and how fast it clears — it's worth a five-minute comparison if you're open to it.",
-    enterprise: "Yeah, we sit on top of most existing setups — it's more of an upgrade to the payment rail and remittance layer than a replacement. Happy to show you a quick side-by-side."
-  }
-};
+STYLE: Talk exactly like a real person on a call — short sentences, contractions, natural rhythm. 2-3 sentences max. Respond directly to what they just said. End with a soft next step.
+BANNED words: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "I appreciate that", "No problem", "Totally understandable".
 
-function getInstantReply(objectionType, plan){
-  const group = instantReplies[objectionType];
-  if(!group) return null;
-  return group[plan] || group.pro || null;
+EXAMPLE RESPONSES (use as tone reference only — always respond to what was actually said):
+- Fee objection: "Yeah, the fee's the first thing everyone asks about. Most suppliers find it pays for itself once they're not chasing checks or manually reconciling — want me to walk you through it real quick?"
+- Checks preference: "Yeah, a lot of people start there. The real difference is you'd get payment detail with every transaction so there's no manual matching, and it clears faster. If you ever want to take a look, setup's about two minutes."
+- Not interested: "Fair enough, I won't push. Before I let you go though, can I just confirm your payment info is current? Don't want any delays on your end."
+- Needs approval: "Yeah, for sure — what usually helps is a one-liner for them: faster payments, remittance detail on every one, less check handling. Want me to send over the setup so it's ready when they have a minute?"
+- Security concern: "Yeah, it's a fair thing to ask. We're PCI DSS compliant, data's encrypted end-to-end, no stored account numbers. I can send over the security doc right now if that'd help."
+
+Return ONLY the spoken words. No labels, no quotes, no explanation.`;
 }
 
 // ============================================================
@@ -3605,60 +3571,19 @@ async function generateResponse(inputId, outputId){
   const tone = toneEl ? toneEl.value : 'Confident';
   const language = langEl ? langEl.value : 'English';
 
-  // Detect objection type
   const objectionType = detectObjectionType(text);
   objectionCounts[objectionType] = (objectionCounts[objectionType] || 0) + 1;
 
-  // Add to conversation memory
   conversationMemory.push({ role: 'user', content: `Supplier said: "${text}"` });
 
-  const output = document.getElementById(outputId);
-  const refineBtn = document.getElementById('refineBtn');
-
-  // Instant reply for known objections — no API call needed
-  const instant = getInstantReply(objectionType, currentPlan);
-  if(instant && language === 'English'){
-    output.classList.remove('loading');
-    output.textContent = instant;
-    lastGeneratedText = instant;
-    conversationMemory.push({ role: 'assistant', content: instant });
-    sessionHistory.push({ objection: text, reply: instant, type: objectionType, tone, language, time: new Date().toLocaleTimeString() });
-    if(refineBtn) refineBtn.style.display = '';
-    updateObjectionInsights();
-    return;
-  }
-
-  // Unknown objection or non-English — hit OpenAI with a lean prompt
-  if(refineBtn) refineBtn.style.display = 'none';
   const systemPrompt = buildSystemPrompt(tone, language);
-  const chatMessages = conversationMemory.slice(-4);
+  const chatMessages = conversationMemory.slice(-6);
 
   try {
-    const reply = await streamResponse(inputId, outputId, systemPrompt, chatMessages, 100);
+    const reply = await streamResponse(inputId, outputId, systemPrompt, chatMessages, 120);
     conversationMemory.push({ role: 'assistant', content: reply });
     sessionHistory.push({ objection: text, reply, type: objectionType, tone, language, time: new Date().toLocaleTimeString() });
     updateObjectionInsights();
-  } catch(e){
-    toast(e.message || 'Could not reach server.');
-  }
-}
-
-async function refineWithAI(){
-  const inputEl = document.getElementById('assistInput');
-  const text = inputEl ? inputEl.value.trim() : '';
-  if(!text) return;
-  const toneEl = document.getElementById('toneSelect');
-  const langEl = document.getElementById('langSelect');
-  const tone = toneEl ? toneEl.value : 'Confident';
-  const language = langEl ? langEl.value : 'English';
-  const refineBtn = document.getElementById('refineBtn');
-  if(refineBtn) refineBtn.style.display = 'none';
-
-  const systemPrompt = buildSystemPrompt(tone, language);
-  const chatMessages = conversationMemory.slice(-4);
-  try {
-    const reply = await streamResponse('assistInput', 'assistResponse', systemPrompt, chatMessages, 100);
-    conversationMemory.push({ role: 'assistant', content: reply });
   } catch(e){
     toast(e.message || 'Could not reach server.');
   }
@@ -4093,23 +4018,10 @@ async function generateBilingualResponse(text){
   const output = document.getElementById('assistResponse');
   conversationMemory.push({ role: 'user', content: 'Supplier said: "' + text + '"' });
 
-  // Instant reply for known objections
-  const instant = getInstantReply(objectionType, currentPlan);
-  if(instant){
-    output.classList.remove('loading');
-    output.textContent = instant;
-    lastGeneratedText = instant;
-    conversationMemory.push({ role: 'assistant', content: instant });
-    updateObjectionInsights();
-    if(detectedLanguage !== 'English') await generateTranslatedVersion(instant, detectedLanguage);
-    return;
-  }
-
-  // Unknown objection — lean OpenAI call
   try {
     const systemPrompt = buildSystemPrompt(tone, 'English');
-    const chatMessages = conversationMemory.slice(-4);
-    const englishReply = await streamResponse('assistInput', 'assistResponse', systemPrompt, chatMessages, 100);
+    const chatMessages = conversationMemory.slice(-6);
+    const englishReply = await streamResponse('assistInput', 'assistResponse', systemPrompt, chatMessages, 120);
     conversationMemory.push({ role: 'assistant', content: englishReply });
     updateObjectionInsights();
     if(detectedLanguage !== 'English') await generateTranslatedVersion(englishReply, detectedLanguage);
