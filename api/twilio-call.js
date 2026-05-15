@@ -46,7 +46,9 @@ module.exports = async function handler(req, res) {
     if (!response.ok) return res.status(500).json({
       error: `Twilio ${data.status || response.status}: ${data.message || 'unknown error'} (code ${data.code || 'none'})`,
       sid_used: accountSid.slice(0,6) + '...' + accountSid.slice(-4),
-      sid_length: accountSid.length
+      sid_length: accountSid.length,
+      token_length: authToken.length,
+      token_preview: authToken.slice(0,4) + '...' + authToken.slice(-4)
     });
 
     return res.status(200).json({ callSid: data.sid, status: data.status, to: e164 });
