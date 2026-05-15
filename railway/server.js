@@ -174,12 +174,36 @@ async function sendGreeting(session) {
   session.state = 'listening';
 }
 
+const FILLER_PHRASES = [
+  'Sure.',
+  'Right.',
+  'Yeah.',
+  'Okay.',
+  'Got it.',
+  'Mm-hmm.',
+  'Let me check.',
+  'One moment.',
+  'Yeah, so...',
+  'Mm, okay.',
+];
+
+function pickFiller() {
+  return FILLER_PHRASES[Math.floor(Math.random() * FILLER_PHRASES.length)];
+}
+
 async function generateAndSpeak(session) {
   const messages = [
     { role: 'system', content: SYSTEM_PROMPT },
     ...session.history.slice(-12)
   ];
-  const reply = await callOpenAI(messages);
+
+  // Speak filler and generate reply in parallel — filler fills the silence
+  // while OpenAI processes; speakFiller does not touch session.state
+  const [_, reply] = await Promise.all([
+    speakFiller(session, pickFiller()),
+    callOpenAI(messages)
+  ]);
+
   if (!reply) { session.state = 'listening'; return; }
   session.history.push({ role: 'assistant', content: reply });
   pushToBrowser(session, { event: 'ai-response', text: reply });
@@ -200,6 +224,48 @@ async function callOpenAI(messages) {
     console.error('[openai] error:', e.message);
     return null;
   }
+}
+
+async function speakFiller(session, text) {
+  if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
+  pushToBrowser(session, { event: 'ai-speaking', text });
+  try {
+    const resp = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream`,
+      {
+        method: 'POST',
+        headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_turbo_v2',
+          output_format: 'pcm_16000',
+          optimize_streaming_latency: 4,
+          voice_settings: { stability: 0.35, similarity_boost: 0.7, style: 0.3, speed: 0.97 }
+        })
+      }
+    );
+    if (!resp.ok) return;
+    const reader = resp.body.getReader();
+    let buffer = Buffer.alloc(0);
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value?.length) continue;
+      if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
+      buffer = Buffer.concat([buffer, Buffer.from(value)]);
+      while (buffer.length >= 320) {
+        const chunk = buffer.slice(0, 320);
+        buffer = buffer.slice(320);
+        const pcm16k = new Int16Array(chunk.buffer, chunk.byteOffset, 160);
+        const mulaw = pcm16ToMulaw(pcm16k);
+        session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: mulaw.toString('base64') } }));
+      }
+    }
+    if (buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
+      const pcm16k = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
+      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm16k).toString('base64') } }));
+    }
+  } catch (_) {}
 }
 
 async function speakToTwilio(session, text) {

@@ -3518,10 +3518,14 @@ function typeText(el, text){
   lastGeneratedText = text;
 }
 
+const UI_FILLERS = [
+  'Sure...', 'Right...', 'Yeah...', 'Okay...', 'Got it...', 'Mm-hmm...', 'Let me think...', 'One sec...'
+];
+
 async function streamResponse(inputId, outputId, system, chatMessages, maxTokens){
   const output = document.getElementById(outputId);
   output.classList.add('loading');
-  output.textContent = '';
+  output.textContent = UI_FILLERS[Math.floor(Math.random() * UI_FILLERS.length)];
   lastGeneratedText = '';
 
   try {
@@ -3554,6 +3558,7 @@ async function streamResponse(inputId, outputId, system, chatMessages, maxTokens
         try {
           const parsed = JSON.parse(payload);
           if (parsed.token) {
+            if (!full) output.textContent = ''; // clear filler on first real token
             full += parsed.token;
             output.textContent = full;
           }
