@@ -23,9 +23,8 @@ function b64dec(str) {
 function gatherTwiml(say, historyB64, retries, turns, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="0.5" speechModel="phone_call" language="en-US">
-    ${sayTwiml(say)}
-  </Gather>
+  ${sayTwiml(say)}
+  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="0.5" speechModel="phone_call" language="en-US"/>
   <Hangup/>
 </Response>`;
 }
@@ -79,10 +78,10 @@ export default async function handler(req) {
         { headers: { 'Content-Type': 'text/xml' } });
     }
 
-    // Filter noise — ignore if too short or sounds-only
-    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
+    // Filter noise — ignore filler sounds and very short non-words
+    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|aah+|oop+|yep|nope|yeah|nah|ok|okay)\s*[.?!]?$/i;
     const words = transcript.trim().split(/\s+/).filter(Boolean);
-    if (words.length < 1 || (words.length === 1 && NOISE_ONLY.test(transcript))) {
+    if (words.length < 1 || (words.length === 1 && NOISE_ONLY.test(transcript.trim()))) {
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || '';
       const h = b64enc(history);
       return new Response(gatherTwiml(last, h, retries, turns, n, r, c),
