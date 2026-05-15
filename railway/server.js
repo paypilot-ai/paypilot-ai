@@ -12,11 +12,12 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Alex on a live phone call. Sound exactly like a real person talking — relaxed, natural, a little casual. ' +
-  'Use contractions, short sentences, and natural openers like "Yeah,", "So,", "Look,", "Here\'s the thing —". ' +
-  'Keep every reply to 1-2 sentences. Never lecture, never pitch, never list. Just talk. ' +
-  'Hard banned words: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Totally understandable", "I appreciate", "No problem". ' +
-  'Goal: resolve a payment issue or set up a payment plan. Be direct, warm, and sound like someone they actually want to talk to.';
+  'You are Alex on a live phone call. Write exactly how you\'d speak out loud — short, punchy, real. ' +
+  'Use natural openers: "Yeah,", "So,", "Look —", "Here\'s the thing,", "Right, so". ' +
+  'Write for how it SOUNDS, not how it reads. Short clauses. Breath points. Contractions always. ' +
+  'Max 2 sentences. Never list. Never explain. Just respond like a person. ' +
+  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "I appreciate that", "No problem", "Totally understandable". ' +
+  'Goal: resolve a payment or set a plan. Be real, be warm, move the conversation forward.';
 
 const sessions = new Map();
 
@@ -210,6 +211,27 @@ async function generateAndSpeak(session) {
   session.state = 'listening';
 }
 
+// Make text sound more natural when spoken by ElevenLabs
+function prepareForSpeech(text) {
+  return text
+    .trim()
+    // em dash -> natural pause with comma
+    .replace(/\s*—\s*/g, ', ')
+    // "so " at start of clause after comma -> slight beat
+    .replace(/,\s*(so|and|but|because)\s+/gi, (_, w) => `, ${w} `)
+    // spaces before punctuation
+    .replace(/\s+([.,!?])/g, '$1')
+    // ensure ends with punctuation
+    .replace(/([^.!?])$/, '$1.');
+}
+
+const ELEVENLABS_VOICE_SETTINGS = {
+  model_id: 'eleven_turbo_v2_5',
+  output_format: 'pcm_16000',
+  optimize_streaming_latency: 3,
+  voice_settings: { stability: 0.28, similarity_boost: 0.75, style: 0.45, speed: 0.94 }
+};
+
 async function callOpenAI(messages) {
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -234,13 +256,7 @@ async function speakFiller(session, text) {
       {
         method: 'POST',
         headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          model_id: 'eleven_turbo_v2',
-          output_format: 'pcm_16000',
-          optimize_streaming_latency: 4,
-          voice_settings: { stability: 0.35, similarity_boost: 0.7, style: 0.3, speed: 0.97 }
-        })
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
       }
     );
     if (!resp.ok) return;
@@ -279,13 +295,7 @@ async function speakToTwilio(session, text) {
       {
         method: 'POST',
         headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          model_id: 'eleven_turbo_v2',
-          output_format: 'pcm_16000',
-          optimize_streaming_latency: 4,
-          voice_settings: { stability: 0.35, similarity_boost: 0.7, style: 0.3, speed: 0.97 }
-        })
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
       }
     );
 
