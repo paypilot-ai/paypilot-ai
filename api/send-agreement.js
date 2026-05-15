@@ -8,11 +8,19 @@ module.exports = async function handler(req, res) {
   const RESEND_KEY = process.env.RESEND_API_KEY;
   if (!RESEND_KEY) return res.status(500).json({ error: 'Resend not configured' });
 
-  const { customerName, customerEmail, docuSignLink, callReason, senderEmail } = req.body || {};
+  const { customerName, customerEmail, callReason, senderEmail, fileContent, fileName, docuSignLink } = req.body || {};
   if (!customerEmail) return res.status(400).json({ error: 'Customer email required' });
-  if (!docuSignLink)  return res.status(400).json({ error: 'DocuSign link required' });
+  if (!fileContent && !docuSignLink) return res.status(400).json({ error: 'Attach a file or provide a DocuSign link' });
 
   const name = customerName || 'there';
+
+  const bodyHtml = docuSignLink
+    ? `<div style="margin:32px 0;">
+        <a href="${docuSignLink}" style="background:#1a6fff;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;">
+          Review &amp; Sign Agreement
+        </a>
+       </div>`
+    : `<p style="color:#374151;font-size:15px;">Your agreement is attached to this email. Please review and sign it at your earliest convenience.</p>`;
 
   const payload = {
     from: 'PayPilot AI <info@paypilotai.live>',
@@ -25,11 +33,7 @@ module.exports = async function handler(req, res) {
           Thank you for speaking with us today${callReason ? ' regarding ' + callReason : ''}.
           As discussed, please find your agreement below.
         </p>
-        <div style="margin:32px 0;">
-          <a href="${docuSignLink}" style="background:#1a6fff;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;">
-            Review &amp; Sign Agreement
-          </a>
-        </div>
+        ${bodyHtml}
         <p style="color:#64748b;font-size:14px;">
           If you have any questions, feel free to reply to this email.
         </p>
@@ -39,6 +43,10 @@ module.exports = async function handler(req, res) {
   };
 
   if (senderEmail) payload.reply_to = senderEmail;
+
+  if (fileContent && fileName) {
+    payload.attachments = [{ filename: fileName, content: fileContent }];
+  }
 
   try {
     const r = await fetch('https://api.resend.com/emails', {

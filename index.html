@@ -1994,7 +1994,7 @@ body.modal-open{overflow:hidden}
           </div>
           <div class="call-panel" id="callPanel" style="padding:14px 20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-              <div class="subtle" id="callInfo">Click the mic and PayPilot will start listening. Responses generate automatically.</div>
+              <div class="subtle" id="callInfo">Click the mic to transcribe. Click Generate response when ready.</div>
               <div class="call-status idle" id="callStatus">Mic off</div>
             </div>
           </div>
@@ -3465,7 +3465,7 @@ function typeText(el, text){
       clearInterval(timer);
       el.classList.remove('loading');
     }
-  }, 10);
+  }, 4);
 }
 
 // ============================================================
@@ -3523,10 +3523,10 @@ async function generateResponse(inputId, outputId){
     const resp = await fetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         system: systemMsg ? systemMsg.content : '',
         messages: chatMessages,
-        max_tokens: 300
+        max_tokens: 120
       })
     });
 
@@ -3576,10 +3576,10 @@ async function translateResponse(){
     const resp = await fetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         system: systemMsg ? systemMsg.content : '',
         messages: chatMessages,
-        max_tokens: 300
+        max_tokens: 120
       })
     });
     const data = await resp.json();
@@ -3806,23 +3806,7 @@ async function startDeepgram(){
         document.getElementById('callInfo').textContent = 'Heard: "' + finalTranscriptBuffer + '"';
       }
 
-      clearTimeout(autoGenTimer);
-      autoGenTimer = setTimeout(() => {
-        if(finalTranscriptBuffer.trim()){
-          const bufferCopy = finalTranscriptBuffer;
-          finalTranscriptBuffer = '';
-          document.getElementById('callInfo').textContent = 'Generating response...';
-
-          if(detectedLanguage !== 'English'){
-            document.getElementById('assistInput').value = '';
-            generateBilingualResponse(bufferCopy);
-          } else {
-            document.getElementById('assistInput').value = bufferCopy;
-            generateResponse('assistInput', 'assistResponse');
-            setTimeout(() => { document.getElementById('assistInput').value = ''; }, 100);
-          }
-        }
-      }, 1500);
+      document.getElementById('callInfo').textContent = 'Ready — click Generate response when you want a rebuttal.';
     } else {
       inputBox.value = (finalTranscriptBuffer + ' ' + interimTranscript).trim();
     }
@@ -4012,10 +3996,10 @@ async function generateBilingualResponse(text){
     const resp = await fetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         system: systemMsg ? systemMsg.content : '',
         messages: chatMessages,
-        max_tokens: 300
+        max_tokens: 120
       })
     });
 
