@@ -8,11 +8,11 @@ function xml(s) {
 function sayTwiml(text) {
   const escaped = xml(text)
     .replace(/\.{3}/g, '<break time="400ms"/>')
-    .replace(/—/g,     '<break time="250ms"/>')
+    .replace(/—/g, '<break time="250ms"/>')
     .replace(/\.\s*/g, '.<break time="300ms"/> ')
     .replace(/!\s*/g,  '!<break time="250ms"/> ')
     .replace(/,\s*/g,  ',<break time="150ms"/> ');
-  return `<Say voice="${VOICE}"><prosody rate="92%" pitch="+3%">${escaped}</prosody></Say>`;
+  return `<Say voice="${VOICE}"><speak><prosody rate="92%" pitch="+3%">${escaped}</prosody></speak></Say>`;
 }
 function b64enc(obj) {
   const s = encodeURIComponent(JSON.stringify(obj))
@@ -29,7 +29,7 @@ function b64dec(str) {
 function gatherTwiml(say, historyB64, retries, turns, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="0.5" speechModel="phone_call" language="en-US">
+  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="1" speechModel="phone_call" language="en-US">
     ${sayTwiml(say)}
   </Gather>
   <Hangup/>
@@ -154,7 +154,7 @@ export default async function handler(req) {
 
   } catch (err) {
     return new Response(
-      `<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="Polly.Ruth-Neural">Sorry about that, let me call you right back!</Say><Hangup/></Response>`,
+      `<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="${VOICE}"><speak>Sorry about that, let me call you right back!</speak></Say><Hangup/></Response>`,
       { status: 200, headers: { 'Content-Type': 'text/xml' } }
     );
   }
