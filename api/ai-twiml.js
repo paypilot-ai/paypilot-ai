@@ -21,38 +21,32 @@ function gatherTwiml(say, historyB64, n, r, c) {
 </Response>`;
 }
 
+const GREETINGS = [
+  'Hey, is {name} around?',
+  'Hi there, can I speak with {name}?',
+  'Hey, is {name} available?',
+  'Hi, is {name} there?',
+];
+
 export default async function handler(req) {
-  const url = new URL(req.url);
-  const n = url.searchParams.get('n') || '';
-  const r = url.searchParams.get('r') || '';
-  const c = url.searchParams.get('c') || '';
-
-  const apiKey = process.env.OPENAI_API_KEY;
-  const greetingPrompt = n
-    ? `Ask if ${n} is available. Start with "Hi," — just ask for them by name. Under 10 words.`
-    : `Ask who you're speaking with. Start with "Hi," — under 10 words.`;
-
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        max_tokens: 30,
-        temperature: 0.7,
-        messages: [
-          { role: 'system', content: 'Write only the spoken words. No quotes, no labels. Natural casual English.' },
-          { role: 'user', content: greetingPrompt }
-        ]
-      })
-    });
-    const d = await resp.json();
-    const greeting = d.choices?.[0]?.message?.content?.trim() || (n ? `Hi, is ${n} available?` : 'Hi there, who am I speaking with?');
+    const url = new URL(req.url);
+    const n = url.searchParams.get('n') || '';
+    const r = url.searchParams.get('r') || '';
+    const c = url.searchParams.get('c') || '';
+
+    const template = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    const greeting = n
+      ? template.replace('{name}', n)
+      : 'Hey there, who am I speaking with?';
+
     const history = b64enc([{ role: 'assistant', content: greeting }]);
     return new Response(gatherTwiml(greeting, history, n, r, c), { headers: { 'Content-Type': 'text/xml' } });
-  } catch {
-    const fallback = n ? `Hi, is ${n} available?` : 'Hi there, who am I speaking with?';
-    const history = b64enc([{ role: 'assistant', content: fallback }]);
-    return new Response(gatherTwiml(fallback, history, n, r, c), { headers: { 'Content-Type': 'text/xml' } });
+  } catch (err) {
+    console.error('ai-twiml fatal:', err?.message || err);
+    return new Response(
+      `<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="${VOICE}">Sorry, please try again shortly.</Say><Hangup/></Response>`,
+      { status: 200, headers: { 'Content-Type': 'text/xml' } }
+    );
   }
 }

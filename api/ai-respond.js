@@ -51,32 +51,32 @@ After THREE clear refusals only → add [END] on its own line.`;
 }
 
 export default async function handler(req) {
-  const url = new URL(req.url);
-  const n       = url.searchParams.get('n') || '';
-  const r       = url.searchParams.get('r') || '';
-  const c       = url.searchParams.get('c') || '';
-  const retries = parseInt(url.searchParams.get('retries') || '0');
-  const turns   = parseInt(url.searchParams.get('turns')   || '0');
-  const historyParam = url.searchParams.get('h') || '';
+  try {
+    const url = new URL(req.url);
+    const n       = url.searchParams.get('n') || '';
+    const r       = url.searchParams.get('r') || '';
+    const c       = url.searchParams.get('c') || '';
+    const retries = parseInt(url.searchParams.get('retries') || '0');
+    const turns   = parseInt(url.searchParams.get('turns')   || '0');
+    const historyParam = url.searchParams.get('h') || '';
 
-  const formData  = await req.formData();
-  const transcript = (formData.get('SpeechResult') || '').trim();
+    const formData  = await req.formData();
+    const transcript = (formData.get('SpeechResult') || '').trim();
 
-  let history = [];
-  try { if (historyParam) history = b64dec(historyParam); } catch {}
+    let history = [];
+    try { if (historyParam) history = b64dec(historyParam); } catch {}
 
-  if (!transcript) {
-    if (retries >= 1) {
-      return new Response(`<?xml version="1.0" encoding="UTF-8"?><Response>${sayTwiml("Hey, looks like we got cut off — I'll try you again. Take care!")}<Hangup/></Response>`,
+    if (!transcript) {
+      if (retries >= 1) {
+        return new Response(`<?xml version="1.0" encoding="UTF-8"?><Response>${sayTwiml("Hey, looks like we got cut off — I'll try you again. Take care!")}<Hangup/></Response>`,
+          { headers: { 'Content-Type': 'text/xml' } });
+      }
+      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "I didn't catch that.";
+      const h = b64enc(history);
+      return new Response(gatherTwiml('Sorry, missed that — ' + last, h, retries + 1, turns, n, r, c),
         { headers: { 'Content-Type': 'text/xml' } });
     }
-    const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "I didn't catch that.";
-    const h = b64enc(history);
-    return new Response(gatherTwiml('Sorry, missed that — ' + last, h, retries + 1, turns, n, r, c),
-      { headers: { 'Content-Type': 'text/xml' } });
-  }
 
-  try {
     history.push({ role: 'user', content: transcript });
     const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns) }, ...history.slice(-12)];
 
@@ -123,10 +123,10 @@ export default async function handler(req) {
       { headers: { 'Content-Type': 'text/xml' } });
 
   } catch (err) {
-    console.error('ai-respond exception:', err?.message || err);
-    const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "Hey, you still there?";
-    const h = b64enc(history);
-    return new Response(gatherTwiml(last, h, 0, turns, n, r, c),
-      { headers: { 'Content-Type': 'text/xml' } });
+    console.error('ai-respond fatal:', err?.message || err);
+    return new Response(
+      `<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="${VOICE}">Sorry about that, let me call you right back!</Say><Hangup/></Response>`,
+      { status: 200, headers: { 'Content-Type': 'text/xml' } }
+    );
   }
 }
