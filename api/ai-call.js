@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
       + `&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
 
     function xmlEsc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${actionUrl}" method="POST" timeout="5" speechTimeout="auto" language="en-US"><Say voice="Polly.Ruth-Neural">${xmlEsc(greeting)}</Say></Gather><Hangup/></Response>`;
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Pause length="1"/><Gather input="speech" action="${actionUrl}" method="POST" timeout="5" speechTimeout="0.5" language="en-US"><Say voice="Polly.Ruth-Neural">${xmlEsc(greeting)}</Say></Gather><Hangup/></Response>`;
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
