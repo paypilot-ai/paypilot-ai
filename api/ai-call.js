@@ -55,9 +55,19 @@ module.exports = async function handler(req, res) {
       } catch (_) { railwayUp = false; }
 
       if (railwayUp) {
-        // Real-time stream: ChatGPT-quality voice via OpenAI Realtime API
-        twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${railwayWs}/twilio-realtime?n=${n}&amp;r=${r}&amp;c=${c}"/></Connect></Response>`;
-        mode = 'realtime';
+        // Railway serves its own TwiML so the WebSocket URL is self-referential
+        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}`;
+        const response = await fetch(
+          `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
+          {
+            method: 'POST',
+            headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
+          }
+        );
+        const data = await response.json();
+        if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code, mode: 'realtime' });
+        return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode: 'realtime' });
       } else {
         console.warn('[ai-call] Railway unreachable at', railwayHttp, '— falling back to TwiML');
         mode = 'twiml-fallback';

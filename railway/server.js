@@ -27,6 +27,17 @@ const sessions = new Map();
 
 app.get('/health', (req, res) => res.json({ ok: true, activeCalls: sessions.size }));
 
+// Twilio fetches this URL, gets TwiML pointing stream back to this same server
+app.get('/twiml-stream', (req, res) => {
+  const n = req.query.n || '';
+  const r = req.query.r || '';
+  const c = req.query.c || '';
+  const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+  const wsUrl = `wss://${host}/twilio-realtime?n=${encodeURIComponent(n)}&r=${encodeURIComponent(r)}&c=${encodeURIComponent(c)}`;
+  res.setHeader('Content-Type', 'text/xml');
+  res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}"/></Connect></Response>`);
+});
+
 app.get('/test', async (req, res) => {
   // Read directly from process.env to bypass module-load caching
   const results = {
