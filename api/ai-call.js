@@ -4,11 +4,9 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Debug: GET returns current config so you can verify Railway URL
   if (req.method === 'GET') {
-    const rawUrl = process.env.RAILWAY_WS_URL || '';
     return res.status(200).json({
-      RAILWAY_WS_URL: rawUrl || '(not set — will use TwiML fallback)',
+      mode: 'twiml',
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
     });
@@ -35,80 +33,26 @@ module.exports = async function handler(req, res) {
 
   try {
     const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
-
     const n = encodeURIComponent(customerName || '');
     const r = encodeURIComponent(callReason   || '');
     const c = encodeURIComponent(companyName  || '');
 
-    // Check if Railway is reachable; fall back to TwiML if not
-    const rawWsUrl = (process.env.RAILWAY_WS_URL || '').trim();
-    let twiml, mode;
-
-    if (rawWsUrl) {
-      const railwayWs   = rawWsUrl.replace(/^https?:\/\//, 'wss://').replace(/^wss?:\/\//, 'wss://');
-      const railwayHttp = rawWsUrl.replace(/^wss?:\/\//, 'https://').replace(/^https?:\/\//, 'https://');
-
-      let railwayUp = false;
-      try {
-        const probe = await fetch(`${railwayHttp}/health`, { signal: AbortSignal.timeout(3000) });
-        railwayUp = probe.ok;
-      } catch (_) { railwayUp = false; }
-
-      if (railwayUp) {
-        // Railway serves its own TwiML so the WebSocket URL is self-referential
-        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}`;
-        const response = await fetch(
-          `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
-          {
-            method: 'POST',
-            headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
-          }
-        );
-        const data = await response.json();
-        if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code, mode: 'realtime' });
-        return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode: 'realtime' });
-      } else {
-        console.warn('[ai-call] Railway unreachable at', railwayHttp, '— falling back to TwiML');
-        mode = 'twiml-fallback';
-      }
-    } else {
-      mode = 'twiml-fallback';
-    }
-
-    if (mode === 'twiml-fallback') {
-      // Fallback: Polly TTS + Twilio speech recognition (always works)
-      const host = req.headers['x-forwarded-host'] || req.headers.host || 'paypilot-ai.vercel.app';
-      const proto = req.headers['x-forwarded-proto'] || 'https';
-      const twimlUrl = `${proto}://${host}/api/ai-twiml?n=${n}&r=${r}&c=${c}`;
-      twiml = null; // use Url param instead
-
-      const response = await fetch(
-        `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
-        {
-          method: 'POST',
-          headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
-        }
-      );
-      const data = await response.json();
-      if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code, mode });
-      return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode });
-    }
+    const host  = req.headers['x-forwarded-host'] || req.headers.host || 'paypilot-ai.vercel.app';
+    const proto = req.headers['x-forwarded-proto'] || 'https';
+    const twimlUrl = `${proto}://${host}/api/ai-twiml?n=${n}&r=${r}&c=${c}`;
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
       {
         method: 'POST',
         headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ To: e164, From: fromNumber, Twiml: twiml }).toString()
+        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
       }
     );
 
     const data = await response.json();
-    if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code, mode });
-    return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode });
-
+    if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code });
+    return res.status(200).json({ callSid: data.sid, status: data.status, to: e164 });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
