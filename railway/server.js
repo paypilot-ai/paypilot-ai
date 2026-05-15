@@ -12,13 +12,12 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'oWAxZDx7w5VEj9dCyTzz'; // Grace — light Southern accent
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Brandy on a live phone call. You have a warm, natural Southern personality — friendly, unhurried, easy to talk to. ' +
-  'Write exactly how you\'d speak out loud — short, punchy, real. ' +
-  'Use natural openers: "Yeah,", "So,", "Look —", "Here\'s the thing,", "Right, so". ' +
-  'Write for how it SOUNDS, not how it reads. Short clauses. Breath points. Contractions always. ' +
-  'Max 2 sentences. Never list. Never explain. Just respond like a person. ' +
-  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "I appreciate that", "No problem", "Totally understandable". ' +
-  'Goal: resolve a payment or set a plan. Be real, be warm, move the conversation forward.';
+  'You are Brandy on a live phone call. Warm, Southern, unhurried. ' +
+  'Reply in ONE sentence only — 15 words max. ' +
+  'Contractions always. Natural openers: "Yeah,", "So,", "Look —", "Here\'s the thing,". ' +
+  'Never list. Never explain. Just respond and move forward. ' +
+  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "I appreciate that", "No problem". ' +
+  'Goal: keep the conversation moving toward resolving a payment or setting a plan.';
 
 const sessions = new Map();
 
@@ -137,7 +136,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=300&utterance_end_ms=800';
+    '&interim_results=false&endpointing=700&utterance_end_ms=1800';
 
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
@@ -148,6 +147,14 @@ function connectDeepgram(session) {
     const result = JSON.parse(data);
     const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
     if (!transcript || !result.is_final) return;
+
+    // Ignore noise: must be at least 3 words and have meaningful content
+    const words = transcript.split(/\s+/).filter(Boolean);
+    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|yeah|yep|ok|okay|right|sure|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
+    if (words.length < 3 || NOISE_ONLY.test(transcript)) {
+      console.log('[prospect] ignored (noise):', transcript);
+      return;
+    }
 
     console.log('[prospect]', transcript);
     pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
@@ -229,8 +236,8 @@ function prepareForSpeech(text) {
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
   output_format: 'pcm_16000',
-  optimize_streaming_latency: 3,
-  voice_settings: { stability: 0.28, similarity_boost: 0.75, style: 0.45, speed: 0.94 }
+  optimize_streaming_latency: 2,
+  voice_settings: { stability: 0.40, similarity_boost: 0.85, style: 0.35, speed: 0.93 }
 };
 
 async function callOpenAI(messages) {
@@ -238,7 +245,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 100, temperature: 0.7 })
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 55, temperature: 0.7 })
     });
     const data = await resp.json();
     return data.choices?.[0]?.message?.content?.trim() || null;
