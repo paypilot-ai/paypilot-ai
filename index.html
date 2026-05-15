@@ -3450,56 +3450,56 @@ function detectObjectionType(text){
 
 function buildSystemPrompt(tone, language){
   const toneGuide = {
-    'Confident': 'Be direct, assured, professional.',
-    'Warm': 'Be empathetic first, then pivot to value.',
-    'Direct': 'Get straight to the point, no filler.',
-    'Calm': 'Stay measured, patient, reassuring.'
-  }[tone] || 'Be professional and confident.';
+    'Confident': 'Sound assured and direct, like you\'ve had this conversation a hundred times.',
+    'Warm': 'Lead with a little empathy — acknowledge what they said before you pivot.',
+    'Direct': 'Get right to it, no warm-up.',
+    'Calm': 'Stay even, unhurried, like nothing rattles you.'
+  }[tone] || 'Sound natural and confident.';
 
   const langInstruction = language !== 'English'
     ? `Respond entirely in ${language}.`
-    : 'Respond in English.';
+    : '';
 
-  return `You are a real-time sales coach on a live supplier call. ${toneGuide} ${langInstruction}
-Return ONLY the spoken rebuttal — 2-3 sentences max, natural human speech, end with a soft close or next step. No labels, no quotes.`;
+  return `You are a real sales rep on a live call. ${toneGuide} ${langInstruction}
+Talk like a person, not a script — short sentences, contractions, natural rhythm. 2-3 sentences max. End with a next step or soft close. Return only the spoken words.`;
 }
 
 // Map objection type -> instant smart reply (by plan)
 const instantReplies = {
   fee: {
-    starter: "Totally get it. Most folks compare the fee to the time spent chasing checks and reconciling payments manually — a lot of suppliers find it pays for itself. Want me to walk you through it real quick?",
-    pro: "Totally understandable. Most suppliers compare the fee to the time saved on check delays, manual reconciliation, and late payment headaches. A lot of them find the speed and detail end up being worth more than the cost. I can walk you through the setup now — it only takes a couple of minutes.",
-    enterprise: "Completely fair. At the volume your operation runs, that fee typically comes out ahead when you factor in reduced check handling, faster clearing, and the remittance data that eliminates manual matching. Happy to show you the ROI breakdown — takes two minutes."
+    starter: "Yeah, I hear that a lot. Most folks find the fee more than covers itself once they're not chasing checks or manually reconciling payments. Want me to walk you through it real quick?",
+    pro: "Yeah, the fee's the first thing everyone asks about. Here's the thing — most suppliers end up saving more on check handling and payment delays than they pay in the fee. Want me to show you what the setup looks like? Takes about two minutes.",
+    enterprise: "Yeah, fair. At your volume, that fee typically comes out ahead once you factor in check handling, faster clearing, and the remittance data cleaning up your reconciliation. I can walk you through the numbers — takes two minutes."
   },
   check_preference: {
-    starter: "No problem at all. Biggest advantage is just faster delivery and a remittance with every payment so there's less manual tracking.",
-    pro: "No problem. A lot of suppliers start with checks. The main difference is speed and the remittance detail that comes with every payment — less guessing, less manual work. If you're ever open to it, the setup takes about two minutes.",
-    enterprise: "Understood. When you're ready to streamline, we can set up automated remittance matching that cuts reconciliation time significantly. No rush — the option's always there."
+    starter: "Yeah, totally fair. The main thing you'd get on top of checks is just faster delivery and a remittance that comes with every payment — less hunting things down.",
+    pro: "Yeah, a lot of people start there. The real difference is you'd get payment detail with every transaction so there's no manual matching, and it clears faster. If you ever want to take a look, setup's about two minutes.",
+    enterprise: "Sure, no rush. When your team's ready, we can layer automated remittance matching on top of what you've got — cuts reconciliation time pretty significantly. The option's always open."
   },
   not_interested: {
-    starter: "Fair enough. Before I let you go — just want to make sure your payment info is current so there are no delays on your next payment.",
-    pro: "I understand. Before I let you go, let me just confirm your payment info is up to date so there are no delays. And if speed becomes a priority down the road, this option will still be here.",
-    enterprise: "Completely respect that. Before we hang up, let me confirm your remittance preferences are current so your team doesn't see any disruption on the next payment cycle."
+    starter: "Fair enough. Hey, before I let you go — can I just make sure your payment info's current so there aren't any delays on your next check?",
+    pro: "Fair enough, I won't push. Before I let you go though, can I just confirm your payment details are up to date? Don't want any delays on your end. And if things change down the road, we'll still be here.",
+    enterprise: "Fair enough. Before I hang up, let me just make sure your remittance setup's current so your team doesn't hit any hiccups on the next payment cycle."
   },
   owner_approval: {
-    starter: "Makes sense. Quick summary for them: faster payments, remittance detail with each one, less manual tracking. I can send over the setup steps so it's easy for them to review.",
-    pro: "That makes sense. What usually helps is a quick summary for them: payments arrive faster, a detailed remittance comes with every payment, and it cuts manual check handling. I can send over the secure setup steps so it's easy for them to look over.",
-    enterprise: "Absolutely. I can put together a one-pager for your decision-maker: faster clearing, automated remittance matching, and reduced AP overhead. Want me to send that over now?"
+    starter: "Yeah, makes sense. Quick thing to pass along — payments get there faster, you get a remittance with each one, less manual work. I can shoot over the setup steps if that helps.",
+    pro: "Yeah, for sure. What usually helps is giving them a one-liner: faster payments, remittance detail on every one, less check handling. Want me to send over the setup so it's ready when they have a minute?",
+    enterprise: "Yeah, smart move. I can put together a quick summary for whoever's approving — faster clearing, automated remittance matching, reduced AP overhead. Want me to send that over now?"
   },
   security: {
-    starter: "Completely valid concern. We're PCI-compliant and we never store full account numbers — same security layer your bank uses. Happy to send over our security overview if that helps.",
-    pro: "That's a smart question. We're PCI DSS compliant, data is encrypted in transit and at rest, and we never store full account numbers. I can send over our security documentation right now if you'd like to review it.",
-    enterprise: "Absolutely the right thing to ask. We're SOC 2 Type II certified and PCI DSS compliant — full encryption, no stored account numbers, and audit logs on every transaction. I can have our security team send over the documentation today."
+    starter: "Yeah, totally get it. We're PCI-compliant, we don't store account numbers, same encryption layer your bank uses. Happy to send over the security info if you want to look it over.",
+    pro: "Yeah, it's a fair thing to ask. We're PCI DSS compliant — data's encrypted end-to-end, no stored account numbers. I can send over the security documentation right now if that'd help.",
+    enterprise: "Yeah, good thing to verify. We're SOC 2 Type II and PCI DSS certified — full encryption, no stored account numbers, audit trail on every transaction. I can have the full security package sent over today."
   },
   timing: {
-    starter: "No worries at all. When would be a better time to connect — later today or early next week?",
-    pro: "Totally understand. When's a better time — later today or early next week? I can also send over a quick overview so you're not starting from scratch when we reconnect.",
-    enterprise: "Of course. What's your calendar look like this week? I can send a brief overview in the meantime so your team has context before we connect."
+    starter: "Yeah, no worries. When's a better time — later today or sometime next week?",
+    pro: "Yeah, of course. When's a better time to connect — later today or early next week? I can also shoot over a quick overview so you've got something to look at before we talk.",
+    enterprise: "Sure. What does your calendar look like this week? I can send a quick brief in the meantime so your team's got context going in."
   },
   already_has_solution: {
-    starter: "Got it. The main thing we add on top of most systems is the remittance detail per payment — makes reconciliation a lot cleaner. Worth a quick look?",
-    pro: "Understood. Most of our clients had a system already — the difference is usually the remittance data and payment speed. It's worth a 5-minute comparison if you're open to it.",
-    enterprise: "Makes sense. We integrate alongside most existing AP systems, so it's not a replacement — more of an upgrade to the payment rail and remittance layer. Happy to show you a quick side-by-side."
+    starter: "Oh yeah, makes sense. The main thing we'd add is remittance detail on every payment — makes reconciliation a lot cleaner. Worth a quick look?",
+    pro: "Yeah, most of our clients had something already. The difference is usually the remittance data and how fast it clears — it's worth a five-minute comparison if you're open to it.",
+    enterprise: "Yeah, we sit on top of most existing setups — it's more of an upgrade to the payment rail and remittance layer than a replacement. Happy to show you a quick side-by-side."
   }
 };
 
@@ -3519,7 +3519,7 @@ function typeText(el, text){
 }
 
 const UI_FILLERS = [
-  'Sure...', 'Right...', 'Yeah...', 'Okay...', 'Got it...', 'Mm-hmm...', 'Let me think...', 'One sec...'
+  'Yeah, one sec...', 'Right, let me think...', 'Oh, for sure...', 'Mm, okay...', 'Yeah, so...', 'Sure, hang on...', 'Right, yeah...', 'Mm-hmm...'
 ];
 
 async function streamResponse(inputId, outputId, system, chatMessages, maxTokens){

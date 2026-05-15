@@ -12,12 +12,11 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Alex, a calm and friendly agent on a live phone call. ' +
-  'Talk like a real person — relaxed, conversational, never rushed. Use contractions. ' +
-  'It\'s okay to pause naturally or say "So," or "Yeah," before a point. ' +
-  'Keep replies to 1-2 sentences max. Never sound salesy or corporate. ' +
-  'Avoid "I understand", "Absolutely", "Certainly", "Of course", or any filler phrases. ' +
-  'Your goal is to help resolve a payment or set up a plan — be warm, direct, and easy to talk to.';
+  'You are Alex on a live phone call. Sound exactly like a real person talking — relaxed, natural, a little casual. ' +
+  'Use contractions, short sentences, and natural openers like "Yeah,", "So,", "Look,", "Here\'s the thing —". ' +
+  'Keep every reply to 1-2 sentences. Never lecture, never pitch, never list. Just talk. ' +
+  'Hard banned words: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Totally understandable", "I appreciate", "No problem". ' +
+  'Goal: resolve a payment issue or set up a payment plan. Be direct, warm, and sound like someone they actually want to talk to.';
 
 const sessions = new Map();
 
@@ -175,16 +174,16 @@ async function sendGreeting(session) {
 }
 
 const FILLER_PHRASES = [
-  'Sure.',
-  'Right.',
-  'Yeah.',
-  'Okay.',
-  'Got it.',
-  'Mm-hmm.',
-  'Let me check.',
-  'One moment.',
-  'Yeah, so...',
-  'Mm, okay.',
+  'Yeah, sure.',
+  'Oh, for sure.',
+  'Right, so...',
+  'Yeah, good question.',
+  'Mm, let me think on that.',
+  'Yeah, I hear you.',
+  'Sure, one sec.',
+  'Mm-hmm, okay.',
+  'Right, yeah.',
+  'Oh, totally.',
 ];
 
 function pickFiller() {
