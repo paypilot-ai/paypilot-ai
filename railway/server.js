@@ -86,13 +86,15 @@ server.on('upgrade', (req, socket, head) => {
 
 wss.on('connection', (ws, req) => {
   const url = new URL(req.url, 'http://localhost');
+  console.log('[ws] connection:', url.pathname);
   if (url.pathname === '/ws-test') {
     ws.send(JSON.stringify({ ok: true, msg: 'WebSocket connection works' }));
     ws.close();
   } else if (url.pathname === '/twilio') {
     handleTwilio(ws);
   } else if (url.pathname === '/twilio-realtime') {
-    handleTwilioRealtime(ws, url.searchParams);
+    try { handleTwilioRealtime(ws, url.searchParams); }
+    catch (e) { console.error('[realtime] crash on connect:', e.message, e.stack); ws.close(); }
   } else if (url.pathname === '/browser') {
     handleBrowser(ws, url.searchParams.get('callSid'));
   } else {
