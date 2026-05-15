@@ -205,14 +205,19 @@ async function generateAndSpeak(session) {
     ...session.history.slice(-12)
   ];
 
-  // Speak filler and generate reply in parallel — filler fills the silence
-  // while OpenAI processes; speakFiller does not touch session.state
-  const [_, reply] = await Promise.all([
-    speakFiller(session, pickFiller()),
-    callOpenAI(messages)
-  ]);
+  // Fire filler immediately (don't await) to fill silence while OpenAI runs
+  speakFiller(session, pickFiller()).catch(() => {});
+
+  // Get OpenAI reply — this is the actual bottleneck
+  const reply = await callOpenAI(messages);
 
   if (!reply) { session.state = 'listening'; return; }
+
+  // Clear any filler audio still playing before speaking the real response
+  if (session.twilioWs?.readyState === WebSocket.OPEN) {
+    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+  }
+
   session.history.push({ role: 'assistant', content: reply });
   pushToBrowser(session, { event: 'ai-response', text: reply });
   await speakToTwilio(session, reply);
