@@ -70,7 +70,7 @@ function xml(s) {
 }
 
 function sayTwiml(text) {
-  return `<Say voice="Google.en-US-Neural2-J">${xml(text)}</Say>`;
+  return `<Say voice="Polly.Joanna-Neural">${xml(text)}</Say>`;
 }
 
 function gatherTwiml(say, historyB64, retries, turns, n, r, c) {

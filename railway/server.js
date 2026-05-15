@@ -239,10 +239,9 @@ function prepareForSpeech(text) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_turbo_v2_5',
+  model_id: 'eleven_multilingual_v2',
   output_format: 'pcm_16000',
-  optimize_streaming_latency: 2,
-  voice_settings: { stability: 0.40, similarity_boost: 0.85, style: 0.35, speed: 0.93 }
+  voice_settings: { stability: 0.20, similarity_boost: 0.80, style: 0.55, use_speaker_boost: true, speed: 0.92 }
 };
 
 async function callOpenAI(messages) {
