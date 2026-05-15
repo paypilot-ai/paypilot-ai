@@ -4,7 +4,10 @@ function xml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function sayTwiml(text) {
-  return `<Say voice="${VOICE}">${xml(text)}</Say>`;
+  const escaped = xml(text)
+    .replace(/\.\s+/g, '. <break time="200ms"/>')
+    .replace(/,\s+/g, ', <break time="150ms"/>');
+  return `<Say voice="${VOICE}"><prosody rate="90%" pitch="+2%">${escaped}</prosody></Say>`;
 }
 
 // Must match the b64enc in ai-respond.js exactly

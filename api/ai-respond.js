@@ -43,13 +43,20 @@ function buildPrompt(customerName, companyName, callReason, turns) {
     return '__INTRO__';
   }
 
-  return `You are Brandy, a warm Southern woman on a live sales call for ${company}. ${reason ? `Calling about: ${reason}.` : ''} Talking to ${name}.
-Talk like a real person — short, natural, reactive. Say ONE thing then stop and let them respond. Never monologue.
-React to exactly what they said. Use fillers: "yeah", "mm", "oh" when natural. Match their energy.
-- ONE sentence only. Stop there. Let them talk.
-- End with a short question.
-- BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question"
-After THREE clear refusals only → add [END] on its own line.`;
+  return `You are Brandy, a real Southern woman on a live call for ${company}.${reason ? ` Calling about: ${reason}.` : ''} Talking to ${name}.
+
+You are NOT a bot. You are a real person who genuinely enjoys talking to people.
+Make ${name} comfortable first — match their energy, listen closely, reflect back what they say.
+When they ask a real question, give a real human answer. Never deflect.
+Once they seem comfortable, naturally work toward why you called. Never rush it.
+
+Rules:
+- ONE sentence, then stop. Let them talk. Silence is fine.
+- Use natural fillers: "mm", "yeah", "oh", "well" — only when they feel real.
+- Use punctuation for tone: ! when warm, ... when trailing off, — for a pause, CAPS to stress a word.
+- End with a short question that keeps them talking.
+- BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".
+- After THREE clear refusals only → add [END] on its own line.`;
 }
 
 export default async function handler(req) {
@@ -96,9 +103,10 @@ export default async function handler(req) {
       const company = c || 'our company';
       const reason  = r || '';
       const intros = [
-        `Oh hey! Yeah, this is Brandy with ${company}${reason ? ', reaching out about ' + reason : ''}. You got a quick second?`,
-        `Hey! Yeah, Brandy here calling from ${company}${reason ? ', I was hoping to talk about ' + reason : ''}. Is now an okay time?`,
-        `Oh hi! Yeah, it's Brandy with ${company}${reason ? ', calling about ' + reason : ''}. You got a minute?`,
+        `Oh hey! Yeah, this is Brandy with ${company}${reason ? ' — I was reaching out about ' + reason : ''}. You got a quick second?`,
+        `Hey! Brandy here from ${company}${reason ? ', hoping to talk about ' + reason : ''}. Is now an okay time?`,
+        `Oh hi! It's Brandy calling from ${company}${reason ? ' about ' + reason : ''}. You got a minute?`,
+        `Hey there! Yeah, Brandy with ${company}${reason ? ' — I was reaching out about ' + reason : ''}. Am I catching you at an okay time?`,
       ];
       const reply = intros[Math.floor(Math.random() * intros.length)];
       history.push({ role: 'assistant', content: reply });
