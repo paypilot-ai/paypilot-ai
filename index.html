@@ -3534,6 +3534,7 @@ async function streamResponse(inputId, outputId, system, chatMessages, maxTokens
 
     output.classList.remove('loading');
     lastGeneratedText = full;
+    if (full) trackResponse();
     return full;
   } catch (e) {
     output.classList.remove('loading');
@@ -4597,42 +4598,29 @@ function stopPageMatrix(){
     setTimeout(()=>{ if(cv.parentNode) cv.parentNode.removeChild(cv); },1300); }
 }
 
-// ── LIVE METRIC TICKER ──────────────────────────────────────────
-(function startMetricTicker(){
-  const metrics = [
-    { id:'metricCalls',      base:43,   min:28,  max:89,  isInt:true,  suffix:'' },
-    { id:'metricResponses',  base:127,  min:80,  max:210, isInt:true,  suffix:'' },
-    { id:'metricClose',      base:81,   min:62,  max:94,  isInt:true,  suffix:'%' },
-    { id:'analyticsQuality', base:89,   min:71,  max:98,  isInt:true,  suffix:'%' },
-    { id:'analyticsTime',    base:4.2,  min:2.8, max:7.1, isInt:false, suffix:'m' },
-    { id:'analyticsSolved',  base:67,   min:38,  max:124, isInt:true,  suffix:'' },
-    { id:'analyticsAdoption',base:94,   min:76,  max:99,  isInt:true,  suffix:'%' },
-  ];
-  const current = {};
-  const target  = {};
-  metrics.forEach(m => { current[m.id] = m.base; target[m.id] = m.base; });
+// ── SESSION METRICS ──────────────────────────────────────────────
+const sessionMetrics = { calls: 0, responses: 0, closeNumerator: 0, closeDenominator: 0 };
 
-  // Pick new targets at random intervals
-  function newTargets(){
-    metrics.forEach(m => {
-      target[m.id] = m.min + Math.random()*(m.max - m.min);
-    });
+function updateMetricDisplay() {
+  const callsEl      = document.getElementById('metricCalls');
+  const responsesEl  = document.getElementById('metricResponses');
+  const closeEl      = document.getElementById('metricClose');
+  if (callsEl)     callsEl.textContent     = sessionMetrics.calls;
+  if (responsesEl) responsesEl.textContent = sessionMetrics.responses;
+  if (closeEl) {
+    const score = sessionMetrics.closeDenominator > 0
+      ? Math.round((sessionMetrics.closeNumerator / sessionMetrics.closeDenominator) * 100)
+      : 0;
+    closeEl.textContent = score + '%';
   }
-  newTargets();
-  setInterval(newTargets, 1800);
+}
 
-  // Smoothly animate toward target and update DOM
-  setInterval(() => {
-    metrics.forEach(m => {
-      const el = document.getElementById(m.id);
-      if(!el) return;
-      // Snap toward target fast for lots of movement
-      current[m.id] += (target[m.id] - current[m.id]) * 0.18;
-      const val = m.isInt ? Math.round(current[m.id]) : current[m.id].toFixed(1);
-      el.textContent = val + m.suffix;
-    });
-  }, 60);
-})();
+function trackCall()          { sessionMetrics.calls++;     updateMetricDisplay(); }
+function trackResponse()      { sessionMetrics.responses++; updateMetricDisplay(); }
+function trackCloseSignal()   { sessionMetrics.closeNumerator++; sessionMetrics.closeDenominator++; updateMetricDisplay(); }
+function trackNonClose()      { sessionMetrics.closeDenominator++; updateMetricDisplay(); }
+
+updateMetricDisplay();
 
 function startWaveAnimation(){
   const bars = document.querySelectorAll('.ai-wave-bar');
@@ -4704,6 +4692,7 @@ async function startAiCall(){
     if(!resp.ok) throw new Error(data.error || 'Call failed');
 
     activeAiCallSid = data.callSid;
+    trackCall();
     document.getElementById('aiCallerFormCard').style.display = 'none';
     document.getElementById('callHud').style.display = 'block';
     document.getElementById('hudStatusText').textContent = 'AI DIALING...';
