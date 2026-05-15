@@ -29,26 +29,16 @@ module.exports = async function handler(req, res) {
   try {
     const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
 
-    // Build greeting inline — no round-trip to ai-twiml.js
     const n = customerName || '';
     const r = callReason   || '';
     const c = companyName  || '';
-    const greetings = [
-      n ? `Hey, is ${n} around?`         : 'Hey there, who am I speaking with?',
-      n ? `Hi there, can I speak with ${n}?` : 'Hi, who am I speaking with?',
-      n ? `Hey, is ${n} available?`      : 'Hi there, who am I speaking with?',
-      n ? `Hi, is ${n} there?`           : 'Hey, who do I have the pleasure of speaking with?',
-    ];
-    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-    const historyJson = JSON.stringify([{ role: 'assistant', content: greeting }]);
-    const history = Buffer.from(encodeURIComponent(historyJson).replace(/%([0-9A-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))).toString('base64')
-      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 
-    const actionUrl = `https://paypilot-ai.vercel.app/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0`
-      + `&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
+    // Stream audio directly to Railway → OpenAI Realtime (ChatGPT voice quality)
+    const railwayUrl = (process.env.RAILWAY_WS_URL || 'wss://paypilot-ai-production.up.railway.app')
+      .replace(/^http/, 'ws');
+    const streamUrl = `${railwayUrl}/twilio-realtime?n=${encodeURIComponent(n)}&r=${encodeURIComponent(r)}&c=${encodeURIComponent(c)}`;
 
-    function xmlEsc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Pause length="1"/><Gather input="speech" action="${actionUrl}" method="POST" timeout="5" speechTimeout="0.5" speechModel="phone_call" language="en-US"><Say voice="Polly.Ruth-Neural">${xmlEsc(greeting)}</Say></Gather><Hangup/></Response>`;
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${streamUrl}"/></Connect></Response>`;
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,

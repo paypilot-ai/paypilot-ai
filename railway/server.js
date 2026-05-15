@@ -73,6 +73,8 @@ wss.on('connection', (ws, req) => {
   const url = new URL(req.url, 'http://localhost');
   if (url.pathname === '/twilio') {
     handleTwilio(ws);
+  } else if (url.pathname === '/twilio-realtime') {
+    handleTwilioRealtime(ws, url.searchParams);
   } else if (url.pathname === '/browser') {
     handleBrowser(ws, url.searchParams.get('callSid'));
   } else {
@@ -405,6 +407,112 @@ function pushToBrowser(session, data) {
 
 function cleanup(session) {
   try { session.dgWs?.close(); } catch {}
+}
+
+// ── OPENAI REALTIME — AI CALLER ──────────────────────────────────
+function handleTwilioRealtime(ws, params) {
+  const n = params.get('n') || '';
+  const r = params.get('r') || '';
+  const c = params.get('c') || '';
+
+  const company = c || 'our company';
+  const name    = n || 'the prospect';
+  const reason  = r || '';
+
+  const instructions =
+    `You are Brandy, a warm Southern woman making a live outbound sales call for ${company}. ${reason ? `Calling about: ${reason}.` : ''} Talking to ${name}.
+Make them comfortable first — build real rapport, match their energy, listen closely. React to exactly what they say.
+Use natural fillers: "mm", "yeah", "well", "oh" when it fits. Keep each response to ONE sentence then stop and let them talk.
+When they ask real questions, give real human answers. Gradually work toward why you called — never rush it.
+People buy from people they like. Be that person.
+BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question".`;
+
+  let streamSid = null;
+  let openAiWs  = null;
+  let sessionReady = false;
+
+  function connectOpenAI() {
+    openAiWs = new WebSocket(
+      'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview',
+      { headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'OpenAI-Beta': 'realtime=v1' } }
+    );
+
+    openAiWs.on('open', () => {
+      openAiWs.send(JSON.stringify({
+        type: 'session.update',
+        session: {
+          modalities: ['audio', 'text'],
+          instructions,
+          voice: 'shimmer',
+          input_audio_format: 'g711_ulaw',
+          output_audio_format: 'g711_ulaw',
+          input_audio_transcription: { model: 'whisper-1' },
+          turn_detection: {
+            type: 'server_vad',
+            threshold: 0.5,
+            prefix_padding_ms: 300,
+            silence_duration_ms: 500
+          },
+          temperature: 0.8,
+          max_response_output_tokens: 80
+        }
+      }));
+      sessionReady = true;
+      console.log('[realtime] OpenAI connected');
+    });
+
+    openAiWs.on('message', raw => {
+      try {
+        const ev = JSON.parse(raw);
+
+        if (ev.type === 'response.audio.delta' && ev.delta && streamSid) {
+          ws.send(JSON.stringify({
+            event: 'media',
+            streamSid,
+            media: { payload: ev.delta }
+          }));
+        }
+
+        if (ev.type === 'input_audio_buffer.speech_started' && streamSid) {
+          ws.send(JSON.stringify({ event: 'clear', streamSid }));
+        }
+
+        if (ev.type === 'error') {
+          console.error('[realtime] OpenAI error:', JSON.stringify(ev.error));
+        }
+      } catch {}
+    });
+
+    openAiWs.on('close', () => console.log('[realtime] OpenAI disconnected'));
+    openAiWs.on('error', e => console.error('[realtime] OpenAI ws error:', e.message));
+  }
+
+  connectOpenAI();
+
+  ws.on('message', raw => {
+    try {
+      const msg = JSON.parse(raw);
+
+      if (msg.event === 'start') {
+        streamSid = msg.start.streamSid;
+        console.log('[realtime] stream started', streamSid);
+      }
+
+      if (msg.event === 'media' && openAiWs?.readyState === WebSocket.OPEN && sessionReady) {
+        openAiWs.send(JSON.stringify({
+          type: 'input_audio_buffer.append',
+          audio: msg.media.payload
+        }));
+      }
+
+      if (msg.event === 'stop') {
+        openAiWs?.close();
+      }
+    } catch {}
+  });
+
+  ws.on('close', () => openAiWs?.close());
+  ws.on('error', e => console.error('[realtime] Twilio ws error:', e.message));
 }
 
 const PORT = process.env.PORT || 3000;
