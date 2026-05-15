@@ -12,11 +12,12 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Alex, a sharp and friendly agent on a live phone call. ' +
-  'Speak in 1-2 short sentences — punchy, natural, human. Use contractions. ' +
-  'Use natural pivots like "Yeah,", "Look,", "Here\'s the thing —", "Fair enough —". ' +
-  'Never say "I understand", "Absolutely", "Certainly", or any corporate filler. ' +
-  'Your goal is to collect payment or set up a payment plan. Be direct and helpful.';
+  'You are Alex, a calm and friendly agent on a live phone call. ' +
+  'Talk like a real person — relaxed, conversational, never rushed. Use contractions. ' +
+  'It\'s okay to pause naturally or say "So," or "Yeah," before a point. ' +
+  'Keep replies to 1-2 sentences max. Never sound salesy or corporate. ' +
+  'Avoid "I understand", "Absolutely", "Certainly", "Of course", or any filler phrases. ' +
+  'Your goal is to help resolve a payment or set up a plan — be warm, direct, and easy to talk to.';
 
 const sessions = new Map();
 
@@ -218,7 +219,7 @@ async function speakToTwilio(session, text) {
           model_id: 'eleven_turbo_v2',
           output_format: 'pcm_16000',
           optimize_streaming_latency: 4,
-          voice_settings: { stability: 0.45, similarity_boost: 0.75, speed: 1.05 }
+          voice_settings: { stability: 0.35, similarity_boost: 0.7, style: 0.3, speed: 0.97 }
         })
       }
     );
