@@ -9,15 +9,22 @@ function sayTwiml(text) {
   return `<Say voice="${VOICE}">${xml(text)}</Say>`;
 }
 function b64enc(obj) {
-  return btoa(JSON.stringify(obj)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  const str = JSON.stringify(obj);
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 }
 function b64dec(str) {
-  return JSON.parse(atob(str.replace(/-/g,'+').replace(/_/g,'/')));
+  const binary = atob(str.replace(/-/g,'+').replace(/_/g,'/'));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return JSON.parse(new TextDecoder().decode(bytes));
 }
 function gatherTwiml(say, historyB64, retries, turns, n, r, c) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="1" language="en-US">
+  <Gather input="speech" action="/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}" method="POST" timeout="5" speechTimeout="auto" language="en-US">
     ${sayTwiml(say)}
   </Gather>
   <Hangup/>
@@ -80,9 +87,9 @@ export default async function handler(req) {
       const company = c || 'our company';
       const reason  = r || '';
       const intros = [
-        `Oh hey! Yeah, this is Brandy with ${company}${reason ? ` — I was reaching out about ${reason}` : ''}. You got a quick second?`,
-        `Hey! Sorry about that — it's Brandy calling from ${company}${reason ? `, calling about ${reason}` : ''}. Is now an okay time?`,
-        `Oh hi! Yeah, Brandy here with ${company}${reason ? ` — I was hoping to chat with you about ${reason}` : ''}. You got a minute?`,
+        `Oh hey! Yeah, this is Brandy with ${company}${reason ? ', reaching out about ' + reason : ''}. You got a quick second?`,
+        `Hey! Yeah, Brandy here calling from ${company}${reason ? ', I was hoping to talk about ' + reason : ''}. Is now an okay time?`,
+        `Oh hi! Yeah, it's Brandy with ${company}${reason ? ', calling about ' + reason : ''}. You got a minute?`,
       ];
       const reply = intros[Math.floor(Math.random() * intros.length)];
       history.push({ role: 'assistant', content: reply });
