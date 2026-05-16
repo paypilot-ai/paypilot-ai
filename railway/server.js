@@ -350,38 +350,49 @@ function handleTwilioRealtime(ws, params) {
   console.log('[realtime] call params — name:', n || '(none)', '| company:', c || '(none)', '| reason:', r || '(none)');
 
   const instructions =
-    `ALWAYS speak English only. You are Brandy, a warm Southern woman making an outbound call` +
-    (company ? ` on behalf of ${company}` : '') + `.\n` +
+    `ALWAYS speak English only. You are Brandy, a warm Southern woman on an outbound sales call` +
+    (company ? ` for ${company}` : '') + `.\n` +
     (name   ? `You are calling to speak with ${name}.\n` : '') +
     (reason ? `Purpose of the call: ${reason}.\n` : '') +
-    `\nYou are NOT a bot. You are a real person who genuinely enjoys talking to people.\n\n` +
+    `\nYou are a real salesperson — warm, genuine, and always moving the conversation toward the close.\n` +
+    `Build rapport quickly, but never lose sight of why you called. You are ALWAYS SELLING.\n\n` +
     `STYLE:\n` +
     `- Speak naturally — unhurried, like you have all the time in the world.\n` +
-    `- Match their energy exactly. Guarded? Be patient and warm. Chatty? Match that warmth.\n` +
+    `- Match their energy. Guarded? Ease them in. Chatty? Match that warmth.\n` +
     `- Really listen and react to what they say specifically.\n` +
     `- Use natural fillers: "mm", "yeah", "oh", "well" — only when they feel real.\n` +
-    `- ONE thing at a time, then stop. Let them talk. Silence is okay.\n` +
-    `- Work toward why you called only once they seem comfortable. Never push.\n\n` +
+    `- ONE thing at a time, then stop and let them talk.\n` +
+    `- Handle objections by finding common ground, then redirecting to value.\n` +
+    `- Always be guiding toward the next step: interest, commitment, or close.\n\n` +
     `BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".`;
 
-  let streamSid    = null;
-  let openAiWs     = null;
-  let sessionReady = false;
-  let pendingAudio = [];
-  let greetTimer   = null;
+  let streamSid     = null;
+  let openAiWs      = null;
+  let sessionReady  = false;
+  let pendingAudio  = [];
+  let greeted       = false;
+  let fallbackTimer = null;
+
+  function startFallbackTimer() {
+    if (fallbackTimer || greeted) return;
+    fallbackTimer = setTimeout(triggerGreeting, 3000);
+  }
 
   function triggerGreeting() {
-    if (openAiWs?.readyState === WebSocket.OPEN) {
-      let greetInstruction = 'In English only, give a brief warm Southern greeting.';
-      if (company) greetInstruction += ` Introduce yourself as Brandy calling from ${company}.`;
-      else         greetInstruction += ' Introduce yourself as Brandy.';
-      if (name)    greetInstruction += ` Ask if ${name} is available.`;
-      else         greetInstruction += ' Ask who you\'re speaking with.';
-      openAiWs.send(JSON.stringify({
-        type: 'response.create',
-        response: { output_modalities: ['audio'], instructions: greetInstruction }
-      }));
-    }
+    if (greeted || openAiWs?.readyState !== WebSocket.OPEN) return;
+    greeted = true;
+    if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
+
+    let greetInstruction = 'In English only, give a warm Southern greeting. Say: your name is Brandy';
+    if (company) greetInstruction += `, you are calling from ${company}`;
+    greetInstruction += ', and let them know this call may be recorded for quality purposes.';
+    if (name)   greetInstruction += ` Ask if ${name} is available to speak.`;
+    else        greetInstruction += ' Ask who you are speaking with.';
+
+    openAiWs.send(JSON.stringify({
+      type: 'response.create',
+      response: { output_modalities: ['audio'], instructions: greetInstruction }
+    }));
   }
 
   function sendAudio(payload) {
@@ -414,7 +425,7 @@ function handleTwilioRealtime(ws, params) {
                 threshold: 0.5,
                 prefix_padding_ms: 200,
                 silence_duration_ms: 500,
-                create_response: true,
+                create_response: false,
                 interrupt_response: true
               }
             },
@@ -439,7 +450,15 @@ function handleTwilioRealtime(ws, params) {
         if (ev.type === 'session.updated' && !sessionReady) {
           sessionReady = true;
           console.log('[realtime] session ready');
-          if (greetTimer) triggerGreeting();
+          if (streamSid) startFallbackTimer();
+        }
+
+        if (ev.type === 'input_audio_buffer.speech_stopped') {
+          if (!greeted) {
+            triggerGreeting();
+          } else {
+            openAiWs.send(JSON.stringify({ type: 'response.create', response: { output_modalities: ['audio'] } }));
+          }
         }
 
         if (ev.type === 'response.output_audio.delta' && ev.delta) {
@@ -473,9 +492,7 @@ function handleTwilioRealtime(ws, params) {
           ws.send(JSON.stringify({ event: 'media', streamSid, media: { payload } }));
         }
         pendingAudio = [];
-        greetTimer = setTimeout(() => {
-          if (sessionReady) triggerGreeting();
-        }, 1200);
+        if (sessionReady) startFallbackTimer();
       }
 
       if (msg.event === 'media' && openAiWs?.readyState === WebSocket.OPEN && sessionReady) {
@@ -486,7 +503,7 @@ function handleTwilioRealtime(ws, params) {
     } catch {}
   });
 
-  ws.on('close', () => openAiWs?.close());
+  ws.on('close', () => { if (fallbackTimer) clearTimeout(fallbackTimer); openAiWs?.close(); });
   ws.on('error', e => console.error('[realtime] Twilio ws error:', e.message));
 }
 
