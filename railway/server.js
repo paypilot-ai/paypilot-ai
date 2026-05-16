@@ -65,11 +65,12 @@ app.get('/debug-session', (req, res) => {
     ws.send(JSON.stringify({
       type: 'session.update',
       session: {
-        modalities: ['audio', 'text'],
-        voice: 'coral',
-        input_audio_format: 'g711_ulaw',
-        output_audio_format: 'g711_ulaw',
-        turn_detection: { type: 'server_vad' }
+        type: 'realtime',
+        output_modalities: ['audio'],
+        audio: {
+          input: { format: { type: 'audio/g711-ulaw', rate: 8000 }, turn_detection: { type: 'server_vad' } },
+          output: { format: { type: 'audio/g711-ulaw', rate: 8000 }, voice: 'coral' }
+        }
       }
     }));
   });
@@ -378,13 +379,26 @@ function handleTwilioRealtime(ws, params) {
       openAiWs.send(JSON.stringify({
         type: 'session.update',
         session: {
-          type: 'realtime_session',
-          modalities: ['audio', 'text'],
+          type: 'realtime',
+          output_modalities: ['audio'],
           instructions,
-          voice: 'coral',
-          input_audio_format: 'g711_ulaw',
-          output_audio_format: 'g711_ulaw',
-          turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 200, silence_duration_ms: 500 }
+          audio: {
+            input: {
+              format: { type: 'audio/g711-ulaw', rate: 8000 },
+              turn_detection: {
+                type: 'server_vad',
+                threshold: 0.5,
+                prefix_padding_ms: 200,
+                silence_duration_ms: 500,
+                create_response: true,
+                interrupt_response: true
+              }
+            },
+            output: {
+              format: { type: 'audio/g711-ulaw', rate: 8000 },
+              voice: 'coral'
+            }
+          }
         }
       }));
     });
@@ -404,7 +418,7 @@ function handleTwilioRealtime(ws, params) {
           openAiWs.send(JSON.stringify({
             type: 'response.create',
             response: {
-              modalities: ['audio', 'text'],
+              output_modalities: ['audio'],
               instructions: `Say a warm, natural opening greeting. Ask if ${name} is available to talk.`
             }
           }));
