@@ -78,7 +78,8 @@ app.get('/test', async (req, res) => {
     const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}`, {
       method: 'POST',
       headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: 'test', model_id: 'eleven_turbo_v2', output_format: 'pcm_16000' })    });
+      body: JSON.stringify({ text: 'test', model_id: 'eleven_turbo_v2', output_format: 'pcm_16000' })
+    });
     results.elevenlabs = r.ok ? 'OK' : 'ERROR: ' + await r.text();
   } catch (e) { results.elevenlabs = 'EXCEPTION: ' + e.message; }
   res.json(results);
@@ -315,11 +316,12 @@ function handleTwilioRealtime(ws, params) {
     `You are NOT a bot. You are a real person who genuinely enjoys talking to people.\n\n` +
     `STYLE:\n` +
     `- Speak naturally — unhurried, like you have all the time in the world.\n` +
-    `- Match their energy exactly.\n` +
+    `- Match their energy exactly. Guarded? Be patient and warm. Chatty? Match that warmth.\n` +
+    `- Really listen and react to what they say specifically.\n` +
     `- Use natural fillers: "mm", "yeah", "oh", "well" — only when they feel real.\n` +
-    `- ONE thing at a time, then stop. Let them talk.\n` +
-    `- Work toward why you called only once they seem comfortable.\n\n` +
-    `BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Definitely".`;
+    `- ONE thing at a time, then stop. Let them talk. Silence is okay.\n` +
+    `- Work toward why you called only once they seem comfortable. Never push.\n\n` +
+    `BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".`;
 
   let streamSid    = null;
   let openAiWs     = null;
@@ -345,6 +347,7 @@ function handleTwilioRealtime(ws, params) {
       openAiWs.send(JSON.stringify({
         type: 'session.update',
         session: {
+          type: 'realtime_session',
           modalities: ['audio', 'text'],
           instructions,
           voice: 'coral',
@@ -358,7 +361,6 @@ function handleTwilioRealtime(ws, params) {
     openAiWs.on('message', raw => {
       try {
         const ev = JSON.parse(raw);
-
         if (ev.type === 'session.created') {
           console.log('[realtime] session.created full:', JSON.stringify(ev.session));
         } else {
