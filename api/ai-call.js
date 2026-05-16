@@ -40,9 +40,7 @@ module.exports = async function handler(req, res) {
     const r = encodeURIComponent(callReason   || '');
     const c = encodeURIComponent(companyName  || '');
 
-    // Railway streaming disabled until Railway redeploys crash fixes — always use Vercel TwiML
-    const mode = 'twiml-fallback';
-    /*
+    // Check if Railway is reachable; fall back to TwiML if not
     const rawWsUrl = (process.env.RAILWAY_WS_URL || '').trim();
     let mode;
 
@@ -76,7 +74,6 @@ module.exports = async function handler(req, res) {
     } else {
       mode = 'twiml-fallback';
     }
-    */
 
     // Fallback: Polly TTS + Twilio speech recognition (always works)
     const host = req.headers['x-forwarded-host'] || req.headers.host || 'paypilot-ai.vercel.app';
