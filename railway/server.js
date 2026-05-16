@@ -27,6 +27,10 @@ const sessions = new Map();
 
 app.get('/health', (req, res) => res.json({ ok: true, activeCalls: sessions.size }));
 
+function xmlEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 app.all('/twiml-stream', (req, res) => {
   const n = req.query.n || '';
   const r = req.query.r || '';
@@ -35,12 +39,15 @@ app.all('/twiml-stream', (req, res) => {
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
   console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'method:', req.method);
-  const nn = encodeURIComponent(n);
-  const rr = encodeURIComponent(r);
-  const cc = encodeURIComponent(c);
-  const wsUrl = `wss://${host}/twilio-realtime?n=${nn}&amp;r=${rr}&amp;c=${cc}`;
+  const wsUrl = `wss://${host}/twilio-realtime`;
+  // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
+  const paramXml = [
+    n ? `<Parameter name="n" value="${xmlEsc(n)}"/>` : '',
+    r ? `<Parameter name="r" value="${xmlEsc(r)}"/>` : '',
+    c ? `<Parameter name="c" value="${xmlEsc(c)}"/>` : '',
+  ].join('');
   res.setHeader('Content-Type', 'text/xml');
-  res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}"/></Connect></Response>`);
+  res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}">${paramXml}</Stream></Connect></Response>`);
 });
 
 app.get('/test-realtime', (req, res) => {
@@ -143,7 +150,7 @@ wss.on('connection', (ws, req) => {
   } else if (url.pathname === '/twilio') {
     handleTwilio(ws);
   } else if (url.pathname === '/twilio-realtime') {
-    try { handleTwilioRealtime(ws, url.searchParams); }
+    try { handleTwilioRealtime(ws); }
     catch (e) { console.error('[realtime] crash on connect:', e.message, e.stack); ws.close(); }
   } else if (url.pathname === '/browser') {
     handleBrowser(ws, url.searchParams.get('callSid'));
@@ -346,39 +353,64 @@ function pushToBrowser(session, data) {
 function cleanup(session) { try { session.dgWs?.close(); } catch {} }
 
 // ── OPENAI REALTIME ──────────────────────────────────────────────
-function handleTwilioRealtime(ws, params) {
-  const n = params.get('n') || '';
-  const r = params.get('r') || '';
-  const c = params.get('c') || '';
-  const company = c || '';
-  const name    = n || '';
-  const reason  = r || '';
+function handleTwilioRealtime(ws) {
+  // Params arrive via Twilio customParameters in the 'start' event — much more reliable
+  // than URL query params (avoids XML &amp; encoding edge cases).
+  let n = '';
+  let r = '';
+  let c = '';
 
-  console.log('[realtime] call params — name:', n || '(none)', '| company:', c || '(none)', '| reason:', r || '(none)');
+  let streamSid      = null;
+  let openAiWs       = null;
+  let sessionReady   = false;
+  let pendingAudio   = [];
+  let greeted        = false;
+  let fallbackTimer  = null;
+  let startReceived  = false;
 
-  const instructions =
-    `ALWAYS speak English only. You are Brandy, a warm Southern woman on an outbound sales call` +
-    (company ? ` for ${company}` : '') + `.\n` +
-    (name   ? `You are calling to speak with ${name}.\n` : '') +
-    (reason ? `Purpose of the call: ${reason}.\n` : '') +
-    `\nYou are a real salesperson — warm, genuine, and always moving the conversation toward the close.\n` +
-    `Build rapport quickly, but never lose sight of why you called. You are ALWAYS SELLING.\n\n` +
-    `STYLE:\n` +
-    `- Speak naturally — unhurried, like you have all the time in the world.\n` +
-    `- Match their energy. Guarded? Ease them in. Chatty? Match that warmth.\n` +
-    `- Really listen and react to what they say specifically.\n` +
-    `- Use natural fillers: "mm", "yeah", "oh", "well" — only when they feel real.\n` +
-    `- ONE thing at a time, then stop and let them talk.\n` +
-    `- Handle objections by finding common ground, then redirecting to value.\n` +
-    `- Always be guiding toward the next step: interest, commitment, or close.\n\n` +
-    `BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".`;
-
-  let streamSid     = null;
-  let openAiWs      = null;
-  let sessionReady  = false;
-  let pendingAudio  = [];
-  let greeted       = false;
-  let fallbackTimer = null;
+  function buildSessionUpdate() {
+    const company = c || '';
+    const name    = n || '';
+    const reason  = r || '';
+    const instructions =
+      `ALWAYS speak English only. You are Brandy, a warm Southern woman on an outbound sales call` +
+      (company ? ` for ${company}` : '') + `.\n` +
+      (name   ? `You are calling to speak with ${name}.\n` : '') +
+      (reason ? `Purpose of the call: ${reason}.\n` : '') +
+      `\nYou are a real salesperson — warm, genuine, and always moving the conversation toward the close.\n` +
+      `Build rapport quickly, but never lose sight of why you called. You are ALWAYS SELLING.\n\n` +
+      `STYLE:\n` +
+      `- Speak naturally — unhurried, like you have all the time in the world.\n` +
+      `- Match their energy. Guarded? Ease them in. Chatty? Match that warmth.\n` +
+      `- Really listen and react to what they say specifically.\n` +
+      `- Use natural fillers: "mm", "yeah", "oh", "well" — only when they feel real.\n` +
+      `- ONE thing at a time, then stop and let them talk.\n` +
+      `- Handle objections by finding common ground, then redirecting to value.\n` +
+      `- Always be guiding toward the next step: interest, commitment, or close.\n\n` +
+      `BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".`;
+    return {
+      type: 'session.update',
+      session: {
+        type: 'realtime',
+        output_modalities: ['audio'],
+        instructions,
+        audio: {
+          input: {
+            format: { type: 'audio/pcmu' },
+            turn_detection: {
+              type: 'server_vad',
+              threshold: 0.5,
+              prefix_padding_ms: 200,
+              silence_duration_ms: 500,
+              create_response: false,
+              interrupt_response: true
+            }
+          },
+          output: { format: { type: 'audio/pcmu' }, voice: 'coral' }
+        }
+      }
+    };
+  }
 
   function startFallbackTimer() {
     if (fallbackTimer || greeted) return;
@@ -389,13 +421,13 @@ function handleTwilioRealtime(ws, params) {
     if (greeted || openAiWs?.readyState !== WebSocket.OPEN) return;
     greeted = true;
     if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
-
-    let greetInstruction = 'In English only, give a warm Southern greeting. Say: your name is Brandy';
+    const company = c || '';
+    const name    = n || '';
+    let greetInstruction = 'In English only, give a warm Southern greeting. Say your name is Brandy';
     if (company) greetInstruction += `, you are calling from ${company}`;
-    greetInstruction += ', and let them know this call may be recorded for quality purposes.';
+    greetInstruction += ', and that this call may be recorded for quality purposes.';
     if (name)   greetInstruction += ` Ask if ${name} is available to speak.`;
     else        greetInstruction += ' Ask who you are speaking with.';
-
     openAiWs.send(JSON.stringify({
       type: 'response.create',
       response: { output_modalities: ['audio'], instructions: greetInstruction }
@@ -418,45 +450,21 @@ function handleTwilioRealtime(ws, params) {
 
     openAiWs.on('open', () => {
       console.log('[realtime] OpenAI ws open');
-      openAiWs.send(JSON.stringify({
-        type: 'session.update',
-        session: {
-          type: 'realtime',
-          output_modalities: ['audio'],
-          instructions,
-          audio: {
-            input: {
-              format: { type: 'audio/pcmu' },
-              turn_detection: {
-                type: 'server_vad',
-                threshold: 0.5,
-                prefix_padding_ms: 200,
-                silence_duration_ms: 500,
-                create_response: false,
-                interrupt_response: true
-              }
-            },
-            output: {
-              format: { type: 'audio/pcmu' },
-              voice: 'coral'
-            }
-          }
-        }
-      }));
+      if (startReceived) {
+        // Twilio start already gave us the params — send session.update now
+        openAiWs.send(JSON.stringify(buildSessionUpdate()));
+      }
+      // Otherwise wait for 'start' event to arrive first
     });
 
     openAiWs.on('message', raw => {
       try {
         const ev = JSON.parse(raw);
-        if (ev.type === 'session.created') {
-          console.log('[realtime] session.created full:', JSON.stringify(ev.session));
-        } else {
-          console.log('[realtime] event:', ev.type);
-        }
+        if (ev.type !== 'session.created') console.log('[realtime] event:', ev.type);
 
         if (ev.type === 'session.updated' && !sessionReady) {
           sessionReady = true;
-          console.log('[realtime] session ready');
+          console.log('[realtime] session ready — name:', n || '(none)', 'company:', c || '(none)');
           if (streamSid) startFallbackTimer();
         }
 
@@ -494,12 +502,26 @@ function handleTwilioRealtime(ws, params) {
 
       if (msg.event === 'start') {
         streamSid = msg.start.streamSid;
-        console.log('[realtime] stream started', streamSid);
+        startReceived = true;
+
+        // Read params from Twilio customParameters — guaranteed clean strings
+        const cp = msg.start?.customParameters || {};
+        n = cp.n || '';
+        r = cp.r || '';
+        c = cp.c || '';
+        console.log('[realtime] start — name:', n || '(none)', '| company:', c || '(none)', '| reason:', r || '(none)');
+
+        // Flush buffered audio
         for (const payload of pendingAudio) {
           ws.send(JSON.stringify({ event: 'media', streamSid, media: { payload } }));
         }
         pendingAudio = [];
-        if (sessionReady) startFallbackTimer();
+
+        // Send session.update now that we have the correct params
+        if (openAiWs?.readyState === WebSocket.OPEN) {
+          openAiWs.send(JSON.stringify(buildSessionUpdate()));
+        }
+        // If OpenAI ws not open yet, it'll send in the 'open' handler above
       }
 
       if (msg.event === 'media' && openAiWs?.readyState === WebSocket.OPEN && sessionReady) {
