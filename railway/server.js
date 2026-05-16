@@ -183,7 +183,7 @@ async function sendGreeting(session) {
   session.state = 'listening';
 }
 
-const FILLER_PHRASES = ['Yeah, sure.','Oh, for sure.','Right, so...','Mm, let me think on that.','Yeah, I hear you.'];
+const FILLER_PHRASES = ['Yeah, sure.', 'Oh, for sure.', 'Right, so...', 'Mm, let me think on that.', 'Yeah, I hear you.'];
 function pickFiller() { return FILLER_PHRASES[Math.floor(Math.random() * FILLER_PHRASES.length)]; }
 
 async function generateAndSpeak(session) {
@@ -352,10 +352,7 @@ function handleTwilioRealtime(ws, params) {
           voice: 'coral',
           input_audio_format: 'g711_ulaw',
           output_audio_format: 'g711_ulaw',
-          input_audio_transcription: { model: 'whisper-1' },
-          turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 200, silence_duration_ms: 500 },
-          temperature: 0.8,
-          max_response_output_tokens: 80
+          turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 200, silence_duration_ms: 500 }
         }
       }));
     });
@@ -363,6 +360,7 @@ function handleTwilioRealtime(ws, params) {
     openAiWs.on('message', raw => {
       try {
         const ev = JSON.parse(raw);
+        console.log('[realtime] event:', ev.type);
 
         if (ev.type === 'session.updated' && !sessionReady) {
           sessionReady = true;
