@@ -53,6 +53,37 @@ app.get('/test-realtime', (req, res) => {
   ws.on('error', e => { clearTimeout(timeout); res.json({ realtime: 'ERROR: ' + e.message }); });
 });
 
+app.get('/debug-session', (req, res) => {
+  const events = [];
+  const ws = new WebSocket(
+    'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview',
+    { headers: { Authorization: `Bearer ${OPENAI_API_KEY}` } }
+  );
+  const done = (result) => { try { ws.close(); } catch {} res.json(result); };
+  const timeout = setTimeout(() => done({ error: 'TIMEOUT', events }), 8000);
+  ws.on('open', () => {
+    ws.send(JSON.stringify({
+      type: 'session.update',
+      session: {
+        modalities: ['audio', 'text'],
+        voice: 'coral',
+        input_audio_format: 'g711_ulaw',
+        output_audio_format: 'g711_ulaw',
+        turn_detection: { type: 'server_vad' }
+      }
+    }));
+  });
+  ws.on('message', raw => {
+    const ev = JSON.parse(raw);
+    events.push({ type: ev.type, error: ev.error, session: ev.session });
+    if (ev.type === 'session.updated' || ev.type === 'error') {
+      clearTimeout(timeout);
+      done({ events });
+    }
+  });
+  ws.on('error', e => { clearTimeout(timeout); done({ wsError: e.message, events }); });
+});
+
 app.get('/test', async (req, res) => {
   const results = {
     env: {
