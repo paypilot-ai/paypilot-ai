@@ -68,8 +68,8 @@ app.get('/debug-session', (req, res) => {
         type: 'realtime',
         output_modalities: ['audio'],
         audio: {
-          input: { format: { type: 'audio/pcmu', rate: 8000 }, turn_detection: { type: 'server_vad' } },
-          output: { format: { type: 'audio/pcmu', rate: 8000 }, voice: 'coral' }
+          input: { format: { type: 'audio/pcmu' }, turn_detection: { type: 'server_vad' } },
+          output: { format: { type: 'audio/pcmu' }, voice: 'coral' }
         }
       }
     }));
@@ -384,7 +384,7 @@ function handleTwilioRealtime(ws, params) {
           instructions,
           audio: {
             input: {
-              format: { type: 'audio/pcmu', rate: 8000 },
+              format: { type: 'audio/pcmu' },
               turn_detection: {
                 type: 'server_vad',
                 threshold: 0.5,
@@ -395,7 +395,7 @@ function handleTwilioRealtime(ws, params) {
               }
             },
             output: {
-              format: { type: 'audio/pcmu', rate: 8000 },
+              format: { type: 'audio/pcmu' },
               voice: 'coral'
             }
           }
