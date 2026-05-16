@@ -54,14 +54,17 @@ module.exports = async function handler(req, res) {
       } catch (_) { railwayUp = false; }
 
       if (railwayUp) {
-        // Real-time stream via Railway — uses <Parameter> elements so form data reaches Brandy
-        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}`;
+        // Real-time stream via Railway — FallbackUrl ensures Twilio never plays error message
+        const host = req.headers['x-forwarded-host'] || req.headers.host || 'paypilot-ai.vercel.app';
+        const proto = req.headers['x-forwarded-proto'] || 'https';
+        const twimlUrl     = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}`;
+        const fallbackUrl  = `${proto}://${host}/api/ai-twiml?n=${n}&r=${r}&c=${c}`;
         const response = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
           {
             method: 'POST',
             headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: 'true' }).toString()
+            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, FallbackUrl: fallbackUrl, FallbackMethod: 'GET', Record: 'true' }).toString()
           }
         );
         const data = await response.json();
