@@ -76,8 +76,14 @@ app.get('/debug-session', (req, res) => {
   });
   ws.on('message', raw => {
     const ev = JSON.parse(raw);
-    events.push({ type: ev.type, error: ev.error, session: ev.session });
-    if (ev.type === 'session.updated' || ev.type === 'error') {
+    events.push({ type: ev.type, error: ev.error, keys: Object.keys(ev) });
+    if (ev.type === 'session.updated') {
+      ws.send(JSON.stringify({
+        type: 'response.create',
+        response: { output_modalities: ['audio'], instructions: 'Say hello briefly.' }
+      }));
+    }
+    if (ev.type === 'response.audio.delta' || ev.type === 'response.done' || ev.type === 'error' || events.length >= 12) {
       clearTimeout(timeout);
       done({ events });
     }
