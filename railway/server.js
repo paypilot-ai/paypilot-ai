@@ -46,7 +46,7 @@ app.all('/twiml-stream', (req, res) => {
 app.get('/test-realtime', (req, res) => {
   const ws = new WebSocket(
     'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview',
-    { headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'OpenAI-Beta': 'realtime=v1' } }
+    { headers: { Authorization: `Bearer ${OPENAI_API_KEY}` } }
   );
   const timeout = setTimeout(() => { ws.close(); res.json({ realtime: 'TIMEOUT' }); }, 6000);
   ws.on('open', () => { clearTimeout(timeout); ws.close(); res.json({ realtime: 'OK — connected successfully' }); });
@@ -339,7 +339,7 @@ function handleTwilioRealtime(ws, params) {
   function connectOpenAI() {
     openAiWs = new WebSocket(
       'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview',
-      { headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'OpenAI-Beta': 'realtime=v1' } }
+      { headers: { Authorization: `Bearer ${OPENAI_API_KEY}` } }
     );
 
     openAiWs.on('open', () => {
