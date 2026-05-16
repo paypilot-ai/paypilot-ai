@@ -5544,9 +5544,26 @@ async function startAutoDialer() {
   dialNextContact();
 }
 
+function adShowHud(label, progress) {
+  document.getElementById('aiCallerFormCard').style.display = 'none';
+  document.getElementById('callHud').style.display = 'block';
+  document.getElementById('hudStatusText').textContent = label;
+  document.getElementById('hudTimer').textContent = '0:00';
+  document.getElementById('hudTranscript').innerHTML = '';
+  window.aiCallActive = true;
+}
+
+function adHideHud() {
+  stopMatrixAnimation();
+  document.getElementById('callHud').style.display = 'none';
+  document.getElementById('aiCallerFormCard').style.display = 'block';
+  window.aiCallActive = false;
+}
+
 function stopAutoDialer() {
   adRunning = false;
   if (adPollTimer) { clearInterval(adPollTimer); adPollTimer = null; }
+  adHideHud();
   document.getElementById('adStartBtn').style.display = '';
   document.getElementById('adStopBtn').style.display  = 'none';
   document.getElementById('adStatus').textContent = 'Dialer stopped.';
@@ -5560,6 +5577,7 @@ async function dialNextContact() {
   if (nextIdx === -1) {
     adRunning = false;
     if (adPollTimer) { clearInterval(adPollTimer); adPollTimer = null; }
+    adHideHud();
     document.getElementById('adStartBtn').style.display = '';
     document.getElementById('adStopBtn').style.display  = 'none';
     const done = adContacts.filter(c => c.status === 'done').length;
@@ -5573,9 +5591,13 @@ async function dialNextContact() {
   contact.status = 'calling';
   const total = adContacts.filter(c => c.status !== 'skipped').length;
   const done  = adContacts.filter(c => c.status === 'done' || c.status === 'failed').length;
-  document.getElementById('adProgress').textContent = `Call ${done + 1} of ${total}`;
+  const progressLabel = `Call ${done + 1} of ${total}`;
+  adShowHud(`AI DIALING — ${contact.name || contact.phone}`, progressLabel);
+  document.getElementById('adProgress').textContent = progressLabel;
   document.getElementById('adStatus').textContent   = `Dialing ${contact.name || contact.phone}…`;
   renderAdRows();
+  startPageMatrix();
+  setTimeout(() => { startMatrixAnimation(); startWaveAnimation(); startMouthAnimation(); startCallTimer(); }, 600);
   const company       = document.getElementById('adCompany').value.trim();
   const defaultReason = document.getElementById('adReason').value.trim();
   try {
@@ -5592,6 +5614,7 @@ async function dialNextContact() {
     adPollTimer = setInterval(() => pollAdCall(contact), 5000);
   } catch(e) {
     contact.status = 'failed';
+    adHideHud();
     document.getElementById('adStatus').textContent = `✗ Failed to dial ${contact.name || contact.phone}: ${e.message}`;
     renderAdRows();
     setTimeout(dialNextContact, 2000);
@@ -5609,6 +5632,7 @@ async function pollAdCall(contact) {
       const done  = adContacts.filter(c => c.status === 'done' || c.status === 'failed').length;
       const total = adContacts.filter(c => c.status !== 'skipped').length;
       document.getElementById('adProgress').textContent = `${done} of ${total} done`;
+      document.getElementById('hudStatusText').textContent = `CALL ENDED — next in 3s`;
       renderAdRows();
       setTimeout(dialNextContact, 3000);
     }
