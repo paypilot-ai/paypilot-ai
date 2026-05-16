@@ -448,11 +448,11 @@ function handleTwilioRealtime(ws) {
 
     openAiWs.on('open', () => {
       console.log('[realtime] OpenAI ws open');
-      if (startReceived) {
-        // Twilio start already gave us the params — send session.update now
-        openAiWs.send(JSON.stringify(buildSessionUpdate()));
-      }
-      // Otherwise wait for 'start' event to arrive first
+      try {
+        if (startReceived) {
+          openAiWs.send(JSON.stringify(buildSessionUpdate()));
+        }
+      } catch (e) { console.error('[realtime] open handler error:', e.message); }
     });
 
     openAiWs.on('message', raw => {
