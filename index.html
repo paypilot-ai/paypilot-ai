@@ -1610,6 +1610,7 @@ body.modal-open{overflow:hidden}
       <button class="side-btn" data-page="scripts" onclick="showPage('scripts', this)">📜 Scripts</button>
       <button class="side-btn" data-page="analytics" onclick="showPage('analytics', this)">📊 Analytics</button>
       <button class="side-btn" data-page="history" onclick="showPage('history', this)">🎙️ Call History</button>
+      <button class="side-btn" data-page="autodialer" onclick="showPage('autodialer', this)">📋 Auto Dialer</button>
 
       <div class="side-group">Account</div>
       <button class="side-btn" data-page="contacts" onclick="showPage('contacts', this)">🔍 Contact Lookup</button>
@@ -1653,6 +1654,9 @@ body.modal-open{overflow:hidden}
         </button>
         <button class="mob-drawer-btn" data-mob-page="history" onclick="showPage('history',document.querySelector('[data-page=history]'));closeMobDrawer()">
           <span class="mob-icon">🎙️</span>Call History
+        </button>
+        <button class="mob-drawer-btn" data-mob-page="autodialer" onclick="showPage('autodialer',document.querySelector('[data-page=autodialer]'));closeMobDrawer()">
+          <span class="mob-icon">📋</span>Auto Dialer
         </button>
         <button class="mob-drawer-btn" data-mob-page="settings" onclick="showPage('settings',document.querySelector('[data-page=settings]'));closeMobDrawer()">
           <span class="mob-icon">⚙️</span>Settings
@@ -2900,6 +2904,57 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
           </div>
         </section>
 
+        <section class="page" id="autodialer">
+          <div class="page-header"><h2 class="page-title">📋 Auto Dialer</h2></div>
+
+          <!-- Campaign settings -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:14px">Campaign Settings</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div>
+                <label class="label">Company Name</label>
+                <input class="input" id="adCompany" placeholder="e.g. SunPath Solar">
+              </div>
+              <div>
+                <label class="label">Default Reason / Product</label>
+                <input class="input" id="adReason" placeholder="e.g. Solar panel financing offer">
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact list -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="card-title" style="margin:0">Contact List</div>
+                <span id="adCount" style="font-size:12px;color:rgba(255,255,255,.35);font-weight:400">(0 contacts)</span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button onclick="adAddRow()" class="app-btn line" style="font-size:12px;padding:6px 14px">+ Add Row</button>
+                <button onclick="adClearAll()" class="app-btn line" style="font-size:12px;padding:6px 14px;color:#f87171;border-color:rgba(248,113,113,.3)">Clear All</button>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:28px 1fr 150px 1fr 60px;gap:8px;padding:0 4px 8px;border-bottom:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.08em">
+              <span>#</span><span>Name</span><span>Phone</span><span>Reason / Product (overrides default)</span><span></span>
+            </div>
+            <div id="adRows">
+              <div style="padding:24px 0;text-align:center;color:rgba(255,255,255,.3);font-size:13px">No contacts yet — add a row to get started</div>
+            </div>
+            <button onclick="adAddRow()" style="margin-top:10px;width:100%;padding:9px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.12);border-radius:8px;color:rgba(255,255,255,.35);font-size:13px;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='rgba(255,255,255,.03)'">+ Add Contact</button>
+          </div>
+
+          <!-- Controls -->
+          <div class="card">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button id="adStartBtn" onclick="startAutoDialer()" style="padding:13px 32px;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em">▶ Start Dialing</button>
+              <button id="adStopBtn" onclick="stopAutoDialer()" style="display:none;padding:13px 24px;background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">■ Stop</button>
+              <div id="adProgress" style="font-size:13px;color:rgba(255,255,255,.45);font-weight:500"></div>
+            </div>
+            <div id="adStatus" style="margin-top:10px;font-size:13px;color:rgba(255,255,255,.55);min-height:20px"></div>
+          </div>
+        </section>
+
       </div>
     </main>
   </div>
@@ -3349,6 +3404,7 @@ function showPage(id, el){
     scripts:'Scripts',
     analytics:'Analytics',
     history:'Call History',
+    autodialer:'Auto Dialer',
     settings:'Settings',
     billing:'Billing',
     compliance:'Compliance',
@@ -3367,7 +3423,7 @@ function showPage(id, el){
   }
 
   // Sync mobile bottom nav
-  const drawerPages = ['scripts','analytics','history','settings','compliance','guide'];
+  const drawerPages = ['scripts','analytics','history','autodialer','settings','compliance','guide'];
   document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.mob-drawer-btn').forEach(b => b.classList.remove('active'));
   if(drawerPages.includes(id)){
@@ -5395,6 +5451,160 @@ function openPrivacyModal(){
 function closePrivacyModal(){
   document.getElementById('privacyModal').classList.remove('open');
   document.body.classList.remove('modal-open');
+}
+
+// ── Auto Dialer ───────────────────────────────────────────────────────────────
+let adContacts     = [];
+let adCurrentIdx   = -1;
+let adRunning      = false;
+let adPollTimer    = null;
+let adRowIdCounter = 0;
+
+function adAddRow(name, phone, reason) {
+  const id = ++adRowIdCounter;
+  adContacts.push({ id, name: name||'', phone: phone||'', reason: reason||'', status: 'pending', callSid: null });
+  renderAdRows();
+}
+
+function adRemoveRow(id) {
+  if (adRunning) return;
+  adContacts = adContacts.filter(c => c.id !== id);
+  renderAdRows();
+}
+
+function adReadAllRows() {
+  adContacts.forEach(c => {
+    const row = document.getElementById('ad-row-' + c.id);
+    if (!row) return;
+    c.name   = row.querySelector('.ad-name').value.trim();
+    c.phone  = row.querySelector('.ad-phone').value.trim();
+    c.reason = row.querySelector('.ad-reason').value.trim();
+  });
+}
+
+function renderAdRows() {
+  const container = document.getElementById('adRows');
+  if (!container) return;
+  const countEl = document.getElementById('adCount');
+  if (!adContacts.length) {
+    container.innerHTML = '<div style="padding:24px 0;text-align:center;color:rgba(255,255,255,.3);font-size:13px">No contacts yet — add a row to get started</div>';
+    if (countEl) countEl.textContent = '(0 contacts)';
+    return;
+  }
+  if (countEl) countEl.textContent = `(${adContacts.length} contact${adContacts.length !== 1 ? 's' : ''})`;
+  const statusColor = { pending:'rgba(255,255,255,.3)', calling:'#60a5fa', done:'#4ade80', failed:'#f87171', skipped:'rgba(255,255,255,.3)' };
+  const statusLabel = { pending:'—', calling:'📞 Calling…', done:'✓ Done', failed:'✗ Failed', skipped:'Skipped' };
+  const dis = adRunning ? 'disabled' : '';
+  container.innerHTML = adContacts.map((c, i) => `
+    <div id="ad-row-${c.id}" style="display:grid;grid-template-columns:28px 1fr 150px 1fr 60px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <span style="font-size:12px;color:rgba(255,255,255,.3);text-align:center">${i+1}</span>
+      <input class="input ad-name"   value="${c.name}"   placeholder="Full name"                     style="padding:7px 10px;font-size:13px" ${dis}>
+      <input class="input ad-phone"  value="${c.phone}"  placeholder="Phone number"                  style="padding:7px 10px;font-size:13px" ${dis}>
+      <input class="input ad-reason" value="${c.reason}" placeholder="Reason / product (or default)" style="padding:7px 10px;font-size:13px" ${dis}>
+      <div style="text-align:center">
+        ${adRunning
+          ? `<span style="font-size:11px;color:${statusColor[c.status]}">${statusLabel[c.status]}</span>`
+          : `<button onclick="adRemoveRow(${c.id})" style="background:none;border:none;color:rgba(255,80,80,.6);font-size:18px;cursor:pointer;padding:2px 8px;line-height:1">×</button>`}
+      </div>
+    </div>`).join('');
+}
+
+function adClearAll() {
+  if (adRunning) return;
+  adContacts = [];
+  adRowIdCounter = 0;
+  renderAdRows();
+}
+
+async function startAutoDialer() {
+  if (!isLiveUser) { toast('Auto Dialer is available on paid plans only.'); return; }
+  adReadAllRows();
+  const company = document.getElementById('adCompany').value.trim();
+  if (!company) { toast('Enter your company name first.'); return; }
+  const valid = adContacts.filter(c => c.phone.replace(/\D/g,'').length >= 10);
+  if (!valid.length) { toast('Add at least one contact with a valid 10-digit phone number.'); return; }
+  adRunning      = true;
+  adCurrentIdx   = -1;
+  adContacts.forEach(c => {
+    c.status  = c.phone.replace(/\D/g,'').length >= 10 ? 'pending' : 'skipped';
+    c.callSid = null;
+  });
+  document.getElementById('adStartBtn').style.display = 'none';
+  document.getElementById('adStopBtn').style.display  = '';
+  document.getElementById('adStatus').textContent = '';
+  renderAdRows();
+  dialNextContact();
+}
+
+function stopAutoDialer() {
+  adRunning = false;
+  if (adPollTimer) { clearInterval(adPollTimer); adPollTimer = null; }
+  document.getElementById('adStartBtn').style.display = '';
+  document.getElementById('adStopBtn').style.display  = 'none';
+  document.getElementById('adStatus').textContent = 'Dialer stopped.';
+  document.getElementById('adProgress').textContent = '';
+  renderAdRows();
+}
+
+async function dialNextContact() {
+  if (!adRunning) return;
+  const nextIdx = adContacts.findIndex((c, i) => i > adCurrentIdx && c.status === 'pending');
+  if (nextIdx === -1) {
+    adRunning = false;
+    if (adPollTimer) { clearInterval(adPollTimer); adPollTimer = null; }
+    document.getElementById('adStartBtn').style.display = '';
+    document.getElementById('adStopBtn').style.display  = 'none';
+    const done = adContacts.filter(c => c.status === 'done').length;
+    document.getElementById('adStatus').textContent = `✓ All done — ${done} call${done !== 1 ? 's' : ''} completed.`;
+    document.getElementById('adProgress').textContent = '';
+    renderAdRows();
+    return;
+  }
+  adCurrentIdx = nextIdx;
+  const contact = adContacts[adCurrentIdx];
+  contact.status = 'calling';
+  const total = adContacts.filter(c => c.status !== 'skipped').length;
+  const done  = adContacts.filter(c => c.status === 'done' || c.status === 'failed').length;
+  document.getElementById('adProgress').textContent = `Call ${done + 1} of ${total}`;
+  document.getElementById('adStatus').textContent   = `Dialing ${contact.name || contact.phone}…`;
+  renderAdRows();
+  const company       = document.getElementById('adCompany').value.trim();
+  const defaultReason = document.getElementById('adReason').value.trim();
+  try {
+    const resp = await fetch('/api/ai-call', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Call failed');
+    contact.callSid = data.callSid;
+    saveCallMeta(data.callSid, contact.name, company, contact.reason || defaultReason, contact.phone);
+    if (adPollTimer) clearInterval(adPollTimer);
+    adPollTimer = setInterval(() => pollAdCall(contact), 5000);
+  } catch(e) {
+    contact.status = 'failed';
+    document.getElementById('adStatus').textContent = `✗ Failed to dial ${contact.name || contact.phone}: ${e.message}`;
+    renderAdRows();
+    setTimeout(dialNextContact, 2000);
+  }
+}
+
+async function pollAdCall(contact) {
+  if (!adRunning || !contact.callSid) return;
+  try {
+    const resp = await fetch('/api/call-status?sid=' + contact.callSid);
+    const data = await resp.json();
+    if (['completed','failed','busy','no-answer','canceled'].includes(data.status)) {
+      clearInterval(adPollTimer); adPollTimer = null;
+      contact.status = data.status === 'completed' ? 'done' : 'failed';
+      const done  = adContacts.filter(c => c.status === 'done' || c.status === 'failed').length;
+      const total = adContacts.filter(c => c.status !== 'skipped').length;
+      document.getElementById('adProgress').textContent = `${done} of ${total} done`;
+      renderAdRows();
+      setTimeout(dialNextContact, 3000);
+    }
+  } catch {}
 }
 
 // ── Call History ─────────────────────────────────────────────────────────────
