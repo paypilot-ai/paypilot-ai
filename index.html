@@ -1610,7 +1610,6 @@ body.modal-open{overflow:hidden}
       <button class="side-btn" data-page="scripts" onclick="showPage('scripts', this)">📜 Scripts</button>
       <button class="side-btn" data-page="analytics" onclick="showPage('analytics', this)">📊 Analytics</button>
       <button class="side-btn" data-page="history" onclick="showPage('history', this)">🎙️ Call History</button>
-      <button class="side-btn" data-page="autodialer" onclick="showPage('autodialer', this)">📋 Auto Dialer</button>
 
       <div class="side-group">Account</div>
       <button class="side-btn" data-page="contacts" onclick="showPage('contacts', this)">🔍 Contact Lookup</button>
@@ -1655,8 +1654,6 @@ body.modal-open{overflow:hidden}
         <button class="mob-drawer-btn" data-mob-page="history" onclick="showPage('history',document.querySelector('[data-page=history]'));closeMobDrawer()">
           <span class="mob-icon">🎙️</span>Call History
         </button>
-        <button class="mob-drawer-btn" data-mob-page="autodialer" onclick="showPage('autodialer',document.querySelector('[data-page=autodialer]'));closeMobDrawer()">
-          <span class="mob-icon">📋</span>Auto Dialer
         </button>
         <button class="mob-drawer-btn" data-mob-page="settings" onclick="showPage('settings',document.querySelector('[data-page=settings]'));closeMobDrawer()">
           <span class="mob-icon">⚙️</span>Settings
@@ -1894,6 +1891,15 @@ body.modal-open{overflow:hidden}
 
             <!-- FORM CARD — hidden when call is active -->
             <div id="aiCallerFormCard" style="background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:28px;margin-bottom:20px;">
+
+              <!-- Mode tabs -->
+              <div style="display:flex;gap:0;margin-bottom:22px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">
+                <button id="tabSingleCall" onclick="setCallerTab('single')" style="flex:1;padding:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff">📞 Single Call</button>
+                <button id="tabAutoDialer" onclick="setCallerTab('auto')" style="flex:1;padding:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#f8fafc;color:#64748b">📋 Auto Dialer</button>
+              </div>
+
+              <!-- SINGLE CALL panel -->
+              <div id="panelSingleCall">
               <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:16px;">📞 Start an AI Call</div>
 
               <div style="margin-bottom:16px;">
@@ -1946,6 +1952,48 @@ body.modal-open{overflow:hidden}
               </div>
 
               <button id="aiCallBtn" onclick="startAiCall()" style="width:100%;padding:14px;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.03em;">🤖 Launch AI Call</button>
+              </div><!-- end panelSingleCall -->
+
+              <!-- AUTO DIALER panel -->
+              <div id="panelAutoDialer" style="display:none">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                  <div>
+                    <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Company Name</label>
+                    <input id="adCompany" type="text" placeholder="e.g. SunPath Solar" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
+                  </div>
+                  <div>
+                    <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Default Reason / Product</label>
+                    <input id="adReason" type="text" placeholder="e.g. Solar panel financing offer" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
+                  </div>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:13px;font-weight:700;color:#0f172a">Contact List</span>
+                    <span id="adCount" style="font-size:12px;color:#94a3b8">(0 contacts)</span>
+                  </div>
+                  <div style="display:flex;gap:8px;">
+                    <button onclick="adAddRow()" style="padding:6px 14px;font-size:12px;font-weight:600;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#1a6fff;cursor:pointer">+ Add Row</button>
+                    <button onclick="adClearAll()" style="padding:6px 14px;font-size:12px;font-weight:600;border:1px solid #fecaca;border-radius:8px;background:#fff;color:#ef4444;cursor:pointer">Clear All</button>
+                  </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:22px 1fr 140px 1fr 36px;gap:8px;padding:0 2px 7px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;font-weight:600">
+                  <span>#</span><span>Name</span><span>Phone</span><span>Reason / Product (overrides default)</span><span></span>
+                </div>
+                <div id="adRows" style="max-height:280px;overflow-y:auto">
+                  <div style="padding:20px 0;text-align:center;color:#94a3b8;font-size:13px">No contacts yet — add a row to get started</div>
+                </div>
+                <button onclick="adAddRow()" style="margin-top:8px;width:100%;padding:9px;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:8px;color:#94a3b8;font-size:13px;cursor:pointer">+ Add Contact</button>
+
+                <div style="display:flex;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap">
+                  <button id="adStartBtn" onclick="startAutoDialer()" style="padding:13px 28px;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">▶ Start Dialing</button>
+                  <button id="adStopBtn" onclick="stopAutoDialer()" style="display:none;padding:13px 20px;border:1px solid #fca5a5;border-radius:12px;background:#fff5f5;color:#ef4444;font-size:14px;font-weight:600;cursor:pointer">■ Stop</button>
+                  <span id="adProgress" style="font-size:13px;color:#64748b;font-weight:500"></span>
+                </div>
+                <div id="adStatus" style="margin-top:8px;font-size:13px;color:#64748b;min-height:18px"></div>
+              </div><!-- end panelAutoDialer -->
+
             </div>
 
             <!-- FULL-SIZE MATRIX AI AVATAR — replaces form when call is active -->
@@ -2904,56 +2952,6 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
           </div>
         </section>
 
-        <section class="page" id="autodialer">
-          <div class="page-header"><h2 class="page-title">📋 Auto Dialer</h2></div>
-
-          <!-- Campaign settings -->
-          <div class="card" style="margin-bottom:16px">
-            <div class="card-title" style="margin-bottom:14px">Campaign Settings</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div>
-                <label class="label">Company Name</label>
-                <input class="input" id="adCompany" placeholder="e.g. SunPath Solar">
-              </div>
-              <div>
-                <label class="label">Default Reason / Product</label>
-                <input class="input" id="adReason" placeholder="e.g. Solar panel financing offer">
-              </div>
-            </div>
-          </div>
-
-          <!-- Contact list -->
-          <div class="card" style="margin-bottom:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-              <div style="display:flex;align-items:center;gap:10px">
-                <div class="card-title" style="margin:0">Contact List</div>
-                <span id="adCount" style="font-size:12px;color:rgba(255,255,255,.35);font-weight:400">(0 contacts)</span>
-              </div>
-              <div style="display:flex;gap:8px">
-                <button onclick="adAddRow()" class="app-btn line" style="font-size:12px;padding:6px 14px">+ Add Row</button>
-                <button onclick="adClearAll()" class="app-btn line" style="font-size:12px;padding:6px 14px;color:#f87171;border-color:rgba(248,113,113,.3)">Clear All</button>
-              </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:28px 1fr 150px 1fr 60px;gap:8px;padding:0 4px 8px;border-bottom:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.08em">
-              <span>#</span><span>Name</span><span>Phone</span><span>Reason / Product (overrides default)</span><span></span>
-            </div>
-            <div id="adRows">
-              <div style="padding:24px 0;text-align:center;color:rgba(255,255,255,.3);font-size:13px">No contacts yet — add a row to get started</div>
-            </div>
-            <button onclick="adAddRow()" style="margin-top:10px;width:100%;padding:9px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.12);border-radius:8px;color:rgba(255,255,255,.35);font-size:13px;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='rgba(255,255,255,.03)'">+ Add Contact</button>
-          </div>
-
-          <!-- Controls -->
-          <div class="card">
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-              <button id="adStartBtn" onclick="startAutoDialer()" style="padding:13px 32px;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em">▶ Start Dialing</button>
-              <button id="adStopBtn" onclick="stopAutoDialer()" style="display:none;padding:13px 24px;background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">■ Stop</button>
-              <div id="adProgress" style="font-size:13px;color:rgba(255,255,255,.45);font-weight:500"></div>
-            </div>
-            <div id="adStatus" style="margin-top:10px;font-size:13px;color:rgba(255,255,255,.55);min-height:20px"></div>
-          </div>
-        </section>
 
       </div>
     </main>
@@ -3404,7 +3402,6 @@ function showPage(id, el){
     scripts:'Scripts',
     analytics:'Analytics',
     history:'Call History',
-    autodialer:'Auto Dialer',
     settings:'Settings',
     billing:'Billing',
     compliance:'Compliance',
@@ -3423,7 +3420,7 @@ function showPage(id, el){
   }
 
   // Sync mobile bottom nav
-  const drawerPages = ['scripts','analytics','history','autodialer','settings','compliance','guide'];
+  const drawerPages = ['scripts','analytics','history','settings','compliance','guide'];
   document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.mob-drawer-btn').forEach(b => b.classList.remove('active'));
   if(drawerPages.includes(id)){
@@ -5453,6 +5450,17 @@ function closePrivacyModal(){
   document.body.classList.remove('modal-open');
 }
 
+// ── Caller tab switcher ───────────────────────────────────────────────────────
+function setCallerTab(mode) {
+  const single = mode === 'single';
+  document.getElementById('panelSingleCall').style.display  = single ? '' : 'none';
+  document.getElementById('panelAutoDialer').style.display  = single ? 'none' : '';
+  document.getElementById('tabSingleCall').style.background = single ? 'linear-gradient(135deg,#1a6fff,#7c3aed)' : '#f8fafc';
+  document.getElementById('tabSingleCall').style.color      = single ? '#fff' : '#64748b';
+  document.getElementById('tabAutoDialer').style.background = single ? '#f8fafc' : 'linear-gradient(135deg,#1a6fff,#7c3aed)';
+  document.getElementById('tabAutoDialer').style.color      = single ? '#64748b' : '#fff';
+}
+
 // ── Auto Dialer ───────────────────────────────────────────────────────────────
 let adContacts     = [];
 let adCurrentIdx   = -1;
@@ -5487,24 +5495,24 @@ function renderAdRows() {
   if (!container) return;
   const countEl = document.getElementById('adCount');
   if (!adContacts.length) {
-    container.innerHTML = '<div style="padding:24px 0;text-align:center;color:rgba(255,255,255,.3);font-size:13px">No contacts yet — add a row to get started</div>';
+    container.innerHTML = '<div style="padding:20px 0;text-align:center;color:#94a3b8;font-size:13px">No contacts yet — add a row to get started</div>';
     if (countEl) countEl.textContent = '(0 contacts)';
     return;
   }
   if (countEl) countEl.textContent = `(${adContacts.length} contact${adContacts.length !== 1 ? 's' : ''})`;
-  const statusColor = { pending:'rgba(255,255,255,.3)', calling:'#60a5fa', done:'#4ade80', failed:'#f87171', skipped:'rgba(255,255,255,.3)' };
+  const statusColor = { pending:'#94a3b8', calling:'#1a6fff', done:'#16a34a', failed:'#ef4444', skipped:'#94a3b8' };
   const statusLabel = { pending:'—', calling:'📞 Calling…', done:'✓ Done', failed:'✗ Failed', skipped:'Skipped' };
   const dis = adRunning ? 'disabled' : '';
   container.innerHTML = adContacts.map((c, i) => `
-    <div id="ad-row-${c.id}" style="display:grid;grid-template-columns:28px 1fr 150px 1fr 60px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">
-      <span style="font-size:12px;color:rgba(255,255,255,.3);text-align:center">${i+1}</span>
-      <input class="input ad-name"   value="${c.name}"   placeholder="Full name"                     style="padding:7px 10px;font-size:13px" ${dis}>
-      <input class="input ad-phone"  value="${c.phone}"  placeholder="Phone number"                  style="padding:7px 10px;font-size:13px" ${dis}>
-      <input class="input ad-reason" value="${c.reason}" placeholder="Reason / product (or default)" style="padding:7px 10px;font-size:13px" ${dis}>
+    <div id="ad-row-${c.id}" style="display:grid;grid-template-columns:22px 1fr 140px 1fr 36px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9">
+      <span style="font-size:12px;color:#cbd5e1;text-align:center">${i+1}</span>
+      <input class="ad-name"   value="${c.name}"   placeholder="Full name"                     style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
+      <input class="ad-phone"  value="${c.phone}"  placeholder="Phone number"                  style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
+      <input class="ad-reason" value="${c.reason}" placeholder="Reason / product (or default)" style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
       <div style="text-align:center">
         ${adRunning
           ? `<span style="font-size:11px;color:${statusColor[c.status]}">${statusLabel[c.status]}</span>`
-          : `<button onclick="adRemoveRow(${c.id})" style="background:none;border:none;color:rgba(255,80,80,.6);font-size:18px;cursor:pointer;padding:2px 8px;line-height:1">×</button>`}
+          : `<button onclick="adRemoveRow(${c.id})" style="background:none;border:none;color:#ef4444;font-size:18px;cursor:pointer;padding:0 4px;line-height:1">×</button>`}
       </div>
     </div>`).join('');
 }
