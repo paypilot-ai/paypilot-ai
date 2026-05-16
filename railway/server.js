@@ -83,7 +83,7 @@ app.get('/debug-session', (req, res) => {
         response: { output_modalities: ['audio'], instructions: 'Say hello briefly.' }
       }));
     }
-    if (ev.type === 'response.audio.delta' || ev.type === 'response.done' || ev.type === 'error' || events.length >= 12) {
+    if (ev.type === 'response.output_audio.delta' || ev.type === 'response.done' || ev.type === 'error' || events.length >= 12) {
       clearTimeout(timeout);
       done({ events });
     }
@@ -430,7 +430,7 @@ function handleTwilioRealtime(ws, params) {
           }));
         }
 
-        if (ev.type === 'response.audio.delta' && ev.delta) {
+        if (ev.type === 'response.output_audio.delta' && ev.delta) {
           sendAudio(ev.delta);
         }
 
