@@ -34,7 +34,7 @@ app.all('/twiml-stream', (req, res) => {
   const host = process.env.RAILWAY_PUBLIC_DOMAIN ||
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
-  console.log('[twiml-stream] host:', host, 'method:', req.method);
+  console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'method:', req.method);
   const nn = encodeURIComponent(n);
   const rr = encodeURIComponent(r);
   const cc = encodeURIComponent(c);
@@ -89,6 +89,13 @@ app.get('/debug-session', (req, res) => {
     }
   });
   ws.on('error', e => { clearTimeout(timeout); done({ wsError: e.message, events }); });
+});
+
+app.get('/echo-params', (req, res) => {
+  const n = req.query.n || '(empty)';
+  const r = req.query.r || '(empty)';
+  const c = req.query.c || '(empty)';
+  res.json({ received: { name: n, reason: r, company: c }, raw_query: req.query });
 });
 
 app.get('/test', async (req, res) => {
