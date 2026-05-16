@@ -27,7 +27,6 @@ const sessions = new Map();
 
 app.get('/health', (req, res) => res.json({ ok: true, activeCalls: sessions.size }));
 
-// Accepts both GET and POST — Twilio POSTs to TwiML URLs by default
 app.all('/twiml-stream', (req, res) => {
   const n = req.query.n || '';
   const r = req.query.r || '';
@@ -40,9 +39,18 @@ app.all('/twiml-stream', (req, res) => {
   const rr = encodeURIComponent(r);
   const cc = encodeURIComponent(c);
   const wsUrl = `wss://${host}/twilio-realtime?n=${nn}&amp;r=${rr}&amp;c=${cc}`;
-  console.log('[twiml-stream] wsUrl:', wsUrl);
   res.setHeader('Content-Type', 'text/xml');
   res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}"/></Connect></Response>`);
+});
+
+app.get('/test-realtime', (req, res) => {
+  const ws = new WebSocket(
+    'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview',
+    { headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'OpenAI-Beta': 'realtime=v1' } }
+  );
+  const timeout = setTimeout(() => { ws.close(); res.json({ realtime: 'TIMEOUT' }); }, 6000);
+  ws.on('open', () => { clearTimeout(timeout); ws.close(); res.json({ realtime: 'OK — connected successfully' }); });
+  ws.on('error', e => { clearTimeout(timeout); res.json({ realtime: 'ERROR: ' + e.message }); });
 });
 
 app.get('/test', async (req, res) => {
@@ -356,19 +364,16 @@ function handleTwilioRealtime(ws, params) {
       try {
         const ev = JSON.parse(raw);
 
-        // Session ready — send opening greeting
         if (ev.type === 'session.updated' && !sessionReady) {
           sessionReady = true;
           console.log('[realtime] session ready, sending greeting');
           openAiWs.send(JSON.stringify({
-            type: 'conversation.item.create',
-            item: {
-              type: 'message',
-              role: 'user',
-              content: [{ type: 'input_text', text: 'The call just connected and someone picked up. Start with a warm, natural greeting — ask for the person by name if you know it.' }]
+            type: 'response.create',
+            response: {
+              modalities: ['audio', 'text'],
+              instructions: `Say a warm, natural opening greeting. Ask if ${name} is available to talk.`
             }
           }));
-          openAiWs.send(JSON.stringify({ type: 'response.create' }));
         }
 
         if (ev.type === 'response.audio.delta' && ev.delta) {
@@ -385,7 +390,7 @@ function handleTwilioRealtime(ws, params) {
       } catch {}
     });
 
-    openAiWs.on('close', () => console.log('[realtime] OpenAI disconnected'));
+    openAiWs.on('close', (code, reason) => console.log('[realtime] OpenAI disconnected', code, reason?.toString()));
     openAiWs.on('error', e => console.error('[realtime] OpenAI ws error:', e.message));
   }
 
@@ -398,7 +403,6 @@ function handleTwilioRealtime(ws, params) {
       if (msg.event === 'start') {
         streamSid = msg.start.streamSid;
         console.log('[realtime] stream started', streamSid);
-        // Flush any audio that arrived before streamSid was set
         for (const payload of pendingAudio) {
           ws.send(JSON.stringify({ event: 'media', streamSid, media: { payload } }));
         }
