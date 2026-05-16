@@ -205,18 +205,20 @@ function connectDeepgram(session) {
   session.dgWs = dg;
   dg.on('open', () => console.log('[deepgram] connected for', session.callSid));
   dg.on('message', async (data) => {
-    const result = JSON.parse(data);
-    const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
-    if (!transcript || !result.is_final) return;
-    const words = transcript.split(/\s+/).filter(Boolean);
-    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
-    if (words.length < 1 || NOISE_ONLY.test(transcript)) return;
-    console.log('[prospect]', transcript);
-    pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
-    if (session.state !== 'listening') return;
-    session.state = 'processing';
-    session.history.push({ role: 'user', content: transcript });
-    await generateAndSpeak(session);
+    try {
+      const result = JSON.parse(data);
+      const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
+      if (!transcript || !result.is_final) return;
+      const words = transcript.split(/\s+/).filter(Boolean);
+      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
+      if (words.length < 1 || NOISE_ONLY.test(transcript)) return;
+      console.log('[prospect]', transcript);
+      pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
+      if (session.state !== 'listening') return;
+      session.state = 'processing';
+      session.history.push({ role: 'user', content: transcript });
+      await generateAndSpeak(session);
+    } catch (e) { console.error('[deepgram] message handler error:', e.message); }
   });
   dg.on('error', (e) => console.error('[deepgram] error:', e.message));
   dg.on('close', () => console.log('[deepgram] closed'));
@@ -391,22 +393,18 @@ function handleTwilioRealtime(ws) {
     return {
       type: 'session.update',
       session: {
-        type: 'realtime',
-        output_modalities: ['audio'],
+        modalities: ['audio'],
         instructions,
-        audio: {
-          input: {
-            format: { type: 'audio/pcmu' },
-            turn_detection: {
-              type: 'server_vad',
-              threshold: 0.5,
-              prefix_padding_ms: 200,
-              silence_duration_ms: 500,
-              create_response: false,
-              interrupt_response: true
-            }
-          },
-          output: { format: { type: 'audio/pcmu' }, voice: 'coral' }
+        voice: 'coral',
+        input_audio_format: 'g711_ulaw',
+        output_audio_format: 'g711_ulaw',
+        turn_detection: {
+          type: 'server_vad',
+          threshold: 0.5,
+          prefix_padding_ms: 200,
+          silence_duration_ms: 500,
+          create_response: false,
+          interrupt_response: true
         }
       }
     };
@@ -430,7 +428,7 @@ function handleTwilioRealtime(ws) {
     else        greetInstruction += ' Ask who you are speaking with.';
     openAiWs.send(JSON.stringify({
       type: 'response.create',
-      response: { output_modalities: ['audio'], instructions: greetInstruction }
+      response: { modalities: ['audio'], instructions: greetInstruction }
     }));
   }
 
@@ -472,7 +470,7 @@ function handleTwilioRealtime(ws) {
           if (!greeted) {
             triggerGreeting();
           } else {
-            openAiWs.send(JSON.stringify({ type: 'response.create', response: { output_modalities: ['audio'] } }));
+            openAiWs.send(JSON.stringify({ type: 'response.create', response: { modalities: ['audio'] } }));
           }
         }
 
@@ -535,6 +533,13 @@ function handleTwilioRealtime(ws) {
   ws.on('close', () => { if (fallbackTimer) clearTimeout(fallbackTimer); openAiWs?.close(); });
   ws.on('error', e => console.error('[realtime] Twilio ws error:', e.message));
 }
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[server] unhandledRejection — keeping process alive:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[server] uncaughtException — keeping process alive:', err.message, err.stack);
+});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`PayPilot AI server on :${PORT}`));
