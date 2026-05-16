@@ -348,7 +348,7 @@ function handleTwilioRealtime(ws, params) {
   const reason  = r || '';
 
   const instructions =
-    `You are Brandy, a warm Southern woman on a live outbound call for ${company}.` +
+    `ALWAYS speak English only. You are Brandy, a warm Southern woman on a live outbound call for ${company}.` +
     (reason ? ` Calling about: ${reason}.` : '') +
     ` Talking to ${name}.\n\n` +
     `You are NOT a bot. You are a real person who genuinely enjoys talking to people.\n\n` +
@@ -425,7 +425,7 @@ function handleTwilioRealtime(ws, params) {
             type: 'response.create',
             response: {
               output_modalities: ['audio'],
-              instructions: `Say a warm, natural opening greeting. Ask if ${name} is available to talk.`
+              instructions: `In English, say a warm natural Southern greeting and ask if ${name} is available to talk.`
             }
           }));
         }
