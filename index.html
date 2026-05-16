@@ -4211,7 +4211,7 @@ async function endTwilioCall(){
     const sidToEnd = activeTwilioCall;
     stopDeepgram();
     activeTwilioCall = null;
-    fetch('/api/end-call', {
+    fetch('/api/call-status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ callSid: sidToEnd })
@@ -4769,7 +4769,7 @@ async function endAiCall(){
   // Tell Twilio to terminate the call
   if(sid){
     try {
-      await fetch('/api/end-call', {
+      await fetch('/api/call-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ callSid: sid })
