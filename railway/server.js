@@ -365,6 +365,19 @@ function handleTwilioRealtime(ws, params) {
   let openAiWs     = null;
   let sessionReady = false;
   let pendingAudio = [];
+  let greetTimer   = null;
+
+  function triggerGreeting() {
+    if (openAiWs?.readyState === WebSocket.OPEN) {
+      openAiWs.send(JSON.stringify({
+        type: 'response.create',
+        response: {
+          output_modalities: ['audio'],
+          instructions: `In English, say a warm natural Southern greeting and ask if ${name} is available to talk.`
+        }
+      }));
+    }
+  }
 
   function sendAudio(payload) {
     if (streamSid) {
@@ -420,14 +433,8 @@ function handleTwilioRealtime(ws, params) {
 
         if (ev.type === 'session.updated' && !sessionReady) {
           sessionReady = true;
-          console.log('[realtime] session ready, sending greeting');
-          openAiWs.send(JSON.stringify({
-            type: 'response.create',
-            response: {
-              output_modalities: ['audio'],
-              instructions: `In English, say a warm natural Southern greeting and ask if ${name} is available to talk.`
-            }
-          }));
+          console.log('[realtime] session ready');
+          if (greetTimer) triggerGreeting();
         }
 
         if (ev.type === 'response.output_audio.delta' && ev.delta) {
@@ -461,6 +468,9 @@ function handleTwilioRealtime(ws, params) {
           ws.send(JSON.stringify({ event: 'media', streamSid, media: { payload } }));
         }
         pendingAudio = [];
+        greetTimer = setTimeout(() => {
+          if (sessionReady) triggerGreeting();
+        }, 1200);
       }
 
       if (msg.event === 'media' && openAiWs?.readyState === WebSocket.OPEN && sessionReady) {
