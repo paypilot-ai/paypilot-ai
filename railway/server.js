@@ -293,16 +293,22 @@ const ELEVENLABS_VOICE_SETTINGS = {
 };
 
 async function ttsStream(text) {
-  // Try ElevenLabs first; fall back to OpenAI shimmer if blocked/unavailable
+  // Try ElevenLabs first with a tight timeout; fall back to OpenAI shimmer if blocked/slow
   if (ELEVENLABS_KEY) {
     try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 2000);
       const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream`, {
         method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
+        signal: ctrl.signal
       });
+      clearTimeout(t);
       if (resp.ok) return { resp, type: 'pcm16k' };
-      console.log('[elevenlabs] unavailable, falling back to OpenAI TTS');
-    } catch (_) {}
+      console.log('[elevenlabs] error, using OpenAI fallback');
+    } catch (_) {
+      console.log('[elevenlabs] timed out, using OpenAI fallback');
+    }
   }
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
