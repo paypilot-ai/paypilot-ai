@@ -25,7 +25,27 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
 
 const sessions = new Map();
 
+// Per-call debug log ring buffer (last 30 entries per call, last 20 calls)
+const callLogs = new Map();
+function callLog(callSid, ...args) {
+  const msg = args.join(' ');
+  console.log('[' + (callSid || '?').slice(-6) + ']', msg);
+  if (!callLogs.has(callSid)) {
+    if (callLogs.size >= 20) callLogs.delete(callLogs.keys().next().value);
+    callLogs.set(callSid, []);
+  }
+  const arr = callLogs.get(callSid);
+  arr.push({ t: new Date().toISOString(), msg });
+  if (arr.length > 50) arr.shift();
+}
+
 app.get('/health', (req, res) => res.json({ ok: true, activeCalls: sessions.size }));
+
+app.get('/logs', (req, res) => {
+  const out = {};
+  for (const [sid, entries] of callLogs) out[sid] = entries;
+  res.json(out);
+});
 
 function xmlEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -115,7 +135,8 @@ app.get('/test', async (req, res) => {
       RAILWAY_PUBLIC_DOMAIN: process.env.RAILWAY_PUBLIC_DOMAIN || '(not set)'
     },
     openai: null,
-    elevenlabs: null
+    elevenlabs: null,
+    deepgram: null
   };
   try {
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -134,6 +155,20 @@ app.get('/test', async (req, res) => {
     });
     results.elevenlabs = r.ok ? 'OK' : 'ERROR: ' + await r.text();
   } catch (e) { results.elevenlabs = 'EXCEPTION: ' + e.message; }
+  try {
+    const dgWs = new WebSocket(
+      'wss://api.deepgram.com/v1/listen?encoding=mulaw&sample_rate=8000&channels=1&model=nova-2',
+      { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } }
+    );
+    results.deepgram = await new Promise(resolve => {
+      dgWs.on('open', () => { dgWs.close(); resolve('OK — connected'); });
+      dgWs.on('error', e => resolve('ERROR: ' + e.message));
+      dgWs.on('close', (code, reason) => {
+        if (results.deepgram === null) resolve('CLOSED immediately: ' + code + ' ' + (reason?.toString() || ''));
+      });
+      setTimeout(() => { try { dgWs.terminate(); } catch {} resolve('TIMEOUT after 5s'); }, 5000);
+    });
+  } catch (e) { results.deepgram = 'EXCEPTION: ' + e.message; }
   res.json(results);
 });
 
@@ -161,6 +196,7 @@ wss.on('connection', (ws, req) => {
 
 function handleTwilio(ws) {
   let session = null;
+  let dgAudioLogged = false;
   ws.on('message', async (raw) => {
     let msg;
     try { msg = JSON.parse(raw); } catch { return; }
@@ -174,23 +210,35 @@ function handleTwilio(ws) {
       const prompt = n || r || c
         ? `${SYSTEM_PROMPT}\nCall context (DO NOT read this out — use it to guide the conversation naturally):\n- Person: ${n || 'unknown'}\n${c ? `- Company: ${c}\n` : ''}- Reason for call: ${r || 'general outreach'}\nBuild rapport first, then steer naturally toward the reason.`
         : SYSTEM_PROMPT;
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, state: 'greeting', history: [], prompt, name: n, company: c, reason: r };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, state: 'greeting', history: [], prompt, name: n, company: c, reason: r };
       sessions.set(callSid, session);
-      console.log('[call] started', callSid, '| name:', n || '(none)', '| company:', c || '(none)');
+      dgAudioLogged = false;
+      callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
       connectDeepgram(session);
       setTimeout(() => sendGreeting(session), 700);
     }
     if (msg.event === 'media' && session && session.state === 'listening') {
       const dgState = session.dgWs?.readyState;
       if (dgState === WebSocket.OPEN) {
+        if (!dgAudioLogged) { callLog(session.callSid, '[dg] first audio packet sent to Deepgram'); dgAudioLogged = true; }
         session.dgWs.send(Buffer.from(msg.media.payload, 'base64'));
       } else if (dgState !== WebSocket.CONNECTING && !session.dgReconnecting) {
+        callLog(session.callSid, '[dg] was closed — reconnecting (state was', dgState + ')');
         session.dgReconnecting = true;
+        dgAudioLogged = false;
         connectDeepgram(session);
       }
     }
+    if (msg.event === 'mark' && session) {
+      const name = msg.mark?.name;
+      if (name && session.markResolvers?.[name]) {
+        callLog(session.callSid, '[mark] received:', name);
+        session.markResolvers[name]();
+        delete session.markResolvers[name];
+      }
+    }
     if (msg.event === 'stop' && session) {
-      console.log('[call] ended', session.callSid);
+      callLog(session.callSid, '[call] ended');
       cleanup(session);
       sessions.delete(session.callSid);
     }
@@ -215,7 +263,7 @@ function connectDeepgram(session) {
   session.dgWs = dg;
   dg.on('open', () => {
     if (session.dgWs !== dg) return;
-    console.log('[deepgram] connected for', session.callSid);
+    callLog(session.callSid, '[dg] connected');
     session.dgReconnecting = false;
   });
   dg.on('message', async (data) => {
@@ -226,19 +274,22 @@ function connectDeepgram(session) {
       if (!transcript || !result.is_final) return;
       const words = transcript.split(/\s+/).filter(Boolean);
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
-      if (words.length < 1 || NOISE_ONLY.test(transcript)) return;
-      console.log('[prospect]', transcript);
+      if (words.length < 1 || NOISE_ONLY.test(transcript)) {
+        callLog(session.callSid, '[dg] filtered noise:', transcript);
+        return;
+      }
+      callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
       pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
-      if (session.state !== 'listening') return;
+      if (session.state !== 'listening') { callLog(session.callSid, '[dg] ignoring — not listening (state=' + session.state + ')'); return; }
       session.state = 'processing';
       session.history.push({ role: 'user', content: transcript });
       await generateAndSpeak(session);
-    } catch (e) { console.error('[deepgram] message handler error:', e.message); }
+    } catch (e) { callLog(session.callSid, '[dg] message error:', e.message); }
   });
-  dg.on('error', (e) => console.error('[deepgram] error:', e.message));
-  dg.on('close', () => {
+  dg.on('error', (e) => callLog(session.callSid, '[dg] error:', e.message));
+  dg.on('close', (code) => {
     if (session.dgWs !== dg) return;
-    console.log('[deepgram] closed for', session.callSid);
+    callLog(session.callSid, '[dg] closed, code:', code);
     session.dgReconnecting = false;
   });
 }
@@ -263,9 +314,11 @@ async function sendGreeting(session) {
 }
 
 async function generateAndSpeak(session) {
+  callLog(session.callSid, '[ai] generating response...');
   const messages = [{ role: 'system', content: session.prompt || SYSTEM_PROMPT }, ...session.history.slice(-12)];
   const reply = await callOpenAI(messages);
-  if (!reply) { session.state = 'listening'; return; }
+  if (!reply) { callLog(session.callSid, '[ai] no reply from OpenAI — back to listening'); session.state = 'listening'; return; }
+  callLog(session.callSid, '[ai] reply:', reply.slice(0, 80));
   session.history.push({ role: 'assistant', content: reply });
   pushToBrowser(session, { event: 'ai-response', text: reply });
   await speakToTwilio(session, reply);
@@ -303,19 +356,39 @@ const ELEVENLABS_VOICE_SETTINGS = {
 // Cached after first failure so we don't waste time retrying every turn
 let elevenlabsBlocked = false;
 
+function sendMark(session, name) {
+  if (session.twilioWs?.readyState !== WebSocket.OPEN) return false;
+  session.twilioWs.send(JSON.stringify({ event: 'mark', streamSid: session.streamSid, mark: { name } }));
+  return true;
+}
+
+function awaitMark(session, name, ms = 10000) {
+  return new Promise(resolve => {
+    session.markResolvers[name] = resolve;
+    setTimeout(() => { delete session.markResolvers[name]; resolve(); }, ms);
+  });
+}
+
 async function speakToTwilio(session, text) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
   session.state = 'speaking';
-  console.log('[ai]', text.slice(0, 80));
+  callLog(session.callSid, '[tts] speaking:', text.slice(0, 60));
   pushToBrowser(session, { event: 'ai-speaking', text });
   try {
     await streamTTS(session, text);
-  } catch (e) { console.error('[tts] error:', e.message); }
-  // Always reconnect Deepgram fresh after TTS — prevents stale/closed connections from causing silence
+  } catch (e) { callLog(session.callSid, '[tts] error:', e.message); }
+  // Reconnect DG fresh immediately so it's ready by the time Twilio finishes playing
   try { session.dgWs?.terminate(); } catch {}
   session.dgWs = null;
   session.dgReconnecting = true;
   connectDeepgram(session);
+  // Wait for Twilio to confirm audio is done playing before we start listening
+  const markName = 'tts-' + Date.now();
+  if (sendMark(session, markName)) {
+    callLog(session.callSid, '[mark] waiting for playback to complete...');
+    await awaitMark(session, markName, 10000);
+    callLog(session.callSid, '[mark] playback done — now listening');
+  }
   session.state = 'listening';
   pushToBrowser(session, { event: 'ai-done' });
 }
