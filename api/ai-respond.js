@@ -1,4 +1,4 @@
-const VOICE = 'Polly.Ruth-Neural';
+const VOICE = 'Polly.Joanna-Neural';
 
 function xmlEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

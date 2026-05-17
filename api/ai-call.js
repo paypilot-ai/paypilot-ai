@@ -38,7 +38,36 @@ module.exports = async function handler(req, res) {
     const r = encodeURIComponent(callReason  || '');
     const c = encodeURIComponent(companyName || '');
 
-    const GREETINGS = [
+    // Try Railway (OpenAI Realtime + ElevenLabs) first
+    const rawWsUrl = (process.env.RAILWAY_WS_URL || '').trim();
+    if (rawWsUrl) {
+      const railwayHttp = rawWsUrl.replace(/^wss?:\/\//, 'https://');
+      let railwayUp = false;
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 3000);
+        const probe = await fetch(`${railwayHttp}/health`, { signal: ctrl.signal });
+        clearTimeout(t);
+        railwayUp = probe.ok;
+      } catch (_) { railwayUp = false; }
+
+      if (railwayUp) {
+        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}`;
+        const resp = await fetch(
+          `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
+          {
+            method: 'POST',
+            headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
+          }
+        );
+        const data = await resp.json();
+        if (!resp.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code, mode: 'realtime' });
+        return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode: 'realtime' });
+      }
+    }
+
+    // Fallback: inline TwiML with Polly
       `Hey, is ${name || 'there'} around?`,
       `Hi there, is ${name || 'someone'} available?`,
       `Hey, is ${name || 'there'} there?`,

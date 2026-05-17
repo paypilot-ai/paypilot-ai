@@ -488,7 +488,10 @@ function handleTwilioRealtime(ws) {
       } catch {}
     });
 
-    openAiWs.on('close', (code, reason) => console.log('[realtime] OpenAI disconnected', code, reason?.toString()));
+    openAiWs.on('close', (code, reason) => {
+      console.log('[realtime] OpenAI disconnected', code, reason?.toString());
+      if (ws.readyState === WebSocket.OPEN) ws.close();
+    });
     openAiWs.on('error', e => console.error('[realtime] OpenAI ws error:', e.message));
   }
 
