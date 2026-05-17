@@ -48,8 +48,9 @@ module.exports = async function handler(req, res) {
     const history  = Buffer.from(JSON.stringify([{ role: 'assistant', content: greeting }]))
       .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
-    const actionUrl = `https://paypilotai.live/api/ai-respond?h=${history}&retries=0&turns=0&n=${n}&r=${r}&c=${c}`;
-    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${actionUrl}" method="POST" timeout="7" speechTimeout="auto" speechModel="phone_call" language="en-US"><Say voice="Polly.Ruth-Neural">${greeting.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</Say></Gather><Hangup/></Response>`;
+    const actionUrl = `https://paypilotai.live/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0&amp;n=${n}&amp;r=${r}&amp;c=${c}`;
+    const safeGreeting = greeting.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${actionUrl}" method="POST" timeout="7" speechTimeout="auto" speechModel="phone_call" language="en-US"><Say voice="Polly.Joanna-Neural">${safeGreeting}</Say></Gather><Hangup/></Response>`;
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
