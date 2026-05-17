@@ -172,7 +172,7 @@ function handleTwilio(ws) {
       const r = cp.r || '';
       const c = cp.c || '';
       const prompt = n || r || c
-        ? `${SYSTEM_PROMPT}\nYou are calling to speak with ${n || 'the prospect'}${c ? ` from ${c}` : ''}.${r ? ` Purpose of call: ${r}.` : ''}`
+        ? `${SYSTEM_PROMPT}\nCall context (DO NOT read this out — use it to guide the conversation naturally):\n- Person: ${n || 'unknown'}\n${c ? `- Company: ${c}\n` : ''}- Reason for call: ${r || 'general outreach'}\nBuild rapport first, then steer naturally toward the reason.`
         : SYSTEM_PROMPT;
       session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, state: 'greeting', history: [], prompt, name: n, company: c, reason: r };
       sessions.set(callSid, session);
@@ -235,20 +235,19 @@ function connectDeepgram(session) {
   dg.on('close', () => console.log('[deepgram] closed'));
 }
 
-function buildGreeting(name, company, reason) {
+function buildGreeting(name, company) {
   const n = name || '';
   const c = company || '';
-  const r = reason || '';
   const GREETINGS = [
-    `Hey${n ? `, is ${n} available` : ', how are ya'}? This is Brandy${c ? ` calling from ${c}` : ''}${r ? ` — I was reaching out about ${r}` : ''}.`,
-    `Hi there! Is ${n || 'this'} ${n ? '' : 'a good time'}? Brandy here${c ? ` with ${c}` : ''}${r ? `, calling about ${r}` : ''}.`,
-    `Hey, is ${n || 'this'} ${n ? 'around' : 'a good time to chat'}? This is Brandy${c ? ` from ${c}` : ''}${r ? ` about ${r}` : ''}.`,
+    `Hey${n ? `, is ${n} available` : ' there'}? This is Brandy${c ? ` calling from ${c}` : ''}.`,
+    `Hi! Is ${n || 'this'} a good time? Brandy here${c ? ` with ${c}` : ''}.`,
+    `Hey, is ${n ? n + ' around' : 'now a good time'}? This is Brandy${c ? ` from ${c}` : ''}.`,
   ];
   return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 }
 
 async function sendGreeting(session) {
-  const greeting = buildGreeting(session.name, session.company, session.reason);
+  const greeting = buildGreeting(session.name, session.company);
   session.history.push({ role: 'assistant', content: greeting });
   pushToBrowser(session, { event: 'ai-response', text: greeting });
   await speakToTwilio(session, greeting);
