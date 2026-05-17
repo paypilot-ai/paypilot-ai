@@ -182,7 +182,11 @@ function handleTwilio(ws) {
     }
     if (msg.event === 'media' && session) {
       if (session.state !== 'listening') return;
-      if (session.dgWs?.readyState !== WebSocket.OPEN) return;
+      if (session.dgWs?.readyState !== WebSocket.OPEN) {
+        if (!session.dgReconnecting) { session.dgReconnecting = true; connectDeepgram(session); }
+        return;
+      }
+      session.dgReconnecting = false;
       const mulaw = Buffer.from(msg.media.payload, 'base64');
       session.dgWs.send(mulaw);
     }
@@ -270,11 +274,15 @@ function prepareForSpeech(text) {
 
 async function callOpenAI(messages) {
   try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 6000);
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 55, temperature: 0.7 })
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 55, temperature: 0.7 }),
+      signal: ctrl.signal
     });
+    clearTimeout(t);
     const data = await resp.json();
     return data.choices?.[0]?.message?.content?.trim() || null;
   } catch (e) { console.error('[openai] error:', e.message); return null; }
@@ -298,16 +306,21 @@ async function ttsStream(text) {
       });
       clearTimeout(t);
       if (resp.ok) return { resp, type: 'pcm16k' };
+      resp.body?.cancel(); // release connection
       console.log('[elevenlabs] error, using OpenAI fallback');
     } catch (_) {
       console.log('[elevenlabs] timed out, using OpenAI fallback');
     }
   }
+  const ctrl2 = new AbortController();
+  const t2 = setTimeout(() => ctrl2.abort(), 12000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) })
+    body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) }),
+    signal: ctrl2.signal
   });
+  clearTimeout(t2);
   if (!resp.ok) throw new Error(`OpenAI TTS ${resp.status}`);
   return { resp, type: 'pcm24k' };
 }
