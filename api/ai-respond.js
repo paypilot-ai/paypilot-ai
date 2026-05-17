@@ -81,9 +81,10 @@ module.exports = async function handler(req, res) {
 
     history.push({ role: 'user', content: transcript });
 
+    const company = c || 'our company';
+    const reason  = r || '';
+
     if (turns <= 0) {
-      const company = c || 'our company';
-      const reason  = r || '';
       const intros = [
         `Oh hey! Yeah, this is Brandy with ${company}${reason ? '. I was reaching out about ' + reason : ''}. You got a quick second?`,
         `Hey! Brandy here from ${company}${reason ? ', hoping to talk about ' + reason : ''}. Is now an okay time?`,
@@ -95,37 +96,49 @@ module.exports = async function handler(req, res) {
       return res.status(200).send(gather(say(reply), b64enc(history), 0, 1, n, r, c));
     }
 
-    const messages = [{ role: 'system', content: buildPrompt(n, c, r) }, ...history.slice(-12)];
-    const apiKey = process.env.OPENAI_API_KEY;
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 40, temperature: 0.8 }),
-      signal: AbortSignal.timeout(7000)
-    });
+    // Scripted fallback replies — used if OpenAI is slow or unavailable
+    const SCRIPTED = [
+      `Oh yeah, absolutely — so the reason I was reaching out is about ${reason || 'some great options we have'}. Does that sound like something you'd be open to?`,
+      `Mm, yeah — I totally get that. What would be the best time to talk about this more?`,
+      `Oh interesting, tell me more about that.`,
+      `Right, right — well, I appreciate your time. Can I follow up with you later this week?`,
+    ];
 
-    if (!resp.ok) {
-      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || 'So where were we?';
-      return res.status(200).send(gather(say(last), b64enc(history.slice(0,-1)), 0, turns, n, r, c));
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+
+    let reply;
+    try {
+      const messages = [{ role: 'system', content: buildPrompt(n, c, r) }, ...history.slice(-12)];
+      const apiKey = process.env.OPENAI_API_KEY;
+      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 40, temperature: 0.8 }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      if (resp.ok) {
+        const d = await resp.json();
+        const raw = (d.choices?.[0]?.message?.content || '').trim();
+        const wantsEnd = raw.includes('[END]');
+        reply = raw.replace(/\[END\]/g, '').trim();
+        if (reply) {
+          history.push({ role: 'assistant', content: reply });
+          while (Buffer.byteLength(JSON.stringify(history)) > 5500) history.splice(0, 2);
+          if (wantsEnd && turns >= 3) {
+            return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say(reply)}<Hangup/></Response>`);
+          }
+          return res.status(200).send(gather(say(reply), b64enc(history), 0, turns + 1, n, r, c));
+        }
+      }
+    } catch (_) {
+      clearTimeout(timeout);
     }
 
-    const d = await resp.json();
-    const raw = d.choices?.[0]?.message?.content?.trim() || '';
-    const wantsEnd = raw.includes('[END]');
-    const reply    = raw.replace(/\[END\]/g, '').trim();
-
-    if (!reply) {
-      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || 'Sorry, what was that?';
-      return res.status(200).send(gather(say(last), b64enc(history.slice(0,-1)), 0, turns, n, r, c));
-    }
-
+    // Fallback to scripted reply if OpenAI failed or timed out
+    reply = SCRIPTED[Math.min(turns - 1, SCRIPTED.length - 1)];
     history.push({ role: 'assistant', content: reply });
-    while (Buffer.byteLength(JSON.stringify(history)) > 5500) history.splice(0, 2);
-
-    if (wantsEnd && turns >= 3) {
-      return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say(reply)}<Hangup/></Response>`);
-    }
-
     return res.status(200).send(gather(say(reply), b64enc(history), 0, turns + 1, n, r, c));
 
   } catch (err) {
