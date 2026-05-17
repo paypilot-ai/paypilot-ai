@@ -39,7 +39,7 @@ app.all('/twiml-stream', (req, res) => {
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
   console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'method:', req.method);
-  const wsUrl = `wss://${host}/twilio-realtime`;
+  const wsUrl = `wss://${host}/twilio`;
   // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
   const paramXml = [
     n ? `<Parameter name="n" value="${xmlEsc(n)}"/>` : '',
@@ -167,9 +167,16 @@ function handleTwilio(ws) {
     if (msg.event === 'start') {
       const callSid   = msg.start.callSid;
       const streamSid = msg.start.streamSid;
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, state: 'greeting', history: [] };
+      const cp = msg.start?.customParameters || {};
+      const n = cp.n || '';
+      const r = cp.r || '';
+      const c = cp.c || '';
+      const prompt = n || r || c
+        ? `${SYSTEM_PROMPT}\nYou are calling to speak with ${n || 'the prospect'}${c ? ` from ${c}` : ''}.${r ? ` Purpose of call: ${r}.` : ''}`
+        : SYSTEM_PROMPT;
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, state: 'greeting', history: [], prompt, name: n, company: c, reason: r };
       sessions.set(callSid, session);
-      console.log('[call] started', callSid);
+      console.log('[call] started', callSid, '| name:', n || '(none)', '| company:', c || '(none)');
       connectDeepgram(session);
       setTimeout(() => sendGreeting(session), 1200);
     }
@@ -225,9 +232,13 @@ function connectDeepgram(session) {
 }
 
 async function sendGreeting(session) {
+  const name    = session.name    || 'the prospect';
+  const company = session.company || '';
+  const reason  = session.reason  || '';
+  const greetPrompt = `The call just connected. Give a short warm Southern greeting. Say your name is Brandy${company ? `, calling from ${company}` : ''}.${reason ? ` Mention you are calling about ${reason}.` : ''} Ask if ${name} is available.`;
   const greeting = await callOpenAI([
-    { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: 'The call just connected. Give a short warm opening greeting.' }
+    { role: 'system', content: session.prompt || SYSTEM_PROMPT },
+    { role: 'user', content: greetPrompt }
   ]);
   if (greeting) {
     session.history.push({ role: 'assistant', content: greeting });
@@ -241,7 +252,7 @@ const FILLER_PHRASES = ['Yeah, sure.', 'Oh, for sure.', 'Right, so...', 'Mm, let
 function pickFiller() { return FILLER_PHRASES[Math.floor(Math.random() * FILLER_PHRASES.length)]; }
 
 async function generateAndSpeak(session) {
-  const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...session.history.slice(-12)];
+  const messages = [{ role: 'system', content: session.prompt || SYSTEM_PROMPT }, ...session.history.slice(-12)];
   speakFiller(session, pickFiller()).catch(() => {});
   const reply = await callOpenAI(messages);
   if (!reply) { session.state = 'listening'; return; }
@@ -261,10 +272,7 @@ function prepareForSpeech(text) {
     .replace(/([^.!?])$/, '$1.');
 }
 
-const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_flash_v2_5', output_format: 'pcm_16000', optimize_streaming_latency: 4, apply_text_normalization: 'off',
-  voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
-};
+const OPENAI_TTS = { model: 'tts-1', voice: 'nova', response_format: 'pcm', speed: 0.92 };
 
 async function callOpenAI(messages) {
   try {
@@ -278,16 +286,19 @@ async function callOpenAI(messages) {
   } catch (e) { console.error('[openai] error:', e.message); return null; }
 }
 
+async function ttsToTwilio(session, text) {
+  const resp = await fetch('https://api.openai.com/v1/audio/speech', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+    body: JSON.stringify({ ...OPENAI_TTS, input: prepareForSpeech(text) })
+  });
+  if (!resp.ok) { console.error('[tts] error:', await resp.text()); return; }
+  await streamPcm24ToTwilio(session, resp);
+}
+
 async function speakFiller(session, text) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
-  try {
-    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream`, {
-      method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
-    });
-    if (!resp.ok) return;
-    await streamPcmToTwilio(session, resp);
-  } catch (_) {}
+  try { await ttsToTwilio(session, text); } catch (_) {}
 }
 
 async function speakToTwilio(session, text) {
@@ -295,22 +306,13 @@ async function speakToTwilio(session, text) {
   session.state = 'speaking';
   console.log('[ai]', text.slice(0, 80));
   pushToBrowser(session, { event: 'ai-speaking', text });
-  try {
-    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream`, {
-      method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
-    });
-    if (!resp.ok) {
-      console.error('[elevenlabs] error:', await resp.text());
-    } else {
-      await streamPcmToTwilio(session, resp);
-    }
-  } catch (e) { console.error('[elevenlabs] stream error:', e.message); }
+  try { await ttsToTwilio(session, text); } catch (e) { console.error('[tts] stream error:', e.message); }
   session.state = 'listening';
   pushToBrowser(session, { event: 'ai-done' });
 }
 
-async function streamPcmToTwilio(session, resp) {
+// OpenAI TTS outputs PCM16 at 24 kHz; Twilio needs mulaw at 8 kHz → 3:1 downsample
+async function streamPcm24ToTwilio(session, resp) {
   const reader = resp.body.getReader();
   let buffer = Buffer.alloc(0);
   while (true) {
@@ -319,23 +321,24 @@ async function streamPcmToTwilio(session, resp) {
     if (!value?.length) continue;
     if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
     buffer = Buffer.concat([buffer, Buffer.from(value)]);
-    while (buffer.length >= 320) {
-      const chunk = buffer.slice(0, 320); buffer = buffer.slice(320);
-      const pcm16k = new Int16Array(chunk.buffer, chunk.byteOffset, 160);
-      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm16k).toString('base64') } }));
+    // 480 bytes = 240 samples @ 24 kHz = 10 ms
+    while (buffer.length >= 480) {
+      const chunk = buffer.slice(0, 480); buffer = buffer.slice(480);
+      const pcm = new Int16Array(chunk.buffer, chunk.byteOffset, 240);
+      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
     }
   }
-  if (buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
-    const pcm16k = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
-    session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm16k).toString('base64') } }));
+  if (buffer.length >= 6 && session.twilioWs?.readyState === WebSocket.OPEN) {
+    const pcm = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
+    session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
   }
 }
 
-function pcm16ToMulaw(samples) {
+function pcm24ToMulaw(samples) {
   const BIAS = 0x84, CLIP = 32635;
-  const out = Buffer.allocUnsafe(Math.floor(samples.length / 2));
+  const out = Buffer.allocUnsafe(Math.floor(samples.length / 3));
   for (let i = 0; i < out.length; i++) {
-    let s = samples[i * 2];
+    let s = samples[i * 3];
     const sign = s < 0 ? 0x80 : 0;
     if (sign) s = -s;
     if (s > CLIP) s = CLIP;
