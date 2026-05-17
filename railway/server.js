@@ -292,15 +292,33 @@ const ELEVENLABS_VOICE_SETTINGS = {
   voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
 };
 
+async function ttsStream(text) {
+  // Try ElevenLabs first; fall back to OpenAI shimmer if blocked/unavailable
+  if (ELEVENLABS_KEY) {
+    try {
+      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream`, {
+        method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
+      });
+      if (resp.ok) return { resp, type: 'pcm16k' };
+      console.log('[elevenlabs] unavailable, falling back to OpenAI TTS');
+    } catch (_) {}
+  }
+  const resp = await fetch('https://api.openai.com/v1/audio/speech', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+    body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) })
+  });
+  if (!resp.ok) throw new Error(`OpenAI TTS ${resp.status}`);
+  return { resp, type: 'pcm24k' };
+}
+
 async function speakFiller(session, text) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
   try {
-    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream`, {
-      method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
-    });
-    if (!resp.ok) return;
-    await streamPcmToTwilio(session, resp);
+    const { resp, type } = await ttsStream(text);
+    if (type === 'pcm16k') await streamPcmToTwilio(session, resp);
+    else await streamPcm24ToTwilio(session, resp);
   } catch (_) {}
 }
 
@@ -310,16 +328,10 @@ async function speakToTwilio(session, text) {
   console.log('[ai]', text.slice(0, 80));
   pushToBrowser(session, { event: 'ai-speaking', text });
   try {
-    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream`, {
-      method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS })
-    });
-    if (!resp.ok) {
-      console.error('[elevenlabs] error:', await resp.text());
-    } else {
-      await streamPcmToTwilio(session, resp);
-    }
-  } catch (e) { console.error('[elevenlabs] stream error:', e.message); }
+    const { resp, type } = await ttsStream(text);
+    if (type === 'pcm16k') await streamPcmToTwilio(session, resp);
+    else await streamPcm24ToTwilio(session, resp);
+  } catch (e) { console.error('[tts] error:', e.message); }
   session.state = 'listening';
   pushToBrowser(session, { event: 'ai-done' });
 }
@@ -350,6 +362,44 @@ function pcm16ToMulaw(samples) {
   const out = Buffer.allocUnsafe(Math.floor(samples.length / 2));
   for (let i = 0; i < out.length; i++) {
     let s = samples[i * 2];
+    const sign = s < 0 ? 0x80 : 0;
+    if (sign) s = -s;
+    if (s > CLIP) s = CLIP;
+    s += BIAS;
+    let exp = 7, mask = 0x4000;
+    while (exp > 0 && (s & mask) === 0) { exp--; mask >>= 1; }
+    const mantissa = (s >> (exp + 3)) & 0x0F;
+    out[i] = ~(sign | (exp << 4) | mantissa) & 0xFF;
+  }
+  return out;
+}
+
+async function streamPcm24ToTwilio(session, resp) {
+  const reader = resp.body.getReader();
+  let buffer = Buffer.alloc(0);
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (!value?.length) continue;
+    if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
+    buffer = Buffer.concat([buffer, Buffer.from(value)]);
+    while (buffer.length >= 480) {
+      const chunk = buffer.slice(0, 480); buffer = buffer.slice(480);
+      const pcm = new Int16Array(chunk.buffer, chunk.byteOffset, 240);
+      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
+    }
+  }
+  if (buffer.length >= 6 && session.twilioWs?.readyState === WebSocket.OPEN) {
+    const pcm = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
+    session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
+  }
+}
+
+function pcm24ToMulaw(samples) {
+  const BIAS = 0x84, CLIP = 32635;
+  const out = Buffer.allocUnsafe(Math.floor(samples.length / 3));
+  for (let i = 0; i < out.length; i++) {
+    let s = samples[i * 3];
     const sign = s < 0 ? 0x80 : 0;
     if (sign) s = -s;
     if (s > CLIP) s = CLIP;
