@@ -26,23 +26,26 @@ const GREETINGS = [
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
+  try {
+    const n = (req.query.n || '').trim();
+    const r = (req.query.r || '').trim();
+    const c = (req.query.c || '').trim();
 
-  const n = (req.query.n || '').trim();
-  const r = (req.query.r || '').trim();
-  const c = (req.query.c || '').trim();
+    const name = n || 'there';
+    const tmpl = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    const greeting = tmpl.replace('{name}', name);
 
-  const name = n || 'there';
-  const tmpl = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-  const greeting = tmpl.replace('{name}', name);
+    const history = b64enc([{ role: 'assistant', content: greeting }]);
+    const action = `https://paypilot-ai.vercel.app/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
 
-  const history = b64enc([{ role: 'assistant', content: greeting }]);
-  const action = `/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
-
-  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
+    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Gather input="speech" action="${action}" method="POST" timeout="7" speechTimeout="auto" speechModel="phone_call" language="en-US">
     ${say(greeting)}
   </Gather>
   <Hangup/>
 </Response>`);
+  } catch (e) {
+    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="${VOICE}">Hi there, who am I speaking with?</Say><Hangup/></Response>`);
+  }
 };

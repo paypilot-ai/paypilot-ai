@@ -37,9 +37,7 @@ module.exports = async function handler(req, res) {
     const r = encodeURIComponent(callReason   || '');
     const c = encodeURIComponent(companyName  || '');
 
-    const host  = req.headers['x-forwarded-host'] || req.headers.host || 'paypilot-ai.vercel.app';
-    const proto = req.headers['x-forwarded-proto'] || 'https';
-    const twimlUrl = `${proto}://${host}/api/ai-twiml?n=${n}&r=${r}&c=${c}`;
+    const twimlUrl = `https://paypilot-ai.vercel.app/api/ai-twiml?n=${n}&r=${r}&c=${c}`;
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
