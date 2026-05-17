@@ -181,14 +181,12 @@ function handleTwilio(ws) {
       setTimeout(() => sendGreeting(session), 700);
     }
     if (msg.event === 'media' && session) {
-      if (session.state !== 'listening') return;
-      if (session.dgWs?.readyState !== WebSocket.OPEN) {
-        if (!session.dgReconnecting) { session.dgReconnecting = true; connectDeepgram(session); }
-        return;
+      if (session.dgWs?.readyState === WebSocket.OPEN) {
+        session.dgWs.send(Buffer.from(msg.media.payload, 'base64'));
+      } else if (!session.dgReconnecting) {
+        session.dgReconnecting = true;
+        connectDeepgram(session);
       }
-      session.dgReconnecting = false;
-      const mulaw = Buffer.from(msg.media.payload, 'base64');
-      session.dgWs.send(mulaw);
     }
     if (msg.event === 'stop' && session) {
       console.log('[call] ended', session.callSid);
