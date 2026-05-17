@@ -251,17 +251,10 @@ async function sendGreeting(session) {
   session.state = 'listening';
 }
 
-const FILLER_PHRASES = ['Yeah, sure.', 'Oh, for sure.', 'Right, so...', 'Mm, let me think on that.', 'Yeah, I hear you.'];
-function pickFiller() { return FILLER_PHRASES[Math.floor(Math.random() * FILLER_PHRASES.length)]; }
-
 async function generateAndSpeak(session) {
   const messages = [{ role: 'system', content: session.prompt || SYSTEM_PROMPT }, ...session.history.slice(-12)];
-  speakFiller(session, pickFiller()).catch(() => {});
   const reply = await callOpenAI(messages);
   if (!reply) { session.state = 'listening'; return; }
-  if (session.twilioWs?.readyState === WebSocket.OPEN) {
-    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-  }
   session.history.push({ role: 'assistant', content: reply });
   pushToBrowser(session, { event: 'ai-response', text: reply });
   await speakToTwilio(session, reply);
@@ -319,14 +312,6 @@ async function ttsStream(text) {
   return { resp, type: 'pcm24k' };
 }
 
-async function speakFiller(session, text) {
-  if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
-  try {
-    const { resp, type } = await ttsStream(text);
-    if (type === 'pcm16k') await streamPcmToTwilio(session, resp);
-    else await streamPcm24ToTwilio(session, resp);
-  } catch (_) {}
-}
 
 async function speakToTwilio(session, text) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
