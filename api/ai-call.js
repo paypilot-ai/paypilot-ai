@@ -50,8 +50,8 @@ module.exports = async function handler(req, res) {
       }
     );
     const data = await response.json();
-    if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code });
-    return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode: 'twiml' });
+    if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code, twimlUrl });
+    return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode: 'twiml', twimlUrl });
 
   } catch (e) {
     return res.status(500).json({ error: e.message });
