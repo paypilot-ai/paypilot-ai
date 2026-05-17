@@ -68,6 +68,7 @@ module.exports = async function handler(req, res) {
     }
 
     // Fallback: inline TwiML with Polly
+    const GREETINGS = [
       `Hey, is ${name || 'there'} around?`,
       `Hi there, is ${name || 'someone'} available?`,
       `Hey, is ${name || 'there'} there?`,
