@@ -393,7 +393,7 @@ function handleTwilioRealtime(ws) {
     return {
       type: 'session.update',
       session: {
-        type: 'realtime_session',
+        type: 'realtime',
         modalities: ['audio'],
         instructions,
         voice: 'coral',
