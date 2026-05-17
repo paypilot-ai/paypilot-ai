@@ -180,7 +180,7 @@ function handleTwilio(ws) {
       connectDeepgram(session);
       setTimeout(() => sendGreeting(session), 700);
     }
-    if (msg.event === 'media' && session) {
+    if (msg.event === 'media' && session && session.state === 'listening') {
       if (session.dgWs?.readyState === WebSocket.OPEN) {
         session.dgWs.send(Buffer.from(msg.media.payload, 'base64'));
       } else if (!session.dgReconnecting) {
@@ -349,10 +349,13 @@ async function pipeToTwilio(session, resp, type) {
   const encoder = type === 'pcm16k' ? pcm16ToMulaw : pcm24ToMulaw;
   const reader = resp.body.getReader();
   let buffer = Buffer.alloc(0);
-  const deadline = Date.now() + 12000;
+  const readWithTimeout = () => Promise.race([
+    reader.read(),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('read timeout')), 8000))
+  ]);
   try {
-    while (Date.now() < deadline) {
-      const { done, value } = await reader.read();
+    while (true) {
+      const { done, value } = await readWithTimeout();
       if (done) break;
       if (!value?.length) continue;
       if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
