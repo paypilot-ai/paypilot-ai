@@ -30,11 +30,6 @@ const GREETINGS = [
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
-  const n = req.query?.n || '';
-  const r = req.query?.r || '';
-  const c = req.query?.c || '';
-  const template = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-  const greeting = n ? template.replace('{name}', xmlEsc(n)) : 'Hey there, who am I speaking with?';
-  const history = b64enc([{ role: 'assistant', content: greeting }]);
-  res.status(200).send(gatherTwiml(say(greeting), history, n, r, c));
+  // Minimal test — proves Twilio can reach this endpoint
+  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="Polly.Joanna-Neural">Hello, this is Pay Pilot. The system is working.</Say><Hangup/></Response>`);
 };
