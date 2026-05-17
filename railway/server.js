@@ -178,7 +178,7 @@ function handleTwilio(ws) {
       sessions.set(callSid, session);
       console.log('[call] started', callSid, '| name:', n || '(none)', '| company:', c || '(none)');
       connectDeepgram(session);
-      setTimeout(() => sendGreeting(session), 1200);
+      setTimeout(() => sendGreeting(session), 700);
     }
     if (msg.event === 'media' && session) {
       if (session.state !== 'listening') return;
@@ -231,20 +231,23 @@ function connectDeepgram(session) {
   dg.on('close', () => console.log('[deepgram] closed'));
 }
 
+function buildGreeting(name, company, reason) {
+  const n = name || '';
+  const c = company || '';
+  const r = reason || '';
+  const GREETINGS = [
+    `Hey${n ? `, is ${n} available` : ', how are ya'}? This is Brandy${c ? ` calling from ${c}` : ''}${r ? ` — I was reaching out about ${r}` : ''}.`,
+    `Hi there! Is ${n || 'this'} ${n ? '' : 'a good time'}? Brandy here${c ? ` with ${c}` : ''}${r ? `, calling about ${r}` : ''}.`,
+    `Hey, is ${n || 'this'} ${n ? 'around' : 'a good time to chat'}? This is Brandy${c ? ` from ${c}` : ''}${r ? ` about ${r}` : ''}.`,
+  ];
+  return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+}
+
 async function sendGreeting(session) {
-  const name    = session.name    || 'the prospect';
-  const company = session.company || '';
-  const reason  = session.reason  || '';
-  const greetPrompt = `The call just connected. Give a short warm Southern greeting. Say your name is Brandy${company ? `, calling from ${company}` : ''}.${reason ? ` Mention you are calling about ${reason}.` : ''} Ask if ${name} is available.`;
-  const greeting = await callOpenAI([
-    { role: 'system', content: session.prompt || SYSTEM_PROMPT },
-    { role: 'user', content: greetPrompt }
-  ]);
-  if (greeting) {
-    session.history.push({ role: 'assistant', content: greeting });
-    pushToBrowser(session, { event: 'ai-response', text: greeting });
-    await speakToTwilio(session, greeting);
-  }
+  const greeting = buildGreeting(session.name, session.company, session.reason);
+  session.history.push({ role: 'assistant', content: greeting });
+  pushToBrowser(session, { event: 'ai-response', text: greeting });
+  await speakToTwilio(session, greeting);
   session.state = 'listening';
 }
 
@@ -265,8 +268,6 @@ function prepareForSpeech(text) {
     .replace(/([^.!?])$/, '$1.');
 }
 
-const DG_TTS_URL = 'https://api.deepgram.com/v1/speak?model=aura-asteria-en&encoding=mulaw&sample_rate=8000&container=none';
-
 async function callOpenAI(messages) {
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -285,19 +286,20 @@ async function speakToTwilio(session, text) {
   console.log('[ai]', text.slice(0, 80));
   pushToBrowser(session, { event: 'ai-speaking', text });
   try {
-    const resp = await fetch(DG_TTS_URL, {
+    const resp = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Token ${DEEPGRAM_API_KEY}` },
-      body: JSON.stringify({ text: prepareForSpeech(text) })
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) })
     });
-    if (!resp.ok) { console.error('[tts] error:', await resp.text()); }
-    else { await streamMulawToTwilio(session, resp); }
+    if (!resp.ok) { console.error('[tts] error:', resp.status, await resp.text()); }
+    else { await streamPcm24ToTwilio(session, resp); }
   } catch (e) { console.error('[tts] error:', e.message); }
   session.state = 'listening';
   pushToBrowser(session, { event: 'ai-done' });
 }
 
-async function streamMulawToTwilio(session, resp) {
+// OpenAI TTS outputs PCM16 at 24 kHz; Twilio needs mulaw at 8 kHz → 3:1 downsample
+async function streamPcm24ToTwilio(session, resp) {
   const reader = resp.body.getReader();
   let buffer = Buffer.alloc(0);
   while (true) {
@@ -306,14 +308,33 @@ async function streamMulawToTwilio(session, resp) {
     if (!value?.length) continue;
     if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
     buffer = Buffer.concat([buffer, Buffer.from(value)]);
-    while (buffer.length >= 160) {
-      const chunk = buffer.slice(0, 160); buffer = buffer.slice(160);
-      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: chunk.toString('base64') } }));
+    while (buffer.length >= 480) {
+      const chunk = buffer.slice(0, 480); buffer = buffer.slice(480);
+      const pcm = new Int16Array(chunk.buffer, chunk.byteOffset, 240);
+      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
     }
   }
-  if (buffer.length > 0 && session.twilioWs?.readyState === WebSocket.OPEN) {
-    session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: buffer.toString('base64') } }));
+  if (buffer.length >= 6 && session.twilioWs?.readyState === WebSocket.OPEN) {
+    const pcm = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
+    session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
   }
+}
+
+function pcm24ToMulaw(samples) {
+  const BIAS = 0x84, CLIP = 32635;
+  const out = Buffer.allocUnsafe(Math.floor(samples.length / 3));
+  for (let i = 0; i < out.length; i++) {
+    let s = samples[i * 3];
+    const sign = s < 0 ? 0x80 : 0;
+    if (sign) s = -s;
+    if (s > CLIP) s = CLIP;
+    s += BIAS;
+    let exp = 7, mask = 0x4000;
+    while (exp > 0 && (s & mask) === 0) { exp--; mask >>= 1; }
+    const mantissa = (s >> (exp + 3)) & 0x0F;
+    out[i] = ~(sign | (exp << 4) | mantissa) & 0xFF;
+  }
+  return out;
 }
 
 function pushToBrowser(session, data) {
