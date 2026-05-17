@@ -292,8 +292,22 @@ const ELEVENLABS_VOICE_SETTINGS = {
   voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
 };
 
-async function ttsStream(text) {
-  // Try ElevenLabs first with a tight timeout; fall back to OpenAI shimmer if blocked/slow
+
+async function speakToTwilio(session, text) {
+  if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
+  session.state = 'speaking';
+  console.log('[ai]', text.slice(0, 80));
+  pushToBrowser(session, { event: 'ai-speaking', text });
+  try {
+    const { buf, type } = await ttsBuffer(text);
+    sendAudioBuffer(session, buf, type);
+  } catch (e) { console.error('[tts] error:', e.message); }
+  session.state = 'listening';
+  pushToBrowser(session, { event: 'ai-done' });
+}
+
+async function ttsBuffer(text) {
+  // Try ElevenLabs (2s timeout), fall back to OpenAI shimmer
   if (ELEVENLABS_KEY) {
     try {
       const ctrl = new AbortController();
@@ -304,61 +318,44 @@ async function ttsStream(text) {
         signal: ctrl.signal
       });
       clearTimeout(t);
-      if (resp.ok) return { resp, type: 'pcm16k' };
-      resp.body?.cancel(); // release connection
+      if (resp.ok) {
+        const buf = Buffer.from(await resp.arrayBuffer());
+        return { buf, type: 'pcm16k' };
+      }
+      resp.body?.cancel();
       console.log('[elevenlabs] error, using OpenAI fallback');
-    } catch (_) {
-      console.log('[elevenlabs] timed out, using OpenAI fallback');
-    }
+    } catch (_) { console.log('[elevenlabs] timed out, using OpenAI fallback'); }
   }
-  const ctrl2 = new AbortController();
-  const t2 = setTimeout(() => ctrl2.abort(), 12000);
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 12000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
     body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) }),
-    signal: ctrl2.signal
+    signal: ctrl.signal
   });
-  clearTimeout(t2);
+  clearTimeout(t);
   if (!resp.ok) throw new Error(`OpenAI TTS ${resp.status}`);
-  return { resp, type: 'pcm24k' };
+  const buf = Buffer.from(await resp.arrayBuffer());
+  return { buf, type: 'pcm24k' };
 }
 
-
-async function speakToTwilio(session, text) {
-  if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
-  session.state = 'speaking';
-  console.log('[ai]', text.slice(0, 80));
-  pushToBrowser(session, { event: 'ai-speaking', text });
-  try {
-    const { resp, type } = await ttsStream(text);
-    if (type === 'pcm16k') await streamPcmToTwilio(session, resp);
-    else await streamPcm24ToTwilio(session, resp);
-  } catch (e) { console.error('[tts] error:', e.message); }
-  session.state = 'listening';
-  pushToBrowser(session, { event: 'ai-done' });
-}
-
-async function streamPcmToTwilio(session, resp) {
-  const reader = resp.body.getReader();
-  let buffer = Buffer.alloc(0);
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (!value?.length) continue;
-    if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
-    buffer = Buffer.concat([buffer, Buffer.from(value)]);
-    while (buffer.length >= 320) {
-      const chunk = buffer.slice(0, 320); buffer = buffer.slice(320);
-      const pcm16k = new Int16Array(chunk.buffer, chunk.byteOffset, 160);
-      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm16k).toString('base64') } }));
+function sendAudioBuffer(session, buf, type) {
+  if (type === 'pcm16k') {
+    for (let i = 0; i + 320 <= buf.length; i += 320) {
+      if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
+      const pcm = new Int16Array(buf.buffer, buf.byteOffset + i, 160);
+      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm).toString('base64') } }));
+    }
+  } else {
+    for (let i = 0; i + 480 <= buf.length; i += 480) {
+      if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
+      const pcm = new Int16Array(buf.buffer, buf.byteOffset + i, 240);
+      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
     }
   }
-  if (buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
-    const pcm16k = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
-    session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm16k).toString('base64') } }));
-  }
 }
+
 
 function pcm16ToMulaw(samples) {
   const BIAS = 0x84, CLIP = 32635;
@@ -377,26 +374,6 @@ function pcm16ToMulaw(samples) {
   return out;
 }
 
-async function streamPcm24ToTwilio(session, resp) {
-  const reader = resp.body.getReader();
-  let buffer = Buffer.alloc(0);
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (!value?.length) continue;
-    if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
-    buffer = Buffer.concat([buffer, Buffer.from(value)]);
-    while (buffer.length >= 480) {
-      const chunk = buffer.slice(0, 480); buffer = buffer.slice(480);
-      const pcm = new Int16Array(chunk.buffer, chunk.byteOffset, 240);
-      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
-    }
-  }
-  if (buffer.length >= 6 && session.twilioWs?.readyState === WebSocket.OPEN) {
-    const pcm = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
-    session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
-  }
-}
 
 function pcm24ToMulaw(samples) {
   const BIAS = 0x84, CLIP = 32635;
