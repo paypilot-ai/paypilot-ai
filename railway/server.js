@@ -39,7 +39,7 @@ app.all('/twiml-stream', (req, res) => {
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
   console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'method:', req.method);
-  const wsUrl = `wss://${host}/twilio`;
+  const wsUrl = `wss://${host}/twilio-realtime`;
   // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
   const paramXml = [
     n ? `<Parameter name="n" value="${xmlEsc(n)}"/>` : '',
@@ -403,7 +403,7 @@ function handleTwilioRealtime(ws) {
           threshold: 0.5,
           prefix_padding_ms: 200,
           silence_duration_ms: 500,
-          create_response: false,
+          create_response: true,
           interrupt_response: true
         }
       }
