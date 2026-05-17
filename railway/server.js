@@ -207,7 +207,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=200&utterance_end_ms=800';
+    '&interim_results=false&endpointing=150&utterance_end_ms=400';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => console.log('[deepgram] connected for', session.callSid));
@@ -248,17 +248,10 @@ async function sendGreeting(session) {
   session.state = 'listening';
 }
 
-const FILLER_PHRASES = ['Yeah, sure.', 'Oh, for sure.', 'Right, so...', 'Mm, let me think on that.', 'Yeah, I hear you.'];
-function pickFiller() { return FILLER_PHRASES[Math.floor(Math.random() * FILLER_PHRASES.length)]; }
-
 async function generateAndSpeak(session) {
   const messages = [{ role: 'system', content: session.prompt || SYSTEM_PROMPT }, ...session.history.slice(-12)];
-  speakFiller(session, pickFiller()).catch(() => {});
   const reply = await callOpenAI(messages);
   if (!reply) { session.state = 'listening'; return; }
-  if (session.twilioWs?.readyState === WebSocket.OPEN) {
-    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-  }
   session.history.push({ role: 'assistant', content: reply });
   pushToBrowser(session, { event: 'ai-response', text: reply });
   await speakToTwilio(session, reply);
@@ -272,7 +265,7 @@ function prepareForSpeech(text) {
     .replace(/([^.!?])$/, '$1.');
 }
 
-const OPENAI_TTS = { model: 'tts-1', voice: 'nova', response_format: 'pcm', speed: 0.92 };
+const DG_TTS_URL = 'https://api.deepgram.com/v1/speak?model=aura-asteria-en&encoding=mulaw&sample_rate=8000&container=none';
 
 async function callOpenAI(messages) {
   try {
@@ -286,33 +279,25 @@ async function callOpenAI(messages) {
   } catch (e) { console.error('[openai] error:', e.message); return null; }
 }
 
-async function ttsToTwilio(session, text) {
-  const resp = await fetch('https://api.openai.com/v1/audio/speech', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({ ...OPENAI_TTS, input: prepareForSpeech(text) })
-  });
-  if (!resp.ok) { console.error('[tts] error:', await resp.text()); return; }
-  await streamPcm24ToTwilio(session, resp);
-}
-
-async function speakFiller(session, text) {
-  if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
-  try { await ttsToTwilio(session, text); } catch (_) {}
-}
-
 async function speakToTwilio(session, text) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
   session.state = 'speaking';
   console.log('[ai]', text.slice(0, 80));
   pushToBrowser(session, { event: 'ai-speaking', text });
-  try { await ttsToTwilio(session, text); } catch (e) { console.error('[tts] stream error:', e.message); }
+  try {
+    const resp = await fetch(DG_TTS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Token ${DEEPGRAM_API_KEY}` },
+      body: JSON.stringify({ text: prepareForSpeech(text) })
+    });
+    if (!resp.ok) { console.error('[tts] error:', await resp.text()); }
+    else { await streamMulawToTwilio(session, resp); }
+  } catch (e) { console.error('[tts] error:', e.message); }
   session.state = 'listening';
   pushToBrowser(session, { event: 'ai-done' });
 }
 
-// OpenAI TTS outputs PCM16 at 24 kHz; Twilio needs mulaw at 8 kHz → 3:1 downsample
-async function streamPcm24ToTwilio(session, resp) {
+async function streamMulawToTwilio(session, resp) {
   const reader = resp.body.getReader();
   let buffer = Buffer.alloc(0);
   while (true) {
@@ -321,34 +306,14 @@ async function streamPcm24ToTwilio(session, resp) {
     if (!value?.length) continue;
     if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
     buffer = Buffer.concat([buffer, Buffer.from(value)]);
-    // 480 bytes = 240 samples @ 24 kHz = 10 ms
-    while (buffer.length >= 480) {
-      const chunk = buffer.slice(0, 480); buffer = buffer.slice(480);
-      const pcm = new Int16Array(chunk.buffer, chunk.byteOffset, 240);
-      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
+    while (buffer.length >= 160) {
+      const chunk = buffer.slice(0, 160); buffer = buffer.slice(160);
+      session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: chunk.toString('base64') } }));
     }
   }
-  if (buffer.length >= 6 && session.twilioWs?.readyState === WebSocket.OPEN) {
-    const pcm = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
-    session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm24ToMulaw(pcm).toString('base64') } }));
+  if (buffer.length > 0 && session.twilioWs?.readyState === WebSocket.OPEN) {
+    session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: buffer.toString('base64') } }));
   }
-}
-
-function pcm24ToMulaw(samples) {
-  const BIAS = 0x84, CLIP = 32635;
-  const out = Buffer.allocUnsafe(Math.floor(samples.length / 3));
-  for (let i = 0; i < out.length; i++) {
-    let s = samples[i * 3];
-    const sign = s < 0 ? 0x80 : 0;
-    if (sign) s = -s;
-    if (s > CLIP) s = CLIP;
-    s += BIAS;
-    let exp = 7, mask = 0x4000;
-    while (exp > 0 && (s & mask) === 0) { exp--; mask >>= 1; }
-    const mantissa = (s >> (exp + 3)) & 0x0F;
-    out[i] = ~(sign | (exp << 4) | mantissa) & 0xFF;
-  }
-  return out;
 }
 
 function pushToBrowser(session, data) {
