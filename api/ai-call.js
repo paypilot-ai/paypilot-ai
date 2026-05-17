@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
     const r = encodeURIComponent(callReason   || '');
     const c = encodeURIComponent(companyName  || '');
 
-    const twimlUrl = `https://paypilot-ai.vercel.app/api/ai-twiml?n=${n}&r=${r}&c=${c}`;
+    const twimlUrl = `https://paypilotai.live/api/ai-twiml?n=${n}&r=${r}&c=${c}`;
 
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,

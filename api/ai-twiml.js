@@ -36,7 +36,7 @@ module.exports = async function handler(req, res) {
     const greeting = tmpl.replace('{name}', name);
 
     const history = b64enc([{ role: 'assistant', content: greeting }]);
-    const action = `https://paypilot-ai.vercel.app/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
+    const action = `https://paypilotai.live/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
 
     res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
