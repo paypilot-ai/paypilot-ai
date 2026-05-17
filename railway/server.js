@@ -181,9 +181,10 @@ function handleTwilio(ws) {
       setTimeout(() => sendGreeting(session), 700);
     }
     if (msg.event === 'media' && session && session.state === 'listening') {
-      if (session.dgWs?.readyState === WebSocket.OPEN) {
+      const dgState = session.dgWs?.readyState;
+      if (dgState === WebSocket.OPEN) {
         session.dgWs.send(Buffer.from(msg.media.payload, 'base64'));
-      } else if (!session.dgReconnecting) {
+      } else if (dgState !== WebSocket.CONNECTING && !session.dgReconnecting) {
         session.dgReconnecting = true;
         connectDeepgram(session);
       }
@@ -212,8 +213,13 @@ function connectDeepgram(session) {
     '&interim_results=false&endpointing=150&utterance_end_ms=400';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
-  dg.on('open', () => console.log('[deepgram] connected for', session.callSid));
+  dg.on('open', () => {
+    if (session.dgWs !== dg) return;
+    console.log('[deepgram] connected for', session.callSid);
+    session.dgReconnecting = false;
+  });
   dg.on('message', async (data) => {
+    if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
@@ -230,7 +236,11 @@ function connectDeepgram(session) {
     } catch (e) { console.error('[deepgram] message handler error:', e.message); }
   });
   dg.on('error', (e) => console.error('[deepgram] error:', e.message));
-  dg.on('close', () => console.log('[deepgram] closed'));
+  dg.on('close', () => {
+    if (session.dgWs !== dg) return;
+    console.log('[deepgram] closed for', session.callSid);
+    session.dgReconnecting = false;
+  });
 }
 
 function buildGreeting(name, company) {
@@ -301,6 +311,11 @@ async function speakToTwilio(session, text) {
   try {
     await streamTTS(session, text);
   } catch (e) { console.error('[tts] error:', e.message); }
+  // Always reconnect Deepgram fresh after TTS — prevents stale/closed connections from causing silence
+  try { session.dgWs?.terminate(); } catch {}
+  session.dgWs = null;
+  session.dgReconnecting = true;
+  connectDeepgram(session);
   session.state = 'listening';
   pushToBrowser(session, { event: 'ai-done' });
 }
