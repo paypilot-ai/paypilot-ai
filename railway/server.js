@@ -394,18 +394,24 @@ function handleTwilioRealtime(ws) {
       type: 'session.update',
       session: {
         type: 'realtime',
-        modalities: ['audio'],
+        output_modalities: ['audio'],
         instructions,
-        voice: 'coral',
-        input_audio_format: 'g711_ulaw',
-        output_audio_format: 'g711_ulaw',
-        turn_detection: {
-          type: 'server_vad',
-          threshold: 0.5,
-          prefix_padding_ms: 200,
-          silence_duration_ms: 500,
-          create_response: true,
-          interrupt_response: true
+        audio: {
+          input: {
+            format: { type: 'audio/pcmu' },
+            turn_detection: {
+              type: 'server_vad',
+              threshold: 0.5,
+              prefix_padding_ms: 200,
+              silence_duration_ms: 500,
+              create_response: true,
+              interrupt_response: true
+            }
+          },
+          output: {
+            format: { type: 'audio/pcmu' },
+            voice: 'coral'
+          }
         }
       }
     };
@@ -429,7 +435,7 @@ function handleTwilioRealtime(ws) {
     else        greetInstruction += ' Ask who you are speaking with.';
     openAiWs.send(JSON.stringify({
       type: 'response.create',
-      response: { modalities: ['audio'], instructions: greetInstruction }
+      response: { output_modalities: ['audio'], instructions: greetInstruction }
     }));
   }
 
@@ -471,7 +477,7 @@ function handleTwilioRealtime(ws) {
           if (!greeted) {
             triggerGreeting();
           } else {
-            openAiWs.send(JSON.stringify({ type: 'response.create', response: { modalities: ['audio'] } }));
+            openAiWs.send(JSON.stringify({ type: 'response.create', response: { output_modalities: ['audio'] } }));
           }
         }
 
