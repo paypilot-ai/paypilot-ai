@@ -8,6 +8,9 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // Billing temporarily disabled
+  return res.status(503).json({ error: 'Subscriptions are temporarily unavailable. Please check back soon.' });
+
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return res.status(500).json({ error: 'Stripe key not configured' });
 
