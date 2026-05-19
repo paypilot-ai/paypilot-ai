@@ -1614,7 +1614,7 @@ body.modal-open{overflow:hidden}
       <button class="side-btn" data-page="aicaller" onclick="showPage('aicaller', this)">🤖 AI Caller</button>
       <button class="side-btn" data-page="assist" onclick="showPage('assist', this)">🎧 Live Assist</button>
       <button class="side-btn" data-page="contacts" onclick="showPage('contacts', this)">🔍 Contact Lookup</button>
-      <button class="side-btn" data-page="crm" onclick="showPage('crm', this)">🗂️ CRM</button>
+      <button class="side-btn" data-page="crm" onclick="showPage('crm', this)">🗂️ CRM <span class="crm-badge" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:999px;margin-left:2px;vertical-align:middle;"></span></button>
       <button class="side-btn" data-page="scripts" onclick="showPage('scripts', this)">📜 Scripts</button>
       <button class="side-btn" data-page="analytics" onclick="showPage('analytics', this)">📊 Analytics</button>
       <button class="side-btn" data-page="history" onclick="showPage('history', this)">🎙️ Call History</button>
@@ -2303,6 +2303,12 @@ body.modal-open{overflow:hidden}
               </label>
               <button class="app-btn blue" onclick="crmOpenModal(null)" style="padding:9px 20px;font-size:14px;font-weight:700;">+ Add Contact</button>
             </div>
+          </div>
+
+          <!-- Due today banner -->
+          <div id="crmTasks" style="display:none;background:linear-gradient(135deg,#fffbeb,#fff7f0);border:1.5px solid #fcd34d;border-radius:16px;padding:16px 18px;margin-bottom:16px;">
+            <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:10px;">Follow-ups Due</div>
+            <div id="crmTaskList"></div>
           </div>
 
           <!-- Pipeline bar -->
@@ -5098,6 +5104,13 @@ async function endAiCall(){
     } catch(e){ /* non-critical */ }
   }
   toast('AI call ended.');
+  try {
+    const phone = document.getElementById('aiCallerNumber')?.value?.trim();
+    const name  = document.getElementById('aiCallerName')?.value?.trim() || '';
+    const dur   = aiCallSeconds || 0;
+    const label = dur > 0 ? ` (${Math.floor(dur/60)}m ${dur%60}s)` : '';
+    crmAutoLog(phone, name, `AI call completed${label}`);
+  } catch(e) {}
 }
 
 function aiFileSelected(input) {
@@ -5897,6 +5910,7 @@ async function pollAdCall(contact) {
     if (['completed','failed','busy','no-answer','canceled'].includes(data.status)) {
       clearInterval(adPollTimer); adPollTimer = null;
       contact.status = data.status === 'completed' ? 'done' : 'failed';
+      try { crmAutoLog(contact.phone, contact.name, `Auto-dialer call — ${data.status}`); } catch(e) {}
       const done  = adContacts.filter(c => c.status === 'done' || c.status === 'failed').length;
       const total = adContacts.filter(c => c.status !== 'skipped').length;
       document.getElementById('adProgress').textContent = `${done} of ${total} done`;
@@ -6001,12 +6015,89 @@ function crmUid() {
 
 function crmInit() {
   crmRender();
+  crmBadgeUpdate();
+}
+
+function crmBadgeUpdate() {
+  const today = new Date().toISOString().slice(0, 10);
+  const due = crmLoad().filter(c => c.followUp?.date && c.followUp.date <= today).length;
+  document.querySelectorAll('.crm-badge').forEach(el => {
+    el.textContent = due;
+    el.style.display = due > 0 ? 'inline' : 'none';
+  });
+}
+
+function crmRenderTasks() {
+  const today = new Date().toISOString().slice(0, 10);
+  const due = crmLoad()
+    .filter(c => c.followUp?.date && c.followUp.date <= today)
+    .sort((a, b) => a.followUp.date.localeCompare(b.followUp.date));
+  const tasksEl = document.getElementById('crmTasks');
+  const listEl  = document.getElementById('crmTaskList');
+  if (!tasksEl || !listEl) return;
+  if (!due.length) { tasksEl.style.display = 'none'; return; }
+  tasksEl.style.display = 'block';
+  listEl.innerHTML = due.map(c => {
+    const overdue = c.followUp.date < today;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(253,211,77,.3);">
+      <div style="flex:1;min-width:0;">
+        <span style="font-weight:700;font-size:14px;color:#92400e;">${c.name}</span>
+        ${c.company ? `<span style="color:#a16207;font-size:13px;"> · ${c.company}</span>` : ''}
+        ${c.followUp.note ? `<div style="font-size:12px;color:#a16207;margin-top:1px;">${c.followUp.note}</div>` : ''}
+      </div>
+      <span style="font-size:11px;font-weight:700;color:${overdue ? '#ef4444' : '#d97706'};white-space:nowrap;">${overdue ? 'Overdue' : 'Today'}</span>
+      <button onclick="crmOpenDetail('${c.id}')" style="padding:5px 12px;font-size:12px;font-weight:700;border-radius:8px;border:1.5px solid #fcd34d;background:#fff;color:#92400e;cursor:pointer;">View</button>
+      <button onclick="crmClearFollowUp('${c.id}')" style="padding:5px 10px;font-size:12px;font-weight:700;border-radius:8px;border:1.5px solid #fcd34d;background:#fff;color:#92400e;cursor:pointer;">Done</button>
+    </div>`;
+  }).join('');
+}
+
+function crmSetFollowUp(id) {
+  const date = document.getElementById('crmFollowDate')?.value;
+  if (!date) { alert('Please pick a date.'); return; }
+  const note = document.getElementById('crmFollowNote')?.value?.trim() || '';
+  const contacts = crmLoad();
+  const c = contacts.find(x => x.id === id);
+  if (!c) return;
+  c.followUp = { date, note };
+  crmSaveAll(contacts);
+  crmBadgeUpdate();
+  crmRender();
+  crmOpenDetail(id);
+}
+
+function crmClearFollowUp(id) {
+  const contacts = crmLoad();
+  const c = contacts.find(x => x.id === id);
+  if (!c) return;
+  delete c.followUp;
+  crmSaveAll(contacts);
+  crmBadgeUpdate();
+  crmRender();
+  if (document.getElementById('crmDetail')?.style.display !== 'none') crmOpenDetail(id);
+}
+
+function crmAutoLog(phone, name, outcome) {
+  if (!phone) return;
+  const norm = phone.replace(/\D/g, '');
+  const contacts = crmLoad();
+  const c = contacts.find(x => x.phone && x.phone.replace(/\D/g, '') === norm);
+  if (!c) return;
+  if (!c.notes) c.notes = [];
+  c.notes.push({ id: crmUid(), date: new Date().toISOString(), text: outcome });
+  c.lastContact = new Date().toISOString();
+  if (c.stage === 'lead') c.stage = 'contacted';
+  crmSaveAll(contacts);
+  crmBadgeUpdate();
 }
 
 function crmRender() {
   const contacts = crmLoad();
   const q = (document.getElementById('crmSearch')?.value || '').toLowerCase();
   const stageF = document.getElementById('crmStageFilter')?.value || '';
+
+  crmRenderTasks();
+  crmBadgeUpdate();
 
   // Pipeline counts
   const pipeline = document.getElementById('crmPipeline');
@@ -6182,6 +6273,21 @@ function crmOpenDetail(id) {
       </div>
       <textarea id="crmNoteInput" placeholder="Add a note..." style="width:100%;min-height:64px;padding:10px 13px;font-size:13px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);resize:vertical;box-sizing:border-box;"></textarea>
       <button onclick="crmAddNote('${c.id}')" class="app-btn line" style="width:100%;margin-top:8px;padding:9px;font-size:13px;font-weight:700;">Add Note</button>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:var(--text);margin-bottom:10px;">Follow-up Reminder</div>
+      ${c.followUp?.date ? `<div style="background:linear-gradient(135deg,#fffbeb,#fff7f0);border:1.5px solid #fcd34d;border-radius:12px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-weight:700;font-size:13px;color:#92400e;">${c.followUp.date}</div>
+          ${c.followUp.note ? `<div style="font-size:12px;color:#a16207;margin-top:2px;">${c.followUp.note}</div>` : ''}
+        </div>
+        <button onclick="crmClearFollowUp('${c.id}')" style="padding:5px 12px;font-size:12px;font-weight:700;border-radius:8px;border:1.5px solid #fcd34d;background:#fff;color:#92400e;cursor:pointer;">Mark Done</button>
+      </div>` : ''}
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input type="date" id="crmFollowDate" value="${c.followUp?.date || ''}" min="${new Date().toISOString().slice(0,10)}" style="flex:1;padding:8px 12px;font-size:13px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);" />
+        <button onclick="crmSetFollowUp('${c.id}')" style="padding:8px 16px;font-size:13px;font-weight:700;border-radius:10px;border:1.5px solid #dbeafe;background:#eff6ff;color:#1d4ed8;cursor:pointer;white-space:nowrap;">Set</button>
+      </div>
+      <input id="crmFollowNote" placeholder="What to do or say..." value="${c.followUp?.note || ''}" style="width:100%;padding:8px 12px;font-size:13px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);box-sizing:border-box;" />
     </div>
     <div style="display:flex;gap:8px;margin-top:8px;">
       <button onclick="crmOpenModal('${c.id}')" class="app-btn line" style="flex:1;padding:9px;font-size:13px;">Edit Contact</button>
