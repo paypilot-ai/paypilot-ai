@@ -1611,6 +1611,7 @@ body.modal-open{overflow:hidden}
       <button class="side-btn" data-page="aicaller" onclick="showPage('aicaller', this)">🤖 AI Caller</button>
       <button class="side-btn" data-page="assist" onclick="showPage('assist', this)">🎧 Live Assist</button>
       <button class="side-btn" data-page="contacts" onclick="showPage('contacts', this)">🔍 Contact Lookup</button>
+      <button class="side-btn" data-page="crm" onclick="showPage('crm', this)">🗂️ CRM</button>
       <button class="side-btn" data-page="scripts" onclick="showPage('scripts', this)">📜 Scripts</button>
       <button class="side-btn" data-page="analytics" onclick="showPage('analytics', this)">📊 Analytics</button>
       <button class="side-btn" data-page="history" onclick="showPage('history', this)">🎙️ Call History</button>
@@ -2283,6 +2284,110 @@ body.modal-open{overflow:hidden}
             <div style="color:#6b7fa3;font-size:15px;max-width:400px;margin:0 auto;line-height:1.7;" id="contactNotFoundMsg">Try a different company name.</div>
           </div>
         </section>
+
+        <!-- CRM -->
+        <section class="page" id="crm">
+          <!-- Header -->
+          <div style="margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <div>
+              <h2 style="font-family:'Sora',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text);margin:0 0 4px;">CRM</h2>
+              <p style="color:var(--text-2);font-size:14px;margin:0;">Track every contact, deal, and interaction in one place.</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <label style="padding:9px 16px;font-size:13px;font-weight:600;border:1.5px solid #dbeafe;border-radius:10px;background:#f8fbff;color:#1d4ed8;cursor:pointer;" title="Import CSV">
+                Import CSV
+                <input type="file" accept=".csv" style="display:none" onchange="crmImportCsv(event)" />
+              </label>
+              <button class="app-btn blue" onclick="crmOpenModal(null)" style="padding:9px 20px;font-size:14px;font-weight:700;">+ Add Contact</button>
+            </div>
+          </div>
+
+          <!-- Pipeline bar -->
+          <div id="crmPipeline" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:18px;"></div>
+
+          <!-- Toolbar -->
+          <div style="background:#fff;border-radius:14px;padding:12px 16px;border:1.5px solid #e0eaff;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <input id="crmSearch" class="input" placeholder="Search name, company, phone..." style="flex:1;min-width:160px;padding:8px 13px;font-size:14px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;" oninput="crmRender()" />
+            <select id="crmStageFilter" style="padding:8px 13px;font-size:13px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);font-weight:600;" onchange="crmRender()">
+              <option value="">All Stages</option>
+              <option value="lead">New Lead</option>
+              <option value="contacted">Contacted</option>
+              <option value="interested">Interested</option>
+              <option value="proposal">Proposal Sent</option>
+              <option value="won">Enrolled</option>
+              <option value="lost">Declined</option>
+            </select>
+            <span id="crmCount" style="font-size:13px;color:var(--text-2);white-space:nowrap;"></span>
+          </div>
+
+          <!-- Contact list -->
+          <div id="crmList"></div>
+
+          <!-- Empty state -->
+          <div id="crmEmpty" style="display:none;text-align:center;padding:60px 24px;background:#fff;border-radius:22px;border:1.5px solid #e0eaff;">
+            <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:8px;">No contacts yet</div>
+            <div style="color:var(--text-2);font-size:14px;margin-bottom:24px;line-height:1.6;">Add your first contact or import a CSV to get started.</div>
+            <button class="app-btn blue" onclick="crmOpenModal(null)" style="padding:12px 24px;">+ Add First Contact</button>
+          </div>
+        </section>
+
+        <!-- CRM Add/Edit Modal -->
+        <div id="crmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)crmCloseModal()">
+          <div style="background:#fff;border-radius:22px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.22);" onclick="event.stopPropagation()">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+              <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--text);" id="crmModalTitle">Add Contact</div>
+              <button onclick="crmCloseModal()" style="width:32px;height:32px;border-radius:8px;border:none;background:#f1f5f9;font-size:18px;cursor:pointer;display:grid;place-items:center;color:#64748b;">&times;</button>
+            </div>
+            <input type="hidden" id="crmModalId" />
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;">Name *</label>
+                <input id="crmFName" class="input" placeholder="Full name" style="font-size:14px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;">Company</label>
+                <input id="crmFCompany" class="input" placeholder="Company name" style="font-size:14px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;">Phone</label>
+                <input id="crmFPhone" class="input" placeholder="(555) 000-0000" style="font-size:14px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;">Email</label>
+                <input id="crmFEmail" class="input" placeholder="email@example.com" style="font-size:14px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;" />
+              </div>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;">Stage</label>
+              <select id="crmFStage" style="width:100%;padding:10px 13px;font-size:14px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);font-weight:600;">
+                <option value="lead">New Lead</option>
+                <option value="contacted">Contacted</option>
+                <option value="interested">Interested</option>
+                <option value="proposal">Proposal Sent</option>
+                <option value="won">Enrolled</option>
+                <option value="lost">Declined</option>
+              </select>
+            </div>
+            <div style="margin-bottom:22px;">
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;">Notes</label>
+              <textarea id="crmFNotes" style="width:100%;min-height:80px;padding:10px 13px;font-size:14px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);resize:vertical;box-sizing:border-box;" placeholder="Any initial notes about this contact..."></textarea>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="app-btn blue" onclick="crmSave()" style="flex:1;padding:12px;font-size:15px;font-weight:700;">Save Contact</button>
+              <button class="app-btn line" onclick="crmCloseModal()" style="padding:12px 18px;">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CRM Contact Detail Panel -->
+        <div id="crmDetail" style="display:none;position:fixed;top:0;right:0;bottom:0;width:100%;max-width:420px;background:#fff;box-shadow:-8px 0 40px rgba(0,0,0,.15);z-index:2500;overflow-y:auto;padding:24px;" onclick="event.stopPropagation()">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+            <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--text);">Contact Detail</div>
+            <button onclick="crmCloseDetail()" style="width:32px;height:32px;border-radius:8px;border:none;background:#f1f5f9;font-size:18px;cursor:pointer;display:grid;place-items:center;color:#64748b;">&times;</button>
+          </div>
+          <div id="crmDetailContent"></div>
+        </div>
+        <div id="crmDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:2400;" onclick="crmCloseDetail()"></div>
 
         <section class="page" id="scripts">
           <div style="margin-bottom:24px;">
@@ -3403,6 +3508,7 @@ function showPage(id, el){
     assist:'Live Assist',
     aicaller:'AI Auto-Caller',
     contacts:'Contact Lookup',
+    crm:'CRM',
     scripts:'Scripts',
     analytics:'Analytics',
     history:'Call History',
@@ -5863,6 +5969,317 @@ async function deleteRecording(sid) {
     loadCallHistory();
   } catch(e) { toast('Error: ' + e.message); }
 }
+
+// ═══════════════════════════════════════════════
+// CRM
+// ═══════════════════════════════════════════════
+const CRM_KEY = 'pp_crm_contacts';
+const CRM_STAGES = {
+  lead:      { label:'New Lead',      color:'#64748b', bg:'rgba(100,116,139,.12)' },
+  contacted: { label:'Contacted',     color:'#0369a1', bg:'rgba(3,105,161,.12)'  },
+  interested:{ label:'Interested',    color:'#7c3aed', bg:'rgba(124,58,237,.12)' },
+  proposal:  { label:'Proposal Sent', color:'#b45309', bg:'rgba(180,83,9,.12)'   },
+  won:       { label:'Enrolled',      color:'#059669', bg:'rgba(5,150,105,.12)'  },
+  lost:      { label:'Declined',      color:'#dc2626', bg:'rgba(220,38,38,.10)'  },
+};
+
+function crmLoad() {
+  try { return JSON.parse(localStorage.getItem(CRM_KEY) || '[]'); } catch { return []; }
+}
+function crmSaveAll(contacts) {
+  localStorage.setItem(CRM_KEY, JSON.stringify(contacts));
+}
+function crmUid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+
+function crmInit() {
+  crmRender();
+}
+
+function crmRender() {
+  const contacts = crmLoad();
+  const q = (document.getElementById('crmSearch')?.value || '').toLowerCase();
+  const stageF = document.getElementById('crmStageFilter')?.value || '';
+
+  // Pipeline counts
+  const pipeline = document.getElementById('crmPipeline');
+  if (pipeline) {
+    pipeline.innerHTML = Object.entries(CRM_STAGES).map(([key, s]) => {
+      const n = contacts.filter(c => c.stage === key).length;
+      return `<div style="background:#fff;border-radius:12px;padding:12px 10px;border:1.5px solid #e0eaff;text-align:center;cursor:pointer;transition:box-shadow .15s;" onclick="document.getElementById('crmStageFilter').value='${key}';crmRender()">
+        <div style="font-size:20px;font-weight:800;color:${s.color};font-family:'Sora',sans-serif;">${n}</div>
+        <div style="font-size:11px;color:#6b7fa3;margin-top:2px;font-weight:600;">${s.label}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Filter
+  let filtered = contacts;
+  if (q) filtered = filtered.filter(c =>
+    [c.name,c.company,c.phone,c.email].some(f => (f||'').toLowerCase().includes(q)));
+  if (stageF) filtered = filtered.filter(c => c.stage === stageF);
+
+  const countEl = document.getElementById('crmCount');
+  if (countEl) countEl.textContent = filtered.length + ' of ' + contacts.length + ' contacts';
+
+  const listEl = document.getElementById('crmList');
+  const emptyEl = document.getElementById('crmEmpty');
+  if (!listEl) return;
+
+  if (contacts.length === 0) {
+    listEl.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'block';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `<div style="text-align:center;padding:40px;background:#fff;border-radius:18px;border:1.5px solid #e0eaff;color:var(--text-2);font-size:14px;">No contacts match your search.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = `<div style="background:#fff;border-radius:18px;border:1.5px solid #e0eaff;box-shadow:0 2px 12px rgba(13,27,46,.06);overflow:hidden;">
+    ${filtered.map((c, i) => {
+      const s = CRM_STAGES[c.stage] || CRM_STAGES.lead;
+      const initials = (c.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+      const lastNote = c.notes?.slice(-1)[0]?.text || '';
+      const lastContact = c.lastContact ? new Date(c.lastContact).toLocaleDateString() : '—';
+      return `<div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:${i<filtered.length-1?'1px solid #f1f5f9':'none'};cursor:pointer;transition:background .12s;" onmouseover="this.style.background='#f8fbff'" onmouseout="this.style.background=''" onclick="crmOpenDetail('${c.id}')">
+        <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#0f5fe8,#1a6fff);display:grid;place-items:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;">${initials}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-weight:700;font-size:15px;color:var(--text);">${c.name||'—'}</span>
+            <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:${s.bg};color:${s.color};">${s.label}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-2);margin-top:1px;">${[c.company,c.phone].filter(Boolean).join(' · ')}</div>
+          ${lastNote ? `<div style="font-size:12px;color:#94a3b8;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:340px;">${lastNote}</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div style="font-size:11px;color:#94a3b8;">${lastContact}</div>
+          <div style="display:flex;gap:6px;" onclick="event.stopPropagation()">
+            ${c.phone ? `<button onclick="crmQuickCall('${c.id}')" title="AI Call" style="padding:5px 10px;font-size:12px;font-weight:700;border-radius:7px;border:1.5px solid #dbeafe;background:#f0f7ff;color:#1d4ed8;cursor:pointer;">Call</button>` : ''}
+            <button onclick="crmOpenModal('${c.id}')" title="Edit" style="padding:5px 9px;font-size:12px;font-weight:700;border-radius:7px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;">Edit</button>
+            <button onclick="crmDeleteConfirm('${c.id}')" title="Delete" style="padding:5px 9px;font-size:12px;font-weight:700;border-radius:7px;border:1.5px solid #fee2e2;background:#fff5f5;color:#ef4444;cursor:pointer;">&#x2715;</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function crmOpenModal(id) {
+  const modal = document.getElementById('crmModal');
+  if (!modal) return;
+  const contacts = crmLoad();
+  const c = id ? contacts.find(x => x.id === id) : null;
+  document.getElementById('crmModalTitle').textContent = c ? 'Edit Contact' : 'Add Contact';
+  document.getElementById('crmModalId').value = c ? c.id : '';
+  document.getElementById('crmFName').value = c?.name || '';
+  document.getElementById('crmFCompany').value = c?.company || '';
+  document.getElementById('crmFPhone').value = c?.phone || '';
+  document.getElementById('crmFEmail').value = c?.email || '';
+  document.getElementById('crmFStage').value = c?.stage || 'lead';
+  document.getElementById('crmFNotes').value = c?.notes?.slice(-1)[0]?.text || '';
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('crmFName').focus(), 50);
+}
+function crmCloseModal() {
+  const modal = document.getElementById('crmModal');
+  if (modal) modal.style.display = 'none';
+}
+function crmSave() {
+  const name = document.getElementById('crmFName').value.trim();
+  if (!name) { alert('Name is required.'); return; }
+  const contacts = crmLoad();
+  const existingId = document.getElementById('crmModalId').value;
+  const noteText = document.getElementById('crmFNotes').value.trim();
+  if (existingId) {
+    const idx = contacts.findIndex(c => c.id === existingId);
+    if (idx !== -1) {
+      contacts[idx].name    = name;
+      contacts[idx].company = document.getElementById('crmFCompany').value.trim();
+      contacts[idx].phone   = document.getElementById('crmFPhone').value.trim();
+      contacts[idx].email   = document.getElementById('crmFEmail').value.trim();
+      contacts[idx].stage   = document.getElementById('crmFStage').value;
+      if (noteText) {
+        if (!contacts[idx].notes) contacts[idx].notes = [];
+        contacts[idx].notes.push({ id: crmUid(), date: new Date().toISOString(), text: noteText });
+        contacts[idx].lastContact = new Date().toISOString();
+      }
+    }
+  } else {
+    const notes = noteText ? [{ id: crmUid(), date: new Date().toISOString(), text: noteText }] : [];
+    contacts.unshift({
+      id: crmUid(),
+      name,
+      company: document.getElementById('crmFCompany').value.trim(),
+      phone:   document.getElementById('crmFPhone').value.trim(),
+      email:   document.getElementById('crmFEmail').value.trim(),
+      stage:   document.getElementById('crmFStage').value,
+      notes,
+      createdAt: new Date().toISOString(),
+      lastContact: noteText ? new Date().toISOString() : null,
+    });
+  }
+  crmSaveAll(contacts);
+  crmCloseModal();
+  crmRender();
+}
+
+function crmDeleteConfirm(id) {
+  if (!confirm('Delete this contact? This cannot be undone.')) return;
+  const contacts = crmLoad().filter(c => c.id !== id);
+  crmSaveAll(contacts);
+  crmRender();
+  crmCloseDetail();
+}
+
+function crmOpenDetail(id) {
+  const contacts = crmLoad();
+  const c = contacts.find(x => x.id === id);
+  if (!c) return;
+  const s = CRM_STAGES[c.stage] || CRM_STAGES.lead;
+  const initials = (c.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const panel = document.getElementById('crmDetail');
+  const overlay = document.getElementById('crmDetailOverlay');
+  const content = document.getElementById('crmDetailContent');
+  if (!panel || !content) return;
+  content.innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#0f5fe8,#1a6fff);display:grid;place-items:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;">${initials}</div>
+      <div>
+        <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--text);">${c.name||'—'}</div>
+        <div style="font-size:13px;color:var(--text-2);">${c.company||''}</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fbff;border-radius:10px;border:1px solid #e2eaf4;">
+        <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#64748b;">Stage</span>
+        <select style="font-size:13px;font-weight:700;color:${s.color};background:${s.bg};border:none;border-radius:8px;padding:4px 8px;cursor:pointer;" onchange="crmUpdateStage('${c.id}',this.value)">
+          ${Object.entries(CRM_STAGES).map(([k,v])=>`<option value="${k}" ${c.stage===k?'selected':''}>${v.label}</option>`).join('')}
+        </select>
+      </div>
+      ${c.phone?`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fbff;border-radius:10px;border:1px solid #e2eaf4;"><span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#64748b;">Phone</span><span style="font-size:14px;font-weight:600;color:var(--text);">${c.phone}</span></div>`:''}
+      ${c.email?`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fbff;border-radius:10px;border:1px solid #e2eaf4;"><span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#64748b;">Email</span><span style="font-size:14px;font-weight:600;color:var(--text);word-break:break-all;">${c.email}</span></div>`:''}
+    </div>
+    ${c.phone?`<button onclick="crmQuickCall('${c.id}')" class="app-btn blue" style="width:100%;padding:12px;font-size:15px;font-weight:700;margin-bottom:16px;">AI Call ${c.name?.split(' ')[0]||''}</button>`:''}
+    <div style="margin-bottom:12px;">
+      <div style="font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:var(--text);margin-bottom:10px;">Interaction History</div>
+      <div id="crmNotesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+        ${(c.notes||[]).slice().reverse().map(n=>`
+          <div style="padding:10px 12px;background:#f0f7ff;border-radius:10px;border:1px solid #dbeafe;position:relative;">
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px;font-weight:600;">${new Date(n.date).toLocaleString()}</div>
+            <div style="font-size:13px;color:var(--text);line-height:1.5;">${n.text}</div>
+            <button onclick="crmDeleteNote('${c.id}','${n.id}')" style="position:absolute;top:8px;right:8px;border:none;background:none;color:#94a3b8;cursor:pointer;font-size:13px;" title="Delete note">&times;</button>
+          </div>`).join('') || '<div style="font-size:13px;color:#94a3b8;text-align:center;padding:12px;">No notes yet.</div>'}
+      </div>
+      <textarea id="crmNoteInput" placeholder="Add a note..." style="width:100%;min-height:64px;padding:10px 13px;font-size:13px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);resize:vertical;box-sizing:border-box;"></textarea>
+      <button onclick="crmAddNote('${c.id}')" class="app-btn line" style="width:100%;margin-top:8px;padding:9px;font-size:13px;font-weight:700;">Add Note</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button onclick="crmOpenModal('${c.id}')" class="app-btn line" style="flex:1;padding:9px;font-size:13px;">Edit Contact</button>
+      <button onclick="crmDeleteConfirm('${c.id}')" style="padding:9px 14px;font-size:13px;border-radius:10px;border:1.5px solid #fee2e2;background:#fff5f5;color:#ef4444;font-weight:700;cursor:pointer;">Delete</button>
+    </div>`;
+  panel.style.display = 'block';
+  if (overlay) overlay.style.display = 'block';
+}
+function crmCloseDetail() {
+  const panel = document.getElementById('crmDetail');
+  const overlay = document.getElementById('crmDetailOverlay');
+  if (panel) panel.style.display = 'none';
+  if (overlay) overlay.style.display = 'none';
+}
+
+function crmUpdateStage(id, stage) {
+  const contacts = crmLoad();
+  const c = contacts.find(x => x.id === id);
+  if (c) { c.stage = stage; crmSaveAll(contacts); crmRender(); }
+}
+
+function crmAddNote(id) {
+  const text = (document.getElementById('crmNoteInput')?.value || '').trim();
+  if (!text) return;
+  const contacts = crmLoad();
+  const c = contacts.find(x => x.id === id);
+  if (!c) return;
+  if (!c.notes) c.notes = [];
+  c.notes.push({ id: crmUid(), date: new Date().toISOString(), text });
+  c.lastContact = new Date().toISOString();
+  crmSaveAll(contacts);
+  crmRender();
+  crmOpenDetail(id);
+}
+
+function crmDeleteNote(contactId, noteId) {
+  const contacts = crmLoad();
+  const c = contacts.find(x => x.id === contactId);
+  if (!c) return;
+  c.notes = (c.notes||[]).filter(n => n.id !== noteId);
+  crmSaveAll(contacts);
+  crmRender();
+  crmOpenDetail(contactId);
+}
+
+function crmQuickCall(id) {
+  const c = crmLoad().find(x => x.id === id);
+  if (!c || !c.phone) { alert('No phone number on file for this contact.'); return; }
+  crmCloseDetail();
+  showPage('aicaller', document.querySelector('[data-page="aicaller"]') || document.querySelector('[data-page="assist"]'));
+  setTimeout(() => {
+    const phoneEl = document.getElementById('adPhone') || document.getElementById('callPhone');
+    const nameEl  = document.getElementById('adName')  || document.getElementById('callName');
+    const compEl  = document.getElementById('adCompany')|| document.getElementById('callCompany');
+    if (phoneEl) phoneEl.value = c.phone;
+    if (nameEl)  nameEl.value  = c.name || '';
+    if (compEl)  compEl.value  = c.company || '';
+  }, 200);
+}
+
+function crmImportCsv(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split('\n').filter(Boolean);
+    if (lines.length < 2) { alert('CSV must have a header row and at least one data row.'); return; }
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z]/g,''));
+    const idx = k => headers.findIndex(h => h.includes(k));
+    const iName = idx('name'); const iPhone = idx('phone'); const iEmail = idx('email'); const iCompany = idx('company');
+    const contacts = crmLoad();
+    let added = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
+      const name = iName >= 0 ? cols[iName] : '';
+      if (!name) continue;
+      contacts.push({
+        id: crmUid(),
+        name,
+        company: iCompany >= 0 ? cols[iCompany] : '',
+        phone:   iPhone  >= 0 ? cols[iPhone]  : '',
+        email:   iEmail  >= 0 ? cols[iEmail]  : '',
+        stage: 'lead',
+        notes: [],
+        createdAt: new Date().toISOString(),
+        lastContact: null,
+      });
+      added++;
+    }
+    crmSaveAll(contacts);
+    crmRender();
+    alert(`Imported ${added} contacts.`);
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// Init CRM when page is shown
+const _origShowPage = window.showPage;
+window.showPage = function(pageId, btn) {
+  if (typeof _origShowPage === 'function') _origShowPage(pageId, btn);
+  if (pageId === 'crm') setTimeout(crmInit, 0);
+};
+
 </script>
 
 <!-- Floating call HUD — appears during active calls over the Matrix rain -->
