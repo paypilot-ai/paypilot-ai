@@ -2297,12 +2297,67 @@ body.modal-open{overflow:hidden}
               <p style="color:var(--text-2);font-size:14px;margin:0;">Track every contact, deal, and interaction in one place.</p>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button id="crmReportBtn" onclick="crmToggleReports()" style="padding:9px 16px;font-size:13px;font-weight:600;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fafc;color:#475569;cursor:pointer;">Reports</button>
               <label style="padding:9px 16px;font-size:13px;font-weight:600;border:1.5px solid #dbeafe;border-radius:10px;background:#f8fbff;color:#1d4ed8;cursor:pointer;" title="Import CSV">
                 Import CSV
                 <input type="file" accept=".csv" style="display:none" onchange="crmImportCsv(event)" />
               </label>
               <button class="app-btn blue" onclick="crmOpenModal(null)" style="padding:9px 20px;font-size:14px;font-weight:700;">+ Add Contact</button>
             </div>
+          </div>
+
+          <!-- Reports panel -->
+          <div id="crmReportPanel" style="display:none;background:#fff;border-radius:18px;border:1.5px solid #e0eaff;padding:22px;margin-bottom:16px;box-shadow:0 2px 12px rgba(13,27,46,.06);">
+            <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:800;color:var(--text);margin-bottom:16px;">Custom Report</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:5px;">Stage</label>
+                <select id="rptStage" style="width:100%;padding:8px 12px;font-size:13px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);">
+                  <option value="">Any</option>
+                  <option value="lead">New Lead</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="interested">Interested</option>
+                  <option value="proposal">Proposal Sent</option>
+                  <option value="won">Enrolled</option>
+                  <option value="lost">Declined</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:5px;">Date Added</label>
+                <select id="rptAdded" style="width:100%;padding:8px 12px;font-size:13px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);">
+                  <option value="">Any time</option>
+                  <option value="today">Today</option>
+                  <option value="week">This week</option>
+                  <option value="month">This month</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:5px;">Last Contact</label>
+                <select id="rptLastContact" style="width:100%;padding:8px 12px;font-size:13px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);">
+                  <option value="">Any</option>
+                  <option value="never">Never contacted</option>
+                  <option value="today">Today</option>
+                  <option value="week">This week</option>
+                  <option value="month">This month</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:5px;">Follow-up</label>
+                <select id="rptFollowUp" style="width:100%;padding:8px 12px;font-size:13px;border:1.5px solid #e2eaf4;border-radius:10px;background:#f8fbff;color:var(--text);">
+                  <option value="">Any</option>
+                  <option value="has">Has reminder</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="none">No reminder</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+              <button onclick="crmRunReport()" class="app-btn blue" style="padding:9px 20px;font-size:13px;font-weight:700;">Run Report</button>
+              <button onclick="crmExportCsvReport()" class="app-btn line" style="padding:9px 16px;font-size:13px;">Export CSV</button>
+              <button onclick="crmSaveFilter()" class="app-btn line" style="padding:9px 16px;font-size:13px;">Save Filter</button>
+            </div>
+            <div id="rptSavedFilters" style="margin-bottom:14px;"></div>
+            <div id="rptResults"></div>
           </div>
 
           <!-- Due today banner -->
@@ -6275,6 +6330,15 @@ function crmOpenDetail(id) {
       <button onclick="crmAddNote('${c.id}')" class="app-btn line" style="width:100%;margin-top:8px;padding:9px;font-size:13px;font-weight:700;">Add Note</button>
     </div>
     <div style="margin-bottom:16px;">
+      <div style="font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:var(--text);margin-bottom:10px;">Attachments</div>
+      <div id="crmAttachList_${c.id}">${crmRenderAttachments(c.id)}</div>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:8px;padding:9px 14px;border:1.5px dashed #bfdbfe;border-radius:10px;background:#f8fbff;color:#1d4ed8;font-size:13px;font-weight:600;cursor:pointer;">
+        + Attach file (max 500 KB)
+        <input type="file" style="display:none;" onchange="crmAttachFile('${c.id}', event)" />
+      </label>
+    </div>
+
+    <div style="margin-bottom:16px;">
       <div style="font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:var(--text);margin-bottom:10px;">Follow-up Reminder</div>
       ${c.followUp?.date ? `<div style="background:linear-gradient(135deg,#fffbeb,#fff7f0);border:1.5px solid #fcd34d;border-radius:12px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
         <div>
@@ -6383,6 +6447,230 @@ function crmImportCsv(event) {
     event.target.value = '';
   };
   reader.readAsText(file);
+}
+
+// ── Reports ──────────────────────────────────────────────────────────────────
+function crmToggleReports() {
+  const panel = document.getElementById('crmReportPanel');
+  const btn   = document.getElementById('crmReportBtn');
+  if (!panel) return;
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  btn.style.background  = open ? '#f8fafc' : '#eff6ff';
+  btn.style.color       = open ? '#475569' : '#1d4ed8';
+  btn.style.borderColor = open ? '#e2eaf4' : '#bfdbfe';
+  if (!open) { crmRenderSavedFilters(); document.getElementById('rptResults').innerHTML = ''; }
+}
+
+function crmDateInRange(isoStr, range) {
+  if (!isoStr) return range === 'never';
+  const d    = new Date(isoStr);
+  const now  = new Date();
+  const sod  = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sowOffset = sod.getDay() === 0 ? 6 : sod.getDay() - 1;
+  const sow  = new Date(sod); sow.setDate(sod.getDate() - sowOffset);
+  const som  = new Date(now.getFullYear(), now.getMonth(), 1);
+  if (range === 'today') return d >= sod;
+  if (range === 'week')  return d >= sow;
+  if (range === 'month') return d >= som;
+  return true;
+}
+
+function crmRunReport() {
+  const stage       = document.getElementById('rptStage')?.value || '';
+  const added       = document.getElementById('rptAdded')?.value || '';
+  const lastContact = document.getElementById('rptLastContact')?.value || '';
+  const followUp    = document.getElementById('rptFollowUp')?.value || '';
+  const today       = new Date().toISOString().slice(0, 10);
+
+  let results = crmLoad();
+  if (stage)       results = results.filter(c => c.stage === stage);
+  if (added)       results = results.filter(c => crmDateInRange(c.createdAt, added));
+  if (lastContact === 'never')  results = results.filter(c => !c.lastContact);
+  else if (lastContact)         results = results.filter(c => crmDateInRange(c.lastContact, lastContact));
+  if (followUp === 'has')     results = results.filter(c => c.followUp?.date);
+  if (followUp === 'overdue') results = results.filter(c => c.followUp?.date && c.followUp.date < today);
+  if (followUp === 'none')    results = results.filter(c => !c.followUp?.date);
+
+  const el = document.getElementById('rptResults');
+  if (!el) return;
+  if (!results.length) { el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-2);font-size:14px;">No contacts match these filters.</div>`; return; }
+
+  const s = n => CRM_STAGES[n] || CRM_STAGES.lead;
+  el.innerHTML = `<div style="font-size:13px;color:var(--text-2);margin-bottom:10px;font-weight:600;">${results.length} contact${results.length===1?'':'s'} found</div>
+  <div style="overflow-x:auto;border-radius:12px;border:1.5px solid #e0eaff;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr style="background:#f8fbff;">
+        <th style="padding:10px 14px;text-align:left;font-weight:700;color:#64748b;border-bottom:1px solid #e0eaff;">Name</th>
+        <th style="padding:10px 14px;text-align:left;font-weight:700;color:#64748b;border-bottom:1px solid #e0eaff;">Company</th>
+        <th style="padding:10px 14px;text-align:left;font-weight:700;color:#64748b;border-bottom:1px solid #e0eaff;">Phone</th>
+        <th style="padding:10px 14px;text-align:left;font-weight:700;color:#64748b;border-bottom:1px solid #e0eaff;">Stage</th>
+        <th style="padding:10px 14px;text-align:left;font-weight:700;color:#64748b;border-bottom:1px solid #e0eaff;">Added</th>
+        <th style="padding:10px 14px;text-align:left;font-weight:700;color:#64748b;border-bottom:1px solid #e0eaff;">Last Contact</th>
+      </tr></thead>
+      <tbody>${results.map((c,i) => `<tr style="background:${i%2?'#fafbff':'#fff'};cursor:pointer;" onclick="crmToggleReports();crmOpenDetail('${c.id}')">
+        <td style="padding:10px 14px;font-weight:600;color:var(--text);">${c.name||'—'}</td>
+        <td style="padding:10px 14px;color:var(--text-2);">${c.company||'—'}</td>
+        <td style="padding:10px 14px;color:var(--text-2);">${c.phone||'—'}</td>
+        <td style="padding:10px 14px;"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:${s(c.stage).bg};color:${s(c.stage).color};">${s(c.stage).label}</span></td>
+        <td style="padding:10px 14px;color:var(--text-2);">${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</td>
+        <td style="padding:10px 14px;color:var(--text-2);">${c.lastContact ? new Date(c.lastContact).toLocaleDateString() : '—'}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+  window._crmLastReport = results;
+}
+
+function crmExportCsvReport() {
+  const results = window._crmLastReport || crmLoad();
+  if (!results.length) { alert('Run a report first, or no contacts to export.'); return; }
+  const headers = ['Name','Company','Phone','Email','Stage','Added','Last Contact','Follow-up Date','Notes'];
+  const rows = results.map(c => [
+    c.name||'', c.company||'', c.phone||'', c.email||'',
+    CRM_STAGES[c.stage]?.label || c.stage,
+    c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '',
+    c.lastContact ? new Date(c.lastContact).toLocaleDateString() : '',
+    c.followUp?.date || '',
+    (c.notes||[]).map(n => n.text).join(' | ')
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'crm-export-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+function crmSaveFilter() {
+  const name = prompt('Name this filter:');
+  if (!name?.trim()) return;
+  const filter = {
+    id: crmUid(), name: name.trim(),
+    stage:       document.getElementById('rptStage')?.value || '',
+    added:       document.getElementById('rptAdded')?.value || '',
+    lastContact: document.getElementById('rptLastContact')?.value || '',
+    followUp:    document.getElementById('rptFollowUp')?.value || '',
+  };
+  const saved = JSON.parse(localStorage.getItem('pp_crm_filters') || '[]');
+  saved.push(filter);
+  localStorage.setItem('pp_crm_filters', JSON.stringify(saved));
+  crmRenderSavedFilters();
+}
+
+function crmRenderSavedFilters() {
+  const el = document.getElementById('rptSavedFilters');
+  if (!el) return;
+  const saved = JSON.parse(localStorage.getItem('pp_crm_filters') || '[]');
+  if (!saved.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;">Saved Filters</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    ${saved.map(f => `<div style="display:flex;align-items:center;gap:4px;background:#f0f7ff;border:1.5px solid #bfdbfe;border-radius:999px;padding:4px 12px 4px 14px;">
+      <span style="font-size:13px;font-weight:600;color:#1d4ed8;cursor:pointer;" onclick="crmLoadFilter('${f.id}')">${f.name}</span>
+      <button onclick="crmDeleteFilter('${f.id}')" style="border:none;background:none;color:#94a3b8;font-size:14px;cursor:pointer;padding:0 0 0 4px;line-height:1;">&times;</button>
+    </div>`).join('')}
+  </div>`;
+}
+
+function crmLoadFilter(id) {
+  const saved = JSON.parse(localStorage.getItem('pp_crm_filters') || '[]');
+  const f = saved.find(x => x.id === id);
+  if (!f) return;
+  document.getElementById('rptStage').value       = f.stage || '';
+  document.getElementById('rptAdded').value       = f.added || '';
+  document.getElementById('rptLastContact').value = f.lastContact || '';
+  document.getElementById('rptFollowUp').value    = f.followUp || '';
+  crmRunReport();
+}
+
+function crmDeleteFilter(id) {
+  const saved = JSON.parse(localStorage.getItem('pp_crm_filters') || '[]').filter(f => f.id !== id);
+  localStorage.setItem('pp_crm_filters', JSON.stringify(saved));
+  crmRenderSavedFilters();
+}
+
+// ── File Attachments ──────────────────────────────────────────────────────────
+const CRM_FILES_KEY = 'pp_crm_files';
+const MAX_FILE_BYTES = 512 * 1024; // 500 KB
+const MAX_FILES_PER_CONTACT = 3;
+
+function crmGetFileMeta(contactId) {
+  try {
+    const all = JSON.parse(localStorage.getItem(CRM_FILES_KEY) || '{}');
+    return all[contactId] || [];
+  } catch { return []; }
+}
+
+function crmSaveFileMeta(contactId, files) {
+  try {
+    const all = JSON.parse(localStorage.getItem(CRM_FILES_KEY) || '{}');
+    all[contactId] = files;
+    localStorage.setItem(CRM_FILES_KEY, JSON.stringify(all));
+  } catch {}
+}
+
+function crmRenderAttachments(contactId) {
+  const files = crmGetFileMeta(contactId);
+  if (!files.length) return `<div style="font-size:13px;color:#94a3b8;">No attachments yet.</div>`;
+  return files.map(f => `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#f8fbff;border-radius:9px;border:1px solid #e2eaf4;margin-bottom:6px;">
+    <span style="font-size:18px;">${f.type?.includes('pdf') ? '📄' : f.type?.includes('image') ? '🖼️' : '📎'}</span>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</div>
+      <div style="font-size:11px;color:#94a3b8;">${(f.size/1024).toFixed(0)} KB · ${new Date(f.date).toLocaleDateString()}</div>
+    </div>
+    <button onclick="crmDownloadFile('${contactId}','${f.id}')" style="padding:4px 10px;font-size:12px;font-weight:600;border-radius:7px;border:1.5px solid #dbeafe;background:#eff6ff;color:#1d4ed8;cursor:pointer;">Download</button>
+    <button onclick="crmDeleteFile('${contactId}','${f.id}')" style="padding:4px 8px;font-size:12px;border-radius:7px;border:1.5px solid #fee2e2;background:#fff5f5;color:#ef4444;cursor:pointer;">&times;</button>
+  </div>`).join('');
+}
+
+function crmAttachFile(contactId, event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (file.size > MAX_FILE_BYTES) { alert(`File too large. Maximum size is 500 KB. This file is ${(file.size/1024).toFixed(0)} KB.`); event.target.value = ''; return; }
+  const existing = crmGetFileMeta(contactId);
+  if (existing.length >= MAX_FILES_PER_CONTACT) { alert(`Maximum ${MAX_FILES_PER_CONTACT} attachments per contact.`); event.target.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const fileId = crmUid();
+      const meta = { id: fileId, name: file.name, size: file.size, type: file.type, date: new Date().toISOString() };
+      const allData = JSON.parse(localStorage.getItem('pp_crm_files_data') || '{}');
+      allData[fileId] = e.target.result;
+      localStorage.setItem('pp_crm_files_data', JSON.stringify(allData));
+      existing.push(meta);
+      crmSaveFileMeta(contactId, existing);
+      const listEl = document.getElementById('crmAttachList_' + contactId);
+      if (listEl) listEl.innerHTML = crmRenderAttachments(contactId);
+    } catch(err) {
+      alert('Could not save attachment — storage may be full.');
+    }
+    event.target.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function crmDownloadFile(contactId, fileId) {
+  try {
+    const allData = JSON.parse(localStorage.getItem('pp_crm_files_data') || '{}');
+    const data = allData[fileId];
+    if (!data) { alert('File not found.'); return; }
+    const meta = crmGetFileMeta(contactId).find(f => f.id === fileId);
+    const a = document.createElement('a');
+    a.href = data;
+    a.download = meta?.name || 'attachment';
+    a.click();
+  } catch(e) { alert('Could not download file.'); }
+}
+
+function crmDeleteFile(contactId, fileId) {
+  if (!confirm('Remove this attachment?')) return;
+  const files = crmGetFileMeta(contactId).filter(f => f.id !== fileId);
+  crmSaveFileMeta(contactId, files);
+  try {
+    const allData = JSON.parse(localStorage.getItem('pp_crm_files_data') || '{}');
+    delete allData[fileId];
+    localStorage.setItem('pp_crm_files_data', JSON.stringify(allData));
+  } catch {}
+  const listEl = document.getElementById('crmAttachList_' + contactId);
+  if (listEl) listEl.innerHTML = crmRenderAttachments(contactId);
 }
 
 // Init CRM when page is shown
