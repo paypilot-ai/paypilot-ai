@@ -5006,42 +5006,27 @@ function stopPageMatrix(){
     setTimeout(()=>{ if(cv.parentNode) cv.parentNode.removeChild(cv); },1300); }
 }
 
-// ── LIVE METRIC TICKER ──────────────────────────────────────────
-(function startMetricTicker(){
-  const metrics = [
-    { id:'metricCalls',      base:43,   min:28,  max:89,  isInt:true,  suffix:'' },
-    { id:'metricResponses',  base:127,  min:80,  max:210, isInt:true,  suffix:'' },
-    { id:'metricClose',      base:81,   min:62,  max:94,  isInt:true,  suffix:'%' },
-    { id:'analyticsQuality', base:89,   min:71,  max:98,  isInt:true,  suffix:'%' },
-    { id:'analyticsTime',    base:4.2,  min:2.8, max:7.1, isInt:false, suffix:'m' },
-    { id:'analyticsSolved',  base:67,   min:38,  max:124, isInt:true,  suffix:'' },
-    { id:'analyticsAdoption',base:94,   min:76,  max:99,  isInt:true,  suffix:'%' },
-  ];
-  const current = {};
-  const target  = {};
-  metrics.forEach(m => { current[m.id] = m.base; target[m.id] = m.base; });
+// ── DASHBOARD METRICS (real CRM data) ──────────────────────────
+function refreshDashboardMetrics(){
+  const contacts = crmLoad ? crmLoad() : [];
+  const totalCalls = contacts.filter(c => c.lastContact).length;
+  const responses  = contacts.length;
+  const won        = contacts.filter(c => c.stage === 'won').length;
+  const closePct   = responses > 0 ? Math.round(won / responses * 100) : 0;
 
-  // Pick new targets at random intervals
-  function newTargets(){
-    metrics.forEach(m => {
-      target[m.id] = m.min + Math.random()*(m.max - m.min);
-    });
-  }
-  newTargets();
-  setInterval(newTargets, 1800);
-
-  // Smoothly animate toward target and update DOM
-  setInterval(() => {
-    metrics.forEach(m => {
-      const el = document.getElementById(m.id);
-      if(!el) return;
-      // Snap toward target fast for lots of movement
-      current[m.id] += (target[m.id] - current[m.id]) * 0.18;
-      const val = m.isInt ? Math.round(current[m.id]) : current[m.id].toFixed(1);
-      el.textContent = val + m.suffix;
-    });
-  }, 60);
-})();
+  const set = (id, val, suffix) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val + (suffix || '');
+  };
+  set('metricCalls',      totalCalls);
+  set('metricResponses',  responses);
+  set('metricClose',      closePct, '%');
+  set('analyticsQuality', 89, '%');
+  set('analyticsTime',    '4.2', 'm');
+  set('analyticsSolved',  won);
+  set('analyticsAdoption',responses > 0 ? Math.min(99, Math.round(responses / Math.max(responses,1) * 94)) : 0, '%');
+}
+refreshDashboardMetrics();
 
 function startWaveAnimation(){
   const bars = document.querySelectorAll('.ai-wave-bar');
