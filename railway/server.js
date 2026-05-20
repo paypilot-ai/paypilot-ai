@@ -415,11 +415,15 @@ async function streamTTS(session, text) {
         signal: ctrl.signal
       });
       clearTimeout(t);
-      if (resp.ok) {
+      const ct = resp.headers.get('content-type') || '';
+      console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
+      if (resp.ok && ct.includes('audio')) {
         elevenlabsBlocked = false;
         await pipeToTwilio(session, resp, 'ulaw8k');
         return;
       }
+      const errBody = await resp.text().catch(() => '');
+      console.log(`[elevenlabs] unexpected response: ${errBody.slice(0, 200)}`);
       resp.body?.cancel();
       elevenlabsBlocked = true;
       elevenlabsBlockedAt = Date.now();
