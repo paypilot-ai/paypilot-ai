@@ -1985,8 +1985,9 @@ body.modal-open{overflow:hidden}
                     <span style="font-size:13px;font-weight:700;color:#0f172a">Contact List</span>
                     <span id="adCount" style="font-size:12px;color:#94a3b8">(0 contacts)</span>
                   </div>
-                  <div style="display:flex;gap:8px;">
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <button onclick="adAddRow()" style="padding:6px 14px;font-size:12px;font-weight:600;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#1a6fff;cursor:pointer">+ Add Row</button>
+                    <button onclick="crmImportToDialerModal()" style="padding:6px 14px;font-size:12px;font-weight:600;border:1px solid #d1fae5;border-radius:8px;background:#f0fdf4;color:#059669;cursor:pointer">⬆ Import from CRM</button>
                     <button onclick="adClearAll()" style="padding:6px 14px;font-size:12px;font-weight:600;border:1px solid #fecaca;border-radius:8px;background:#fff;color:#ef4444;cursor:pointer">Clear All</button>
                   </div>
                 </div>
@@ -3136,6 +3137,34 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
 
       </div>
     </main>
+  </div>
+</div>
+
+<!-- CRM → AUTO DIALER IMPORT MODAL -->
+<div id="crmDialerImportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:4000;align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeCrmDialerImportModal()">
+  <div style="background:#fff;border-radius:20px;padding:28px;width:min(520px,100%);max-height:85vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#0d1b2e;">Import CRM Contacts to Auto Dialer</div>
+      <button onclick="closeCrmDialerImportModal()" style="background:none;border:none;font-size:20px;color:#94a3b8;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+      <select id="crmDialerStageFilter" onchange="renderCrmDialerPicker()" style="padding:8px 12px;font-size:13px;border:1.5px solid #e2eaf4;border-radius:9px;background:#f8fbff;color:#0d1b2e;font-weight:600;flex:1;">
+        <option value="">All Stages</option>
+        <option value="lead">New Lead</option>
+        <option value="contacted">Contacted</option>
+        <option value="interested">Interested</option>
+        <option value="proposal">Proposal Sent</option>
+        <option value="won">Enrolled</option>
+        <option value="lost">Declined</option>
+      </select>
+      <button onclick="crmDialerSelectAll(true)" style="padding:8px 14px;font-size:12px;font-weight:700;border:1.5px solid #e2eaf4;border-radius:9px;background:#f8fafc;color:#1a6fff;cursor:pointer;">Select All</button>
+      <button onclick="crmDialerSelectAll(false)" style="padding:8px 14px;font-size:12px;font-weight:700;border:1.5px solid #e2eaf4;border-radius:9px;background:#f8fafc;color:#64748b;cursor:pointer;">Deselect All</button>
+    </div>
+    <div id="crmDialerPickerList" style="max-height:340px;overflow-y:auto;border:1.5px solid #e2eaf4;border-radius:12px;"></div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+      <button onclick="closeCrmDialerImportModal()" style="padding:10px 20px;font-size:14px;font-weight:600;border:1.5px solid #e2e8f0;border-radius:10px;background:#f8fafc;color:#64748b;cursor:pointer;">Cancel</button>
+      <button onclick="confirmCrmDialerImport()" style="padding:10px 24px;font-size:14px;font-weight:700;border:none;border-radius:10px;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;cursor:pointer;">Add to Dialer</button>
+    </div>
   </div>
 </div>
 
@@ -6201,6 +6230,7 @@ function crmRender() {
           <div style="font-size:11px;color:#94a3b8;">${lastContact}</div>
           <div style="display:flex;gap:6px;" onclick="event.stopPropagation()">
             ${c.phone ? `<button onclick="crmQuickCall('${c.id}')" title="AI Call" style="padding:5px 10px;font-size:12px;font-weight:700;border-radius:7px;border:1.5px solid #dbeafe;background:#f0f7ff;color:#1d4ed8;cursor:pointer;">Call</button>` : ''}
+            ${c.phone ? `<button onclick="crmQueueDialer('${c.id}')" title="Add to Auto Dialer" style="padding:5px 10px;font-size:12px;font-weight:700;border-radius:7px;border:1.5px solid #d1fae5;background:#f0fdf4;color:#059669;cursor:pointer;">+ Dialer</button>` : ''}
             <button onclick="crmOpenModal('${c.id}')" title="Edit" style="padding:5px 9px;font-size:12px;font-weight:700;border-radius:7px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;">Edit</button>
             <button onclick="crmDeleteConfirm('${c.id}')" title="Delete" style="padding:5px 9px;font-size:12px;font-weight:700;border-radius:7px;border:1.5px solid #fee2e2;background:#fff5f5;color:#ef4444;cursor:pointer;">&#x2715;</button>
           </div>
@@ -6305,7 +6335,7 @@ function crmOpenDetail(id) {
       ${c.phone?`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fbff;border-radius:10px;border:1px solid #e2eaf4;"><span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#64748b;">Phone</span><span style="font-size:14px;font-weight:600;color:var(--text);">${c.phone}</span></div>`:''}
       ${c.email?`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fbff;border-radius:10px;border:1px solid #e2eaf4;"><span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#64748b;">Email</span><span style="font-size:14px;font-weight:600;color:var(--text);word-break:break-all;">${c.email}</span></div>`:''}
     </div>
-    ${c.phone?`<button onclick="crmQuickCall('${c.id}')" class="app-btn blue" style="width:100%;padding:12px;font-size:15px;font-weight:700;margin-bottom:16px;">AI Call ${c.name?.split(' ')[0]||''}</button>`:''}
+    ${c.phone?`<div style="display:flex;gap:10px;margin-bottom:16px;"><button onclick="crmQuickCall('${c.id}')" class="app-btn blue" style="flex:1;padding:12px;font-size:15px;font-weight:700;">AI Call ${c.name?.split(' ')[0]||''}</button><button onclick="crmQueueDialer('${c.id}')" class="app-btn" style="flex:1;padding:12px;font-size:14px;font-weight:700;background:#ecfdf5;border-color:#6ee7b7;color:#059669;">+ Add to Dialer</button></div>`:''}
     <div style="margin-bottom:12px;">
       <div style="font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:var(--text);margin-bottom:10px;">Interaction History</div>
       <div id="crmNotesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
@@ -6377,6 +6407,70 @@ function crmAddNote(id) {
   crmOpenDetail(id);
 }
 
+// ── CRM → Auto Dialer integration ────────────────────────────────────────────
+function crmQueueDialer(id) {
+  const c = crmLoad().find(x => x.id === id);
+  if (!c || !c.phone) { toast('No phone number for this contact.'); return; }
+  crmCloseDetail();
+  showPage('aicaller', document.querySelector('[data-page="aicaller"]') || document.querySelector('[data-page="assist"]'));
+  setTimeout(() => {
+    setCallerTab('auto');
+    adAddRow(c.name || '', c.phone, c.company || '');
+    toast(`${c.name || c.phone} added to Auto Dialer.`);
+  }, 200);
+}
+
+function crmImportToDialerModal() {
+  document.getElementById('crmDialerStageFilter').value = '';
+  renderCrmDialerPicker();
+  document.getElementById('crmDialerImportModal').style.display = 'flex';
+}
+
+function closeCrmDialerImportModal() {
+  document.getElementById('crmDialerImportModal').style.display = 'none';
+}
+
+function renderCrmDialerPicker() {
+  const stageF = document.getElementById('crmDialerStageFilter').value;
+  let contacts = crmLoad().filter(c => c.phone);
+  if (stageF) contacts = contacts.filter(c => c.stage === stageF);
+  const list = document.getElementById('crmDialerPickerList');
+  if (!contacts.length) {
+    list.innerHTML = '<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">No contacts with phone numbers' + (stageF ? ' in this stage' : '') + '.</div>';
+    return;
+  }
+  list.innerHTML = contacts.map((c, i) => {
+    const s = CRM_STAGES[c.stage] || CRM_STAGES.lead;
+    return `<label style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:${i<contacts.length-1?'1px solid #f1f5f9':'none'};cursor:pointer;" onmouseover="this.style.background='#f8fbff'" onmouseout="this.style.background=''">
+      <input type="checkbox" class="crm-dialer-check" value="${c.id}" style="width:16px;height:16px;accent-color:#1a6fff;cursor:pointer;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:#0d1b2e;">${c.name||'—'}</div>
+        <div style="font-size:12px;color:#7a90b0;">${[c.phone, c.company].filter(Boolean).join(' · ')}</div>
+      </div>
+      <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:${s.bg};color:${s.color};white-space:nowrap;">${s.label}</span>
+    </label>`;
+  }).join('');
+}
+
+function crmDialerSelectAll(checked) {
+  document.querySelectorAll('.crm-dialer-check').forEach(cb => cb.checked = checked);
+}
+
+function confirmCrmDialerImport() {
+  const checked = [...document.querySelectorAll('.crm-dialer-check:checked')].map(cb => cb.value);
+  if (!checked.length) { toast('Select at least one contact.'); return; }
+  const contacts = crmLoad();
+  let added = 0;
+  checked.forEach(id => {
+    const c = contacts.find(x => x.id === id);
+    if (c && c.phone) { adAddRow(c.name || '', c.phone, c.company || ''); added++; }
+  });
+  closeCrmDialerImportModal();
+  showPage('aicaller', document.querySelector('[data-page="aicaller"]') || document.querySelector('[data-page="assist"]'));
+  setTimeout(() => setCallerTab('auto'), 100);
+  toast(`${added} contact${added !== 1 ? 's' : ''} added to Auto Dialer.`);
+}
+
 function crmDeleteNote(contactId, noteId) {
   const contacts = crmLoad();
   const c = contacts.find(x => x.id === contactId);
@@ -6393,9 +6487,10 @@ function crmQuickCall(id) {
   crmCloseDetail();
   showPage('aicaller', document.querySelector('[data-page="aicaller"]') || document.querySelector('[data-page="assist"]'));
   setTimeout(() => {
-    const phoneEl = document.getElementById('adPhone') || document.getElementById('callPhone');
-    const nameEl  = document.getElementById('adName')  || document.getElementById('callName');
-    const compEl  = document.getElementById('adCompany')|| document.getElementById('callCompany');
+    setCallerTab('single');
+    const phoneEl = document.getElementById('aiCallerNumber');
+    const nameEl  = document.getElementById('aiCallerName');
+    const compEl  = document.getElementById('aiCallerCompany');
     if (phoneEl) phoneEl.value = c.phone;
     if (nameEl)  nameEl.value  = c.name || '';
     if (compEl)  compEl.value  = c.company || '';
