@@ -349,7 +349,7 @@ async function callOpenAI(messages) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_flash_v2_5', output_format: 'pcm_16000', optimize_streaming_latency: 4, apply_text_normalization: 'off',
+  model_id: 'eleven_flash_v2_5', output_format: 'ulaw_8000', apply_text_normalization: 'off',
   voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
 };
 
@@ -417,7 +417,7 @@ async function streamTTS(session, text) {
       clearTimeout(t);
       if (resp.ok) {
         elevenlabsBlocked = false;
-        await pipeToTwilio(session, resp, 'pcm16k');
+        await pipeToTwilio(session, resp, 'ulaw8k');
         return;
       }
       resp.body?.cancel();
@@ -445,15 +445,39 @@ async function streamTTS(session, text) {
 }
 
 async function pipeToTwilio(session, resp, type) {
-  const chunkBytes = type === 'pcm16k' ? 320 : 480;
-  const samplesPerChunk = chunkBytes / 2;
-  const encoder = type === 'pcm16k' ? pcm16ToMulaw : pcm24ToMulaw;
   const reader = resp.body.getReader();
   let buffer = Buffer.alloc(0);
   const readWithTimeout = () => Promise.race([
     reader.read(),
     new Promise((_, rej) => setTimeout(() => rej(new Error('read timeout')), 8000))
   ]);
+
+  // ulaw_8000 from ElevenLabs is already what Twilio needs — pass straight through
+  if (type === 'ulaw8k') {
+    const CHUNK = 160; // 20ms at 8kHz
+    try {
+      while (true) {
+        const { done, value } = await readWithTimeout();
+        if (done) break;
+        if (!value?.length) continue;
+        if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
+        buffer = Buffer.concat([buffer, Buffer.from(value)]);
+        while (buffer.length >= CHUNK) {
+          session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: buffer.slice(0, CHUNK).toString('base64') } }));
+          buffer = buffer.slice(CHUNK);
+        }
+      }
+      if (buffer.length > 0 && session.twilioWs?.readyState === WebSocket.OPEN) {
+        session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: buffer.toString('base64') } }));
+      }
+    } finally { reader.cancel().catch(() => {}); }
+    return;
+  }
+
+  // PCM from OpenAI — convert to mulaw
+  const chunkBytes = type === 'pcm24k' ? 480 : 320;
+  const samplesPerChunk = chunkBytes / 2;
+  const encoder = type === 'pcm24k' ? pcm24ToMulaw : pcm16ToMulaw;
   try {
     while (true) {
       const { done, value } = await readWithTimeout();
@@ -471,9 +495,7 @@ async function pipeToTwilio(session, resp, type) {
       const pcm = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
       session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: encoder(pcm).toString('base64') } }));
     }
-  } finally {
-    reader.cancel().catch(() => {});
-  }
+  } finally { reader.cancel().catch(() => {}); }
 }
 
 
