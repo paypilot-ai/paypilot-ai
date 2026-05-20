@@ -353,8 +353,18 @@ const ELEVENLABS_VOICE_SETTINGS = {
   voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
 };
 
-// Cached after first failure so we don't waste time retrying every turn
+// Reset after 5 minutes so a newly-paid account recovers automatically
 let elevenlabsBlocked = false;
+let elevenlabsBlockedAt = 0;
+function isElevenlabsBlocked() {
+  if (!elevenlabsBlocked) return false;
+  if (Date.now() - elevenlabsBlockedAt > 5 * 60 * 1000) {
+    elevenlabsBlocked = false;
+    console.log('[elevenlabs] retry window elapsed — unblocking');
+    return false;
+  }
+  return true;
+}
 
 function sendMark(session, name) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return false;
@@ -395,7 +405,7 @@ async function speakToTwilio(session, text) {
 
 async function streamTTS(session, text) {
   // Try ElevenLabs — skip entirely if it failed before on this server instance
-  if (ELEVENLABS_KEY && !elevenlabsBlocked) {
+  if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
     try {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 2000);
@@ -406,15 +416,18 @@ async function streamTTS(session, text) {
       });
       clearTimeout(t);
       if (resp.ok) {
+        elevenlabsBlocked = false;
         await pipeToTwilio(session, resp, 'pcm16k');
         return;
       }
       resp.body?.cancel();
       elevenlabsBlocked = true;
-      console.log('[elevenlabs] blocked — switching to OpenAI TTS for all future turns');
+      elevenlabsBlockedAt = Date.now();
+      console.log('[elevenlabs] blocked — falling back to OpenAI TTS, will retry in 5m');
     } catch (_) {
       elevenlabsBlocked = true;
-      console.log('[elevenlabs] timed out — switching to OpenAI TTS for all future turns');
+      elevenlabsBlockedAt = Date.now();
+      console.log('[elevenlabs] timed out — falling back to OpenAI TTS, will retry in 5m');
     }
   }
 
