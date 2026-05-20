@@ -286,6 +286,11 @@ function connectDeepgram(session) {
       await generateAndSpeak(session);
     } catch (e) { callLog(session.callSid, '[dg] message error:', e.message); }
   });
+  dg.on('unexpected-response', (req, res) => {
+    let body = '';
+    res.on('data', d => body += d);
+    res.on('end', () => callLog(session.callSid, `[dg] 400 response: ${body.slice(0, 200)}`));
+  });
   dg.on('error', (e) => callLog(session.callSid, '[dg] error:', e.message));
   dg.on('close', (code) => {
     if (session.dgWs !== dg) return;
@@ -349,7 +354,7 @@ async function callOpenAI(messages) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_flash_v2_5', output_format: 'ulaw_8000', apply_text_normalization: 'off',
+  model_id: 'eleven_flash_v2_5', output_format: 'pcm_16000', apply_text_normalization: 'off',
   voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
 };
 
@@ -417,9 +422,9 @@ async function streamTTS(session, text) {
       clearTimeout(t);
       const ct = resp.headers.get('content-type') || '';
       console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
-      if (resp.ok && ct.includes('audio')) {
+      if (resp.ok && !ct.includes('mpeg') && !ct.includes('mp3')) {
         elevenlabsBlocked = false;
-        await pipeToTwilio(session, resp, 'ulaw8k');
+        await pipeToTwilio(session, resp, 'pcm16k');
         return;
       }
       const errBody = await resp.text().catch(() => '');
