@@ -258,7 +258,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=150&utterance_end_ms=400';
+    '&interim_results=false&endpointing=150';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -429,7 +429,6 @@ async function streamTTS(session, text) {
       }
       const errBody = await resp.text().catch(() => '');
       console.log(`[elevenlabs] unexpected response: ${errBody.slice(0, 200)}`);
-      resp.body?.cancel();
       elevenlabsBlocked = true;
       elevenlabsBlockedAt = Date.now();
       console.log('[elevenlabs] blocked — falling back to OpenAI TTS, will retry in 5m');
