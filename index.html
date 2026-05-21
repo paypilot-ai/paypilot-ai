@@ -5166,6 +5166,8 @@ async function startAiCall(){
     toast('AI Caller is available on paid plans only. Upgrade to access this feature.');
     return;
   }
+  if(window._callInFlight){ toast('A call is already being placed — please wait.'); return; }
+  window._callInFlight = true;
   const number = document.getElementById('aiCallerNumber').value.trim();
   if(!number || number.replace(/\D/g,'').length < 10){
     toast('Enter a valid 10-digit phone number.');
@@ -5190,6 +5192,7 @@ async function startAiCall(){
     if(!resp.ok) throw new Error(data.error || 'Call failed');
 
     activeAiCallSid = data.callSid;
+    window._callInFlight = false;
     saveCallMeta(data.callSid, customerName, companyName, callReason, number);
     document.getElementById('aiCallerFormCard').style.display = 'none';
     document.getElementById('callHud').style.display = 'block';
@@ -5220,6 +5223,8 @@ async function startAiCall(){
     document.getElementById('callHud').style.display = 'none';
     document.getElementById('aiCallerFormCard').style.display = 'block';
     window.aiCallActive = false;
+  } finally {
+    window._callInFlight = false;
   }
 }
 
