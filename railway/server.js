@@ -60,6 +60,20 @@ app.get('/logs', (req, res) => {
   res.json(out);
 });
 
+// Browse ElevenLabs shared voice library — search by keyword
+app.get('/voices', async (req, res) => {
+  const search = req.query.search || 'southern';
+  if (!ELEVENLABS_KEY) return res.status(500).json({ error: 'No ElevenLabs key' });
+  try {
+    const r = await fetch(`https://api.elevenlabs.io/v1/shared-voices?page_size=20&gender=female&search=${encodeURIComponent(search)}`, {
+      headers: { 'xi-api-key': ELEVENLABS_KEY }
+    });
+    const data = await r.json();
+    const voices = (data.voices || []).map(v => ({ id: v.voice_id, name: v.name, description: v.description, accent: v.labels?.accent, preview_url: v.preview_url }));
+    res.json({ voices });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 function xmlEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -410,7 +424,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7 }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 40, temperature: 0.7 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
