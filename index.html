@@ -4541,6 +4541,67 @@ function stopSpeechPolling(){
   window.aiMouthTarget = 0;
 }
 
+let aiEmailPollInterval = null;
+function startEmailPolling(sid) {
+  stopEmailPolling();
+  document.getElementById('hudEmailCapture').style.display = 'none';
+  aiEmailPollInterval = setInterval(async () => {
+    try {
+      const resp = await fetch('/api/call-email?sid=' + sid);
+      const data = await resp.json();
+      if (data.capturedEmail) {
+        document.getElementById('hudCapturedEmail').textContent = data.capturedEmail;
+        document.getElementById('hudEmailCapture').style.display = 'block';
+        window._hudCapturedEmail = data.capturedEmail;
+      }
+    } catch(e) {}
+  }, 2000);
+}
+function stopEmailPolling() {
+  if (aiEmailPollInterval) { clearInterval(aiEmailPollInterval); aiEmailPollInterval = null; }
+}
+function hudFileSelected(input) {
+  const file = input.files[0];
+  document.getElementById('hudDocLabel').textContent = file ? '📎 ' + file.name : '📎 Attach Document';
+}
+async function hudSendDocument() {
+  const email = window._hudCapturedEmail;
+  if (!email) { toast('No email captured yet.'); return; }
+  const input = document.getElementById('hudDocUpload');
+  const file = input.files[0];
+  const btn = document.getElementById('hudSendDocBtn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  try {
+    let fileContent = null;
+    if (file) {
+      fileContent = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+    }
+    const payload = {
+      customerEmail: email,
+      subject: 'Your Avis Pay Direct Agreement',
+      message: 'Thank you for speaking with us today! Please find your agreement attached. Reply to this email with any questions.'
+    };
+    if (fileContent) { payload.fileContent = fileContent; payload.fileName = file.name; }
+    const resp = await fetch('/api/send-agreement', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Failed');
+    toast('Document sent to ' + email + '!');
+    const box = document.getElementById('hudTranscript');
+    if (box) box.innerHTML += `<div style="color:#00ff88;margin-top:4px;">[ Doc sent to ${email} ]</div>`;
+    btn.textContent = '✓ Sent!';
+  } catch(e) {
+    toast('Send failed: ' + e.message);
+    btn.textContent = 'Send';
+    btn.disabled = false;
+  }
+}
+
 function triggerLipSync(text){
   const words = text.trim().split(/\s+/).length;
   const durationMs = Math.max(1500, Math.min(8000, (words / 2.6) * 1000));
@@ -5147,6 +5208,7 @@ async function startAiCall(){
     }, 600);
     startCallStatusPolling(data.callSid);
     startSpeechPolling(data.callSid);
+    startEmailPolling(data.callSid);
 
   } catch(e) {
     toast('AI call failed: ' + e.message);
@@ -5158,6 +5220,7 @@ async function startAiCall(){
 async function endAiCall(){
   if(aiCallPollInterval){ clearInterval(aiCallPollInterval); aiCallPollInterval = null; }
   stopSpeechPolling();
+  stopEmailPolling();
   stopMatrixAnimation();
   const sid = activeAiCallSid;
   activeAiCallSid = null;
@@ -6777,6 +6840,19 @@ window.showPage = function(pageId, btn) {
     <span id="hudTimer" style="font-family:monospace;font-size:13px;color:#00ff88;font-weight:700;text-shadow:0 0 8px #00ff88;">0:00</span>
   </div>
   <div id="hudTranscript" style="font-size:12px;color:#7effa0;font-family:monospace;max-height:60px;overflow-y:auto;margin-bottom:10px;min-height:0;line-height:1.7;padding:0 4px;text-shadow:0 0 6px rgba(0,255,136,.6);"></div>
+
+  <!-- Email captured banner + upload panel -->
+  <div id="hudEmailCapture" style="display:none;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.3);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+    <div style="font-size:11px;color:#00ff88;font-family:monospace;font-weight:700;margin-bottom:6px;">📧 EMAIL CAPTURED: <span id="hudCapturedEmail"></span></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <label style="flex:1;min-width:120px;padding:7px 10px;background:rgba(255,255,255,.06);border:1px dashed rgba(0,255,136,.35);border-radius:7px;font-size:11px;color:#7effa0;cursor:pointer;font-family:monospace;text-align:center;" for="hudDocUpload">
+        <span id="hudDocLabel">📎 Attach Document</span>
+      </label>
+      <input id="hudDocUpload" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display:none" onchange="hudFileSelected(this)">
+      <button id="hudSendDocBtn" onclick="hudSendDocument()" style="padding:7px 16px;background:rgba(0,255,136,.18);color:#00ff88;border:1px solid rgba(0,255,136,.5);border-radius:7px;font-weight:700;cursor:pointer;font-family:monospace;font-size:11px;">Send</button>
+    </div>
+  </div>
+
   <div style="display:flex;gap:10px;">
     <button onclick="endAiCall()" style="flex:1;padding:10px;background:rgba(239,68,68,.2);color:#f87171;border:1px solid rgba(239,68,68,.5);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(239,68,68,.5);">■ End Call</button>
     <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:10px;background:rgba(0,255,136,.12);color:#00ff88;border:1px solid rgba(0,255,136,.4);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(0,255,136,.5);">✉️ Send Email</button>
