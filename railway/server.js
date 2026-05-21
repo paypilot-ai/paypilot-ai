@@ -432,7 +432,7 @@ async function generateAndSpeak(session) {
 
   // 1. Get AI reply
   const fullReply = await fetchAIReply(messages);
-  if (session.bargedIn) return;
+  if (session.bargedIn) { enterListening(session); return; }
   if (!fullReply) { enterListening(session); return; }
 
   callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
