@@ -296,7 +296,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=200';
+    '&interim_results=false&endpointing=500';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -382,11 +382,7 @@ async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating response (streaming)...');
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
-  const lastUserMsg = session.history.filter(m => m.role === 'user').slice(-1)[0]?.content || '';
-  const needsFiller = lastUserMsg.split(/\s+/).length > 2;
-  if (needsFiller) speakFiller(session, pickFiller()).catch(() => {});
-
-  // Stream OpenAI and speak each sentence as it arrives — first audio starts ~400ms sooner
+  // Stream OpenAI and speak full reply as one continuous TTS call
   const fullReply = await streamOpenAIAndSpeak(session, messages);
   if (!fullReply) { session.state = 'listening'; return; }
 
