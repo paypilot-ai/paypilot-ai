@@ -500,42 +500,12 @@ async function speakToTwilio(session, text) {
 }
 
 async function streamTTS(session, text) {
-  // Try ElevenLabs — skip entirely if it failed before on this server instance
-  if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
-    try {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 2000);
-      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
-        method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
-        signal: ctrl.signal
-      });
-      clearTimeout(t);
-      const ct = resp.headers.get('content-type') || '';
-      console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
-      if (resp.ok && !ct.includes('mpeg') && !ct.includes('mp3')) {
-        elevenlabsBlocked = false;
-        await pipeToTwilio(session, resp, 'pcm16k');
-        return;
-      }
-      const errBody = await resp.text().catch(() => '');
-      console.log(`[elevenlabs] unexpected response: ${errBody.slice(0, 200)}`);
-      elevenlabsBlocked = true;
-      elevenlabsBlockedAt = Date.now();
-      console.log('[elevenlabs] blocked — falling back to OpenAI TTS, will retry in 5m');
-    } catch (_) {
-      elevenlabsBlocked = true;
-      elevenlabsBlockedAt = Date.now();
-      console.log('[elevenlabs] timed out — falling back to OpenAI TTS, will retry in 5m');
-    }
-  }
-
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 12000);
+  const t = setTimeout(() => ctrl.abort(), 10000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) }),
+    body: JSON.stringify({ model: 'tts-1', voice: 'nova', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) }),
     signal: ctrl.signal
   });
   clearTimeout(t);
