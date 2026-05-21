@@ -44,6 +44,27 @@ function buildSystemPrompt(session) {
   return parts.join(' ');
 }
 
+function sendForm(session) {
+  if (!session.capturedEmail || session.docuSignSent || !FORM_LINK) return;
+  session.docuSignSent = true;
+  callLog(session.callSid, '[form] sending to', session.capturedEmail);
+  fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      customerName: session.name || '',
+      customerEmail: session.capturedEmail,
+      callReason: session.reason || '',
+      subject: 'Your Form — Please Review',
+      message: `Hi${session.name ? ' ' + session.name : ''},\n\nAs discussed on our call, here is the form for you to review.\n\nIf you have any questions, feel free to reply to this email.`,
+      docuSignLink: FORM_LINK
+    })
+  }).then(r => r.json()).then(d => {
+    callLog(session.callSid, '[form] sent:', d.ok ? 'ok' : d.error);
+    pushToBrowser(session, { event: 'docusign-sent', email: session.capturedEmail });
+  }).catch(e => callLog(session.callSid, '[form] error:', e.message));
+}
+
 const sessions = new Map();
 
 // Per-call debug log ring buffer (last 30 entries per call, last 20 calls)
@@ -290,11 +311,12 @@ function handleTwilio(ws) {
     }
     if (msg.event === 'stop' && session) {
       callLog(session.callSid, '[call] ended');
+      sendForm(session);
       cleanup(session);
       sessions.delete(session.callSid);
     }
   });
-  ws.on('close', () => { if (session) { cleanup(session); sessions.delete(session.callSid); } });
+  ws.on('close', () => { if (session) { sendForm(session); cleanup(session); sessions.delete(session.callSid); } });
 }
 
 function handleBrowser(ws, callSid) {
@@ -462,31 +484,12 @@ async function generateAndSpeak(session) {
   session.history.push({ role: 'assistant', content: fullReply });
   pushToBrowser(session, { event: 'ai-response', text: fullReply });
 
-  // 3. Form auto-send — only when Brandy mentions sending/the form, and we have email + link
-  const mentionsForm = /\b(send|sending|sent|email|form|agreement|link|right now|on its way)\b/i.test(fullReply);
-  if (session.capturedEmail && !session.docuSignSent && mentionsForm && FORM_LINK) {
-    session.docuSignSent = true;
-    fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customerName: session.name || '',
-        customerEmail: session.capturedEmail,
-        callReason: session.reason || 'follow-up call',
-        subject: 'Your Form — Please Review',
-        message: `Hi${session.name ? ' ' + session.name : ''},\n\nAs discussed, here is the form Brandy mentioned. Please review it at your convenience.\n\nIf you have any questions, feel free to reply to this email.`,
-        docuSignLink: FORM_LINK
-      })
-    }).then(() => {
-      callLog(session.callSid, '[form] sent to', session.capturedEmail);
-      pushToBrowser(session, { event: 'docusign-sent', email: session.capturedEmail });
-    }).catch(e => callLog(session.callSid, '[form] failed:', e.message));
-  }
-
-  // 4. End call check
+  // 3. End call check
   if (shouldEndCall(fullReply, session.history)) {
     callLog(session.callSid, '[call] ending');
     pushToBrowser(session, { event: 'call-ended' });
+    // Send form at end of call if we have email + link configured
+    sendForm(session);
     session.state = 'speaking';
     session.ttsAbort = new AbortController();
     try { await streamTTS(session, prepareForSpeech(fullReply)); } catch (_) {}
