@@ -249,7 +249,7 @@ function handleTwilio(ws) {
       const n = cp.n || '';
       const r = cp.r || '';
       const c = cp.c || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
@@ -297,7 +297,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=400';
+    '&interim_results=false&endpointing=500';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -313,7 +313,7 @@ function connectDeepgram(session) {
       if (!transcript || !result.is_final) return;
       const words = transcript.split(/\s+/).filter(Boolean);
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
-      if (words.length < 1 || NOISE_ONLY.test(transcript)) {
+      if (words.length < 2 || NOISE_ONLY.test(transcript)) {
         callLog(session.callSid, '[dg] filtered noise:', transcript);
         return;
       }
@@ -330,8 +330,20 @@ function connectDeepgram(session) {
       }
 
       if (session.state === 'processing') { return; }
+      if (session.state === 'speaking') {
+        // Barge-in: customer interrupted — stop Brandy immediately
+        callLog(session.callSid, '[barge-in]', transcript);
+        if (session.twilioWs?.readyState === WebSocket.OPEN) {
+          session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+        }
+        session.ttsAbort?.abort();
+        // Unblock awaitMark so the speaking loop exits immediately
+        for (const resolve of Object.values(session.markResolvers)) resolve();
+        session.markResolvers = {};
+        session.pendingTranscript = transcript;
+        return;
+      }
       if (session.state !== 'listening') {
-        // Buffer the latest transcript — fire it the moment we finish speaking
         session.pendingTranscript = transcript;
         callLog(session.callSid, '[dg] buffered (state=' + session.state + '):', transcript);
         return;
@@ -572,19 +584,19 @@ async function speakToTwilio(session, text) {
 }
 
 async function streamTTS(session, text) {
-  // Try ElevenLabs — skip entirely if it failed before on this server instance
+  session.ttsAbort = new AbortController();
+  const abort = session.ttsAbort;
+
   if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
     try {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 5000);
+      const t = setTimeout(() => abort.abort(), 5000);
       const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
         method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
-        signal: ctrl.signal
+        signal: abort.signal
       });
       clearTimeout(t);
-      const ct = resp.headers.get('content-type') || '';
-      console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
+      console.log(`[elevenlabs] status=${resp.status}`);
       if (resp.ok) {
         elevenlabsBlocked = false;
         await pipeToTwilio(session, resp, 'pcm16k');
@@ -592,23 +604,21 @@ async function streamTTS(session, text) {
       }
       const errBody = await resp.text().catch(() => '');
       console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
-      elevenlabsBlocked = true;
-      elevenlabsBlockedAt = Date.now();
-      console.log('[elevenlabs] blocked — falling back to OpenAI TTS, will retry in 5m');
-    } catch (_) {
-      elevenlabsBlocked = true;
-      elevenlabsBlockedAt = Date.now();
-      console.log('[elevenlabs] timed out — falling back to OpenAI TTS, will retry in 5m');
+      elevenlabsBlocked = true; elevenlabsBlockedAt = Date.now();
+    } catch (e) {
+      if (abort.signal.aborted && e.name === 'AbortError') throw e; // barge-in — don't block EL
+      elevenlabsBlocked = true; elevenlabsBlockedAt = Date.now();
+      console.log('[elevenlabs] failed:', e.message);
     }
   }
 
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 12000);
+  if (abort.signal.aborted) throw new Error('tts aborted');
+  const t = setTimeout(() => abort.abort(), 12000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
     body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) }),
-    signal: ctrl.signal
+    signal: abort.signal
   });
   clearTimeout(t);
   if (!resp.ok) throw new Error(`OpenAI TTS ${resp.status}`);
@@ -620,7 +630,11 @@ async function pipeToTwilio(session, resp, type) {
   let buffer = Buffer.alloc(0);
   const readWithTimeout = () => Promise.race([
     reader.read(),
-    new Promise((_, rej) => setTimeout(() => rej(new Error('read timeout')), 8000))
+    new Promise((_, rej) => setTimeout(() => rej(new Error('read timeout')), 8000)),
+    new Promise((_, rej) => {
+      if (session.ttsAbort?.signal.aborted) { rej(new Error('tts aborted')); return; }
+      session.ttsAbort?.signal.addEventListener('abort', () => rej(new Error('tts aborted')), { once: true });
+    })
   ]);
 
   // ulaw_8000 from ElevenLabs is already what Twilio needs — pass straight through
