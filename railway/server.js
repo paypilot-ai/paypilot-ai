@@ -510,10 +510,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     pushToBrowser(session, { event: 'ai-speaking', text: fullText });
     await streamTTS(session, fullText);
 
-    try { session.dgWs?.terminate(); } catch {}
-    session.dgWs = null;
-    session.dgReconnecting = true;
-    connectDeepgram(session);
+    // Wait for Twilio playback — keep Deepgram connection alive throughout
     const markName = 'tts-' + Date.now();
     if (sendMark(session, markName)) await awaitMark(session, markName, 10000);
 
@@ -579,17 +576,10 @@ async function speakToTwilio(session, text) {
   try {
     await streamTTS(session, text);
   } catch (e) { callLog(session.callSid, '[tts] error:', e.message); }
-  // Reconnect DG fresh immediately so it's ready by the time Twilio finishes playing
-  try { session.dgWs?.terminate(); } catch {}
-  session.dgWs = null;
-  session.dgReconnecting = true;
-  connectDeepgram(session);
-  // Wait for Twilio to confirm audio is done playing before we start listening
+  // Wait for Twilio to confirm audio is done before listening — keep Deepgram alive
   const markName = 'tts-' + Date.now();
   if (sendMark(session, markName)) {
-    callLog(session.callSid, '[mark] waiting for playback to complete...');
     await awaitMark(session, markName, 10000);
-    callLog(session.callSid, '[mark] playback done — now listening');
   }
   session.state = 'listening';
   pushToBrowser(session, { event: 'ai-done' });
