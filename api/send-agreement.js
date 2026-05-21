@@ -61,8 +61,10 @@ module.exports = async function handler(req, res) {
     </div>
   `;
 
+  const fromEmail = process.env.FROM_EMAIL || 'noreply@paypilotai.live';
+  const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
   const payload = {
-    from: 'PayPilot AI <info@paypilotai.live>',
+    from: `${fromName} <${fromEmail}>`,
     to: [customerEmail],
     subject: emailSubject,
     html
