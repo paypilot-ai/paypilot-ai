@@ -1,15 +1,7 @@
-const VOICE = 'Polly.Ruth-Neural';
-
-function xml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+const BASE_URL = 'https://paypilotai.live';
 
 function say(text) {
-  return `<Say voice="${VOICE}"><prosody rate="90%" pitch="+4%">${xml(text)}</prosody></Say>`;
+  return `<Play>${BASE_URL}/api/tts?text=${encodeURIComponent(text)}</Play>`;
 }
 
 function b64enc(obj) {
@@ -46,6 +38,6 @@ module.exports = async function handler(req, res) {
   <Hangup/>
 </Response>`);
   } catch (e) {
-    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="${VOICE}">Hi there, who am I speaking with?</Say><Hangup/></Response>`);
+    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say>Hi there, who am I speaking with?</Say><Hangup/></Response>`);
   }
 };

@@ -1,16 +1,7 @@
-const VOICE = 'Polly.Joanna-Neural';
+const BASE_URL = 'https://paypilotai.live';
 
-function xmlEsc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
 function say(text) {
-  const escaped = xmlEsc(text)
-    .replace(/\.{3}/g, '<break time="500ms"/>')
-    .replace(/—/g, '<break time="300ms"/>')
-    .replace(/\.(?=\s|$)/g, '.<break time="400ms"/>')
-    .replace(/!(?=\s|$)/g,  '!<break time="300ms"/>')
-    .replace(/,(?=\s)/g,    ',<break time="200ms"/>');
-  return `<Say voice="${VOICE}"><prosody rate="90%" pitch="+4%">${escaped}</prosody></Say>`;
+  return `<Play>${BASE_URL}/api/tts?text=${encodeURIComponent(text)}</Play>`;
 }
 function b64enc(obj) {
   return Buffer.from(JSON.stringify(obj)).toString('base64')
