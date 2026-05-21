@@ -371,7 +371,12 @@ function connectDeepgram(session) {
       session.pendingTranscript = null;
       session.state = 'processing';
       session.history.push({ role: 'user', content: transcript });
-      await generateAndSpeak(session);
+      try {
+        await generateAndSpeak(session);
+      } catch (e) {
+        callLog(session.callSid, '[ai] error — resetting to listening:', e.message);
+        session.state = 'listening';
+      }
     } catch (e) { callLog(session.callSid, '[dg] message error:', e.message); }
   });
   dg.on('unexpected-response', (req, res) => {
@@ -404,7 +409,11 @@ async function sendGreeting(session) {
   const greeting = buildGreeting(session.name, session.company);
   session.history.push({ role: 'assistant', content: greeting });
   pushToBrowser(session, { event: 'ai-response', text: greeting });
-  await speakToTwilio(session, greeting);
+  try {
+    await speakToTwilio(session, greeting);
+  } catch (e) {
+    callLog(session.callSid, '[greeting] tts error:', e.message);
+  }
   session.state = 'listening';
 }
 
@@ -430,8 +439,14 @@ async function generateAndSpeak(session) {
     session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
   }
 
-  // 1. Get AI reply
-  const fullReply = await fetchAIReply(messages);
+  // 1. Get AI reply — start TTS as soon as first sentence arrives, don't wait for full reply
+  let earlyTtsPromise = null;
+  const fullReply = await fetchAIReply(messages, (firstSentence) => {
+    if (!session.bargedIn) {
+      callLog(session.callSid, '[ai] early TTS:', firstSentence.slice(0, 60));
+      earlyTtsPromise = streamTTS(session, firstSentence);
+    }
+  });
   if (session.bargedIn) { enterListening(session); return; }
   if (!fullReply) { enterListening(session); return; }
 
@@ -472,12 +487,18 @@ async function generateAndSpeak(session) {
     return;
   }
 
-  // 5. Speak reply — refresh abort controller (filler may have used the previous one)
+  // 5. Speak reply
   session.bargedIn = false;
-  session.ttsAbort = new AbortController();
   pushToBrowser(session, { event: 'ai-speaking', text: fullReply });
   try {
-    await streamTTS(session, fullReply);
+    if (earlyTtsPromise) {
+      // Early TTS already started — wait for it to finish
+      await earlyTtsPromise;
+    } else {
+      // No early TTS fired (reply had no sentence boundary) — speak full reply now
+      session.ttsAbort = new AbortController();
+      await streamTTS(session, fullReply);
+    }
     const markName = 'tts-' + Date.now();
     if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
   } catch (_) {
@@ -511,7 +532,9 @@ function prepareForSpeech(text) {
     .trim();
 }
 
-async function fetchAIReply(messages) {
+// Streams AI tokens, calls onSentence(text) as soon as a sentence boundary is
+// detected so TTS can start early. Returns the full reply text.
+async function fetchAIReply(messages, onSentence) {
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
@@ -525,7 +548,7 @@ async function fetchAIReply(messages) {
     if (!resp.ok) return null;
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
-    let buf = '', fullText = '';
+    let buf = '', fullText = '', sentenceFired = false;
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -535,7 +558,17 @@ async function fetchAIReply(messages) {
         if (!line.startsWith('data: ')) continue;
         const d = line.slice(6);
         if (d === '[DONE]') break;
-        try { const tok = JSON.parse(d).choices?.[0]?.delta?.content; if (tok) fullText += tok; } catch {}
+        try {
+          const tok = JSON.parse(d).choices?.[0]?.delta?.content;
+          if (tok) {
+            fullText += tok;
+            // Fire as soon as we have a complete sentence (~10+ chars ending in . ! ?)
+            if (!sentenceFired && onSentence && fullText.length > 10 && /[.!?]/.test(fullText)) {
+              sentenceFired = true;
+              onSentence(fullText.trim());
+            }
+          }
+        } catch {}
       }
     }
     return fullText.trim() || null;
