@@ -35,6 +35,28 @@ function buildSystemPrompt(session) {
   return parts.join(' ');
 }
 
+function sendForm(session) {
+  if (!session.capturedEmail || session.docuSignSent || !FORM_LINK) return;
+  session.docuSignSent = true;
+  callLog(session.callSid, '[form] sending to', session.capturedEmail);
+  fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      customerName: session.name || '',
+      customerEmail: session.capturedEmail,
+      callReason: session.reason || '',
+      senderEmail: session.senderEmail || '',
+      subject: 'Your Form — Please Review',
+      message: `Hi${session.name ? ' ' + session.name : ''},\n\nAs discussed on our call, here is the form for you to review.\n\nIf you have any questions, feel free to reply to this email.`,
+      docuSignLink: FORM_LINK
+    })
+  }).then(r => r.json()).then(d => {
+    callLog(session.callSid, '[form] sent:', d.ok ? 'ok' : d.error);
+    pushToBrowser(session, { event: 'docusign-sent', email: session.capturedEmail });
+  }).catch(e => callLog(session.callSid, '[form] error:', e.message));
+}
+
 const sessions = new Map();
 
 // Per-call debug log ring buffer (last 30 entries per call, last 20 calls)
@@ -97,16 +119,20 @@ app.all('/twiml-stream', (req, res) => {
   const n = req.query.n || '';
   const r = req.query.r || '';
   const c = req.query.c || '';
+  const e = req.query.e || '';
+  const s = req.query.s || '';
   const host = process.env.RAILWAY_PUBLIC_DOMAIN ||
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
-  console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'method:', req.method);
+  console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'e:', e ? '(set)' : '(none)', 's:', s ? '(set)' : '(none)', 'method:', req.method);
   const wsUrl = `wss://${host}/twilio`;
   // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
   const paramXml = [
     n ? `<Parameter name="n" value="${xmlEsc(n)}"/>` : '',
     r ? `<Parameter name="r" value="${xmlEsc(r)}"/>` : '',
     c ? `<Parameter name="c" value="${xmlEsc(c)}"/>` : '',
+    e ? `<Parameter name="e" value="${xmlEsc(e)}"/>` : '',
+    s ? `<Parameter name="s" value="${xmlEsc(s)}"/>` : '',
   ].join('');
   res.setHeader('Content-Type', 'text/xml');
   res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}">${paramXml}</Stream></Connect></Response>`);
@@ -249,7 +275,9 @@ function handleTwilio(ws) {
       const n = cp.n || '';
       const r = cp.r || '';
       const c = cp.c || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
+      const e = cp.e || '';
+      const s = cp.s || '';
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, senderEmail: s || null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');

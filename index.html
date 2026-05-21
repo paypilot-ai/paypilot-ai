@@ -5174,6 +5174,8 @@ async function startAiCall(){
   const customerName  = document.getElementById('aiCallerName').value.trim();
   const callReason    = document.getElementById('aiCallerObjective').value.trim();
   const companyName   = document.getElementById('aiCallerCompany').value.trim();
+  const customerEmail = document.getElementById('aiCallerEmail') ? document.getElementById('aiCallerEmail').value.trim() : '';
+  const senderEmail   = document.getElementById('aiSenderEmail') ? document.getElementById('aiSenderEmail').value.trim() : '';
   const btn = document.getElementById('aiCallBtn');
   btn.disabled = true;
   btn.textContent = 'Dialing...';
@@ -5182,7 +5184,8 @@ async function startAiCall(){
     const resp = await fetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName })
+      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail }),
+      signal: AbortSignal.timeout(15000)
     });
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Call failed');
