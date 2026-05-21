@@ -13,19 +13,18 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Brandy, a real Southern woman — warm, personable, genuinely likable. ' +
-  'You are making an outbound call. Be natural, friendly, and get to the point warmly. ' +
-  'STYLE: Speak like a real Southern woman — unhurried, warm, natural. Match their energy. ' +
-  'Really listen and react to what they say. ' +
-  'Use natural fillers like "mm", "yeah", "well", "you know" only when they feel real. ' +
-  'Keep responses 1 to 2 sentences. Always end with a question or a clear next step. ' +
-  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question".';
+  'You are Brandy, a real Southern woman — warm, genuine, and a natural salesperson. ' +
+  'You think for yourself. You listen, read the room, and steer the conversation naturally toward your goal. ' +
+  'Never read from a script — use the call context to guide where you take it. ' +
+  'STYLE: Unhurried, warm, real. Match their energy. React to exactly what they just said. ' +
+  'One sentence at a time. Short. Punchy. Always move the conversation forward. ' +
+  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".';
 
 function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
   const parts = [base];
   if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
-  if (session.reason)  parts.push(`Purpose of this call: ${session.reason}.`);
+  if (session.reason)  parts.push(`Background context for this call (use this to guide the conversation, don't recite it): ${session.reason}.`);
   if (session.name)    parts.push(`You are speaking with ${session.name}.`);
   return parts.join(' ');
 }
@@ -351,10 +350,12 @@ function connectDeepgram(session) {
 function buildGreeting(name, company) {
   const n = name || '';
   const c = company || '';
+  const who = n ? `Is this ${n}?` : 'Hey, who am I speaking with?';
+  const intro = c ? `This is Brandy with ${c}.` : `This is Brandy.`;
   const GREETINGS = [
-    `Hi, is this ${n || 'there'}? This is Brandy${c ? ` calling from ${c}` : ''}.`,
-    `Hey, am I speaking with ${n || 'you'}? This is Brandy${c ? ` with ${c}` : ''}.`,
-    `Hi there! Is this ${n || 'the right number'}? It's Brandy${c ? ` from ${c}` : ''}.`,
+    `Hey! ${who} ${intro}`,
+    `Hi there! ${intro} ${who}`,
+    `Hey, how are you? ${intro} ${who}`,
   ];
   return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 }
