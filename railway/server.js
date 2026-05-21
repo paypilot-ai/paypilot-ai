@@ -433,8 +433,22 @@ async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating...');
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-6)];
 
+  // Watchdog: if we get stuck in processing/speaking for >15s, force-reset to listening
+  let watchdogFired = false;
+  const watchdog = setTimeout(() => {
+    if (session.state === 'processing' || session.state === 'speaking') {
+      watchdogFired = true;
+      callLog(session.callSid, '[watchdog] state stuck at', session.state, '— resetting');
+      session.ttsAbort?.abort();
+      enterListening(session);
+    }
+  }, 15000);
+
+  try {
+
   // 1. Fetch AI reply (state stays 'processing' during fetch — barge-in buffers to pendingTranscript)
   const fullReply = await fetchAIReply(messages);
+  if (watchdogFired) return;
   if (!fullReply) { enterListening(session); return; }
 
   callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
@@ -487,7 +501,9 @@ async function generateAndSpeak(session) {
     const markName = 'tts-' + Date.now();
     if (sendMark(session, markName)) await awaitMark(session, markName, 2000);
   } catch (_) {}
-  enterListening(session);
+  if (!watchdogFired) enterListening(session);
+
+  } finally { clearTimeout(watchdog); }
 }
 
 function enterListening(session) {
@@ -599,7 +615,7 @@ async function streamTTS(session, text) {
 
   if (ELEVENLABS_KEY) {
     try {
-      const elTimeout = setTimeout(() => abort?.abort(), 8000);
+      const elTimeout = setTimeout(() => abort?.abort(), 12000);
       const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000&optimize_streaming_latency=4`, {
         method: 'POST',
         headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
