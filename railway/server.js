@@ -20,6 +20,7 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'HOW YOU SPEAK: ' +
   'ONE sentence per turn. Hard limit. Then stop and let them respond. ' +
   'Never explain, never list, never follow up your own sentence. Say one thing, ask one question if needed, then wait. ' +
+  'GETTING THE RIGHT PERSON: Your first job is always to confirm you have the right person. If someone else answers, politely ask for the customer by name. If they say that person is unavailable, leave a brief message and end the call politely. Do NOT pitch to someone other than the intended customer. ' +
   'React to exactly what they just said. Mirror their energy — if they\'re warm, be warm. If they\'re short, be quick and respectful. ' +
   'If they push back or say not interested — acknowledge it warmly, try once more from a different angle. Never give up on the first no. ' +
   '[END] RULE: Only append [END] after both parties have fully said their goodbyes — like "bye now", "take care", "goodbye". NEVER use [END] in a greeting, opening line, or mid-conversation. Most calls will NOT end with [END]. ' +
@@ -37,6 +38,8 @@ function buildSystemPrompt(session) {
   if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
   if (session.reason)  parts.push(`PURPOSE OF THIS CALL: ${session.reason}. This is why you are calling — weave it naturally into the conversation and keep coming back to it.`);
   if (session.name)    parts.push(`You are speaking with ${session.name}.`);
+  if (session.capturedEmail) parts.push(`You already have their email on file: ${session.capturedEmail}. If they agree to proceed, tell them you will send the form to that email right now.`);
+  else parts.push(`If they agree to proceed, ask for their email address so you can send them the form.`);
   return parts.join(' ');
 }
 
@@ -102,16 +105,17 @@ app.all('/twiml-stream', (req, res) => {
   const n = req.query.n || '';
   const r = req.query.r || '';
   const c = req.query.c || '';
+  const e = req.query.e || '';
   const host = process.env.RAILWAY_PUBLIC_DOMAIN ||
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
-  console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'method:', req.method);
+  console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'e:', e ? '(set)' : '(none)', 'method:', req.method);
   const wsUrl = `wss://${host}/twilio`;
-  // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
   const paramXml = [
     n ? `<Parameter name="n" value="${xmlEsc(n)}"/>` : '',
     r ? `<Parameter name="r" value="${xmlEsc(r)}"/>` : '',
     c ? `<Parameter name="c" value="${xmlEsc(c)}"/>` : '',
+    e ? `<Parameter name="e" value="${xmlEsc(e)}"/>` : '',
   ].join('');
   res.setHeader('Content-Type', 'text/xml');
   res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}">${paramXml}</Stream></Connect></Response>`);
@@ -254,7 +258,8 @@ function handleTwilio(ws) {
       const n = cp.n || '';
       const r = cp.r || '';
       const c = cp.c || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
+      const e = cp.e || '';
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
@@ -393,14 +398,13 @@ function connectDeepgram(session) {
 function buildGreeting(name, company) {
   const n = name || '';
   const c = company || '';
-  const ask = n ? `Is ${n} around?` : `Who am I speaking with today?`;
-  const intro = c ? `This is Brandy over at ${c}.` : `This is Brandy.`;
+  const ask = n ? `May I speak with ${n}?` : `Who am I speaking with?`;
+  const intro = c ? `This is Brandy calling from ${c}.` : `This is Brandy.`;
   const GREETINGS = [
-    `Hey! ${intro} ${ask}`,
+    `Hi, ${intro} ${ask}`,
+    `Hey there, ${intro} ${ask}`,
     `Hi there! ${intro} ${ask}`,
-    `Hey, how's it going? ${intro} ${ask}`,
-    `Hey there — ${intro} ${ask}`,
-    `Hi! ${intro} ${ask}`,
+    `Hey, ${intro} ${ask}`,
   ];
   return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 }
