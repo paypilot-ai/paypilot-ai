@@ -18,8 +18,15 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'Never read from a script — use the call context to guide where you take it. ' +
   'STYLE: Unhurried, warm, real. Match their energy. React to exactly what they just said. ' +
   'One sentence at a time. Short. Punchy. Always move the conversation forward. ' +
+  'When the call is clearly over (they say bye, not interested, hang up, etc.) say a warm goodbye then append [END] at the very end. ' +
   'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".';
 
+const CLOSE_PHRASES = ['bye', 'goodbye', 'have a good', 'have a great', 'talk later', 'take care', 'not interested', 'remove me', 'do not call', 'stop calling'];
+function shouldEndCall(text) {
+  const lower = text.toLowerCase();
+  if (lower.includes('[end]')) return true;
+  return CLOSE_PHRASES.some(p => lower.includes(p));
+}
 function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
   const parts = [base];
@@ -434,14 +441,24 @@ async function generateAndSpeak(session) {
     }
   }
 
+  // End call if Brandy said goodbye or replied with [END]
+  if (shouldEndCall(fullReply)) {
+    callLog(session.callSid, '[call] ending call — farewell detected');
+    pushToBrowser(session, { event: 'call-ended' });
+    setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 500);
+    return;
+  }
+
   session.state = 'listening';
 }
 
 function prepareForSpeech(text) {
   return text.trim()
+    .replace(/\[END\]/gi, '')
     .replace(/\s*—\s*/g, ', ')
     .replace(/\s+([.,!?])/g, '$1')
-    .replace(/([^.!?])$/, '$1.');
+    .replace(/([^.!?])$/, '$1.')
+    .trim();
 }
 
 // Collect full OpenAI reply via streaming (faster text delivery), then speak in one TTS call
