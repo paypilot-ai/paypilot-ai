@@ -501,7 +501,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     await streamTTS(session, fullText);
 
     const markName = 'tts-' + Date.now();
-    if (sendMark(session, markName)) await awaitMark(session, markName, 10000);
+    if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
 
     return fullText;
   } catch (e) {
@@ -567,7 +567,7 @@ async function speakToTwilio(session, text) {
   } catch (e) { callLog(session.callSid, '[tts] error:', e.message); }
   // Wait for Twilio to confirm audio is done — keep Deepgram alive throughout
   const markName = 'tts-' + Date.now();
-  if (sendMark(session, markName)) await awaitMark(session, markName, 10000);
+  if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
   enterListening(session);
 }
 
@@ -585,13 +585,13 @@ async function streamTTS(session, text) {
       clearTimeout(t);
       const ct = resp.headers.get('content-type') || '';
       console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
-      if (resp.ok && !ct.includes('mpeg') && !ct.includes('mp3')) {
+      if (resp.ok) {
         elevenlabsBlocked = false;
         await pipeToTwilio(session, resp, 'pcm16k');
         return;
       }
       const errBody = await resp.text().catch(() => '');
-      console.log(`[elevenlabs] unexpected response: ${errBody.slice(0, 200)}`);
+      console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
       elevenlabsBlocked = true;
       elevenlabsBlockedAt = Date.now();
       console.log('[elevenlabs] blocked — falling back to OpenAI TTS, will retry in 5m');
@@ -645,8 +645,10 @@ async function pipeToTwilio(session, resp, type) {
     return;
   }
 
-  // PCM from OpenAI — convert to mulaw
-  const chunkBytes = type === 'pcm24k' ? 480 : 320;
+  // PCM → mulaw; 160 mulaw bytes = 20ms at 8kHz (Twilio standard chunk)
+  // pcm16k: need 320 Int16 samples (640 bytes) → 160 mulaw bytes
+  // pcm24k: need 480 Int16 samples (960 bytes) → 160 mulaw bytes
+  const chunkBytes = type === 'pcm24k' ? 960 : 640;
   const samplesPerChunk = chunkBytes / 2;
   const encoder = type === 'pcm24k' ? pcm24ToMulaw : pcm16ToMulaw;
   try {
