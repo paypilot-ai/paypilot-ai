@@ -39,7 +39,7 @@ function buildSystemPrompt(session) {
   if (session.reason)  parts.push(`PURPOSE OF THIS CALL: ${session.reason}. This is why you are calling — weave it naturally into the conversation and keep coming back to it.`);
   if (session.name)    parts.push(`You are speaking with ${session.name}.`);
   if (session.capturedEmail) parts.push(`You already have their email on file: ${session.capturedEmail}. If they agree to proceed, tell them you will send the form to that email right now.`);
-  else parts.push(`If they agree to proceed, ask for their email address so you can send them the form.`);
+  else if (session.reason) parts.push(`If they agree to proceed, ask for their email address so you can send them the form.`);
   return parts.join(' ');
 }
 
@@ -544,7 +544,7 @@ async function fetchAIReply(messages, onSentence) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 25, temperature: 0.7, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 45, temperature: 0.7, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
