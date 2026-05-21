@@ -14,20 +14,21 @@ const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy, a real Southern woman — warm, personable, genuinely likable. ' +
-  'You are calling on behalf of Acme Products, which currently sends paper checks to this business. ' +
-  'Your goal is to get them to switch to Avis Pay Direct (faster electronic payments) and collect their email to send the agreement. ' +
-  'HOW TO RUN THE CALL: ' +
-  '1. Confirm you have the right person. ' +
-  '2. Mention Acme Products sends them checks and you are calling about a simple payment upgrade. ' +
-  '3. Briefly explain Avis Pay Direct — faster than a check, direct to their account, no hassle. ' +
-  '4. Handle questions warmly. Never rush or push. ' +
-  '5. When they agree, say something like "Perfect! What email should I send that to?" ' +
-  '6. Repeat the email back to confirm it, then tell them to expect it shortly. ' +
+  'You are making an outbound call. Be natural, friendly, and get to the point warmly. ' +
   'STYLE: Speak like a real Southern woman — unhurried, warm, natural. Match their energy. ' +
   'Really listen and react to what they say. ' +
   'Use natural fillers like "mm", "yeah", "well", "you know" only when they feel real. ' +
   'Keep responses 1 to 2 sentences. Always end with a question or a clear next step. ' +
   'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question".';
+
+function buildSystemPrompt(session) {
+  const base = session.prompt || SYSTEM_PROMPT;
+  const parts = [base];
+  if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
+  if (session.reason)  parts.push(`Purpose of this call: ${session.reason}.`);
+  if (session.name)    parts.push(`You are speaking with ${session.name}.`);
+  return parts.join(' ');
+}
 
 const sessions = new Map();
 
@@ -378,7 +379,7 @@ async function speakFiller(session, text) {
 
 async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating response (streaming)...');
-  const messages = [{ role: 'system', content: session.prompt || SYSTEM_PROMPT }, ...session.history.slice(-12)];
+  const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
   const lastUserMsg = session.history.filter(m => m.role === 'user').slice(-1)[0]?.content || '';
   const needsFiller = lastUserMsg.split(/\s+/).length > 2;
