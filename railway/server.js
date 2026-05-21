@@ -662,9 +662,7 @@ function handleTwilioRealtime(ws) {
           type: 'server_vad',
           threshold: 0.5,
           prefix_padding_ms: 200,
-          silence_duration_ms: 500,
-          create_response: true,
-          interrupt_response: true
+          silence_duration_ms: 500
         }
       }
     };
@@ -688,7 +686,7 @@ function handleTwilioRealtime(ws) {
     greetInstruction += ' Keep it brief and natural — one or two sentences max.';
     openAiWs.send(JSON.stringify({
       type: 'response.create',
-      response: { output_modalities: ['audio'], instructions: greetInstruction }
+      response: { modalities: ['text', 'audio'], instructions: greetInstruction }
     }));
   }
 
@@ -727,11 +725,8 @@ function handleTwilioRealtime(ws) {
         }
 
         if (ev.type === 'input_audio_buffer.speech_stopped') {
-          if (!greeted) {
-            triggerGreeting();
-          } else {
-            openAiWs.send(JSON.stringify({ type: 'response.create', response: { output_modalities: ['audio'] } }));
-          }
+          if (!greeted) triggerGreeting();
+          // server_vad with auto turn detection handles response creation automatically
         }
 
         if (ev.type === 'response.audio.delta' && ev.delta) {
