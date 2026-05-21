@@ -249,12 +249,13 @@ function handleTwilio(ws) {
       const n = cp.n || '';
       const r = cp.r || '';
       const c = cp.c || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
       connectDeepgram(session);
-      setTimeout(() => sendGreeting(session), 800);
+      // Wait for prospect to say hello first; fallback greets after 4s if they stay silent
+      session.greetingTimer = setTimeout(() => sendGreeting(session), 4000);
     }
     if (msg.event === 'media' && session) {
       const dgState = session.dgWs?.readyState;
@@ -329,6 +330,13 @@ function connectDeepgram(session) {
         pushToBrowser(session, { event: 'email-captured', email: rawEmail });
       }
 
+      // Prospect said something before Brandy greeted — fire greeting immediately
+      if (session.state === 'greeting') {
+        clearTimeout(session.greetingTimer);
+        session.greetingTimer = null;
+        sendGreeting(session);
+        return;
+      }
       if (session.state === 'processing') { return; }
       if (session.state === 'speaking') {
         // Barge-in: customer interrupted — stop Brandy immediately
@@ -725,7 +733,11 @@ function pushToBrowser(session, data) {
   if (session.browserWs?.readyState === WebSocket.OPEN) session.browserWs.send(JSON.stringify(data));
 }
 
-function cleanup(session) { try { session.dgWs?.close(); } catch {} }
+function cleanup(session) {
+  clearTimeout(session.greetingTimer);
+  try { session.ttsAbort?.abort(); } catch {}
+  try { session.dgWs?.close(); } catch {}
+}
 
 // ── OPENAI REALTIME ──────────────────────────────────────────────
 function handleTwilioRealtime(ws) {
