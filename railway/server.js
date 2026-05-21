@@ -356,7 +356,7 @@ async function generateAndSpeak(session) {
   const messages = [{ role: 'system', content: session.prompt || SYSTEM_PROMPT }, ...session.history.slice(-12)];
   // Only play a filler for longer inputs that actually need thinking time
   const lastUserMsg = session.history.filter(m => m.role === 'user').slice(-1)[0]?.content || '';
-  const needsFiller = lastUserMsg.split(/\s+/).length > 4;
+  const needsFiller = lastUserMsg.split(/\s+/).length > 2;
   if (needsFiller) speakFiller(session, pickFiller()).catch(() => {});
   const reply = await callOpenAI(messages);
   if (!reply) { callLog(session.callSid, '[ai] no reply from OpenAI — back to listening'); session.state = 'listening'; return; }
@@ -410,7 +410,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 80, temperature: 0.7 }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -421,7 +421,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_flash_v2_5', apply_text_normalization: 'off',
-  voice_settings: { stability: 0.40, similarity_boost: 0.80, style: 0.30, use_speaker_boost: false, speed: 0.88 }
+  voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
