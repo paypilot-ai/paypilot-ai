@@ -325,7 +325,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=400';
+    '&interim_results=false&endpointing=200';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -605,7 +605,7 @@ async function streamTTS(session, text) {
     try {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 5000);
-      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
+      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000&optimize_streaming_latency=4`, {
         method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
         signal: ctrl.signal
@@ -615,7 +615,7 @@ async function streamTTS(session, text) {
       console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
       if (resp.ok) {
         elevenlabsBlocked = false;
-        await pipeToTwilio(session, resp, 'pcm16k');
+        await pipeToTwilio(session, resp, 'ulaw8k');
         return;
       }
       const errBody = await resp.text().catch(() => '');
