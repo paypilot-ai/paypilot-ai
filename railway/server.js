@@ -341,11 +341,28 @@ async function sendGreeting(session) {
   session.state = 'listening';
 }
 
+const FILLER_PHRASES = [
+  'Yeah, sure.', 'Oh, for sure.', 'Right, so...', 'Mm, let me think on that.',
+  'Yeah, I hear you.', 'Well now...', 'Mm-hmm.', 'Oh yeah.', 'Right, right.'
+];
+function pickFiller() { return FILLER_PHRASES[Math.floor(Math.random() * FILLER_PHRASES.length)]; }
+
+async function speakFiller(session, text) {
+  if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
+  try { await streamTTS(session, text); } catch (_) {}
+}
+
 async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating response...');
   const messages = [{ role: 'system', content: session.prompt || SYSTEM_PROMPT }, ...session.history.slice(-12)];
+  // Speak a filler immediately so there's no dead silence while OpenAI thinks
+  speakFiller(session, pickFiller()).catch(() => {});
   const reply = await callOpenAI(messages);
   if (!reply) { callLog(session.callSid, '[ai] no reply from OpenAI — back to listening'); session.state = 'listening'; return; }
+  // Clear the filler audio before playing the real response
+  if (session.twilioWs?.readyState === WebSocket.OPEN) {
+    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+  }
   callLog(session.callSid, '[ai] reply:', reply.slice(0, 80));
   session.history.push({ role: 'assistant', content: reply });
   pushToBrowser(session, { event: 'ai-response', text: reply });
