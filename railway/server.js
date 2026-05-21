@@ -25,8 +25,11 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   '[END] RULE: Only append [END] after both parties have fully said their goodbyes — like "bye now", "take care", "goodbye". NEVER use [END] in a greeting, opening line, or mid-conversation. Most calls will NOT end with [END]. ' +
   'BANNED WORDS: "Absolutely", "Certainly", "Of course", "Great question", "Definitely", "I understand", "I appreciate", "Fantastic".';
 
-function shouldEndCall(text) {
-  return text.toLowerCase().includes('[end]');
+function shouldEndCall(text, history) {
+  if (!text.toLowerCase().includes('[end]')) return false;
+  // Require at least 6 history entries (~3 exchanges) before allowing hangup
+  // Prevents AI from misfiring [END] on first response
+  return (history?.length ?? 0) >= 6;
 }
 function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
@@ -416,7 +419,7 @@ async function sendGreeting(session) {
   } catch (e) {
     callLog(session.callSid, '[greeting] tts error:', e.message);
   }
-  session.state = 'listening';
+  enterListening(session);
 }
 
 const FILLER_PHRASES = [
@@ -479,7 +482,7 @@ async function generateAndSpeak(session) {
   }
 
   // 4. End call check
-  if (shouldEndCall(fullReply)) {
+  if (shouldEndCall(fullReply, session.history)) {
     callLog(session.callSid, '[call] ending');
     pushToBrowser(session, { event: 'call-ended' });
     // Abort any early TTS that started mid-stream before we knew this was end-of-call
