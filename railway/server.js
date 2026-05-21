@@ -303,7 +303,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=300';
+    '&interim_results=false&endpointing=200';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -485,7 +485,7 @@ async function generateAndSpeak(session) {
   try {
     await streamTTS(session, fullReply);
     const markName = 'tts-' + Date.now();
-    if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
+    if (sendMark(session, markName)) await awaitMark(session, markName, 2000);
   } catch (_) {}
   enterListening(session);
 }
@@ -524,7 +524,7 @@ async function fetchAIReply(messages, onSentence) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 30, temperature: 0.7, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 25, temperature: 0.7, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -586,7 +586,7 @@ async function speakToTwilio(session, text) {
     await streamTTS(session, text);
   } catch (e) { callLog(session.callSid, '[tts] error:', e.message); }
   const markName = 'tts-' + Date.now();
-  if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
+  if (sendMark(session, markName)) await awaitMark(session, markName, 2000);
   enterListening(session);
 }
 
@@ -600,7 +600,7 @@ async function streamTTS(session, text) {
   if (ELEVENLABS_KEY) {
     try {
       const elTimeout = setTimeout(() => abort?.abort(), 8000);
-      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
+      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000&optimize_streaming_latency=4`, {
         method: 'POST',
         headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: prepared, ...ELEVENLABS_VOICE_SETTINGS }),
