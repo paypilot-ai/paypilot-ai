@@ -215,7 +215,7 @@ function handleTwilio(ws) {
       const prompt = n || r || c
         ? `${SYSTEM_PROMPT}\nCall context (DO NOT read this out — use it to guide the conversation naturally):\n- Person: ${n || 'unknown'}\n${c ? `- Company: ${c}\n` : ''}- Reason for call: ${r || 'general outreach'}\nBuild rapport first, then steer naturally toward the reason.`
         : SYSTEM_PROMPT;
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, state: 'greeting', history: [], prompt, name: n, company: c, reason: r };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, state: 'greeting', history: [], prompt, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
@@ -285,6 +285,16 @@ function connectDeepgram(session) {
       }
       callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
       pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
+
+      // Capture email address if spoken by prospect
+      const emailMatch = transcript.match(/\b[a-zA-Z0-9._%+\-]+\s*[@at]+\s*[a-zA-Z0-9.\-]+\s*\.\s*(?:com|net|org|edu|gov|io|co)\b/i);
+      if (emailMatch && !session.capturedEmail) {
+        const rawEmail = emailMatch[0].replace(/\s+/g, '').replace(/\bat\b/gi, '@');
+        session.capturedEmail = rawEmail;
+        callLog(session.callSid, '[email] captured:', rawEmail);
+        pushToBrowser(session, { event: 'email-captured', email: rawEmail });
+      }
+
       if (session.state !== 'listening') { callLog(session.callSid, '[dg] ignoring — not listening (state=' + session.state + ')'); return; }
       session.state = 'processing';
       session.history.push({ role: 'user', content: transcript });
@@ -332,6 +342,31 @@ async function generateAndSpeak(session) {
   session.history.push({ role: 'assistant', content: reply });
   pushToBrowser(session, { event: 'ai-response', text: reply });
   await speakToTwilio(session, reply);
+
+  // Auto-send DocuSign if we just captured an email and haven't sent yet
+  if (session.capturedEmail && !session.docuSignSent) {
+    session.docuSignSent = true;
+    callLog(session.callSid, '[docusign] sending agreement to', session.capturedEmail);
+    try {
+      await fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: session.name || '',
+          customerEmail: session.capturedEmail,
+          callReason: 'switching from paper checks to Avis Pay Direct',
+          subject: 'Your Avis Pay Direct Agreement — Please Review & Sign',
+          message: `Hi${session.name ? ' ' + session.name : ''},\n\nThank you for speaking with Brandy today! As discussed, please review and sign your Avis Pay Direct agreement using the link below.\n\nIf you have any questions, feel free to reply to this email.`,
+          docuSignLink: 'https://www.docusign.com'
+        })
+      });
+      callLog(session.callSid, '[docusign] sent successfully');
+      pushToBrowser(session, { event: 'docusign-sent', email: session.capturedEmail });
+    } catch (e) {
+      callLog(session.callSid, '[docusign] send failed:', e.message);
+    }
+  }
+
   session.state = 'listening';
 }
 
