@@ -426,7 +426,7 @@ function prepareForSpeech(text) {
     .replace(/([^.!?])$/, '$1.');
 }
 
-// Stream OpenAI response and speak each sentence to Twilio as it arrives
+// Collect full OpenAI reply via streaming (faster text delivery), then speak in one TTS call
 async function streamOpenAIAndSpeak(session, messages) {
   try {
     const ctrl = new AbortController();
@@ -439,24 +439,11 @@ async function streamOpenAIAndSpeak(session, messages) {
     });
     clearTimeout(t);
     if (!resp.ok) return null;
-    if (session.twilioWs?.readyState === WebSocket.OPEN) {
-      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-    }
-    session.state = 'speaking';
 
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
     let buf = '';
     let fullText = '';
-
-    const flushSentence = async (sentence) => {
-      sentence = sentence.trim();
-      if (!sentence || session.twilioWs?.readyState !== WebSocket.OPEN) return;
-      callLog(session.callSid, '[ai] sentence:', sentence);
-      pushToBrowser(session, { event: 'ai-speaking', text: sentence });
-      await streamTTS(session, sentence);
-    };
-
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -468,21 +455,22 @@ async function streamOpenAIAndSpeak(session, messages) {
         const data = line.slice(6);
         if (data === '[DONE]') break;
         try {
-          const chunk = JSON.parse(data);
-          const token = chunk.choices?.[0]?.delta?.content;
-          if (!token) continue;
-          fullText += token;
-          const sentenceEnd = fullText.search(/[.!?]\s/);
-          if (sentenceEnd !== -1) {
-            await flushSentence(fullText.slice(0, sentenceEnd + 1));
-            fullText = fullText.slice(sentenceEnd + 2);
-          }
+          const token = JSON.parse(data).choices?.[0]?.delta?.content;
+          if (token) fullText += token;
         } catch {}
       }
     }
-    if (fullText.trim()) await flushSentence(fullText);
+    fullText = fullText.trim();
+    if (!fullText) return null;
 
-    // Reconnect Deepgram fresh and wait for Twilio to finish playing
+    // Clear filler and speak entire reply as one continuous TTS call (no mid-sentence gaps)
+    if (session.twilioWs?.readyState === WebSocket.OPEN) {
+      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+    }
+    session.state = 'speaking';
+    pushToBrowser(session, { event: 'ai-speaking', text: fullText });
+    await streamTTS(session, fullText);
+
     try { session.dgWs?.terminate(); } catch {}
     session.dgWs = null;
     session.dgReconnecting = true;
@@ -490,7 +478,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     const markName = 'tts-' + Date.now();
     if (sendMark(session, markName)) await awaitMark(session, markName, 10000);
 
-    return fullText || null;
+    return fullText;
   } catch (e) {
     callLog(session.callSid, '[ai] stream error:', e.message);
     return null;
