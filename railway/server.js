@@ -579,7 +579,7 @@ async function streamTTS(session, text) {
         body: JSON.stringify({
           text: prepareForSpeech(text),
           model_id: 'eleven_flash_v2_5',
-          voice_settings: { stability: 0.45, similarity_boost: 0.80, style: 0.35, use_speaker_boost: false, speed: 0.92 }
+          voice_settings: { stability: 0.30, similarity_boost: 0.80, style: 0.50, use_speaker_boost: false, speed: 0.82 }
         }),
         signal: ctrl.signal
       });
