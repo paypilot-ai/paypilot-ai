@@ -228,7 +228,7 @@ function handleTwilio(ws) {
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
       connectDeepgram(session);
-      setTimeout(() => sendGreeting(session), 700);
+      setTimeout(() => sendGreeting(session), 2500);
     }
     if (msg.event === 'media' && session && session.state === 'listening') {
       const dgState = session.dgWs?.readyState;
@@ -403,7 +403,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_flash_v2_5', apply_text_normalization: 'off',
-  voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: true, speed: 0.86 }
+  voice_settings: { stability: 0.40, similarity_boost: 0.80, style: 0.30, use_speaker_boost: false, speed: 0.88 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
