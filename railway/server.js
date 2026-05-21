@@ -97,7 +97,7 @@ app.all('/twiml-stream', (req, res) => {
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
   console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'method:', req.method);
-  const wsUrl = `wss://${host}/twilio-realtime`;
+  const wsUrl = `wss://${host}/twilio`;
   // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
   const paramXml = [
     n ? `<Parameter name="n" value="${xmlEsc(n)}"/>` : '',
@@ -377,22 +377,20 @@ async function speakFiller(session, text) {
 }
 
 async function generateAndSpeak(session) {
-  callLog(session.callSid, '[ai] generating response...');
+  callLog(session.callSid, '[ai] generating response (streaming)...');
   const messages = [{ role: 'system', content: session.prompt || SYSTEM_PROMPT }, ...session.history.slice(-12)];
-  // Only play a filler for longer inputs that actually need thinking time
+
   const lastUserMsg = session.history.filter(m => m.role === 'user').slice(-1)[0]?.content || '';
   const needsFiller = lastUserMsg.split(/\s+/).length > 2;
   if (needsFiller) speakFiller(session, pickFiller()).catch(() => {});
-  const reply = await callOpenAI(messages);
-  if (!reply) { callLog(session.callSid, '[ai] no reply from OpenAI — back to listening'); session.state = 'listening'; return; }
-  // Clear the filler audio before playing the real response
-  if (session.twilioWs?.readyState === WebSocket.OPEN) {
-    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-  }
-  callLog(session.callSid, '[ai] reply:', reply.slice(0, 80));
-  session.history.push({ role: 'assistant', content: reply });
-  pushToBrowser(session, { event: 'ai-response', text: reply });
-  await speakToTwilio(session, reply);
+
+  // Stream OpenAI and speak each sentence as it arrives — first audio starts ~400ms sooner
+  const fullReply = await streamOpenAIAndSpeak(session, messages);
+  if (!fullReply) { session.state = 'listening'; return; }
+
+  callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
+  session.history.push({ role: 'assistant', content: fullReply });
+  pushToBrowser(session, { event: 'ai-response', text: fullReply });
 
   // Auto-send DocuSign if we just captured an email and haven't sent yet
   if (session.capturedEmail && !session.docuSignSent) {
@@ -428,6 +426,78 @@ function prepareForSpeech(text) {
     .replace(/([^.!?])$/, '$1.');
 }
 
+// Stream OpenAI response and speak each sentence to Twilio as it arrives
+async function streamOpenAIAndSpeak(session, messages) {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7, stream: true }),
+      signal: ctrl.signal
+    });
+    clearTimeout(t);
+    if (!resp.ok) return null;
+
+    if (session.twilioWs?.readyState === WebSocket.OPEN) {
+      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+    }
+    session.state = 'speaking';
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let fullText = '';
+
+    const flushSentence = async (sentence) => {
+      sentence = sentence.trim();
+      if (!sentence || session.twilioWs?.readyState !== WebSocket.OPEN) return;
+      callLog(session.callSid, '[ai] sentence:', sentence);
+      pushToBrowser(session, { event: 'ai-speaking', text: sentence });
+      await streamTTS(session, sentence);
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6);
+        if (data === '[DONE]') break;
+        try {
+          const chunk = JSON.parse(data);
+          const token = chunk.choices?.[0]?.delta?.content;
+          if (!token) continue;
+          fullText += token;
+          const sentenceEnd = fullText.search(/[.!?]\s/);
+          if (sentenceEnd !== -1) {
+            await flushSentence(fullText.slice(0, sentenceEnd + 1));
+            fullText = fullText.slice(sentenceEnd + 2);
+          }
+        } catch {}
+      }
+    }
+    if (fullText.trim()) await flushSentence(fullText);
+
+    // Reconnect Deepgram fresh and wait for Twilio to finish playing
+    try { session.dgWs?.terminate(); } catch {}
+    session.dgWs = null;
+    session.dgReconnecting = true;
+    connectDeepgram(session);
+    const markName = 'tts-' + Date.now();
+    if (sendMark(session, markName)) await awaitMark(session, markName, 10000);
+
+    return fullText || null;
+  } catch (e) {
+    callLog(session.callSid, '[ai] stream error:', e.message);
+    return null;
+  }
+}
+
 async function callOpenAI(messages) {
   try {
     const ctrl = new AbortController();
@@ -435,7 +505,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 40, temperature: 0.7 }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
