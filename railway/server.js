@@ -12,6 +12,7 @@ const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
+const FORM_LINK         = process.env.FORM_LINK || '';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy — a real Southern woman making an outbound sales call. You grew up in Georgia. ' +
   'You talk the way Southern women actually talk: easy, warm, a little drawly. You take your time. You listen. ' +
@@ -461,8 +462,9 @@ async function generateAndSpeak(session) {
   session.history.push({ role: 'assistant', content: fullReply });
   pushToBrowser(session, { event: 'ai-response', text: fullReply });
 
-  // 3. DocuSign auto-send
-  if (session.capturedEmail && !session.docuSignSent) {
+  // 3. Form auto-send — only when Brandy mentions sending/the form, and we have email + link
+  const mentionsForm = /\b(send|sending|sent|email|form|agreement|link|right now|on its way)\b/i.test(fullReply);
+  if (session.capturedEmail && !session.docuSignSent && mentionsForm && FORM_LINK) {
     session.docuSignSent = true;
     fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
       method: 'POST',
@@ -471,14 +473,14 @@ async function generateAndSpeak(session) {
         customerName: session.name || '',
         customerEmail: session.capturedEmail,
         callReason: session.reason || 'follow-up call',
-        subject: 'Your Agreement — Please Review & Sign',
-        message: `Hi${session.name ? ' ' + session.name : ''},\n\nThank you for speaking with Brandy today! Please review and sign your agreement using the link below.\n\nIf you have any questions, feel free to reply to this email.`,
-        docuSignLink: 'https://www.docusign.com'
+        subject: 'Your Form — Please Review',
+        message: `Hi${session.name ? ' ' + session.name : ''},\n\nAs discussed, here is the form Brandy mentioned. Please review it at your convenience.\n\nIf you have any questions, feel free to reply to this email.`,
+        docuSignLink: FORM_LINK
       })
     }).then(() => {
-      callLog(session.callSid, '[docusign] sent');
+      callLog(session.callSid, '[form] sent to', session.capturedEmail);
       pushToBrowser(session, { event: 'docusign-sent', email: session.capturedEmail });
-    }).catch(e => callLog(session.callSid, '[docusign] failed:', e.message));
+    }).catch(e => callLog(session.callSid, '[form] failed:', e.message));
   }
 
   // 4. End call check
