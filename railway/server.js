@@ -410,47 +410,65 @@ async function speakFiller(session, text) {
 }
 
 async function generateAndSpeak(session) {
-  callLog(session.callSid, '[ai] generating response (streaming)...');
+  callLog(session.callSid, '[ai] generating...');
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
-  const fullReply = await streamOpenAIAndSpeak(session, messages);
+  // 1. Get AI text
+  const fullReply = await fetchAIReply(messages);
   if (!fullReply) { enterListening(session); return; }
 
   callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
+
+  // 2. Save to history BEFORE speaking — so barge-in doesn't corrupt history
   session.history.push({ role: 'assistant', content: fullReply });
   pushToBrowser(session, { event: 'ai-response', text: fullReply });
 
-  // Auto-send DocuSign if we just captured an email and haven't sent yet
+  // 3. DocuSign auto-send
   if (session.capturedEmail && !session.docuSignSent) {
     session.docuSignSent = true;
-    callLog(session.callSid, '[docusign] sending agreement to', session.capturedEmail);
-    try {
-      await fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: session.name || '',
-          customerEmail: session.capturedEmail,
-          callReason: session.reason || 'follow-up call',
-          subject: 'Your Agreement — Please Review & Sign',
-          message: `Hi${session.name ? ' ' + session.name : ''},\n\nThank you for speaking with Brandy today! Please review and sign your agreement using the link below.\n\nIf you have any questions, feel free to reply to this email.`,
-          docuSignLink: 'https://www.docusign.com'
-        })
-      });
-      callLog(session.callSid, '[docusign] sent successfully');
+    fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName: session.name || '',
+        customerEmail: session.capturedEmail,
+        callReason: session.reason || 'follow-up call',
+        subject: 'Your Agreement — Please Review & Sign',
+        message: `Hi${session.name ? ' ' + session.name : ''},\n\nThank you for speaking with Brandy today! Please review and sign your agreement using the link below.\n\nIf you have any questions, feel free to reply to this email.`,
+        docuSignLink: 'https://www.docusign.com'
+      })
+    }).then(() => {
+      callLog(session.callSid, '[docusign] sent');
       pushToBrowser(session, { event: 'docusign-sent', email: session.capturedEmail });
-    } catch (e) {
-      callLog(session.callSid, '[docusign] send failed:', e.message);
-    }
+    }).catch(e => callLog(session.callSid, '[docusign] failed:', e.message));
   }
 
+  // 4. End call check
   if (shouldEndCall(fullReply)) {
-    callLog(session.callSid, '[call] ending call — farewell detected');
+    callLog(session.callSid, '[call] ending');
     pushToBrowser(session, { event: 'call-ended' });
-    setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 500);
+    const stripped = prepareForSpeech(fullReply);
+    session.state = 'speaking';
+    session.ttsAbort = new AbortController();
+    try { await streamTTS(session, stripped); } catch (_) {}
+    setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 1000);
     return;
   }
 
+  // 5. Speak reply
+  session.state = 'speaking';
+  session.ttsAbort = new AbortController();
+  if (session.twilioWs?.readyState === WebSocket.OPEN) {
+    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+  }
+  pushToBrowser(session, { event: 'ai-speaking', text: fullReply });
+  try {
+    await streamTTS(session, fullReply);
+    const markName = 'tts-' + Date.now();
+    if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
+  } catch (_) {
+    // TTS failed or was interrupted — history already saved, just move on
+  }
   enterListening(session);
 }
 
@@ -479,8 +497,7 @@ function prepareForSpeech(text) {
     .trim();
 }
 
-// Collect full OpenAI reply via streaming, then speak as one continuous TTS call
-async function streamOpenAIAndSpeak(session, messages) {
+async function fetchAIReply(messages) {
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
@@ -492,80 +509,29 @@ async function streamOpenAIAndSpeak(session, messages) {
     });
     clearTimeout(t);
     if (!resp.ok) return null;
-
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
-    let buf = '';
-    let fullText = '';
+    let buf = '', fullText = '';
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       buf += decoder.decode(value, { stream: true });
-      const lines = buf.split('\n');
-      buf = lines.pop();
+      const lines = buf.split('\n'); buf = lines.pop();
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6);
-        if (data === '[DONE]') break;
-        try {
-          const token = JSON.parse(data).choices?.[0]?.delta?.content;
-          if (token) fullText += token;
-        } catch {}
+        const d = line.slice(6);
+        if (d === '[DONE]') break;
+        try { const tok = JSON.parse(d).choices?.[0]?.delta?.content; if (tok) fullText += tok; } catch {}
       }
     }
-    fullText = fullText.trim();
-    if (!fullText) return null;
-
-    if (session.twilioWs?.readyState === WebSocket.OPEN) {
-      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-    }
-    session.state = 'speaking';
-    pushToBrowser(session, { event: 'ai-speaking', text: fullText });
-    await streamTTS(session, fullText);
-
-    const markName = 'tts-' + Date.now();
-    if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
-
-    return fullText;
-  } catch (e) {
-    callLog(session.callSid, '[ai] stream error:', e.message);
-    return null;
-  }
-}
-
-async function callOpenAI(messages) {
-  try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 6000);
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7 }),
-      signal: ctrl.signal
-    });
-    clearTimeout(t);
-    const data = await resp.json();
-    return data.choices?.[0]?.message?.content?.trim() || null;
-  } catch (e) { console.error('[openai] error:', e.message); return null; }
+    return fullText.trim() || null;
+  } catch (e) { callLog('?', '[ai] fetch error:', e.message); return null; }
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_flash_v2_5',
   voice_settings: { stability: 0.50, similarity_boost: 0.85, style: 0.30, use_speaker_boost: false, speed: 0.75 }
 };
-
-// Reset after 5 minutes so a newly-paid account recovers automatically
-let elevenlabsBlocked = false;
-let elevenlabsBlockedAt = 0;
-function isElevenlabsBlocked() {
-  if (!elevenlabsBlocked) return false;
-  if (Date.now() - elevenlabsBlockedAt > 5 * 60 * 1000) {
-    elevenlabsBlocked = false;
-    console.log('[elevenlabs] retry window elapsed — unblocking');
-    return false;
-  }
-  return true;
-}
 
 function sendMark(session, name) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return false;
@@ -583,55 +549,57 @@ function awaitMark(session, name, ms = 10000) {
 async function speakToTwilio(session, text) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
   session.state = 'speaking';
+  session.ttsAbort = new AbortController();
   callLog(session.callSid, '[tts] speaking:', text.slice(0, 60));
   pushToBrowser(session, { event: 'ai-speaking', text });
   try {
     await streamTTS(session, text);
   } catch (e) { callLog(session.callSid, '[tts] error:', e.message); }
-  // Wait for Twilio to confirm audio is done — keep Deepgram alive throughout
   const markName = 'tts-' + Date.now();
   if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
   enterListening(session);
 }
 
 async function streamTTS(session, text) {
-  session.ttsAbort = new AbortController();
+  // session.ttsAbort is set by the caller before invoking this function
   const abort = session.ttsAbort;
+  if (abort?.signal.aborted) return;
 
-  if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
+  const prepared = prepareForSpeech(text);
+
+  if (ELEVENLABS_KEY) {
     try {
-      const t = setTimeout(() => abort.abort(), 5000);
+      const t = setTimeout(() => abort?.abort(), 6000);
       const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
-        method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
-        signal: abort.signal
+        method: 'POST',
+        headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: prepared, ...ELEVENLABS_VOICE_SETTINGS }),
+        signal: abort?.signal
       });
       clearTimeout(t);
+      if (abort?.signal.aborted) return; // barge-in during fetch
       console.log(`[elevenlabs] status=${resp.status}`);
       if (resp.ok) {
-        elevenlabsBlocked = false;
         await pipeToTwilio(session, resp, 'pcm16k');
         return;
       }
-      const errBody = await resp.text().catch(() => '');
-      console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
-      elevenlabsBlocked = true; elevenlabsBlockedAt = Date.now();
+      console.log('[elevenlabs] non-ok, falling back to OpenAI TTS');
     } catch (e) {
-      if (abort.signal.aborted && e.name === 'AbortError') throw e; // barge-in — don't block EL
-      elevenlabsBlocked = true; elevenlabsBlockedAt = Date.now();
-      console.log('[elevenlabs] failed:', e.message);
+      if (abort?.signal.aborted) return; // interrupted — stop cleanly, no fallback
+      console.log('[elevenlabs] error:', e.message, '— falling back to OpenAI TTS');
     }
   }
 
-  if (abort.signal.aborted) throw new Error('tts aborted');
-  const t = setTimeout(() => abort.abort(), 12000);
+  if (abort?.signal.aborted) return;
+  const t2 = setTimeout(() => abort?.abort(), 12000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) }),
-    signal: abort.signal
+    body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepared }),
+    signal: abort?.signal
   });
-  clearTimeout(t);
+  clearTimeout(t2);
+  if (abort?.signal.aborted) return;
   if (!resp.ok) throw new Error(`OpenAI TTS ${resp.status}`);
   await pipeToTwilio(session, resp, 'pcm24k');
 }
