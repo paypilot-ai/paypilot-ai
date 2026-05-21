@@ -19,7 +19,7 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are genuinely charming, a little flirty but always professional. You make people feel like they\'re talking to a friend who happens to be calling about something. ' +
   'HOW YOU SPEAK: ' +
   'Short responses — one or two sentences max. Never lecture. Never list things. ' +
-  'Use natural pauses and filler the way real people do: "well...", "now...", "I mean...". ' +
+  'Start your reply with a very short natural reaction when it fits — "Well...", "Yeah,", "Mm,", "Now...", "Shoot," — but only sometimes, not every time. ' +
   'React to exactly what they just said. Mirror their energy — if they\'re warm, be warm. If they\'re short, be quick and respectful. ' +
   'If they push back or say not interested — acknowledge it warmly, try once more from a different angle. Never give up on the first no. ' +
   'When the call is truly done and goodbyes are exchanged, end your final message with [END]. ' +
@@ -423,13 +423,9 @@ async function generateAndSpeak(session) {
     session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
   }
 
-  // 1. Filler + AI in parallel — filler plays while AI generates, hiding latency
-  const [fullReply] = await Promise.all([
-    fetchAIReply(messages),
-    speakFiller(session, pickFiller())
-  ]);
-
-  if (session.bargedIn) return; // user interrupted during filler
+  // 1. Get AI reply
+  const fullReply = await fetchAIReply(messages);
+  if (session.bargedIn) return;
   if (!fullReply) { enterListening(session); return; }
 
   callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
