@@ -439,7 +439,6 @@ async function streamOpenAIAndSpeak(session, messages) {
     });
     clearTimeout(t);
     if (!resp.ok) return null;
-
     if (session.twilioWs?.readyState === WebSocket.OPEN) {
       session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
     }
@@ -660,7 +659,8 @@ function pcm24ToMulaw(samples) {
   const BIAS = 0x84, CLIP = 32635;
   const out = Buffer.allocUnsafe(Math.floor(samples.length / 3));
   for (let i = 0; i < out.length; i++) {
-    let s = samples[i * 3];
+    // Average 3 samples (box filter) instead of dropping 2 — eliminates aliasing/robot sound
+    let s = Math.round((samples[i * 3] + (samples[i * 3 + 1] || 0) + (samples[i * 3 + 2] || 0)) / 3);
     const sign = s < 0 ? 0x80 : 0;
     if (sign) s = -s;
     if (s > CLIP) s = CLIP;
