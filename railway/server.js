@@ -254,8 +254,8 @@ function handleTwilio(ws) {
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
       connectDeepgram(session);
-      // Wait for prospect to say hello first; fallback greets after 4s if they stay silent
-      session.greetingTimer = setTimeout(() => sendGreeting(session), 4000);
+      // Wait for prospect to say hello first; fallback greets after 2s if they stay silent
+      session.greetingTimer = setTimeout(() => sendGreeting(session), 2000);
     }
     if (msg.event === 'media' && session) {
       const dgState = session.dgWs?.readyState;
@@ -312,6 +312,16 @@ function connectDeepgram(session) {
       const result = JSON.parse(data);
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       if (!transcript || !result.is_final) return;
+
+      // Any speech triggers the greeting — check before noise filter
+      if (session.state === 'greeting') {
+        callLog(session.callSid, '[dg] prospect spoke — greeting now:', transcript);
+        clearTimeout(session.greetingTimer);
+        session.greetingTimer = null;
+        sendGreeting(session);
+        return;
+      }
+
       const words = transcript.split(/\s+/).filter(Boolean);
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
       if (words.length < 2 || NOISE_ONLY.test(transcript)) {
@@ -330,13 +340,6 @@ function connectDeepgram(session) {
         pushToBrowser(session, { event: 'email-captured', email: rawEmail });
       }
 
-      // Prospect said something before Brandy greeted — fire greeting immediately
-      if (session.state === 'greeting') {
-        clearTimeout(session.greetingTimer);
-        session.greetingTimer = null;
-        sendGreeting(session);
-        return;
-      }
       if (session.state === 'processing') { return; }
       if (session.state === 'speaking') {
         // Barge-in: customer interrupted — stop Brandy immediately
@@ -548,7 +551,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_flash_v2_5',
-  voice_settings: { stability: 0.45, similarity_boost: 0.85, style: 0.35, use_speaker_boost: false, speed: 0.90 }
+  voice_settings: { stability: 0.50, similarity_boost: 0.85, style: 0.30, use_speaker_boost: false, speed: 0.75 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
