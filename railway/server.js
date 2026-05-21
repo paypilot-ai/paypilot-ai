@@ -249,7 +249,7 @@ function handleTwilio(ws) {
       const n = cp.n || '';
       const r = cp.r || '';
       const c = cp.c || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
@@ -347,8 +347,8 @@ function connectDeepgram(session) {
         if (session.twilioWs?.readyState === WebSocket.OPEN) {
           session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
         }
+        session.bargedIn = true;
         session.ttsAbort?.abort();
-        // Unblock awaitMark so the speaking loop exits immediately
         for (const resolve of Object.values(session.markResolvers)) resolve();
         session.markResolvers = {};
         session.pendingTranscript = transcript;
@@ -457,6 +457,7 @@ async function generateAndSpeak(session) {
 
   // 5. Speak reply
   session.state = 'speaking';
+  session.bargedIn = false;
   session.ttsAbort = new AbortController();
   if (session.twilioWs?.readyState === WebSocket.OPEN) {
     session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
@@ -530,7 +531,7 @@ async function fetchAIReply(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_flash_v2_5',
-  voice_settings: { stability: 0.50, similarity_boost: 0.85, style: 0.30, use_speaker_boost: false, speed: 0.75 }
+  voice_settings: { stability: 0.55, similarity_boost: 0.70, style: 0.15, use_speaker_boost: false, speed: 0.78 }
 };
 
 function sendMark(session, name) {
@@ -569,28 +570,28 @@ async function streamTTS(session, text) {
 
   if (ELEVENLABS_KEY) {
     try {
-      const t = setTimeout(() => abort?.abort(), 6000);
+      const elTimeout = setTimeout(() => abort?.abort(), 8000);
       const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
         method: 'POST',
         headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: prepared, ...ELEVENLABS_VOICE_SETTINGS }),
         signal: abort?.signal
       });
-      clearTimeout(t);
-      if (abort?.signal.aborted) return; // barge-in during fetch
+      clearTimeout(elTimeout);
+      if (session.bargedIn) return; // interrupted during fetch — stop cleanly
       console.log(`[elevenlabs] status=${resp.status}`);
       if (resp.ok) {
         await pipeToTwilio(session, resp, 'pcm16k');
         return;
       }
-      console.log('[elevenlabs] non-ok, falling back to OpenAI TTS');
+      console.log('[elevenlabs] non-ok — falling back to OpenAI TTS');
     } catch (e) {
-      if (abort?.signal.aborted) return; // interrupted — stop cleanly, no fallback
-      console.log('[elevenlabs] error:', e.message, '— falling back to OpenAI TTS');
+      if (session.bargedIn) return; // barge-in — stop cleanly, don't fall through
+      console.log('[elevenlabs] timeout/error:', e.message, '— falling back to OpenAI TTS');
     }
   }
 
-  if (abort?.signal.aborted) return;
+  if (session.bargedIn) return;
   const t2 = setTimeout(() => abort?.abort(), 12000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
