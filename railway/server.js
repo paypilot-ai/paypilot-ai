@@ -296,44 +296,64 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=500';
+    '&interim_results=true&utterance_end_ms=1000&vad_events=true';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
+  session.dgTranscriptBuf = '';
+
   dg.on('open', () => {
     if (session.dgWs !== dg) return;
     callLog(session.callSid, '[dg] connected');
     session.dgReconnecting = false;
   });
+
   dg.on('message', async (data) => {
     if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
-      const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
-      if (!transcript || !result.is_final) return;
-      const words = transcript.split(/\s+/).filter(Boolean);
-      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
-      if (words.length < 1 || NOISE_ONLY.test(transcript)) {
-        callLog(session.callSid, '[dg] filtered noise:', transcript);
+
+      // Accumulate final transcript chunks as user speaks
+      if (result.type === 'Results') {
+        const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
+        if (!transcript) return;
+        if (result.is_final) {
+          session.dgTranscriptBuf = (session.dgTranscriptBuf + ' ' + transcript).trim();
+        }
+        // Show interim transcripts in browser for live display
+        if (!result.is_final) {
+          pushToBrowser(session, { event: 'transcript-interim', speaker: 'prospect', text: transcript });
+        }
         return;
       }
-      callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
-      pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
 
-      // Capture email address if spoken by prospect
-      const emailMatch = transcript.match(/\b[a-zA-Z0-9._%+\-]+\s*[@at]+\s*[a-zA-Z0-9.\-]+\s*\.\s*(?:com|net|org|edu|gov|io|co)\b/i);
-      if (emailMatch && !session.capturedEmail) {
-        const rawEmail = emailMatch[0].replace(/\s+/g, '').replace(/\bat\b/gi, '@');
-        session.capturedEmail = rawEmail;
-        callLog(session.callSid, '[email] captured:', rawEmail);
-        pushToBrowser(session, { event: 'email-captured', email: rawEmail });
+      // UtteranceEnd = natural end of turn — now respond
+      if (result.type === 'UtteranceEnd') {
+        const transcript = session.dgTranscriptBuf.trim();
+        session.dgTranscriptBuf = '';
+        if (!transcript) return;
+
+        const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+)\s*[.?!]?$/i;
+        if (transcript.split(/\s+/).length < 1 || NOISE_ONLY.test(transcript)) return;
+
+        callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
+        pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
+
+        const emailMatch = transcript.match(/\b[a-zA-Z0-9._%+\-]+\s*[@at]+\s*[a-zA-Z0-9.\-]+\s*\.\s*(?:com|net|org|edu|gov|io|co)\b/i);
+        if (emailMatch && !session.capturedEmail) {
+          const rawEmail = emailMatch[0].replace(/\s+/g, '').replace(/\bat\b/gi, '@');
+          session.capturedEmail = rawEmail;
+          callLog(session.callSid, '[email] captured:', rawEmail);
+          pushToBrowser(session, { event: 'email-captured', email: rawEmail });
+        }
+
+        if (session.state !== 'listening') { callLog(session.callSid, '[dg] ignoring — state=' + session.state); return; }
+        session.state = 'processing';
+        session.history.push({ role: 'user', content: transcript });
+        await generateAndSpeak(session);
       }
-
-      if (session.state !== 'listening') { callLog(session.callSid, '[dg] ignoring — not listening (state=' + session.state + ')'); return; }
-      session.state = 'processing';
-      session.history.push({ role: 'user', content: transcript });
-      await generateAndSpeak(session);
     } catch (e) { callLog(session.callSid, '[dg] message error:', e.message); }
   });
+
   dg.on('unexpected-response', (req, res) => {
     let body = '';
     res.on('data', d => body += d);
