@@ -5183,7 +5183,8 @@ async function startAiCall(){
     const resp = await fetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail })
+      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail }),
+      signal: AbortSignal.timeout(15000)
     });
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Call failed');
@@ -5212,9 +5213,13 @@ async function startAiCall(){
     startEmailPolling(data.callSid);
 
   } catch(e) {
-    toast('AI call failed: ' + e.message);
+    const msg = e.name === 'TimeoutError' ? 'Request timed out — check your connection and try again.' : e.message;
+    toast('AI call failed: ' + msg);
     btn.disabled = false;
     btn.textContent = '🤖 Launch AI Call';
+    document.getElementById('callHud').style.display = 'none';
+    document.getElementById('aiCallerFormCard').style.display = 'block';
+    window.aiCallActive = false;
   }
 }
 
