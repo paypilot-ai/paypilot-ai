@@ -11,7 +11,7 @@ const wss = new WebSocketServer({ noServer: true });
 const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
+const ELEVENLABS_VOICE  = 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy, a real Southern woman — warm, personable, genuinely likable. ' +
   'You are calling on behalf of Acme Products, which currently sends paper checks to this business. ' +
@@ -569,6 +569,34 @@ async function speakToTwilio(session, text) {
 }
 
 async function streamTTS(session, text) {
+  if (ELEVENLABS_KEY) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 5000);
+      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
+        method: 'POST',
+        headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: prepareForSpeech(text),
+          model_id: 'eleven_flash_v2_5',
+          voice_settings: { stability: 0.45, similarity_boost: 0.80, style: 0.35, use_speaker_boost: false, speed: 0.92 }
+        }),
+        signal: ctrl.signal
+      });
+      clearTimeout(t);
+      const ct = resp.headers.get('content-type') || '';
+      console.log(`[elevenlabs] status=${resp.status} ct=${ct}`);
+      if (resp.ok && ct.includes('audio')) {
+        await pipeToTwilio(session, resp, 'pcm16k');
+        return;
+      }
+      const err = await resp.text().catch(() => '');
+      console.log('[elevenlabs] error:', err.slice(0, 200));
+    } catch (e) {
+      console.log('[elevenlabs] failed:', e.message, '— falling back to OpenAI TTS');
+    }
+  }
+  // Fallback: OpenAI TTS
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 10000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
