@@ -32,7 +32,7 @@ function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
   const parts = [base];
   if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
-  if (session.reason)  parts.push(`Background context for this call (use this to guide the conversation, don't recite it): ${session.reason}.`);
+  if (session.reason)  parts.push(`PURPOSE OF THIS CALL: ${session.reason}. This is why you are calling — weave it naturally into the conversation and keep coming back to it.`);
   if (session.name)    parts.push(`You are speaking with ${session.name}.`);
   return parts.join(' ');
 }
@@ -413,10 +413,23 @@ async function speakFiller(session, text) {
 
 async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating...');
-  const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
+  const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-6)];
 
-  // 1. Get AI text
-  const fullReply = await fetchAIReply(messages);
+  // Enter speaking state immediately so barge-in works during filler
+  session.state = 'speaking';
+  session.bargedIn = false;
+  session.ttsAbort = new AbortController();
+  if (session.twilioWs?.readyState === WebSocket.OPEN) {
+    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+  }
+
+  // 1. Filler + AI in parallel — filler plays while AI generates, hiding latency
+  const [fullReply] = await Promise.all([
+    fetchAIReply(messages),
+    speakFiller(session, pickFiller())
+  ]);
+
+  if (session.bargedIn) return; // user interrupted during filler
   if (!fullReply) { enterListening(session); return; }
 
   callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
@@ -450,20 +463,15 @@ async function generateAndSpeak(session) {
     callLog(session.callSid, '[call] ending');
     pushToBrowser(session, { event: 'call-ended' });
     const stripped = prepareForSpeech(fullReply);
-    session.state = 'speaking';
     session.ttsAbort = new AbortController();
     try { await streamTTS(session, stripped); } catch (_) {}
     setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 1000);
     return;
   }
 
-  // 5. Speak reply
-  session.state = 'speaking';
+  // 5. Speak reply — refresh abort controller (filler may have used the previous one)
   session.bargedIn = false;
   session.ttsAbort = new AbortController();
-  if (session.twilioWs?.readyState === WebSocket.OPEN) {
-    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-  }
   pushToBrowser(session, { event: 'ai-speaking', text: fullReply });
   try {
     await streamTTS(session, fullReply);
