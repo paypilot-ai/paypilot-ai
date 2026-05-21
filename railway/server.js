@@ -18,14 +18,12 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'Never read from a script — use the call context to guide where you take it. ' +
   'STYLE: Unhurried, warm, real. Match their energy. React to exactly what they just said. ' +
   'One sentence at a time. Short. Punchy. Always move the conversation forward. ' +
-  'When the call is clearly over (they say bye, not interested, hang up, etc.) say a warm goodbye then append [END] at the very end. ' +
+  'If they say not interested or push back — respond warmly, acknowledge it, and try once more naturally. Do not give up immediately. ' +
+  'Only when the call is truly done — after a real goodbye exchange — end your final response with [END]. ' +
   'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".';
 
-const CLOSE_PHRASES = ['bye', 'goodbye', 'have a good', 'have a great', 'talk later', 'take care', 'not interested', 'remove me', 'do not call', 'stop calling'];
 function shouldEndCall(text) {
-  const lower = text.toLowerCase();
-  if (lower.includes('[end]')) return true;
-  return CLOSE_PHRASES.some(p => lower.includes(p));
+  return text.toLowerCase().includes('[end]');
 }
 function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
