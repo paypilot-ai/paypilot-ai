@@ -66,12 +66,10 @@ app.get('/logs', (req, res) => {
   res.json(out);
 });
 
-// List user's ElevenLabs voices + search shared library
 app.get('/voices', async (req, res) => {
   const search = (req.query.search || '').toLowerCase();
   if (!ELEVENLABS_KEY) return res.status(500).json({ error: 'No ElevenLabs key' });
   try {
-    // Get user's own voices
     const r = await fetch('https://api.elevenlabs.io/v1/voices', {
       headers: { 'xi-api-key': ELEVENLABS_KEY }
     });
@@ -251,17 +249,14 @@ function handleTwilio(ws) {
       const n = cp.n || '';
       const r = cp.r || '';
       const c = cp.c || '';
-      const prompt = n || r || c
-        ? `${SYSTEM_PROMPT}\nCall context (DO NOT read this out — use it to guide the conversation naturally):\n- Person: ${n || 'unknown'}\n${c ? `- Company: ${c}\n` : ''}- Reason for call: ${r || 'general outreach'}\nBuild rapport first, then steer naturally toward the reason.`
-        : SYSTEM_PROMPT;
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, state: 'greeting', history: [], prompt, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
       connectDeepgram(session);
-      setTimeout(() => sendGreeting(session), 2500);
+      setTimeout(() => sendGreeting(session), 800);
     }
-    if (msg.event === 'media' && session && session.state === 'listening') {
+    if (msg.event === 'media' && session) {
       const dgState = session.dgWs?.readyState;
       if (dgState === WebSocket.OPEN) {
         if (!dgAudioLogged) { callLog(session.callSid, '[dg] first audio packet sent to Deepgram'); dgAudioLogged = true; }
@@ -298,48 +293,55 @@ function handleBrowser(ws, callSid) {
   ws.on('close', () => { if (callSid && sessions.has(callSid)) sessions.get(callSid).browserWs = null; });
 }
 
-async function handleTranscript(session, transcript) {
-  callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
-  pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
-  const emailMatch = transcript.match(/\b[a-zA-Z0-9._%+\-]+\s*[@at]+\s*[a-zA-Z0-9.\-]+\s*\.\s*(?:com|net|org|edu|gov|io|co)\b/i);
-  if (emailMatch && !session.capturedEmail) {
-    const rawEmail = emailMatch[0].replace(/\s+/g, '').replace(/\bat\b/gi, '@');
-    session.capturedEmail = rawEmail;
-    callLog(session.callSid, '[email] captured:', rawEmail);
-    pushToBrowser(session, { event: 'email-captured', email: rawEmail });
-  }
-  if (session.state !== 'listening') { callLog(session.callSid, '[dg] ignoring — state=' + session.state); return; }
-  session.state = 'processing';
-  session.history.push({ role: 'user', content: transcript });
-  await generateAndSpeak(session);
-}
-
 function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=700';
+    '&interim_results=false&endpointing=400';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
-
   dg.on('open', () => {
     if (session.dgWs !== dg) return;
     callLog(session.callSid, '[dg] connected');
     session.dgReconnecting = false;
   });
-
   dg.on('message', async (data) => {
     if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       if (!transcript || !result.is_final) return;
-      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+)\s*[.?!]?$/i;
-      if (NOISE_ONLY.test(transcript)) return;
-      await handleTranscript(session, transcript);
+      const words = transcript.split(/\s+/).filter(Boolean);
+      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
+      if (words.length < 1 || NOISE_ONLY.test(transcript)) {
+        callLog(session.callSid, '[dg] filtered noise:', transcript);
+        return;
+      }
+      callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
+      pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
+
+      // Capture email address if spoken by prospect
+      const emailMatch = transcript.match(/\b[a-zA-Z0-9._%+\-]+\s*[@at]+\s*[a-zA-Z0-9.\-]+\s*\.\s*(?:com|net|org|edu|gov|io|co)\b/i);
+      if (emailMatch && !session.capturedEmail) {
+        const rawEmail = emailMatch[0].replace(/\s+/g, '').replace(/\bat\b/gi, '@');
+        session.capturedEmail = rawEmail;
+        callLog(session.callSid, '[email] captured:', rawEmail);
+        pushToBrowser(session, { event: 'email-captured', email: rawEmail });
+      }
+
+      if (session.state === 'processing') { return; }
+      if (session.state !== 'listening') {
+        // Buffer the latest transcript — fire it the moment we finish speaking
+        session.pendingTranscript = transcript;
+        callLog(session.callSid, '[dg] buffered (state=' + session.state + '):', transcript);
+        return;
+      }
+      session.pendingTranscript = null;
+      session.state = 'processing';
+      session.history.push({ role: 'user', content: transcript });
+      await generateAndSpeak(session);
     } catch (e) { callLog(session.callSid, '[dg] message error:', e.message); }
   });
-
   dg.on('unexpected-response', (req, res) => {
     let body = '';
     res.on('data', d => body += d);
@@ -356,12 +358,12 @@ function connectDeepgram(session) {
 function buildGreeting(name, company) {
   const n = name || '';
   const c = company || '';
-  const who = n ? `Is this ${n}?` : 'Hey, who am I speaking with?';
+  const ask = n ? `Is ${n} available?` : 'Who am I speaking with?';
   const intro = c ? `This is Brandy with ${c}.` : `This is Brandy.`;
   const GREETINGS = [
-    `Hey! ${who} ${intro}`,
-    `Hi there! ${intro} ${who}`,
-    `Hey, how are you? ${intro} ${who}`,
+    `Hey! ${intro} ${ask}`,
+    `Hi there! ${intro} ${ask}`,
+    `Hey, how are you doing? ${intro} ${ask}`,
   ];
   return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 }
@@ -388,9 +390,8 @@ async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating response (streaming)...');
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
-  // Stream OpenAI and speak full reply as one continuous TTS call
   const fullReply = await streamOpenAIAndSpeak(session, messages);
-  if (!fullReply) { session.state = 'listening'; return; }
+  if (!fullReply) { enterListening(session); return; }
 
   callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
   session.history.push({ role: 'assistant', content: fullReply });
@@ -407,9 +408,9 @@ async function generateAndSpeak(session) {
         body: JSON.stringify({
           customerName: session.name || '',
           customerEmail: session.capturedEmail,
-          callReason: 'switching from paper checks to Avis Pay Direct',
-          subject: 'Your Avis Pay Direct Agreement — Please Review & Sign',
-          message: `Hi${session.name ? ' ' + session.name : ''},\n\nThank you for speaking with Brandy today! As discussed, please review and sign your Avis Pay Direct agreement using the link below.\n\nIf you have any questions, feel free to reply to this email.`,
+          callReason: session.reason || 'follow-up call',
+          subject: 'Your Agreement — Please Review & Sign',
+          message: `Hi${session.name ? ' ' + session.name : ''},\n\nThank you for speaking with Brandy today! Please review and sign your agreement using the link below.\n\nIf you have any questions, feel free to reply to this email.`,
           docuSignLink: 'https://www.docusign.com'
         })
       });
@@ -420,7 +421,6 @@ async function generateAndSpeak(session) {
     }
   }
 
-  // End call if Brandy said goodbye or replied with [END]
   if (shouldEndCall(fullReply)) {
     callLog(session.callSid, '[call] ending call — farewell detected');
     pushToBrowser(session, { event: 'call-ended' });
@@ -428,7 +428,23 @@ async function generateAndSpeak(session) {
     return;
   }
 
+  enterListening(session);
+}
+
+function enterListening(session) {
   session.state = 'listening';
+  pushToBrowser(session, { event: 'ai-done' });
+  if (session.pendingTranscript) {
+    const t = session.pendingTranscript;
+    session.pendingTranscript = null;
+    callLog(session.callSid, '[dg] flushing buffered transcript:', t);
+    session.state = 'processing';
+    session.history.push({ role: 'user', content: t });
+    generateAndSpeak(session).catch(e => {
+      callLog(session.callSid, '[ai] error:', e.message);
+      session.state = 'listening';
+    });
+  }
 }
 
 function prepareForSpeech(text) {
@@ -440,7 +456,7 @@ function prepareForSpeech(text) {
     .trim();
 }
 
-// Collect full OpenAI reply via streaming (faster text delivery), then speak in one TTS call
+// Collect full OpenAI reply via streaming, then speak as one continuous TTS call
 async function streamOpenAIAndSpeak(session, messages) {
   try {
     const ctrl = new AbortController();
@@ -477,7 +493,6 @@ async function streamOpenAIAndSpeak(session, messages) {
     fullText = fullText.trim();
     if (!fullText) return null;
 
-    // Clear filler and speak entire reply as one continuous TTS call (no mid-sentence gaps)
     if (session.twilioWs?.readyState === WebSocket.OPEN) {
       session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
     }
@@ -485,9 +500,8 @@ async function streamOpenAIAndSpeak(session, messages) {
     pushToBrowser(session, { event: 'ai-speaking', text: fullText });
     await streamTTS(session, fullText);
 
-    // Wait for Twilio playback — keep Deepgram connection alive throughout
     const markName = 'tts-' + Date.now();
-    if (sendMark(session, markName)) await awaitMark(session, markName, 10000);
+    if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
 
     return fullText;
   } catch (e) {
@@ -513,8 +527,8 @@ async function callOpenAI(messages) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_flash_v2_5', apply_text_normalization: 'off',
-  voice_settings: { stability: 0.18, similarity_boost: 0.75, style: 0.72, use_speaker_boost: false, speed: 0.86 }
+  model_id: 'eleven_flash_v2_5',
+  voice_settings: { stability: 0.45, similarity_boost: 0.85, style: 0.35, use_speaker_boost: false, speed: 0.90 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
@@ -551,50 +565,49 @@ async function speakToTwilio(session, text) {
   try {
     await streamTTS(session, text);
   } catch (e) { callLog(session.callSid, '[tts] error:', e.message); }
-  // Wait for Twilio to confirm audio is done before listening — keep Deepgram alive
+  // Wait for Twilio to confirm audio is done — keep Deepgram alive throughout
   const markName = 'tts-' + Date.now();
-  if (sendMark(session, markName)) {
-    await awaitMark(session, markName, 10000);
-  }
-  session.state = 'listening';
-  pushToBrowser(session, { event: 'ai-done' });
+  if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
+  enterListening(session);
 }
 
 async function streamTTS(session, text) {
-  if (ELEVENLABS_KEY) {
+  // Try ElevenLabs — skip entirely if it failed before on this server instance
+  if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
     try {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 5000);
       const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
-        method: 'POST',
-        headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: prepareForSpeech(text),
-          model_id: 'eleven_flash_v2_5',
-          voice_settings: { stability: 0.30, similarity_boost: 0.80, style: 0.50, use_speaker_boost: false, speed: 0.82 }
-        }),
+        method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
         signal: ctrl.signal
       });
       clearTimeout(t);
       const ct = resp.headers.get('content-type') || '';
-      console.log(`[elevenlabs] status=${resp.status} ct=${ct}`);
-      if (resp.ok && ct.includes('audio')) {
+      console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
+      if (resp.ok) {
+        elevenlabsBlocked = false;
         await pipeToTwilio(session, resp, 'pcm16k');
         return;
       }
-      const err = await resp.text().catch(() => '');
-      console.log('[elevenlabs] error:', err.slice(0, 200));
-    } catch (e) {
-      console.log('[elevenlabs] failed:', e.message, '— falling back to OpenAI TTS');
+      const errBody = await resp.text().catch(() => '');
+      console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
+      elevenlabsBlocked = true;
+      elevenlabsBlockedAt = Date.now();
+      console.log('[elevenlabs] blocked — falling back to OpenAI TTS, will retry in 5m');
+    } catch (_) {
+      elevenlabsBlocked = true;
+      elevenlabsBlockedAt = Date.now();
+      console.log('[elevenlabs] timed out — falling back to OpenAI TTS, will retry in 5m');
     }
   }
-  // Fallback: OpenAI TTS
+
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 10000);
+  const t = setTimeout(() => ctrl.abort(), 12000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({ model: 'tts-1', voice: 'nova', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) }),
+    body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) }),
     signal: ctrl.signal
   });
   clearTimeout(t);
@@ -632,8 +645,10 @@ async function pipeToTwilio(session, resp, type) {
     return;
   }
 
-  // PCM from OpenAI — convert to mulaw
-  const chunkBytes = type === 'pcm24k' ? 480 : 320;
+  // PCM → mulaw; 160 mulaw bytes = 20ms at 8kHz (Twilio standard chunk)
+  // pcm16k: need 320 Int16 samples (640 bytes) → 160 mulaw bytes
+  // pcm24k: need 480 Int16 samples (960 bytes) → 160 mulaw bytes
+  const chunkBytes = type === 'pcm24k' ? 960 : 640;
   const samplesPerChunk = chunkBytes / 2;
   const encoder = type === 'pcm24k' ? pcm24ToMulaw : pcm16ToMulaw;
   try {
@@ -679,7 +694,6 @@ function pcm24ToMulaw(samples) {
   const BIAS = 0x84, CLIP = 32635;
   const out = Buffer.allocUnsafe(Math.floor(samples.length / 3));
   for (let i = 0; i < out.length; i++) {
-    // Average 3 samples (box filter) instead of dropping 2 — eliminates aliasing/robot sound
     let s = Math.round((samples[i * 3] + (samples[i * 3 + 1] || 0) + (samples[i * 3 + 2] || 0)) / 3);
     const sign = s < 0 ? 0x80 : 0;
     if (sign) s = -s;
@@ -701,59 +715,90 @@ function cleanup(session) { try { session.dgWs?.close(); } catch {} }
 
 // ── OPENAI REALTIME ──────────────────────────────────────────────
 function handleTwilioRealtime(ws) {
-  let n = '', r = '', c = '';
-  let streamSid    = null;
-  let openAiWs     = null;
-  let sessionReady = false;
-  let pendingAudio = [];
-  let greeted      = false;
-  let greetTimer   = null;
-  let startReceived = false;
-  let reconnecting = false;
+  // Params arrive via Twilio customParameters in the 'start' event — much more reliable
+  // than URL query params (avoids XML &amp; encoding edge cases).
+  let n = '';
+  let r = '';
+  let c = '';
 
-  const instructions =
-    (process.env.AI_SYSTEM_PROMPT ||
-    'You are Brandy, a real Southern woman — warm, personable, genuinely likable. ' +
-    'You are calling on behalf of Acme Products, which currently sends paper checks to this business. ' +
-    'Your goal is to get them to switch to Avis Pay Direct (faster electronic payments) and collect their email to send the agreement. ' +
-    'HOW TO RUN THE CALL: ' +
-    '1. Confirm you have the right person. ' +
-    '2. Mention Acme Products sends them checks and you are calling about a simple payment upgrade. ' +
-    '3. Briefly explain Avis Pay Direct — faster than a check, direct to their account, no hassle. ' +
-    '4. Handle questions warmly. Never rush or push. ' +
-    '5. When they agree, say something like "Perfect! What email should I send that to?" ' +
-    '6. Repeat the email back to confirm it, then tell them to expect it shortly. ' +
-    'STYLE: Speak like a real Southern woman — unhurried, warm, natural. Match their energy. ' +
-    'Keep responses 1 to 2 sentences. Always end with a question or a clear next step. ' +
-    'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question".');
+  let streamSid      = null;
+  let openAiWs       = null;
+  let sessionReady   = false;
+  let pendingAudio   = [];
+  let greeted        = false;
+  let fallbackTimer  = null;
+  let startReceived  = false;
 
   function buildSessionUpdate() {
-    const ctx = [instructions];
-    if (n) ctx.push(`You are calling to speak with ${n}.`);
-    if (c) ctx.push(`Calling on behalf of ${c}.`);
-    if (r) ctx.push(`Call purpose: ${r}.`);
+    const company = c || '';
+    const name    = n || '';
+    const reason  = r || '';
+    const instructions =
+      `ALWAYS speak English only. You are Brandy, a warm Southern woman on an outbound sales call` +
+      (company ? ` for ${company}` : '') + `.\n` +
+      (name   ? `You are calling to speak with ${name}.\n` : '') +
+      (reason ? `Purpose of the call: ${reason}.\n` : '') +
+      `\nYou are a real salesperson — warm, genuine, and always moving the conversation toward the close.\n` +
+      `Build rapport quickly, but never lose sight of why you called. You are ALWAYS SELLING.\n\n` +
+      `STYLE:\n` +
+      `- Speak naturally — unhurried, like you have all the time in the world.\n` +
+      `- Match their energy. Guarded? Ease them in. Chatty? Match that warmth.\n` +
+      `- Really listen and react to what they say specifically.\n` +
+      `- Use natural fillers: "mm", "yeah", "oh", "well" — only when they feel real.\n` +
+      `- ONE thing at a time, then stop and let them talk.\n` +
+      `- Handle objections by finding common ground, then redirecting to value.\n` +
+      `- Always be guiding toward the next step: interest, commitment, or close.\n\n` +
+      `BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".`;
     return {
       type: 'session.update',
       session: {
-        modalities: ['text', 'audio'],
-        instructions: ctx.join(' '),
-        voice: 'coral',
-        input_audio_format: 'g711_ulaw',
-        output_audio_format: 'g711_ulaw',
-        turn_detection: {
-          type: 'server_vad',
-          threshold: 0.4,
-          prefix_padding_ms: 200,
-          silence_duration_ms: 400,
-          create_response: true
-        },
-        temperature: 0.8
+        type: 'realtime',
+        output_modalities: ['audio'],
+        instructions,
+        audio: {
+          input: {
+            format: { type: 'audio/pcmu' },
+            turn_detection: {
+              type: 'server_vad',
+              threshold: 0.5,
+              prefix_padding_ms: 200,
+              silence_duration_ms: 500,
+              create_response: true,
+              interrupt_response: true
+            }
+          },
+          output: {
+            format: { type: 'audio/pcmu' },
+            voice: 'coral'
+          }
+        }
       }
     };
   }
 
+  function startFallbackTimer() {
+    if (fallbackTimer || greeted) return;
+    fallbackTimer = setTimeout(triggerGreeting, 3000);
+  }
+
+  function triggerGreeting() {
+    if (greeted || openAiWs?.readyState !== WebSocket.OPEN) return;
+    greeted = true;
+    if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
+    const company = c || '';
+    const name    = n || '';
+    let greetInstruction = 'In English only, give a warm Southern greeting. Say your name is Brandy';
+    if (company) greetInstruction += `, you are calling from ${company}`;
+    greetInstruction += ', and that this call may be recorded for quality purposes.';
+    if (name)   greetInstruction += ` Ask if ${name} is available to speak.`;
+    else        greetInstruction += ' Ask who you are speaking with.';
+    openAiWs.send(JSON.stringify({
+      type: 'response.create',
+      response: { output_modalities: ['audio'], instructions: greetInstruction }
+    }));
+  }
+
   function sendAudio(payload) {
-    if (ws.readyState !== WebSocket.OPEN) return;
     if (streamSid) {
       ws.send(JSON.stringify({ event: 'media', streamSid, media: { payload } }));
     } else {
@@ -761,67 +806,59 @@ function handleTwilioRealtime(ws) {
     }
   }
 
-  function triggerGreeting() {
-    if (greeted || openAiWs?.readyState !== WebSocket.OPEN) return;
-    greeted = true;
-    const who = n ? ` Is this ${n}?` : ' Who am I speaking with?';
-    const from = c ? ` from ${c}` : '';
-    openAiWs.send(JSON.stringify({
-      type: 'response.create',
-      response: {
-        modalities: ['text', 'audio'],
-        instructions: `Say hello warmly as Brandy${from}.${who} One sentence only.`
-      }
-    }));
-  }
-
   function connectOpenAI() {
     openAiWs = new WebSocket(
       'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview',
-      { headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'OpenAI-Beta': 'realtime=v1' } }
+      { headers: { Authorization: `Bearer ${OPENAI_API_KEY}` } }
     );
 
     openAiWs.on('open', () => {
-      console.log('[realtime] OpenAI connected');
-      reconnecting = false;
-      if (startReceived) openAiWs.send(JSON.stringify(buildSessionUpdate()));
+      console.log('[realtime] OpenAI ws open');
+      try {
+        if (startReceived) {
+          openAiWs.send(JSON.stringify(buildSessionUpdate()));
+        }
+      } catch (e) { console.error('[realtime] open handler error:', e.message); }
     });
 
     openAiWs.on('message', raw => {
       try {
         const ev = JSON.parse(raw);
-        if (ev.type !== 'session.created' && ev.type !== 'response.audio.delta') {
-          console.log('[realtime]', ev.type, ev.error ? JSON.stringify(ev.error) : '');
-        }
-        if (ev.type === 'session.updated') {
+        if (ev.type !== 'session.created') console.log('[realtime] event:', ev.type);
+
+        if (ev.type === 'session.updated' && !sessionReady) {
           sessionReady = true;
-          if (streamSid && !greeted) {
-            if (greetTimer) clearTimeout(greetTimer);
-            greetTimer = setTimeout(triggerGreeting, 1500);
+          console.log('[realtime] session ready — name:', n || '(none)', 'company:', c || '(none)');
+          if (streamSid) startFallbackTimer();
+        }
+
+        if (ev.type === 'input_audio_buffer.speech_stopped') {
+          if (!greeted) {
+            triggerGreeting();
+          } else {
+            openAiWs.send(JSON.stringify({ type: 'response.create', response: { output_modalities: ['audio'] } }));
           }
         }
-        if (ev.type === 'response.audio.delta' && ev.delta) sendAudio(ev.delta);
+
+        if (ev.type === 'response.audio.delta' && ev.delta) {
+          sendAudio(ev.delta);
+        }
+
         if (ev.type === 'input_audio_buffer.speech_started' && streamSid) {
           ws.send(JSON.stringify({ event: 'clear', streamSid }));
         }
+
         if (ev.type === 'error') {
-          console.error('[realtime] error:', JSON.stringify(ev.error));
+          console.error('[realtime] OpenAI error:', JSON.stringify(ev.error));
         }
-      } catch (e) { console.error('[realtime] msg parse error:', e.message); }
+      } catch {}
     });
 
     openAiWs.on('close', (code, reason) => {
-      console.log('[realtime] OpenAI closed', code, reason?.toString());
-      sessionReady = false;
-      // Reconnect instead of dropping the call (unless Twilio already hung up)
-      if (ws.readyState === WebSocket.OPEN && !reconnecting) {
-        reconnecting = true;
-        console.log('[realtime] reconnecting to OpenAI...');
-        setTimeout(connectOpenAI, 1000);
-      }
+      console.log('[realtime] OpenAI disconnected', code, reason?.toString());
+      if (ws.readyState === WebSocket.OPEN) ws.close();
     });
-
-    openAiWs.on('error', e => console.error('[realtime] ws error:', e.message));
+    openAiWs.on('error', e => console.error('[realtime] OpenAI ws error:', e.message));
   }
 
   connectOpenAI();
@@ -829,32 +866,40 @@ function handleTwilioRealtime(ws) {
   ws.on('message', raw => {
     try {
       const msg = JSON.parse(raw);
+
       if (msg.event === 'start') {
         streamSid = msg.start.streamSid;
         startReceived = true;
+
+        // Read params from Twilio customParameters — guaranteed clean strings
         const cp = msg.start?.customParameters || {};
-        n = cp.n || ''; r = cp.r || ''; c = cp.c || '';
-        console.log('[realtime] start — name:', n || '(none)', 'company:', c || '(none)');
-        for (const p of pendingAudio) {
-          ws.send(JSON.stringify({ event: 'media', streamSid, media: { payload: p } }));
+        n = cp.n || '';
+        r = cp.r || '';
+        c = cp.c || '';
+        console.log('[realtime] start — name:', n || '(none)', '| company:', c || '(none)', '| reason:', r || '(none)');
+
+        // Flush buffered audio
+        for (const payload of pendingAudio) {
+          ws.send(JSON.stringify({ event: 'media', streamSid, media: { payload } }));
         }
         pendingAudio = [];
+
+        // Send session.update now that we have the correct params
         if (openAiWs?.readyState === WebSocket.OPEN) {
           openAiWs.send(JSON.stringify(buildSessionUpdate()));
         }
+        // If OpenAI ws not open yet, it'll send in the 'open' handler above
       }
+
       if (msg.event === 'media' && openAiWs?.readyState === WebSocket.OPEN && sessionReady) {
         openAiWs.send(JSON.stringify({ type: 'input_audio_buffer.append', audio: msg.media.payload }));
       }
-      if (msg.event === 'stop') { openAiWs?.close(); }
+
+      if (msg.event === 'stop') openAiWs?.close();
     } catch {}
   });
 
-  ws.on('close', () => {
-    if (greetTimer) clearTimeout(greetTimer);
-    reconnecting = false;
-    try { openAiWs?.close(); } catch {}
-  });
+  ws.on('close', () => { if (fallbackTimer) clearTimeout(fallbackTimer); openAiWs?.close(); });
   ws.on('error', e => console.error('[realtime] Twilio ws error:', e.message));
 }
 
