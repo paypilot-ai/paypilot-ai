@@ -11,7 +11,7 @@ const wss = new WebSocketServer({ noServer: true });
 const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE  = 'tnSpp4vdxKPjI9w0GnoV';
+const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy — a real Southern woman making an outbound sales call. You grew up in Georgia. ' +
   'You talk the way Southern women actually talk: easy, warm, a little drawly. You take your time. You listen. ' +
@@ -329,15 +329,10 @@ function connectDeepgram(session) {
 
       const words = transcript.split(/\s+/).filter(Boolean);
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
-      // During speaking: allow ANY word to trigger barge-in (caller trying to interrupt)
-      // During listening: require 2+ real words to avoid background noise false-fires
-      const isSpeaking = session.state === 'speaking';
-      if (!isSpeaking && (words.length < 2 || NOISE_ONLY.test(transcript))) {
-        callLog(session.callSid, '[dg] filtered noise:', transcript);
-        return;
-      }
-      if (isSpeaking && NOISE_ONLY.test(transcript)) {
-        callLog(session.callSid, '[dg] filtered noise during speaking:', transcript);
+      // Passive acknowledgments that are NOT meant as interruptions
+      const PASSIVE = /^(yeah|yep|yup|okay|ok|sure|right|alright|gotcha|got\s*it|cool|great|good|fine|sounds\s*good|makes\s*sense)\s*[.?!]?$/i;
+      if (words.length < 2 || NOISE_ONLY.test(transcript) || PASSIVE.test(transcript)) {
+        callLog(session.callSid, '[dg] filtered noise/passive:', transcript);
         return;
       }
       callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
