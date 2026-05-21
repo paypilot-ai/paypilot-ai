@@ -318,10 +318,9 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=true&utterance_end_ms=600&vad_events=true';
+    '&interim_results=false&endpointing=700';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
-  session.dgTranscriptBuf = '';
 
   dg.on('open', () => {
     if (session.dgWs !== dg) return;
@@ -333,35 +332,11 @@ function connectDeepgram(session) {
     if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
+      const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
+      if (!transcript || !result.is_final) return;
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+)\s*[.?!]?$/i;
-
-      if (result.type === 'Results') {
-        const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
-        if (!transcript) return;
-        if (!result.is_final) {
-          pushToBrowser(session, { event: 'transcript-interim', speaker: 'prospect', text: transcript });
-          return;
-        }
-        // Accumulate final chunks
-        session.dgTranscriptBuf = (session.dgTranscriptBuf + ' ' + transcript).trim();
-
-        // speech_final=true means Deepgram is confident the turn is done — respond now
-        if (result.speech_final) {
-          const full = session.dgTranscriptBuf.trim();
-          session.dgTranscriptBuf = '';
-          if (!full || NOISE_ONLY.test(full)) return;
-          await handleTranscript(session, full);
-        }
-        return;
-      }
-
-      // UtteranceEnd fires if speech_final never came — catch-all
-      if (result.type === 'UtteranceEnd') {
-        const full = session.dgTranscriptBuf.trim();
-        session.dgTranscriptBuf = '';
-        if (!full || NOISE_ONLY.test(full)) return;
-        await handleTranscript(session, full);
-      }
+      if (NOISE_ONLY.test(transcript)) return;
+      await handleTranscript(session, transcript);
     } catch (e) { callLog(session.callSid, '[dg] message error:', e.message); }
   });
 
