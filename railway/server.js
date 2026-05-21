@@ -559,7 +559,7 @@ async function fetchAIReply(messages, onSentence) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_flash_v2_5',
+  model_id: 'eleven_turbo_v2_5',
   voice_settings: { stability: 0.35, similarity_boost: 0.75, style: 0.25, use_speaker_boost: false, speed: 1.0 }
 };
 
