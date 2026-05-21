@@ -456,8 +456,7 @@ function prepareForSpeech(text) {
     .trim();
 }
 
-// Stream OpenAI tokens, fire TTS as soon as the first sentence is complete,
-// then immediately speak remaining text — minimises time-to-first-audio.
+// Collect full OpenAI reply via streaming, then speak as one continuous TTS call
 async function streamOpenAIAndSpeak(session, messages) {
   try {
     const ctrl = new AbortController();
@@ -475,13 +474,6 @@ async function streamOpenAIAndSpeak(session, messages) {
     const decoder = new TextDecoder();
     let buf = '';
     let fullText = '';
-    let firstSentenceSent = false;
-
-    if (session.twilioWs?.readyState === WebSocket.OPEN) {
-      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-    }
-    session.state = 'speaking';
-
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -494,33 +486,19 @@ async function streamOpenAIAndSpeak(session, messages) {
         if (data === '[DONE]') break;
         try {
           const token = JSON.parse(data).choices?.[0]?.delta?.content;
-          if (token) {
-            fullText += token;
-            // Fire TTS as soon as we hit the first sentence boundary
-            if (!firstSentenceSent && /[.!?]/.test(fullText)) {
-              firstSentenceSent = true;
-              const first = fullText.trim();
-              pushToBrowser(session, { event: 'ai-speaking', text: first });
-              streamTTS(session, first).catch(() => {});
-            }
-          }
+          if (token) fullText += token;
         } catch {}
       }
     }
-
     fullText = fullText.trim();
     if (!fullText) return null;
 
-    if (!firstSentenceSent) {
-      // Short reply with no sentence boundary — speak it all at once
-      pushToBrowser(session, { event: 'ai-speaking', text: fullText });
-      await streamTTS(session, fullText);
-    } else {
-      // Collect anything after the first sentence and speak it too
-      const firstEnd = fullText.search(/[.!?]/);
-      const remainder = fullText.slice(firstEnd + 1).trim();
-      if (remainder) await streamTTS(session, remainder);
+    if (session.twilioWs?.readyState === WebSocket.OPEN) {
+      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
     }
+    session.state = 'speaking';
+    pushToBrowser(session, { event: 'ai-speaking', text: fullText });
+    await streamTTS(session, fullText);
 
     const markName = 'tts-' + Date.now();
     if (sendMark(session, markName)) await awaitMark(session, markName, 10000);
@@ -550,7 +528,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_flash_v2_5',
-  voice_settings: { stability: 0.30, similarity_boost: 0.80, style: 0.50, use_speaker_boost: false, speed: 0.82 }
+  voice_settings: { stability: 0.45, similarity_boost: 0.85, style: 0.35, use_speaker_boost: false, speed: 0.90 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
