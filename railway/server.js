@@ -97,7 +97,7 @@ app.all('/twiml-stream', (req, res) => {
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
   console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'method:', req.method);
-  const wsUrl = `wss://${host}/twilio`;
+  const wsUrl = `wss://${host}/twilio-realtime`;
   // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
   const paramXml = [
     n ? `<Parameter name="n" value="${xmlEsc(n)}"/>` : '',
@@ -630,43 +630,41 @@ function handleTwilioRealtime(ws) {
     const name    = n || '';
     const reason  = r || '';
     const instructions =
-      `ALWAYS speak English only. You are Brandy, a warm Southern woman on an outbound sales call` +
-      (company ? ` for ${company}` : '') + `.\n` +
-      (name   ? `You are calling to speak with ${name}.\n` : '') +
-      (reason ? `Purpose of the call: ${reason}.\n` : '') +
-      `\nYou are a real salesperson — warm, genuine, and always moving the conversation toward the close.\n` +
-      `Build rapport quickly, but never lose sight of why you called. You are ALWAYS SELLING.\n\n` +
-      `STYLE:\n` +
-      `- Speak naturally — unhurried, like you have all the time in the world.\n` +
-      `- Match their energy. Guarded? Ease them in. Chatty? Match that warmth.\n` +
-      `- Really listen and react to what they say specifically.\n` +
-      `- Use natural fillers: "mm", "yeah", "oh", "well" — only when they feel real.\n` +
-      `- ONE thing at a time, then stop and let them talk.\n` +
-      `- Handle objections by finding common ground, then redirecting to value.\n` +
-      `- Always be guiding toward the next step: interest, commitment, or close.\n\n` +
-      `BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".`;
+      (process.env.AI_SYSTEM_PROMPT ||
+      'You are Brandy, a real Southern woman — warm, personable, genuinely likable. ' +
+      'You are calling on behalf of Acme Products, which currently sends paper checks to this business. ' +
+      'Your goal is to get them to switch to Avis Pay Direct (faster electronic payments) and collect their email to send the agreement. ' +
+      'HOW TO RUN THE CALL: ' +
+      '1. Confirm you have the right person. ' +
+      '2. Mention Acme Products sends them checks and you are calling about a simple payment upgrade. ' +
+      '3. Briefly explain Avis Pay Direct — faster than a check, direct to their account, no hassle. ' +
+      '4. Handle questions warmly. Never rush or push. ' +
+      '5. When they agree, say something like "Perfect! What email should I send that to?" ' +
+      '6. Repeat the email back to confirm it, then tell them to expect it shortly. ' +
+      'STYLE: Speak like a real Southern woman — unhurried, warm, natural. Match their energy. ' +
+      'Really listen and react to what they say. ' +
+      'Use natural fillers like "mm", "yeah", "well", "you know" only when they feel real. ' +
+      'Keep responses 1 to 2 sentences. Always end with a question or a clear next step. ' +
+      'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question".') +
+      (name    ? ` You are calling to speak with ${name}.` : '') +
+      (company ? ` Calling on behalf of ${company}.` : '') +
+      (reason  ? ` Call purpose: ${reason}.` : '');
     return {
       type: 'session.update',
       session: {
-        type: 'realtime',
-        output_modalities: ['audio'],
+        modalities: ['audio', 'text'],
         instructions,
-        audio: {
-          input: {
-            format: { type: 'audio/pcmu' },
-            turn_detection: {
-              type: 'server_vad',
-              threshold: 0.5,
-              prefix_padding_ms: 200,
-              silence_duration_ms: 500,
-              create_response: true,
-              interrupt_response: true
-            }
-          },
-          output: {
-            format: { type: 'audio/pcmu' },
-            voice: 'coral'
-          }
+        voice: 'coral',
+        input_audio_format: 'g711_ulaw',
+        output_audio_format: 'g711_ulaw',
+        input_audio_transcription: { model: 'whisper-1' },
+        turn_detection: {
+          type: 'server_vad',
+          threshold: 0.5,
+          prefix_padding_ms: 200,
+          silence_duration_ms: 500,
+          create_response: true,
+          interrupt_response: true
         }
       }
     };
@@ -683,11 +681,11 @@ function handleTwilioRealtime(ws) {
     if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
     const company = c || '';
     const name    = n || '';
-    let greetInstruction = 'In English only, give a warm Southern greeting. Say your name is Brandy';
-    if (company) greetInstruction += `, you are calling from ${company}`;
-    greetInstruction += ', and that this call may be recorded for quality purposes.';
-    if (name)   greetInstruction += ` Ask if ${name} is available to speak.`;
-    else        greetInstruction += ' Ask who you are speaking with.';
+    let greetInstruction = 'Give a warm, natural Southern greeting. Say your name is Brandy';
+    if (company) greetInstruction += `, calling from ${company}`;
+    if (name)   greetInstruction += `. Confirm you're speaking with ${name} — say something like "Is this ${name}?"`;
+    else        greetInstruction += '. Introduce yourself warmly and ask who you\'re speaking with.';
+    greetInstruction += ' Keep it brief and natural — one or two sentences max.';
     openAiWs.send(JSON.stringify({
       type: 'response.create',
       response: { output_modalities: ['audio'], instructions: greetInstruction }
