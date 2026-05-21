@@ -18,8 +18,8 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You use real Southern expressions naturally — "well now", "shoot", "I tell you what", "honey", "y\'all", "bless your heart" — but only when they fit, never forced. ' +
   'You are genuinely charming, a little flirty but always professional. You make people feel like they\'re talking to a friend who happens to be calling about something. ' +
   'HOW YOU SPEAK: ' +
-  'Short responses — one or two sentences max. Never lecture. Never list things. ' +
-  'Start your reply with a very short natural reaction when it fits — "Well...", "Yeah,", "Mm,", "Now...", "Shoot," — but only sometimes, not every time. ' +
+  'ONE sentence per turn. Hard limit. Then stop and let them respond. ' +
+  'Never explain, never list, never follow up your own sentence. Say one thing, ask one question if needed, then wait. ' +
   'React to exactly what they just said. Mirror their energy — if they\'re warm, be warm. If they\'re short, be quick and respectful. ' +
   'If they push back or say not interested — acknowledge it warmly, try once more from a different angle. Never give up on the first no. ' +
   'When the call is truly done and goodbyes are exchanged, end your final message with [END]. ' +
@@ -326,8 +326,15 @@ function connectDeepgram(session) {
 
       const words = transcript.split(/\s+/).filter(Boolean);
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
-      if (words.length < 2 || NOISE_ONLY.test(transcript)) {
+      // During speaking: allow ANY word to trigger barge-in (caller trying to interrupt)
+      // During listening: require 2+ real words to avoid background noise false-fires
+      const isSpeaking = session.state === 'speaking';
+      if (!isSpeaking && (words.length < 2 || NOISE_ONLY.test(transcript))) {
         callLog(session.callSid, '[dg] filtered noise:', transcript);
+        return;
+      }
+      if (isSpeaking && NOISE_ONLY.test(transcript)) {
+        callLog(session.callSid, '[dg] filtered noise during speaking:', transcript);
         return;
       }
       callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
@@ -511,7 +518,7 @@ async function fetchAIReply(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 40, temperature: 0.7, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 30, temperature: 0.7, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
