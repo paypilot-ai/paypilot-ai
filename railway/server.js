@@ -256,7 +256,7 @@ function handleTwilio(ws) {
       connectDeepgram(session);
       setTimeout(() => sendGreeting(session), 2500);
     }
-    if (msg.event === 'media' && session && session.state === 'listening') {
+    if (msg.event === 'media' && session) {
       const dgState = session.dgWs?.readyState;
       if (dgState === WebSocket.OPEN) {
         if (!dgAudioLogged) { callLog(session.callSid, '[dg] first audio packet sent to Deepgram'); dgAudioLogged = true; }
