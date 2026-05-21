@@ -1,7 +1,7 @@
 const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
 const API_KEY  = process.env.ELEVENLABS_API_KEY;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const text = (req.query.text || '').trim();
   if (!text)   return res.status(400).send('missing text');
   if (!API_KEY) return res.status(500).send('no ElevenLabs key');
