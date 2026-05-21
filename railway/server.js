@@ -329,7 +329,14 @@ function connectDeepgram(session) {
         pushToBrowser(session, { event: 'email-captured', email: rawEmail });
       }
 
-      if (session.state !== 'listening') { callLog(session.callSid, '[dg] ignoring — not listening (state=' + session.state + ')'); return; }
+      if (session.state === 'processing') { return; }
+      if (session.state !== 'listening') {
+        // Buffer the latest transcript — fire it the moment we finish speaking
+        session.pendingTranscript = transcript;
+        callLog(session.callSid, '[dg] buffered (state=' + session.state + '):', transcript);
+        return;
+      }
+      session.pendingTranscript = null;
       session.state = 'processing';
       session.history.push({ role: 'user', content: transcript });
       await generateAndSpeak(session);
@@ -351,12 +358,12 @@ function connectDeepgram(session) {
 function buildGreeting(name, company) {
   const n = name || '';
   const c = company || '';
-  const who = n ? `Is this ${n}?` : 'Hey, who am I speaking with?';
+  const ask = n ? `Is ${n} available?` : 'Who am I speaking with?';
   const intro = c ? `This is Brandy with ${c}.` : `This is Brandy.`;
   const GREETINGS = [
-    `Hey! ${who} ${intro}`,
-    `Hi there! ${intro} ${who}`,
-    `Hey, how are you? ${intro} ${who}`,
+    `Hey! ${intro} ${ask}`,
+    `Hi there! ${intro} ${ask}`,
+    `Hey, how are you doing? ${intro} ${ask}`,
   ];
   return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 }
@@ -384,7 +391,7 @@ async function generateAndSpeak(session) {
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
   const fullReply = await streamOpenAIAndSpeak(session, messages);
-  if (!fullReply) { session.state = 'listening'; return; }
+  if (!fullReply) { enterListening(session); return; }
 
   callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
   session.history.push({ role: 'assistant', content: fullReply });
@@ -421,7 +428,23 @@ async function generateAndSpeak(session) {
     return;
   }
 
+  enterListening(session);
+}
+
+function enterListening(session) {
   session.state = 'listening';
+  pushToBrowser(session, { event: 'ai-done' });
+  if (session.pendingTranscript) {
+    const t = session.pendingTranscript;
+    session.pendingTranscript = null;
+    callLog(session.callSid, '[dg] flushing buffered transcript:', t);
+    session.state = 'processing';
+    session.history.push({ role: 'user', content: t });
+    generateAndSpeak(session).catch(e => {
+      callLog(session.callSid, '[ai] error:', e.message);
+      session.state = 'listening';
+    });
+  }
 }
 
 function prepareForSpeech(text) {
@@ -545,8 +568,7 @@ async function speakToTwilio(session, text) {
   // Wait for Twilio to confirm audio is done — keep Deepgram alive throughout
   const markName = 'tts-' + Date.now();
   if (sendMark(session, markName)) await awaitMark(session, markName, 10000);
-  session.state = 'listening';
-  pushToBrowser(session, { event: 'ai-done' });
+  enterListening(session);
 }
 
 async function streamTTS(session, text) {
