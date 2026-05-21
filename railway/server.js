@@ -60,17 +60,28 @@ app.get('/logs', (req, res) => {
   res.json(out);
 });
 
-// Browse ElevenLabs shared voice library — search by keyword
+// List user's ElevenLabs voices + search shared library
 app.get('/voices', async (req, res) => {
-  const search = req.query.search || 'southern';
+  const search = (req.query.search || '').toLowerCase();
   if (!ELEVENLABS_KEY) return res.status(500).json({ error: 'No ElevenLabs key' });
   try {
-    const r = await fetch(`https://api.elevenlabs.io/v1/shared-voices?page_size=20&gender=female&search=${encodeURIComponent(search)}`, {
+    // Get user's own voices
+    const r = await fetch('https://api.elevenlabs.io/v1/voices', {
       headers: { 'xi-api-key': ELEVENLABS_KEY }
     });
     const data = await r.json();
-    const voices = (data.voices || []).map(v => ({ id: v.voice_id, name: v.name, description: v.description, accent: v.labels?.accent, preview_url: v.preview_url }));
-    res.json({ voices });
+    let voices = (data.voices || []).map(v => ({
+      id: v.voice_id, name: v.name,
+      description: v.description || '',
+      labels: v.labels || {},
+      preview_url: v.preview_url
+    }));
+    if (search) voices = voices.filter(v =>
+      v.name.toLowerCase().includes(search) ||
+      v.description.toLowerCase().includes(search) ||
+      JSON.stringify(v.labels).toLowerCase().includes(search)
+    );
+    res.json({ count: voices.length, voices });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
