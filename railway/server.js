@@ -411,6 +411,8 @@ function buildGreeting(name, company) {
 }
 
 async function sendGreeting(session) {
+  if (session.state !== 'greeting') return; // guard: only fire once
+  session.state = 'speaking'; // claim state synchronously before any await
   const greeting = buildGreeting(session.name, session.company);
   session.history.push({ role: 'assistant', content: greeting });
   pushToBrowser(session, { event: 'ai-response', text: greeting });
@@ -436,28 +438,13 @@ async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating...');
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-6)];
 
-  // Enter speaking state immediately so barge-in works during filler
-  session.state = 'speaking';
-  session.bargedIn = false;
-  session.ttsAbort = new AbortController();
-  if (session.twilioWs?.readyState === WebSocket.OPEN) {
-    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-  }
-
-  // 1. Get AI reply — start TTS as soon as first sentence arrives, don't wait for full reply
-  let earlyTtsPromise = null;
-  const fullReply = await fetchAIReply(messages, (firstSentence) => {
-    if (!session.bargedIn) {
-      callLog(session.callSid, '[ai] early TTS:', firstSentence.slice(0, 60));
-      earlyTtsPromise = streamTTS(session, firstSentence);
-    }
-  });
-  if (session.bargedIn) { enterListening(session); return; }
+  // 1. Fetch AI reply (state stays 'processing' during fetch — barge-in buffers to pendingTranscript)
+  const fullReply = await fetchAIReply(messages);
   if (!fullReply) { enterListening(session); return; }
 
   callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
 
-  // 2. Save to history BEFORE speaking — so barge-in doesn't corrupt history
+  // 2. Save to history BEFORE speaking — barge-in can't corrupt it
   session.history.push({ role: 'assistant', content: fullReply });
   pushToBrowser(session, { event: 'ai-response', text: fullReply });
 
@@ -485,33 +472,26 @@ async function generateAndSpeak(session) {
   if (shouldEndCall(fullReply, session.history)) {
     callLog(session.callSid, '[call] ending');
     pushToBrowser(session, { event: 'call-ended' });
-    // Abort any early TTS that started mid-stream before we knew this was end-of-call
-    session.ttsAbort?.abort();
-    try { await earlyTtsPromise; } catch (_) {}
-    const stripped = prepareForSpeech(fullReply);
+    session.state = 'speaking';
     session.ttsAbort = new AbortController();
-    try { await streamTTS(session, stripped); } catch (_) {}
+    try { await streamTTS(session, prepareForSpeech(fullReply)); } catch (_) {}
     setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 1000);
     return;
   }
 
   // 5. Speak reply
+  session.state = 'speaking';
   session.bargedIn = false;
+  session.ttsAbort = new AbortController();
+  if (session.twilioWs?.readyState === WebSocket.OPEN) {
+    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+  }
   pushToBrowser(session, { event: 'ai-speaking', text: fullReply });
   try {
-    if (earlyTtsPromise) {
-      // Early TTS already started — wait for it to finish
-      await earlyTtsPromise;
-    } else {
-      // No early TTS fired (reply had no sentence boundary) — speak full reply now
-      session.ttsAbort = new AbortController();
-      await streamTTS(session, fullReply);
-    }
+    await streamTTS(session, fullReply);
     const markName = 'tts-' + Date.now();
     if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
-  } catch (_) {
-    // TTS failed or was interrupted — history already saved, just move on
-  }
+  } catch (_) {}
   enterListening(session);
 }
 
