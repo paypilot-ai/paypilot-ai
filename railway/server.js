@@ -22,7 +22,7 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'Never explain, never list, never follow up your own sentence. Say one thing, ask one question if needed, then wait. ' +
   'React to exactly what they just said. Mirror their energy — if they\'re warm, be warm. If they\'re short, be quick and respectful. ' +
   'If they push back or say not interested — acknowledge it warmly, try once more from a different angle. Never give up on the first no. ' +
-  'When the call is truly done and goodbyes are exchanged, end your final message with [END]. ' +
+  '[END] RULE: Only append [END] after both parties have fully said their goodbyes — like "bye now", "take care", "goodbye". NEVER use [END] in a greeting, opening line, or mid-conversation. Most calls will NOT end with [END]. ' +
   'BANNED WORDS: "Absolutely", "Certainly", "Of course", "Great question", "Definitely", "I understand", "I appreciate", "Fantastic".';
 
 function shouldEndCall(text) {
@@ -398,9 +398,11 @@ function buildGreeting(name, company) {
   const ask = n ? `Is ${n} around?` : `Who am I speaking with today?`;
   const intro = c ? `This is Brandy over at ${c}.` : `This is Brandy.`;
   const GREETINGS = [
-    `Hey, how are y'all doing today? ${intro} ${ask}`,
-    `Well hey there! ${intro} ${ask}`,
     `Hey! ${intro} ${ask}`,
+    `Hi there! ${intro} ${ask}`,
+    `Hey, how's it going? ${intro} ${ask}`,
+    `Hey there — ${intro} ${ask}`,
+    `Hi! ${intro} ${ask}`,
   ];
   return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 }
@@ -480,6 +482,9 @@ async function generateAndSpeak(session) {
   if (shouldEndCall(fullReply)) {
     callLog(session.callSid, '[call] ending');
     pushToBrowser(session, { event: 'call-ended' });
+    // Abort any early TTS that started mid-stream before we knew this was end-of-call
+    session.ttsAbort?.abort();
+    try { await earlyTtsPromise; } catch (_) {}
     const stripped = prepareForSpeech(fullReply);
     session.ttsAbort = new AbortController();
     try { await streamTTS(session, stripped); } catch (_) {}
