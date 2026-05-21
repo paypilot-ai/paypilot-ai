@@ -298,6 +298,22 @@ function handleBrowser(ws, callSid) {
   ws.on('close', () => { if (callSid && sessions.has(callSid)) sessions.get(callSid).browserWs = null; });
 }
 
+async function handleTranscript(session, transcript) {
+  callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
+  pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
+  const emailMatch = transcript.match(/\b[a-zA-Z0-9._%+\-]+\s*[@at]+\s*[a-zA-Z0-9.\-]+\s*\.\s*(?:com|net|org|edu|gov|io|co)\b/i);
+  if (emailMatch && !session.capturedEmail) {
+    const rawEmail = emailMatch[0].replace(/\s+/g, '').replace(/\bat\b/gi, '@');
+    session.capturedEmail = rawEmail;
+    callLog(session.callSid, '[email] captured:', rawEmail);
+    pushToBrowser(session, { event: 'email-captured', email: rawEmail });
+  }
+  if (session.state !== 'listening') { callLog(session.callSid, '[dg] ignoring — state=' + session.state); return; }
+  session.state = 'processing';
+  session.history.push({ role: 'user', content: transcript });
+  await generateAndSpeak(session);
+}
+
 function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
@@ -317,45 +333,34 @@ function connectDeepgram(session) {
     if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
+      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+)\s*[.?!]?$/i;
 
-      // Accumulate final transcript chunks as user speaks
       if (result.type === 'Results') {
         const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
         if (!transcript) return;
-        if (result.is_final) {
-          session.dgTranscriptBuf = (session.dgTranscriptBuf + ' ' + transcript).trim();
-        }
-        // Show interim transcripts in browser for live display
         if (!result.is_final) {
           pushToBrowser(session, { event: 'transcript-interim', speaker: 'prospect', text: transcript });
+          return;
+        }
+        // Accumulate final chunks
+        session.dgTranscriptBuf = (session.dgTranscriptBuf + ' ' + transcript).trim();
+
+        // speech_final=true means Deepgram is confident the turn is done — respond now
+        if (result.speech_final) {
+          const full = session.dgTranscriptBuf.trim();
+          session.dgTranscriptBuf = '';
+          if (!full || NOISE_ONLY.test(full)) return;
+          await handleTranscript(session, full);
         }
         return;
       }
 
-      // UtteranceEnd = natural end of turn — now respond
+      // UtteranceEnd fires if speech_final never came — catch-all
       if (result.type === 'UtteranceEnd') {
-        const transcript = session.dgTranscriptBuf.trim();
+        const full = session.dgTranscriptBuf.trim();
         session.dgTranscriptBuf = '';
-        if (!transcript) return;
-
-        const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+)\s*[.?!]?$/i;
-        if (transcript.split(/\s+/).length < 1 || NOISE_ONLY.test(transcript)) return;
-
-        callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
-        pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
-
-        const emailMatch = transcript.match(/\b[a-zA-Z0-9._%+\-]+\s*[@at]+\s*[a-zA-Z0-9.\-]+\s*\.\s*(?:com|net|org|edu|gov|io|co)\b/i);
-        if (emailMatch && !session.capturedEmail) {
-          const rawEmail = emailMatch[0].replace(/\s+/g, '').replace(/\bat\b/gi, '@');
-          session.capturedEmail = rawEmail;
-          callLog(session.callSid, '[email] captured:', rawEmail);
-          pushToBrowser(session, { event: 'email-captured', email: rawEmail });
-        }
-
-        if (session.state !== 'listening') { callLog(session.callSid, '[dg] ignoring — state=' + session.state); return; }
-        session.state = 'processing';
-        session.history.push({ role: 'user', content: transcript });
-        await generateAndSpeak(session);
+        if (!full || NOISE_ONLY.test(full)) return;
+        await handleTranscript(session, full);
       }
     } catch (e) { callLog(session.callSid, '[dg] message error:', e.message); }
   });
