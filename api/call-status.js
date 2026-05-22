@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // POST → end a call (previously api/end-call)
+  // POST → end a call
   if (req.method === 'POST') {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken  = process.env.TWILIO_AUTH_TOKEN;
@@ -44,6 +44,22 @@ module.exports = async function handler(req, res) {
       return res.status(200).json(JSON.parse(raw));
     } catch (e) {
       return res.status(200).json({ text: '', ts: 0 });
+    }
+  }
+
+  // GET ?type=session&sid=XX → proxy Railway session (email capture etc.)
+  if (req.query.type === 'session') {
+    const { sid } = req.query;
+    if (!sid) return res.status(400).json({ error: 'sid required' });
+    const rawWsUrl = (process.env.RAILWAY_WS_URL || '').trim();
+    if (!rawWsUrl) return res.json({ found: false });
+    const railwayHttp = rawWsUrl.replace(/^wss?:\/\//, 'https://');
+    try {
+      const r = await fetch(`${railwayHttp}/session?callSid=${sid}`, { signal: AbortSignal.timeout(3000) });
+      const data = await r.json();
+      return res.json(data);
+    } catch (e) {
+      return res.json({ found: false });
     }
   }
 

@@ -4539,7 +4539,7 @@ function startEmailPolling(sid) {
   document.getElementById('hudEmailCapture').style.display = 'none';
   aiEmailPollInterval = setInterval(async () => {
     try {
-      const resp = await fetch('/api/call-email?sid=' + sid);
+      const resp = await fetch('/api/call-status?type=session&sid=' + sid);
       const data = await resp.json();
       if (data.capturedEmail) {
         document.getElementById('hudCapturedEmail').textContent = data.capturedEmail;
