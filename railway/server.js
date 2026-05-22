@@ -39,8 +39,8 @@ function buildSystemPrompt(session) {
   if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
   if (session.reason)  parts.push(`PURPOSE OF THIS CALL: ${session.reason}. This is why you are calling — weave it naturally into the conversation and keep coming back to it.`);
   if (session.name)    parts.push(`You are speaking with ${session.name}.`);
-  if (session.capturedEmail) parts.push(`You already have their email on file: ${session.capturedEmail}. If they agree to proceed, tell them you will send the form to that email right now.`);
-  else if (session.reason) parts.push(`If they agree to proceed, ask for their email address so you can send them the form.`);
+  if (session.capturedEmail) parts.push(`You already have their email on file: ${session.capturedEmail}. If they agree to proceed, let them know our customer care team will be sending them an email shortly with the form — do NOT say you are sending it yourself.`);
+  else if (session.reason) parts.push(`If they agree to proceed, ask for their email address so our customer care team can send them the form. Do NOT say you are sending the email yourself.`);
   return parts.join(' ');
 }
 
