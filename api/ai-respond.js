@@ -95,10 +95,16 @@ module.exports = async function handler(req, res) {
 
     if (!transcript) {
       if (retries >= 1) {
-        return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say("Hey, looks like we got cut off. I'll try you again!")}<Hangup/></Response>`);
+        return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Hangup/></Response>`);
       }
-      const last = [...history].reverse().find(m => m.role === 'assistant')?.content || "I didn't catch that.";
-      return res.status(200).send(gather(say('Sorry, missed that — ' + last), b64enc(history), retries + 1, turns, n, r, c, e, s));
+      // Re-open the gather silently — don't replay the greeting
+      const action = `/api/ai-respond?h=${b64enc(history)}&amp;retries=1&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}`;
+      return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="4" speechModel="phone_call" language="en-US">
+  </Gather>
+  <Hangup/>
+</Response>`);
     }
 
     const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|aah+|oop+|yep|nope|yeah|nah|ok|okay|hello+|hey+|hi+|bye+|hm+|ew+|wow|whoa|oops|ouch)\s*[.?!]?$/i;
