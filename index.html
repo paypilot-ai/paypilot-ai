@@ -1486,18 +1486,12 @@ body.modal-open{overflow:hidden}
               <span>Last call · Sarah M. · 2m ago</span>
               <strong>✓ Agreement sent</strong>
             </div>
-            <!-- Mini AI avatar — futuristic -->
+            <!-- Mini AI avatar — uses same canvas style as AI Caller -->
             <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(26,111,255,.08));border:1px solid rgba(0,212,255,.2);">
               <div style="position:relative;flex-shrink:0;">
-                <!-- Photo with holographic overlay -->
-                <div style="width:42px;height:42px;border-radius:50%;overflow:hidden;position:relative;box-shadow:0 0 0 2px rgba(0,212,255,.5),0 0 16px rgba(0,212,255,.3);">
-                  <img src="/240_F_790682991_iBTGcSFOXSkIm6eJN8PBli4wyG8iHYG4.jpg" style="width:100%;height:100%;object-fit:cover;object-position:top;filter:saturate(0.6) brightness(0.9) hue-rotate(180deg) sepia(0.3);"/>
-                  <!-- Scan line sweep -->
-                  <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,212,255,.18) 50%,transparent 60%);animation:devScan 2s linear infinite;border-radius:50%;"></div>
-                  <!-- Cyan tint overlay -->
-                  <div style="position:absolute;inset:0;background:rgba(0,100,180,.25);border-radius:50%;mix-blend-mode:screen;"></div>
+                <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px rgba(0,212,255,.5),0 0 14px rgba(0,212,255,.25);">
+                  <canvas id="devMiniCanvas" width="44" height="44" style="display:block;"></canvas>
                 </div>
-                <!-- Live dot -->
                 <div style="position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;background:#00ff88;border:2px solid #060e1c;box-shadow:0 0 6px #00ff88;animation:glow-pulse 2s ease-in-out infinite;"></div>
               </div>
               <div style="flex:1;min-width:0;">
@@ -6978,5 +6972,40 @@ window.showPage = function(pageId, btn) {
   </div>
 </div>
 
+<script>
+(function(){
+  var cv = document.getElementById('devMiniCanvas');
+  if(!cv) return;
+  var ctx = cv.getContext('2d');
+  var W=44, H=44;
+  var img = new Image();
+  img.crossOrigin='anonymous';
+  img.onload=function(){
+    var CHARS=['0','1'];
+    var cols=11, cw=W/cols;
+    var drops=Array.from({length:cols},function(){return -Math.random()*6;});
+    var spds=Array.from({length:cols},function(){return 0.35+Math.random()*0.4;});
+    var tick=0;
+    function frame(){
+      requestAnimationFrame(frame);
+      tick++;
+      ctx.drawImage(img,0,0,img.naturalWidth,img.naturalHeight*0.82,0,0,W,H);
+      ctx.globalAlpha=0.52; ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H); ctx.globalAlpha=1;
+      for(var i=0;i<cols;i++){
+        var x=i*cw+cw/2, y=Math.floor(drops[i])*8;
+        var dx=(x-W/2)/(W*0.44), dy=(y-H*0.40)/(H*0.46);
+        var onFace=(dx*dx+dy*dy)<1;
+        ctx.font='bold 7px monospace';
+        ctx.fillStyle=onFace?'rgba(0,255,70,1)':'rgba(0,180,40,0.45)';
+        ctx.fillText(CHARS[Math.floor(Math.random()*2)],x-3,y);
+        drops[i]+=spds[i];
+        if(drops[i]*8>H) drops[i]=-Math.random()*4;
+      }
+    }
+    frame();
+  };
+  img.src='/240_F_790682991_iBTGcSFOXSkIm6eJN8PBli4wyG8iHYG4.jpg';
+})();
+</script>
 </body>
 </html>
