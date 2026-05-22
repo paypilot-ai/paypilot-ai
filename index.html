@@ -1410,10 +1410,8 @@ body.modal-open{overflow:hidden}
       </div>
     </div>
     <div class="nav-actions">
-      <button class="nav-link" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">Pricing</button>
-      <button class="nav-link" onclick="window.location.href='/partners'">Partners</button>
       <button class="btn btn-white" onclick="showAuth()">Login</button>
-      <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Open Demo</button>
+      <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Open Demo &rarr;</button>
     </div>
   </div>
 
@@ -1671,6 +1669,15 @@ body.modal-open{overflow:hidden}
         </div>
       </div>
     </div>
+  <!-- FOOTER -->
+  <div style="border-top:1px solid rgba(255,255,255,.07);padding:28px 36px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;max-width:1320px;margin:0 auto;">
+    <span style="font-size:13px;color:rgba(255,255,255,.28);">© 2025 PayPilot AI. All rights reserved.</span>
+    <div style="display:flex;gap:24px;align-items:center;">
+      <a onclick="window.location.href='/partners'" style="font-size:13px;color:rgba(255,255,255,.42);cursor:pointer;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.42)'">Partner Program</a>
+      <a onclick="openPrivacyModal()" style="font-size:13px;color:rgba(255,255,255,.42);cursor:pointer;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.42)'">Privacy</a>
+      <a onclick="openTermsModal()" style="font-size:13px;color:rgba(255,255,255,.42);cursor:pointer;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.42)'">Terms</a>
+    </div>
+  </div>
   </div><!-- /.section -->
 </div><!-- /#home -->
 
