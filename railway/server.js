@@ -277,7 +277,7 @@ function handleTwilio(ws) {
       const c = cp.c || '';
       const e = cp.e || '';
       const s = cp.s || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, senderEmail: s || null, docuSignSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, speakGen: 0, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, senderEmail: s || null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
@@ -362,6 +362,7 @@ function connectDeepgram(session) {
       if (session.state === 'speaking') {
         // Barge-in: user spoke while Brandy is talking — cut her off and respond
         callLog(session.callSid, '[barge-in] cutting Brandy off:', transcript);
+        session.speakGen++;  // invalidates any in-flight pipeToTwilio
         if (session.twilioWs?.readyState === WebSocket.OPEN) {
           session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
         }
@@ -539,11 +540,14 @@ async function streamOpenAIAndSpeak(session, messages) {
       session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
     }
     session.state = 'speaking';
+    const myGen = ++session.speakGen;
     pushToBrowser(session, { event: 'ai-speaking', text: fullText });
-    await streamTTS(session, fullText);
+    await streamTTS(session, fullText, myGen);
 
-    const markName = 'tts-' + Date.now();
-    if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
+    if (session.speakGen === myGen) {
+      const markName = 'tts-' + Date.now();
+      if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
+    }
 
     return fullText;
   } catch (e) {
@@ -602,18 +606,19 @@ function awaitMark(session, name, ms = 10000) {
 async function speakToTwilio(session, text) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
   session.state = 'speaking';
+  const myGen = ++session.speakGen;
   callLog(session.callSid, '[tts] speaking:', text.slice(0, 60));
   pushToBrowser(session, { event: 'ai-speaking', text });
   try {
-    await streamTTS(session, text);
+    await streamTTS(session, text, myGen);
   } catch (e) { callLog(session.callSid, '[tts] error:', e.message); }
-  // Wait for Twilio to confirm audio is done — keep Deepgram alive throughout
+  if (session.speakGen !== myGen) return;  // barged in — don't advance state
   const markName = 'tts-' + Date.now();
   if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
-  enterListening(session);
+  if (session.speakGen === myGen) enterListening(session);
 }
 
-async function streamTTS(session, text) {
+async function streamTTS(session, text, gen) {
   // Try ElevenLabs — skip entirely if it failed before on this server instance
   if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
     try {
@@ -629,7 +634,7 @@ async function streamTTS(session, text) {
       console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
       if (resp.ok) {
         elevenlabsBlocked = false;
-        await pipeToTwilio(session, resp, 'ulaw8k');
+        await pipeToTwilio(session, resp, 'ulaw8k', gen);
         return;
       }
       const errBody = await resp.text().catch(() => '');
@@ -654,12 +659,13 @@ async function streamTTS(session, text) {
   });
   clearTimeout(t);
   if (!resp.ok) throw new Error(`OpenAI TTS ${resp.status}`);
-  await pipeToTwilio(session, resp, 'pcm24k');
+  await pipeToTwilio(session, resp, 'pcm24k', gen);
 }
 
-async function pipeToTwilio(session, resp, type) {
+async function pipeToTwilio(session, resp, type, gen) {
   const reader = resp.body.getReader();
   let buffer = Buffer.alloc(0);
+  const isStale = () => gen !== undefined && session.speakGen !== gen;
   const readWithTimeout = () => Promise.race([
     reader.read(),
     new Promise((_, rej) => setTimeout(() => rej(new Error('read timeout')), 8000))
@@ -670,17 +676,18 @@ async function pipeToTwilio(session, resp, type) {
     const CHUNK = 160; // 20ms at 8kHz
     try {
       while (true) {
+        if (isStale()) break;
         const { done, value } = await readWithTimeout();
         if (done) break;
         if (!value?.length) continue;
-        if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
+        if (isStale() || session.twilioWs?.readyState !== WebSocket.OPEN) break;
         buffer = Buffer.concat([buffer, Buffer.from(value)]);
         while (buffer.length >= CHUNK) {
           session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: buffer.slice(0, CHUNK).toString('base64') } }));
           buffer = buffer.slice(CHUNK);
         }
       }
-      if (buffer.length > 0 && session.twilioWs?.readyState === WebSocket.OPEN) {
+      if (!isStale() && buffer.length > 0 && session.twilioWs?.readyState === WebSocket.OPEN) {
         session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: buffer.toString('base64') } }));
       }
     } finally { reader.cancel().catch(() => {}); }
@@ -688,17 +695,16 @@ async function pipeToTwilio(session, resp, type) {
   }
 
   // PCM → mulaw; 160 mulaw bytes = 20ms at 8kHz (Twilio standard chunk)
-  // pcm16k: need 320 Int16 samples (640 bytes) → 160 mulaw bytes
-  // pcm24k: need 480 Int16 samples (960 bytes) → 160 mulaw bytes
   const chunkBytes = type === 'pcm24k' ? 960 : 640;
   const samplesPerChunk = chunkBytes / 2;
   const encoder = type === 'pcm24k' ? pcm24ToMulaw : pcm16ToMulaw;
   try {
     while (true) {
+      if (isStale()) break;
       const { done, value } = await readWithTimeout();
       if (done) break;
       if (!value?.length) continue;
-      if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
+      if (isStale() || session.twilioWs?.readyState !== WebSocket.OPEN) break;
       buffer = Buffer.concat([buffer, Buffer.from(value)]);
       while (buffer.length >= chunkBytes) {
         const pcm = new Int16Array(buffer.buffer, buffer.byteOffset, samplesPerChunk);
@@ -706,7 +712,7 @@ async function pipeToTwilio(session, resp, type) {
         buffer = buffer.slice(chunkBytes);
       }
     }
-    if (buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
+    if (!isStale() && buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
       const pcm = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
       session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: encoder(pcm).toString('base64') } }));
     }
