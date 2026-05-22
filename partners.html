@@ -28,6 +28,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:20px 4
 .btn{border:none;border-radius:12px;padding:11px 22px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.01em;position:relative;overflow:hidden;}
 .btn-ghost{background:transparent;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.18);}
 .btn-ghost:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.32);color:#fff;}
+.btn-white{background:#fff;color:#0d1b2e;border:none;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.btn-white:hover{background:#f0f4ff;}
 .btn-primary{background:linear-gradient(135deg,#2979ff,#0050e0);color:#fff;border:1px solid rgba(255,255,255,.15);box-shadow:0 4px 20px rgba(26,111,255,.45),inset 0 1px 0 rgba(255,255,255,.15);}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(26,111,255,.6),inset 0 1px 0 rgba(255,255,255,.2);}
 .btn-primary:active{transform:translateY(0);}
@@ -101,7 +103,7 @@ footer a:hover{color:#fff;}
 <nav>
   <div class="nav-brand" onclick="window.location.href='/'">Pay<span>Pilot AI</span></div>
   <div class="nav-actions">
-    <button class="btn btn-ghost" onclick="window.location.href='/'">Back to site</button>
+    <button class="btn btn-white" onclick="window.location.href='/'">Back to site</button>
     <button class="btn btn-primary" onclick="document.querySelector('.form-card').scrollIntoView({behavior:'smooth'})">Apply Now &rarr;</button>
   </div>
 </nav>
