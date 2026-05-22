@@ -23,25 +23,36 @@ function gather(sayXml, historyB64, retries, turns, n, r, c, e, s) {
 </Response>`;
 }
 
-async function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName, callReason) {
+function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName, callReason) {
   if (!customerEmail) return;
-  try {
-    const name = customerName || 'there';
-    const company = companyName || 'your company';
-    const reason = callReason || 'the conversation we just had';
-    const message = `Hi ${name},\n\nThanks so much for taking the time to chat today! As promised, I'm sending over some info about ${reason}.\n\nIf you have any questions or want to move forward, just reply to this email — I'd love to help.\n\nTalk soon,\nBrandy\n${company}`;
-    await fetch(`${BASE_URL}/api/send-agreement`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customerName: name,
-        customerEmail,
-        senderEmail: senderEmail || 'info@paypilotai.live',
-        subject: `Following up from our call — ${company}`,
-        message,
-      }),
-    });
-  } catch (_) {}
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) return;
+  const name    = customerName || 'there';
+  const company = companyName  || 'PayPilot AI';
+  const reason  = callReason   || 'our conversation today';
+  const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
+  const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
+  const bodyHtml = `
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;">
+      <h2 style="color:#0f172a;">Hi ${name},</h2>
+      <p style="color:#374151;font-size:16px;line-height:1.7;">
+        Thanks so much for chatting today! As promised, I'm following up about ${reason}.
+        If you have any questions or want to move forward, just reply to this email — I'd love to help.
+      </p>
+      <p style="color:#64748b;font-size:14px;margin-top:28px;">Talk soon,<br/>Brandy<br/>${company}</p>
+    </div>`;
+  // fire-and-forget — don't block the TwiML response
+  fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendKey}` },
+    body: JSON.stringify({
+      from: `${fromName} <${fromEmail}>`,
+      to: [customerEmail],
+      reply_to: senderEmail || fromEmail,
+      subject: `Following up from our call — ${company}`,
+      html: bodyHtml,
+    }),
+  }).catch(() => {});
 }
 
 function buildPrompt(customerName, companyName, callReason, history) {
@@ -150,7 +161,7 @@ module.exports = async function handler(req, res) {
           history.push({ role: 'assistant', content: reply });
           while (Buffer.byteLength(JSON.stringify(history)) > 5500) history.splice(0, 2);
           if (wantsEnd && turns >= 3) {
-            await sendFollowUpEmail(e, s, n, c, r);
+            sendFollowUpEmail(e, s, n, c, r);
             return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say(reply)}<Hangup/></Response>`);
           }
           return res.status(200).send(gather(say(reply), b64enc(history), 0, turns + 1, n, r, c, e, s));
