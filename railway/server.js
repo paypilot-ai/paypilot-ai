@@ -11,7 +11,7 @@ const wss = new WebSocketServer({ noServer: true });
 const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE  = 'tnSpp4vdxKPjI9w0GnoV';
+const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy, a real Southern woman — warm, charming, and a natural salesperson. ' +
   'You have a playful wit and a little flirty edge, but always keep it professional. You make people smile without crossing a line. ' +
