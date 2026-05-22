@@ -359,23 +359,8 @@ function connectDeepgram(session) {
       }
 
       if (session.state === 'processing') { return; }
-      if (session.state === 'speaking') {
-        // Barge-in: user spoke while Brandy is talking — cut her off and respond
-        callLog(session.callSid, '[barge-in] cutting Brandy off:', transcript);
-        session.speakGen++;  // invalidates any in-flight pipeToTwilio
-        if (session.twilioWs?.readyState === WebSocket.OPEN) {
-          session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-        }
-        session.pendingTranscript = null;
-        session.state = 'processing';
-        session.history.push({ role: 'user', content: transcript });
-        generateAndSpeak(session).catch(e => {
-          callLog(session.callSid, '[ai] barge-in error:', e.message);
-          session.state = 'listening';
-        });
-        return;
-      }
       if (session.state !== 'listening') {
+        // Brandy is speaking — hold the latest transcript and respond after she finishes
         session.pendingTranscript = transcript;
         callLog(session.callSid, '[dg] buffered (state=' + session.state + '):', transcript);
         return;
@@ -574,7 +559,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
-  voice_settings: { stability: 0.85, similarity_boost: 0.90, style: 0, use_speaker_boost: false, speed: 0.95 }
+  voice_settings: { stability: 0.50, similarity_boost: 0.85, style: 0.15, use_speaker_boost: false, speed: 0.95 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
