@@ -1409,7 +1409,7 @@ body.modal-open{overflow:hidden}
     </div>
     <div class="nav-actions">
       <button class="btn btn-ghost" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">Get Pricing</button>
-      <button class="btn btn-ghost" onclick="document.getElementById('partnersSection').scrollIntoView({behavior:'smooth'})">Partners</button>
+      <button class="btn btn-ghost" onclick="window.location.href='/partners'">Partners</button>
       <button class="btn btn-white" onclick="showAuth()">Login</button>
       <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Open Demo</button>
     </div>
@@ -1653,73 +1653,6 @@ body.modal-open{overflow:hidden}
       </div>
       <div style="text-align:center;">
         <button class="btn btn-primary" style="font-size:16px;padding:16px 36px;" onclick="enterPlanDemo('pro');setTimeout(()=>showPage('billing',document.querySelector('[data-page=billing]')),100);">Start Free Demo</button>
-      </div>
-    </div>
-
-    <!-- PARTNER / RESELLER SECTION -->
-    <div id="partnersSection" style="padding-bottom:96px;">
-      <div style="text-align:center;margin-bottom:52px;">
-        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.38);margin-bottom:14px;">Partner program</div>
-        <h2 style="margin:0;font-family:'Playfair Display',serif;font-size:42px;color:#fff;letter-spacing:-.04em;line-height:1.1;">Sell PayPilot AI.<br>Earn recurring income.</h2>
-        <p style="margin:14px auto 0;color:rgba(255,255,255,.58);font-size:17px;max-width:520px;line-height:1.7;">Refer a customer, earn 30% every month they stay. No cap. Cancel anytime. We handle support, billing, and tech.</p>
-      </div>
-
-      <!-- How it works -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:52px;">
-        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;text-align:center;">
-          <div style="width:48px;height:48px;border-radius:50%;background:rgba(79,124,255,.2);border:1px solid rgba(79,124,255,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:20px;">1</div>
-          <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:8px;">Apply below</div>
-          <div style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.6;">Fill out the short form. We'll send your unique referral link within 24 hours.</div>
-        </div>
-        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;text-align:center;">
-          <div style="width:48px;height:48px;border-radius:50%;background:rgba(79,124,255,.2);border:1px solid rgba(79,124,255,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:20px;">2</div>
-          <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:8px;">Share your link</div>
-          <div style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.6;">Post it, email it, pitch it to your clients. Every signup through your link is tracked automatically.</div>
-        </div>
-        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;text-align:center;">
-          <div style="width:48px;height:48px;border-radius:50%;background:rgba(79,124,255,.2);border:1px solid rgba(79,124,255,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:20px;">3</div>
-          <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:8px;">Get paid monthly</div>
-          <div style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.6;">30% recurring commission on every payment, every month, for as long as your referral stays subscribed.</div>
-        </div>
-      </div>
-
-      <!-- Commission callout -->
-      <div style="background:linear-gradient(135deg,rgba(0,196,122,.12),rgba(79,124,255,.08));border:1px solid rgba(0,196,122,.3);border-radius:24px;padding:36px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:28px;margin-bottom:48px;">
-        <div>
-          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(0,196,122,.8);margin-bottom:10px;">Example earnings</div>
-          <div style="font-size:15px;color:rgba(255,255,255,.7);line-height:1.8;">
-            5 customers on Starter ($99/mo) &rarr; <strong style="color:#fff;">$148/mo</strong><br>
-            5 customers on Pro ($399/mo) &rarr; <strong style="color:#fff;">$598/mo</strong><br>
-            10 customers on Pro &rarr; <strong style="color:#00c47a;font-size:18px;">$1,197/mo recurring</strong>
-          </div>
-        </div>
-        <div style="text-align:center;min-width:160px;">
-          <div style="font-size:56px;font-weight:900;color:#00c47a;line-height:1;letter-spacing:-.04em;font-family:'Sora',sans-serif;">30%</div>
-          <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:4px;">recurring commission</div>
-        </div>
-      </div>
-
-      <!-- Application form -->
-      <div style="max-width:580px;margin:0 auto;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:40px;">
-        <h3 style="margin:0 0 6px;font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff;">Apply to become a partner</h3>
-        <p style="margin:0 0 28px;color:rgba(255,255,255,.5);font-size:14px;">We'll review your application and send your referral link within 24 hours.</p>
-        <div style="display:flex;flex-direction:column;gap:14px;" id="partnerForm">
-          <input id="pf-name" type="text" placeholder="Your name" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;color:#fff;font-size:15px;outline:none;width:100%;" />
-          <input id="pf-email" type="email" placeholder="Your email" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;color:#fff;font-size:15px;outline:none;width:100%;" />
-          <input id="pf-company" type="text" placeholder="Company or website (optional)" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;color:#fff;font-size:15px;outline:none;width:100%;" />
-          <select id="pf-type" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;color:rgba(255,255,255,.8);font-size:15px;outline:none;width:100%;appearance:none;">
-            <option value="" disabled selected style="background:#0b1728;">How will you refer customers?</option>
-            <option value="Telecom / VoIP agent" style="background:#0b1728;">Telecom / VoIP agent</option>
-            <option value="Digital agency" style="background:#0b1728;">Digital agency</option>
-            <option value="Sales consultant" style="background:#0b1728;">Sales consultant</option>
-            <option value="Social media / content" style="background:#0b1728;">Social media / content</option>
-            <option value="White-label reseller" style="background:#0b1728;">White-label reseller</option>
-            <option value="Other" style="background:#0b1728;">Other</option>
-          </select>
-          <textarea id="pf-note" placeholder="Tell us about your audience or how you plan to promote (optional)" rows="3" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;color:#fff;font-size:15px;outline:none;width:100%;resize:vertical;"></textarea>
-          <button onclick="submitPartnerApp()" style="background:linear-gradient(135deg,#1a6fff,#0050e0);color:#fff;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;width:100%;">Apply Now — It's Free</button>
-          <div id="pf-msg" style="display:none;text-align:center;font-size:14px;color:#4ade80;padding:4px 0;">✓ Application sent! We'll be in touch within 24 hours.</div>
-        </div>
       </div>
     </div>
 
@@ -7032,45 +6965,6 @@ window.showPage = function(pageId, btn) {
     <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:10px;background:rgba(0,255,136,.12);color:#00ff88;border:1px solid rgba(0,255,136,.4);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(0,255,136,.5);">✉️ Send Email</button>
   </div>
 </div>
-<script>
-async function submitPartnerApp() {
-  const name    = document.getElementById('pf-name').value.trim();
-  const email   = document.getElementById('pf-email').value.trim();
-  const company = document.getElementById('pf-company').value.trim();
-  const type    = document.getElementById('pf-type').value;
-  const note    = document.getElementById('pf-note').value.trim();
-  const msg     = document.getElementById('pf-msg');
 
-  if (!name || !email) { alert('Please enter your name and email.'); return; }
-
-  const body = [
-    `Name: ${name}`,
-    `Email: ${email}`,
-    company ? `Company: ${company}` : null,
-    type    ? `Type: ${type}`       : null,
-    note    ? `Notes: ${note}`      : null
-  ].filter(Boolean).join('\n');
-
-  try {
-    const r = await fetch('/api/send-agreement', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customerName:  'Partner Program',
-        customerEmail: 'info@paypilotai.live',
-        senderEmail:   email,
-        subject:       `New Partner Application — ${name}`,
-        message:       body
-      })
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Failed');
-    document.getElementById('partnerForm').querySelectorAll('input,select,textarea,button').forEach(el => el.disabled = true);
-    msg.style.display = 'block';
-  } catch(e) {
-    alert('Something went wrong. Please email us at info@paypilotai.live');
-  }
-}
-</script>
 </body>
 </html>
