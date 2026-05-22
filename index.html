@@ -1544,6 +1544,44 @@ body.modal-open{overflow:hidden}
       All plans are month-to-month subscriptions billed automatically. <strong style="color:rgba(255,255,255,.60);">No refunds.</strong> Your subscription continues until you cancel — cancel anytime from Settings before your next billing date. By subscribing you agree to these terms.
     </div>
 
+    <!-- COMPETITOR COMPARISON TABLE -->
+    <div style="padding-bottom:96px;">
+      <div style="text-align:center;margin-bottom:40px;">
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.38);margin-bottom:14px;">See how we stack up</div>
+        <h2 style="margin:0;font-family:'Playfair Display',serif;font-size:40px;color:#fff;letter-spacing:-.04em;line-height:1.1;">Why teams choose PayPilot AI</h2>
+        <p style="margin:12px auto 0;color:rgba(255,255,255,.58);font-size:16px;max-width:520px;line-height:1.7;">Built specifically for collections and outbound sales — not bolted onto a CRM.</p>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table style="width:100%;border-collapse:separate;border-spacing:0;min-width:640px;">
+          <thead>
+            <tr>
+              <th style="padding:14px 20px;text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.38);background:transparent;border-bottom:1px solid rgba(255,255,255,.08);"></th>
+              <th style="padding:14px 20px;text-align:center;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,rgba(79,124,255,.22),rgba(79,124,255,.08));border-radius:14px 14px 0 0;border:1px solid rgba(79,124,255,.35);border-bottom:none;letter-spacing:-.01em;">
+                <span style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#4f7cff;margin-bottom:4px;">Best Value</span>
+                PayPilot AI
+              </th>
+              <th style="padding:14px 20px;text-align:center;font-size:13px;font-weight:700;color:rgba(255,255,255,.62);background:rgba(255,255,255,.03);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,.07);border-bottom:none;">Salesforce<br><span style="font-size:11px;font-weight:400;color:rgba(255,255,255,.35);">Einstein / Sales Cloud</span></th>
+              <th style="padding:14px 20px;text-align:center;font-size:13px;font-weight:700;color:rgba(255,255,255,.62);background:rgba(255,255,255,.03);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,.07);border-bottom:none;">Synthflow</th>
+              <th style="padding:14px 20px;text-align:center;font-size:13px;font-weight:700;color:rgba(255,255,255,.62);background:rgba(255,255,255,.03);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,.07);border-bottom:none;">Bland AI</th>
+            </tr>
+          </thead>
+          <tbody id="compTable"></tbody>
+          <tfoot>
+            <tr>
+              <td style="padding:18px 20px;border-top:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.38);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Starting price / mo</td>
+              <td style="padding:18px 20px;text-align:center;border-top:1px solid rgba(79,124,255,.35);background:linear-gradient(180deg,rgba(79,124,255,.08),rgba(79,124,255,.04));border-left:1px solid rgba(79,124,255,.35);border-right:1px solid rgba(79,124,255,.35);border-radius:0 0 14px 14px;font-size:15px;font-weight:800;color:#7fa4ff;">$99 / mo</td>
+              <td style="padding:18px 20px;text-align:center;border-top:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);border-radius:0 0 14px 14px;font-size:13px;color:rgba(255,255,255,.5);">$165+ / user / mo<br><span style="font-size:11px;color:rgba(255,255,255,.28);">+ implementation fees</span></td>
+              <td style="padding:18px 20px;text-align:center;border-top:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);border-radius:0 0 14px 14px;font-size:13px;color:rgba(255,255,255,.5);">$29 / mo<br><span style="font-size:11px;color:rgba(255,255,255,.28);">limited minutes</span></td>
+              <td style="padding:18px 20px;text-align:center;border-top:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);border-radius:0 0 14px 14px;font-size:13px;color:rgba(255,255,255,.5);">Usage-based<br><span style="font-size:11px;color:rgba(255,255,255,.28);">~$0.09 / min all-in</span></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div style="text-align:center;margin-top:36px;">
+        <button class="btn btn-primary" style="font-size:16px;padding:16px 36px;" onclick="enterPlanDemo('pro');setTimeout(()=>showPage('billing',document.querySelector('[data-page=billing]')),100);">Start Free Demo</button>
+      </div>
+    </div>
+
     <!-- HOME BILLING BANNER -->
     <div style="padding-bottom:84px;">
       <div style="border-radius:34px; background:linear-gradient(135deg, rgba(79,124,255,.14), rgba(53,214,255,.08)); border:1px solid rgba(255,255,255,.10); padding:42px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:28px;">
@@ -6853,5 +6891,42 @@ window.showPage = function(pageId, btn) {
     <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:10px;background:rgba(0,255,136,.12);color:#00ff88;border:1px solid rgba(0,255,136,.4);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(0,255,136,.5);">✉️ Send Email</button>
   </div>
 </div>
+<script>
+(function(){
+  var rows=[
+    ['Outbound AI voice agent',          '✓','✗','✓','✓'],
+    ['Built for collections',            '✓','✗','✗','✗'],
+    ['Live agent rebuttal assist',       '✓','✗','✗','✗'],
+    ['Send agreement mid-call',          '✓','✗','✗','✗'],
+    ['Real-time call transcript',        '✓','✓','✓','✓'],
+    ['No setup / start in minutes',      '✓','✗','✓','✓'],
+    ['Flat monthly pricing',             '✓','✗','✓','✗'],
+    ['Human-handoff (live assist mode)', '✓','✓','✗','✗'],
+    ['CRM / enterprise integrations',    '~','✓','~','~'],
+  ];
+  var tbody=document.getElementById('compTable');
+  if(!tbody)return;
+  rows.forEach(function(r,i){
+    var tr=document.createElement('tr');
+    r.forEach(function(cell,ci){
+      var td=document.createElement('td');
+      var bg=i%2===0?'rgba(255,255,255,.025)':'transparent';
+      if(ci===0){
+        td.style.cssText='padding:14px 20px;font-size:14px;color:rgba(255,255,255,.72);white-space:nowrap;background:'+bg+';border-bottom:1px solid rgba(255,255,255,.05);';
+        td.textContent=cell;
+      } else {
+        var pp=ci===1;
+        var icon=cell==='✓'?'<span style="color:#4ade80;font-size:18px;line-height:1;">✓</span>'
+               :cell==='✗'?'<span style="color:rgba(255,255,255,.2);font-size:18px;line-height:1;">✗</span>'
+               :'<span style="color:#fbbf24;font-size:12px;font-weight:700;letter-spacing:.02em;">Partial</span>';
+        td.style.cssText='padding:14px 20px;text-align:center;border-bottom:1px solid '+(pp?'rgba(79,124,255,.18)':'rgba(255,255,255,.05)')+';background:'+(pp?'linear-gradient(180deg,rgba(79,124,255,.10),rgba(79,124,255,.05))':bg)+';'+(pp?'border-left:1px solid rgba(79,124,255,.22);border-right:1px solid rgba(79,124,255,.22);':'');
+        td.innerHTML=icon;
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+})();
+</script>
 </body>
 </html>
