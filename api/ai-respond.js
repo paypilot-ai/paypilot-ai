@@ -17,7 +17,7 @@ function gather(sayXml, historyB64, retries, turns, n, r, c, e, s) {
   const action = `/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e||'')}&amp;s=${encodeURIComponent(s||'')}`;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="4" speechModel="phone_call" language="en-US">
+  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="6" speechModel="phone_call" language="en-US">
     ${sayXml}
   </Gather>
   <Hangup/>
@@ -102,7 +102,7 @@ module.exports = async function handler(req, res) {
       const action = `/api/ai-respond?h=${b64enc(history)}&amp;retries=1&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}`;
       return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="4" speechModel="phone_call" language="en-US">
+  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="6" speechModel="phone_call" language="en-US">
   </Gather>
   <Hangup/>
 </Response>`);
@@ -138,7 +138,7 @@ module.exports = async function handler(req, res) {
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 15, temperature: 0.7 }),
+        body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 30, temperature: 0.7, stop: ['\n', '. '] }),
         signal: controller.signal
       });
       clearTimeout(timeout);
