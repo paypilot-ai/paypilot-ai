@@ -57,7 +57,7 @@ module.exports = async function handler(req, res) {
       <h2 style="color:#0f172a;">Hi ${name},</h2>
       ${bodyHtml}
       <p style="color:#64748b;font-size:14px;margin-top:28px;">If you have any questions, feel free to reply to this email.</p>
-      <p style="color:#64748b;font-size:14px;">— The PayPilot AI Team</p>
+      <p style="color:#64748b;font-size:14px;">Sent via PayPilot AI</p>
     </div>
   `;
 
