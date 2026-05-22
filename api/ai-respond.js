@@ -61,11 +61,11 @@ function buildPrompt(customerName, companyName, callReason) {
   const reason  = callReason  || 'our services';
   return `You are Brandy — a real, warm Southern woman on a live sales call for ${company}, talking to ${name} about ${reason}.
 
-You already introduced yourself. Jump straight into the conversation — no re-introductions, never say your name again.
+The intro is done. Do NOT say hello, hi, hey, or any greeting. Do NOT say your name again.
 
-Respond ONLY to what they just said. One sentence. 12 words max. Then stop completely.
+Reply to exactly what they just said. One short sentence — 10 words max. Stop after the period.
 
-Tone: genuine, unhurried, conversational. Not salesy. Not scripted. Not peppy.
+Tone: calm, genuine, Southern. Not peppy. Not salesy.
 Banned: "I understand", "Absolutely", "Great", "Certainly", "Of course", "Definitely", "I hear you".
 
 If they push back or say no:
@@ -115,10 +115,10 @@ module.exports = async function handler(req, res) {
 
     // Scripted fallback replies — used if OpenAI is slow or unavailable
     const SCRIPTED = [
-      `So the reason I'm calling is ${reason || 'something I think could help you'}. Does that sound like something you'd want to hear more about?`,
-      `Yeah, totally — what's the biggest thing holding you back right now?`,
-      `That's fair. Would it be okay if I sent you a quick email with the details?`,
-      `I appreciate your time. Mind if I follow up later this week?`,
+      `We help with ${reason || 'outbound sales'} — want to hear more?`,
+      `What's the biggest thing holding you back right now?`,
+      `Can I send you a quick email with the details?`,
+      `I appreciate your time — mind if I follow up?`,
     ];
 
     const controller = new AbortController();
@@ -131,7 +131,7 @@ module.exports = async function handler(req, res) {
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 35, temperature: 0.7 }),
+        body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 22, temperature: 0.7 }),
         signal: controller.signal
       });
       clearTimeout(timeout);

@@ -40,8 +40,8 @@ module.exports = async function handler(req, res) {
     res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Pause length="1"/>
+  <Play>${ttsUrl(greeting)}</Play>
   <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="4" speechModel="phone_call" language="en-US">
-    <Play>${ttsUrl(greeting)}</Play>
   </Gather>
   <Hangup/>
 </Response>`);
