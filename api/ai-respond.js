@@ -16,7 +16,7 @@ function gather(sayXml, historyB64, retries, turns, n, r, c, e, s) {
   const action = `/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e||'')}&amp;s=${encodeURIComponent(s||'')}`;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="${action}" method="POST" timeout="8" speechTimeout="auto" speechModel="phone_call" language="en-US">
+  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="3" speechModel="phone_call" language="en-US">
     ${sayXml}
   </Gather>
   <Hangup/>
@@ -74,6 +74,7 @@ Rules:
 - ONE sentence only, max 20 words, then stop.
 - Natural fillers: "mm", "yeah", "oh", "well" — only when it fits naturally.
 - BANNED words: "I understand", "Absolutely", "Certainly", "Of course", "Definitely", "Great".
+- Do NOT say your name (Brandy) again — you already introduced yourself.
 - Read the conversation history. Do NOT reuse any phrasing or point you already made.
 - First pushback → address their SPECIFIC concern from a brand new angle you haven't tried.
 - Second pushback → offer to send info by email and ask if that's okay.
@@ -106,9 +107,12 @@ module.exports = async function handler(req, res) {
       return res.status(200).send(gather(say('Sorry, missed that — ' + last), b64enc(history), retries + 1, turns, n, r, c, e, s));
     }
 
-    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|aah+|oop+|yep|nope|yeah|nah|ok|okay)\s*[.?!]?$/i;
+    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|aah+|oop+|yep|nope|yeah|nah|ok|okay|hello+|hey+|hi+|bye+|hm+|ew+|wow|whoa|oops|ouch)\s*[.?!]?$/i;
+    const TWO_WORD_NOISE = /^(uh (huh|oh|yeah|ok|okay|hm)|oh (ok|okay|yeah|wow|right|sure|hmm)|mm (hmm|yeah|ok)|yeah (ok|okay|sure|right|hmm))[.?!]?$/i;
     const words = transcript.split(/\s+/).filter(Boolean);
-    if (words.length < 1 || (words.length === 1 && NOISE_ONLY.test(transcript))) {
+    if (words.length < 1
+      || (words.length === 1 && NOISE_ONLY.test(transcript))
+      || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
       const last = [...history].reverse().find(m => m.role === 'assistant')?.content || '';
       return res.status(200).send(gather(say(last), b64enc(history), retries, turns, n, r, c, e, s));
     }
