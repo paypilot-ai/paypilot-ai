@@ -1879,16 +1879,16 @@ body.modal-open{overflow:hidden}
 
           <div class="grid-4">
             <div class="card" style="background:linear-gradient(135deg,#07101f,#0d1e38);border:1px solid rgba(26,111,255,.22);box-shadow:0 4px 24px rgba(26,111,255,.16);">
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Calls today</div>
-              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricCalls">43</div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Calls made</div>
+              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricCalls">—</div>
             </div>
             <div class="card" style="background:linear-gradient(135deg,#0d1f10,#142a1a);border:1px solid rgba(0,197,122,.22);box-shadow:0 4px 24px rgba(0,197,122,.12);">
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Responses generated</div>
-              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricResponses">127</div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Contacts reached</div>
+              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricResponses">—</div>
             </div>
             <div class="card" style="background:linear-gradient(135deg,#1a1007,#251808);border:1px solid rgba(201,162,39,.22);box-shadow:0 4px 24px rgba(201,162,39,.10);">
               <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Close score</div>
-              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricClose">81%</div>
+              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricClose">—</div>
             </div>
             <div class="card" style="background:linear-gradient(135deg,#15071a,#200e26);border:1px solid rgba(139,92,246,.22);box-shadow:0 4px 24px rgba(139,92,246,.12);">
               <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Active plan</div>
@@ -3581,9 +3581,6 @@ function enterRealApp(){
   const lp = document.getElementById('livePill');
   if(lp){ lp.textContent = '🟢 Live'; lp.style.background = '#dcfce7'; lp.style.color = '#166534'; }
   document.getElementById('metricPlan').textContent = 'Pro';
-  document.getElementById('metricCalls').textContent = cfg.calls;
-  document.getElementById('metricResponses').textContent = cfg.responses;
-  document.getElementById('metricClose').textContent = cfg.close;
   document.getElementById('analyticsQuality').textContent = cfg.quality;
   document.getElementById('analyticsTime').textContent = cfg.time;
   document.getElementById('analyticsSolved').textContent = cfg.solved;
@@ -3599,8 +3596,7 @@ function enterRealApp(){
   document.getElementById('starterAnalyticsNote').style.display = 'none';
   document.getElementById('enterpriseDashboardCard').style.display = 'none';
 
-  // Update manager table
-  document.getElementById('managerTable').innerHTML = '<tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr><tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr><tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>';
+  refreshDashboardMetrics();
 
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
@@ -3657,26 +3653,6 @@ function applyPlanDemo(plan){
     <div class="script-item"><b>${o[0]}</b><span class="subtle">${o[1]}</span></div>
   `).join('');
 
-  const managerTable = document.getElementById('managerTable');
-  if(plan === 'starter'){
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>18</td><td>74%</td><td>⚡ Building</td></tr>
-      <tr><td>Brandy</td><td>12</td><td>69%</td><td>↗ Learning</td></tr>
-      <tr><td>Tori</td><td>9</td><td>71%</td><td>✅ Steady</td></tr>
-    `;
-  } else if(plan === 'enterprise'){
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>112</td><td>95%</td><td>🔥 Elite</td></tr>
-      <tr><td>Cory</td><td>98</td><td>91%</td><td>✅ Strong</td></tr>
-      <tr><td>Jess</td><td>87</td><td>89%</td><td>↗ Growing</td></tr>
-    `;
-  } else {
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr>
-      <tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr>
-      <tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>
-    `;
-  }
 
   // Sync billing current plan display
   const billingPlanName = document.getElementById('billingPlanName');
