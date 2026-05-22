@@ -242,6 +242,10 @@ body.modal-open{overflow:hidden}
 }
 .mini-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px #4ade80;animation:glow-pulse 2s ease-in-out infinite;}
 .mini-ai p{margin:0;font-size:12px;line-height:1.65;color:rgba(255,255,255,.82)}
+.dev-bar{width:3px;border-radius:999px;background:linear-gradient(180deg,#4f7cff,#00d4ff);animation:devBarBounce 0.7s ease-in-out infinite alternate;}
+@keyframes devBarBounce{0%{height:3px;opacity:.5}100%{height:14px;opacity:1}}
+@keyframes mouthPulse{0%,100%{ry:1.2}50%{ry:3.2}}
+#devMouth{animation:mouthPulse 0.4s ease-in-out infinite;}
 .mini-call-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);font-size:11px;}
 .mini-call-row span{color:rgba(255,255,255,.55);}
 .mini-call-row strong{color:#4ade80;font-weight:700;}
@@ -1482,6 +1486,46 @@ body.modal-open{overflow:hidden}
             <div class="mini-call-row">
               <span>Last call · Sarah M. · 2m ago</span>
               <strong>✓ Agreement sent</strong>
+            </div>
+            <!-- Mini AI avatar with lips animation -->
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(26,111,255,.10),rgba(0,212,255,.05));border:1px solid rgba(79,124,255,.2);">
+              <div style="position:relative;flex-shrink:0;">
+                <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1a4a8a,#0d2d5e);border:2px solid rgba(79,124,255,.5);overflow:hidden;display:flex;align-items:flex-end;justify-content:center;box-shadow:0 0 12px rgba(26,111,255,.4);">
+                  <!-- SVG face -->
+                  <svg width="38" height="38" viewBox="0 0 38 38" style="position:absolute;top:0;left:0;">
+                    <!-- Face base -->
+                    <circle cx="19" cy="17" r="11" fill="#f4c5a0"/>
+                    <!-- Eyes -->
+                    <ellipse cx="15.5" cy="15" rx="1.5" ry="1.8" fill="#2d1a0e"/>
+                    <ellipse cx="22.5" cy="15" rx="1.5" ry="1.8" fill="#2d1a0e"/>
+                    <!-- Eye shine -->
+                    <circle cx="16" cy="14.4" r=".6" fill="#fff"/>
+                    <circle cx="23" cy="14.4" r=".6" fill="#fff"/>
+                    <!-- Animated mouth -->
+                    <ellipse id="devMouth" cx="19" cy="21" rx="3.2" ry="1.2" fill="#c0715a"/>
+                    <!-- Hair -->
+                    <path d="M8 17 Q8 6 19 6 Q30 6 30 17 Q28 8 19 8 Q10 8 8 17Z" fill="#3d2010"/>
+                    <!-- Shoulders -->
+                    <path d="M6 38 Q6 28 19 28 Q32 28 32 38Z" fill="#1a3a7a"/>
+                  </svg>
+                </div>
+                <!-- Live indicator -->
+                <div style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:#4ade80;border:2px solid #060e1c;animation:glow-pulse 2s ease-in-out infinite;"></div>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:10px;font-weight:800;color:#7fa4ff;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Brandy · AI Agent</div>
+                <!-- Animated sound bars -->
+                <div style="display:flex;align-items:center;gap:2px;height:16px;">
+                  <div class="dev-bar" style="animation-delay:0s"></div>
+                  <div class="dev-bar" style="animation-delay:.1s"></div>
+                  <div class="dev-bar" style="animation-delay:.2s"></div>
+                  <div class="dev-bar" style="animation-delay:.15s"></div>
+                  <div class="dev-bar" style="animation-delay:.05s"></div>
+                  <div class="dev-bar" style="animation-delay:.25s"></div>
+                  <div class="dev-bar" style="animation-delay:.1s"></div>
+                  <span style="font-size:10px;color:rgba(255,255,255,.45);margin-left:6px;font-style:italic;">speaking...</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
