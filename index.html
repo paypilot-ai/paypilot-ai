@@ -4426,7 +4426,7 @@ async function startTwilioCall(){
   document.getElementById('twilioStatus').textContent = 'Connecting...';
 
   try {
-    const resp = await fetch('/api/twilio-call', {
+    const resp = await fetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ toNumber: number })

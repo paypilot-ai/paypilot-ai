@@ -48,7 +48,8 @@ function sendForm(session) {
   if (!session.capturedEmail || session.docuSignSent || !FORM_LINK) return;
   session.docuSignSent = true;
   callLog(session.callSid, '[form] sending to', session.capturedEmail);
-  fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
+  const vercelBase = process.env.VERCEL_API_URL || 'https://paypilotai.live';
+  fetch(`${vercelBase}/api/send-agreement`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
