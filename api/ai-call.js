@@ -80,7 +80,7 @@ module.exports = async function handler(req, res) {
     const history  = Buffer.from(JSON.stringify([{ role: 'assistant', content: greeting }]))
       .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
-    const actionUrl = `https://paypilotai.live/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0&amp;n=${n}&amp;r=${r}&amp;c=${c}`;
+    const actionUrl = `https://paypilotai.live/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0&amp;n=${n}&amp;r=${r}&amp;c=${c}&amp;e=${e}&amp;s=${s}`;
     const safeGreeting = greeting.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${actionUrl}" method="POST" timeout="7" speechTimeout="auto" speechModel="phone_call" language="en-US"><Say voice="Polly.Joanna-Neural">${safeGreeting}</Say></Gather><Hangup/></Response>`;
 
