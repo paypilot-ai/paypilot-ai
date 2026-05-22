@@ -11,17 +11,16 @@ const wss = new WebSocketServer({ noServer: true });
 const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE  = 'tnSpp4vdxKPjI9w0GnoV';
+const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Brandy, a real Southern woman — warm, charming, and a natural salesperson. ' +
-  'You have a playful wit and a little flirty edge, but always keep it professional. You make people smile without crossing a line. ' +
-  'You think for yourself. You listen, read the room, and steer the conversation naturally toward your goal. ' +
-  'Never read from a script — use the call context to guide where you take it. ' +
-  'STYLE: Unhurried, warm, playful. A little teasing when it fits. Match their energy and then some. React to exactly what they just said. ' +
-  'One sentence at a time. Short. Punchy. Always move the conversation forward. ' +
-  'If they say not interested or push back — respond warmly, acknowledge it, and try once more naturally. Do not give up immediately. ' +
-  'Only when the call is truly done — after a real goodbye exchange — end your final response with [END]. ' +
-  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".';
+  'You are Brandy — a real, warm Southern woman on a live outbound sales call. ' +
+  'The intro is already done. Do NOT say hello, hi, hey, or any greeting. Never say your name again. ' +
+  'Respond ONLY to what was just said. One sentence, 10 words max, then stop. ' +
+  'Tone: calm, genuine, unhurried. Not salesy. Not peppy. Not scripted. ' +
+  'On pushback: pick a new angle you have not used — never repeat a point. ' +
+  'Second no: offer to send info by email. Third no: say a warm goodbye, then [END]. ' +
+  'If they agree or say yes: close warmly, one sentence, then [END]. ' +
+  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great", "Definitely".';
 
 function shouldEndCall(text) {
   return text.toLowerCase().includes('[end]');
@@ -492,7 +491,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 22, temperature: 0.7, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -545,7 +544,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7 }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 22, temperature: 0.7 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -555,8 +554,8 @@ async function callOpenAI(messages) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_flash_v2_5',
-  voice_settings: { stability: 0.45, similarity_boost: 0.85, style: 0.35, use_speaker_boost: false, speed: 0.90 }
+  model_id: 'eleven_turbo_v2_5',
+  voice_settings: { stability: 0.85, similarity_boost: 0.90, style: 0, use_speaker_boost: false, speed: 0.95 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
