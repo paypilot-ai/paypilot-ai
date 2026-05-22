@@ -191,50 +191,60 @@ body.modal-open{overflow:hidden}
 
 /* ── DEVICE ── */
 .device{
-  position:relative;padding:16px;border-radius:30px;
-  background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
-  border:1px solid rgba(255,255,255,.14);
-  box-shadow:var(--shadow-dark),var(--glow-blue);
+  position:relative;padding:10px;border-radius:28px;
+  background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06),0 0 80px rgba(26,111,255,.25);
   animation:float 6s ease-in-out infinite;
 }
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 .device-glow{
-  position:absolute;inset:auto -60px -70px auto;width:280px;height:280px;border-radius:50%;
-  background:radial-gradient(circle,rgba(0,212,255,.30),transparent 70%);
-  filter:blur(28px);pointer-events:none;animation:glow-pulse 4s ease-in-out infinite;
+  position:absolute;inset:auto -80px -80px auto;width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle,rgba(26,111,255,.35),rgba(0,212,255,.15) 40%,transparent 70%);
+  filter:blur(40px);pointer-events:none;animation:glow-pulse 4s ease-in-out infinite;
 }
-@keyframes glow-pulse{0%,100%{opacity:.7}50%{opacity:1}}
-.device-screen{background:#08111e;border-radius:24px;overflow:hidden;min-height:520px;border:1px solid rgba(255,255,255,.07)}
-.device-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06)}
-.dot-wrap{display:flex;gap:7px}
-.dot{width:9px;height:9px;border-radius:50%}
-.dot:nth-child(1){background:#ff5f57}
-.dot:nth-child(2){background:#febc2e}
-.dot:nth-child(3){background:#28c840}
-.device-main{display:grid;grid-template-columns:175px 1fr;min-height:476px}
-.device-side{background:rgba(0,0,0,.45);border-right:1px solid rgba(255,255,255,.05);color:#fff;padding:14px}
-.device-side .item{border-radius:10px;padding:10px 12px;margin-bottom:5px;font-weight:600;font-size:12px;color:rgba(255,255,255,.55);border:1px solid transparent}
-.device-side .item.active{background:rgba(26,111,255,.18);border-color:rgba(26,111,255,.3);color:var(--blue-3)}
-.device-content{padding:14px;background:rgba(255,255,255,.02)}
+@keyframes glow-pulse{0%,100%{opacity:.6}50%{opacity:1}}
+.device-screen{background:linear-gradient(180deg,#0a1628 0%,#060e1c 100%);border-radius:20px;overflow:hidden;min-height:520px;border:1px solid rgba(255,255,255,.08)}
+.device-top{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.07);backdrop-filter:blur(8px);}
+.device-top strong{font-size:12px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.01em;}
+.dot-wrap{display:flex;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot:nth-child(1){background:#ff5f57;box-shadow:0 0 6px rgba(255,95,87,.5)}
+.dot:nth-child(2){background:#febc2e;box-shadow:0 0 6px rgba(254,188,46,.5)}
+.dot:nth-child(3){background:#28c840;box-shadow:0 0 6px rgba(40,200,64,.5)}
+.device-main{display:grid;grid-template-columns:160px 1fr;min-height:476px}
+.device-side{background:rgba(0,0,0,.5);border-right:1px solid rgba(255,255,255,.06);padding:16px 12px}
+.device-side .side-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:rgba(255,255,255,.25);padding:0 10px;margin:14px 0 6px}
+.device-side .item{border-radius:9px;padding:9px 10px;margin-bottom:3px;font-weight:600;font-size:12px;color:rgba(255,255,255,.45);border:1px solid transparent;display:flex;align-items:center;gap:8px;cursor:default}
+.device-side .item.active{background:linear-gradient(135deg,rgba(26,111,255,.22),rgba(26,111,255,.08));border-color:rgba(26,111,255,.35);color:#7fa4ff}
+.device-side .item:not(.active):hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.65)}
+.device-content{padding:16px;background:rgba(255,255,255,.01)}
 .mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
 .mini-card{
-  background:rgba(255,255,255,.06);border-radius:14px;padding:13px;
-  border:1px solid rgba(255,255,255,.08);
-  background:linear-gradient(135deg,rgba(26,111,255,.10),rgba(255,255,255,.04));
+  border-radius:13px;padding:13px 12px;
+  background:linear-gradient(135deg,rgba(26,111,255,.12),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.09);
 }
-.mini-card b{font-size:22px;letter-spacing:-.04em;color:#fff;font-family:'Sora',sans-serif;font-weight:700}
-.mini-card span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.10em;color:rgba(255,255,255,.45);font-weight:600;margin-bottom:3px}
+.mini-card b{font-size:24px;letter-spacing:-.05em;color:#fff;font-family:'Sora',sans-serif;font-weight:800;display:block;line-height:1.1;margin-bottom:4px}
+.mini-card span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.10em;color:rgba(255,255,255,.38);font-weight:700}
+.mini-card .trend{font-size:10px;font-weight:700;color:#4ade80;margin-top:4px;}
 .mini-ai{
-  border-radius:14px;padding:16px;
-  background:linear-gradient(135deg,rgba(26,111,255,.18),rgba(0,212,255,.08));
-  border:1px solid rgba(26,111,255,.25);
+  border-radius:14px;padding:14px 16px;
+  background:linear-gradient(135deg,rgba(26,111,255,.20),rgba(0,212,255,.06));
+  border:1px solid rgba(79,124,255,.35);
+  box-shadow:0 4px 20px rgba(26,111,255,.15);
+  margin-bottom:10px;
 }
 .mini-badge{
-  display:inline-flex;padding:4px 10px;border-radius:999px;
-  background:rgba(26,111,255,.20);border:1px solid rgba(26,111,255,.30);
-  font-size:9px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;margin-bottom:8px;color:var(--blue-3);
+  display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;
+  background:rgba(26,111,255,.25);border:1px solid rgba(79,124,255,.4);
+  font-size:9px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;margin-bottom:8px;color:#7fa4ff;
 }
-.mini-ai p{margin:0;font-size:12px;line-height:1.6;color:rgba(255,255,255,.80)}
+.mini-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px #4ade80;animation:glow-pulse 2s ease-in-out infinite;}
+.mini-ai p{margin:0;font-size:12px;line-height:1.65;color:rgba(255,255,255,.82)}
+.mini-call-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);font-size:11px;}
+.mini-call-row span{color:rgba(255,255,255,.55);}
+.mini-call-row strong{color:#4ade80;font-weight:700;}
 
 /* ── SECTION ── */
 .section{max-width:1320px;margin:0 auto;padding:0 36px 88px}
@@ -1433,26 +1443,45 @@ body.modal-open{overflow:hidden}
       <div class="device-screen">
         <div class="device-top">
           <div class="dot-wrap"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-          <strong>PayPilot Workspace</strong>
+          <strong>PayPilot AI Workspace</strong>
+          <div style="font-size:10px;color:rgba(255,255,255,.35);font-weight:600;">v2.2</div>
         </div>
         <div class="device-main">
           <div class="device-side">
-            <div class="item active">Dashboard</div>
-            <div class="item">AI Caller</div>
-            <div class="item">Live Assist</div>
-            <div class="item">Scripts</div>
-            <div class="item">Analytics</div>
-            <div class="item">Billing</div>
+            <div class="side-label">Main</div>
+            <div class="item active"><span>⚡</span>Dashboard</div>
+            <div class="item"><span>📞</span>AI Caller</div>
+            <div class="item"><span>🤖</span>Live Assist</div>
+            <div class="side-label">Tools</div>
+            <div class="item"><span>📜</span>Scripts</div>
+            <div class="item"><span>📊</span>Analytics</div>
+            <div class="item"><span>👥</span>Contacts</div>
           </div>
           <div class="device-content">
             <div class="mini-grid">
-              <div class="mini-card"><span>AI calls today</span><b>18</b></div>
-              <div class="mini-card"><span>Agreements sent</span><b>7</b></div>
-              <div class="mini-card"><span>Close score</span><b>81%</b></div>
+              <div class="mini-card">
+                <b>18</b>
+                <span>AI Calls Today</span>
+                <div class="trend">↑ +6 vs yesterday</div>
+              </div>
+              <div class="mini-card">
+                <b>7</b>
+                <span>Agreements Sent</span>
+                <div class="trend">↑ 39% rate</div>
+              </div>
+              <div class="mini-card">
+                <b>81%</b>
+                <span>Close Score</span>
+                <div class="trend">↑ Strong</div>
+              </div>
             </div>
             <div class="mini-ai">
-              <div class="mini-badge">AI Auto-Caller active</div>
+              <div class="mini-badge">AI Caller Live</div>
               <p>"Your agreement has been sent — check your inbox. Ready to move forward today?"</p>
+            </div>
+            <div class="mini-call-row">
+              <span>Last call · Sarah M. · 2m ago</span>
+              <strong>✓ Agreement sent</strong>
             </div>
           </div>
         </div>
