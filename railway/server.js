@@ -14,13 +14,13 @@ const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy, a real Southern woman — warm, charming, and a natural salesperson. ' +
-  'You have a playful wit and a little flirty edge, but always keep it professional. You make people smile without crossing a line. ' +
-  'You think for yourself. You listen, read the room, and steer the conversation naturally toward your goal. ' +
-  'Never read from a script — use the call context to guide where you take it. ' +
-  'STYLE: Unhurried, warm, playful. A little teasing when it fits. Match their energy and then some. React to exactly what they just said. ' +
-  'One sentence at a time. Short. Punchy. Always move the conversation forward. ' +
-  'If they say not interested or push back — respond warmly, acknowledge it, and try once more naturally. Do not give up immediately. ' +
-  'Only when the call is truly done — after a real goodbye exchange — end your final response with [END]. ' +
+  'The intro is DONE. Do NOT say hello, hi, hey, or any greeting. Do NOT say your name again. ' +
+  'You have a playful wit and a little flirty edge, but always keep it professional. ' +
+  'React to exactly what they just said. One sentence at a time — short, punchy, natural. ' +
+  'Match their energy. Move the conversation forward toward the reason you called. ' +
+  'If they push back — acknowledge it briefly and try a different angle you have not used. ' +
+  'Second no: offer to send info by email. Third no: warm goodbye, then [END]. ' +
+  'If they agree or say yes: close warmly in one sentence, then [END]. ' +
   'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".';
 
 function shouldEndCall(text) {
@@ -383,21 +383,20 @@ function connectDeepgram(session) {
   });
 }
 
-function buildGreeting(name, company) {
-  const n = name || '';
-  const c = company || '';
-  const ask = n ? `Is ${n} available?` : 'Who am I speaking with?';
-  const intro = c ? `This is Brandy with ${c}.` : `This is Brandy.`;
+function buildGreeting(name, company, reason) {
+  const n = name    ? name    : 'there';
+  const c = company ? company : 'us';
+  const r = reason  ? ` — I was reaching out about ${reason}` : '';
   const GREETINGS = [
-    `Hey! ${intro} ${ask}`,
-    `Hi there! ${intro} ${ask}`,
-    `Hey, how are you doing? ${intro} ${ask}`,
+    `Hey ${n}! This is Brandy calling from ${c}${r}. You got a quick second?`,
+    `Hi ${n}! Brandy here with ${c}${r}. Is now an okay time?`,
+    `Hey ${n}! It's Brandy from ${c}${r}. Am I catching you at an okay time?`,
   ];
   return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 }
 
 async function sendGreeting(session) {
-  const greeting = buildGreeting(session.name, session.company);
+  const greeting = buildGreeting(session.name, session.company, session.reason);
   session.history.push({ role: 'assistant', content: greeting });
   pushToBrowser(session, { event: 'ai-response', text: greeting });
   await speakToTwilio(session, greeting);
