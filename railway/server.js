@@ -491,7 +491,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 22, temperature: 0.7, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 15, temperature: 0.7, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -544,7 +544,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 22, temperature: 0.7 }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 15, temperature: 0.7 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
