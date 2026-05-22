@@ -11,36 +11,27 @@ const wss = new WebSocketServer({ noServer: true });
 const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
-const FORM_LINK         = process.env.FORM_LINK || '';
+const ELEVENLABS_VOICE  = 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Brandy — a real Southern woman making an outbound sales call. You grew up in Georgia. ' +
-  'You talk the way Southern women actually talk: easy, warm, a little drawly. You take your time. You listen. ' +
-  'You use real Southern expressions naturally — "well now", "shoot", "I tell you what", "y\'all" — but only when they fit, never forced. ' +
-  'You are genuinely charming, a little flirty but always professional. You make people feel like they\'re talking to a real person. ' +
-  'HOW YOU SPEAK: ' +
-  'ONE sentence per turn. Hard limit. Then stop and let them respond. ' +
-  'Never explain, never list, never follow up your own sentence. Say one thing, ask one question if needed, then wait. ' +
-  'GETTING THE RIGHT PERSON: Your first job is always to confirm you have the right person. If someone else answers, politely ask for the customer by name. If they say that person is unavailable, leave a brief message and end the call politely. Do NOT pitch to someone other than the intended customer. ' +
-  'React to exactly what they just said. Mirror their energy — if they\'re warm, be warm. If they\'re short, be quick and respectful. ' +
-  'If they push back or say not interested — acknowledge it warmly, try once more from a different angle. Never give up on the first no. ' +
-  '[END] RULE: Only append [END] after both parties have fully said their goodbyes — like "bye now", "take care", "goodbye". NEVER use [END] in a greeting, opening line, or mid-conversation. Most calls will NOT end with [END]. ' +
-  'BANNED WORDS: "Absolutely", "Certainly", "Of course", "Great question", "Definitely", "I understand", "I appreciate", "Fantastic", "honey", "sugar", "darlin", "sweetie", "hun".';
+  'You are Brandy, a real Southern woman — warm, charming, and a natural salesperson. ' +
+  'You have a playful wit and a little flirty edge, but always keep it professional. You make people smile without crossing a line. ' +
+  'You think for yourself. You listen, read the room, and steer the conversation naturally toward your goal. ' +
+  'Never read from a script — use the call context to guide where you take it. ' +
+  'STYLE: Unhurried, warm, playful. A little teasing when it fits. Match their energy and then some. React to exactly what they just said. ' +
+  'One sentence at a time. Short. Punchy. Always move the conversation forward. ' +
+  'If they say not interested or push back — respond warmly, acknowledge it, and try once more naturally. Do not give up immediately. ' +
+  'Only when the call is truly done — after a real goodbye exchange — end your final response with [END]. ' +
+  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".';
 
-function shouldEndCall(text, history) {
-  if (!text.toLowerCase().includes('[end]')) return false;
-  // Require at least 6 history entries (~3 exchanges) before allowing hangup
-  // Prevents AI from misfiring [END] on first response
-  return (history?.length ?? 0) >= 6;
+function shouldEndCall(text) {
+  return text.toLowerCase().includes('[end]');
 }
 function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
   const parts = [base];
   if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
-  if (session.reason)  parts.push(`PURPOSE OF THIS CALL: ${session.reason}. This is why you are calling — weave it naturally into the conversation and keep coming back to it.`);
+  if (session.reason)  parts.push(`Background context for this call (use this to guide the conversation, don't recite it): ${session.reason}.`);
   if (session.name)    parts.push(`You are speaking with ${session.name}.`);
-  if (session.capturedEmail) parts.push(`You already have their email on file: ${session.capturedEmail}. If they agree to proceed, let them know our customer care team will be sending them an email shortly with the form — do NOT say you are sending it yourself.`);
-  else if (session.reason) parts.push(`If they agree to proceed, ask for their email address so our customer care team can send them the form. Do NOT say you are sending the email yourself.`);
   return parts.join(' ');
 }
 
@@ -48,14 +39,14 @@ function sendForm(session) {
   if (!session.capturedEmail || session.docuSignSent || !FORM_LINK) return;
   session.docuSignSent = true;
   callLog(session.callSid, '[form] sending to', session.capturedEmail);
-  const vercelBase = process.env.VERCEL_API_URL || 'https://paypilotai.live';
-  fetch(`${vercelBase}/api/send-agreement`, {
+  fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       customerName: session.name || '',
       customerEmail: session.capturedEmail,
       callReason: session.reason || '',
+      senderEmail: session.senderEmail || '',
       subject: 'Your Form — Please Review',
       message: `Hi${session.name ? ' ' + session.name : ''},\n\nAs discussed on our call, here is the form for you to review.\n\nIf you have any questions, feel free to reply to this email.`,
       docuSignLink: FORM_LINK
@@ -129,16 +120,19 @@ app.all('/twiml-stream', (req, res) => {
   const r = req.query.r || '';
   const c = req.query.c || '';
   const e = req.query.e || '';
+  const s = req.query.s || '';
   const host = process.env.RAILWAY_PUBLIC_DOMAIN ||
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
-  console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'e:', e ? '(set)' : '(none)', 'method:', req.method);
+  console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'e:', e ? '(set)' : '(none)', 's:', s ? '(set)' : '(none)', 'method:', req.method);
   const wsUrl = `wss://${host}/twilio`;
+  // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
   const paramXml = [
     n ? `<Parameter name="n" value="${xmlEsc(n)}"/>` : '',
     r ? `<Parameter name="r" value="${xmlEsc(r)}"/>` : '',
     c ? `<Parameter name="c" value="${xmlEsc(c)}"/>` : '',
     e ? `<Parameter name="e" value="${xmlEsc(e)}"/>` : '',
+    s ? `<Parameter name="s" value="${xmlEsc(s)}"/>` : '',
   ].join('');
   res.setHeader('Content-Type', 'text/xml');
   res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}">${paramXml}</Stream></Connect></Response>`);
@@ -282,13 +276,13 @@ function handleTwilio(ws) {
       const r = cp.r || '';
       const c = cp.c || '';
       const e = cp.e || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, docuSignSent: false };
+      const s = cp.s || '';
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, senderEmail: s || null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
       connectDeepgram(session);
-      // Wait for prospect to say hello first; fallback greets after 2s if they stay silent
-      session.greetingTimer = setTimeout(() => sendGreeting(session), 2000);
+      setTimeout(() => sendGreeting(session), 800);
     }
     if (msg.event === 'media' && session) {
       const dgState = session.dgWs?.readyState;
@@ -312,12 +306,11 @@ function handleTwilio(ws) {
     }
     if (msg.event === 'stop' && session) {
       callLog(session.callSid, '[call] ended');
-      sendForm(session);
       cleanup(session);
       sessions.delete(session.callSid);
     }
   });
-  ws.on('close', () => { if (session) { sendForm(session); cleanup(session); sessions.delete(session.callSid); } });
+  ws.on('close', () => { if (session) { cleanup(session); sessions.delete(session.callSid); } });
 }
 
 function handleBrowser(ws, callSid) {
@@ -346,22 +339,10 @@ function connectDeepgram(session) {
       const result = JSON.parse(data);
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       if (!transcript || !result.is_final) return;
-
-      // Any speech triggers the greeting — check before noise filter
-      if (session.state === 'greeting') {
-        callLog(session.callSid, '[dg] prospect spoke — greeting now:', transcript);
-        clearTimeout(session.greetingTimer);
-        session.greetingTimer = null;
-        sendGreeting(session);
-        return;
-      }
-
       const words = transcript.split(/\s+/).filter(Boolean);
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
-      // Passive acknowledgments that are NOT meant as interruptions
-      const PASSIVE = /^(yeah|yep|yup|okay|ok|sure|right|alright|gotcha|got\s*it|cool|great|good|fine|sounds\s*good|makes\s*sense)\s*[.?!]?$/i;
-      if (words.length < 2 || NOISE_ONLY.test(transcript) || PASSIVE.test(transcript)) {
-        callLog(session.callSid, '[dg] filtered noise/passive:', transcript);
+      if (words.length < 1 || NOISE_ONLY.test(transcript)) {
+        callLog(session.callSid, '[dg] filtered noise:', transcript);
         return;
       }
       callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
@@ -377,20 +358,8 @@ function connectDeepgram(session) {
       }
 
       if (session.state === 'processing') { return; }
-      if (session.state === 'speaking') {
-        // Barge-in: customer interrupted — stop Brandy immediately
-        callLog(session.callSid, '[barge-in]', transcript);
-        if (session.twilioWs?.readyState === WebSocket.OPEN) {
-          session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-        }
-        session.bargedIn = true;
-        session.ttsAbort?.abort();
-        for (const resolve of Object.values(session.markResolvers)) resolve();
-        session.markResolvers = {};
-        session.pendingTranscript = transcript;
-        return;
-      }
       if (session.state !== 'listening') {
+        // Buffer the latest transcript — fire it the moment we finish speaking
         session.pendingTranscript = transcript;
         callLog(session.callSid, '[dg] buffered (state=' + session.state + '):', transcript);
         return;
@@ -398,12 +367,7 @@ function connectDeepgram(session) {
       session.pendingTranscript = null;
       session.state = 'processing';
       session.history.push({ role: 'user', content: transcript });
-      try {
-        await generateAndSpeak(session);
-      } catch (e) {
-        callLog(session.callSid, '[ai] error — resetting to listening:', e.message);
-        session.state = 'listening';
-      }
+      await generateAndSpeak(session);
     } catch (e) { callLog(session.callSid, '[dg] message error:', e.message); }
   });
   dg.on('unexpected-response', (req, res) => {
@@ -422,29 +386,22 @@ function connectDeepgram(session) {
 function buildGreeting(name, company) {
   const n = name || '';
   const c = company || '';
-  const ask = n ? `May I speak with ${n}?` : `Who am I speaking with?`;
-  const intro = c ? `This is Brandy calling from ${c}.` : `This is Brandy.`;
+  const ask = n ? `Is ${n} available?` : 'Who am I speaking with?';
+  const intro = c ? `This is Brandy with ${c}.` : `This is Brandy.`;
   const GREETINGS = [
-    `Hi, ${intro} ${ask}`,
-    `Hey there, ${intro} ${ask}`,
+    `Hey! ${intro} ${ask}`,
     `Hi there! ${intro} ${ask}`,
-    `Hey, ${intro} ${ask}`,
+    `Hey, how are you doing? ${intro} ${ask}`,
   ];
   return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 }
 
 async function sendGreeting(session) {
-  if (session.state !== 'greeting') return; // guard: only fire once
-  session.state = 'speaking'; // claim state synchronously before any await
   const greeting = buildGreeting(session.name, session.company);
   session.history.push({ role: 'assistant', content: greeting });
   pushToBrowser(session, { event: 'ai-response', text: greeting });
-  try {
-    await speakToTwilio(session, greeting);
-  } catch (e) {
-    callLog(session.callSid, '[greeting] tts error:', e.message);
-  }
-  enterListening(session);
+  await speakToTwilio(session, greeting);
+  session.state = 'listening';
 }
 
 const FILLER_PHRASES = [
@@ -458,62 +415,48 @@ async function speakFiller(session, text) {
 }
 
 async function generateAndSpeak(session) {
-  callLog(session.callSid, '[ai] generating...');
-  const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-6)];
+  callLog(session.callSid, '[ai] generating response (streaming)...');
+  const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
-  // Watchdog: if we get stuck in processing/speaking for >15s, force-reset to listening
-  let watchdogFired = false;
-  const watchdog = setTimeout(() => {
-    if (session.state === 'processing' || session.state === 'speaking') {
-      watchdogFired = true;
-      callLog(session.callSid, '[watchdog] state stuck at', session.state, '— resetting');
-      session.ttsAbort?.abort();
-      enterListening(session);
-    }
-  }, 15000);
-
-  try {
-
-  // 1. Fetch AI reply (state stays 'processing' during fetch — barge-in buffers to pendingTranscript)
-  const fullReply = await fetchAIReply(messages);
-  if (watchdogFired) return;
+  const fullReply = await streamOpenAIAndSpeak(session, messages);
   if (!fullReply) { enterListening(session); return; }
 
   callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
-
-  // 2. Save to history BEFORE speaking — barge-in can't corrupt it
   session.history.push({ role: 'assistant', content: fullReply });
   pushToBrowser(session, { event: 'ai-response', text: fullReply });
 
-  // 3. End call check
-  if (shouldEndCall(fullReply, session.history)) {
-    callLog(session.callSid, '[call] ending');
+  // Auto-send DocuSign if we just captured an email and haven't sent yet
+  if (session.capturedEmail && !session.docuSignSent) {
+    session.docuSignSent = true;
+    callLog(session.callSid, '[docusign] sending agreement to', session.capturedEmail);
+    try {
+      await fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: session.name || '',
+          customerEmail: session.capturedEmail,
+          callReason: session.reason || 'follow-up call',
+          subject: 'Your Agreement — Please Review & Sign',
+          message: `Hi${session.name ? ' ' + session.name : ''},\n\nThank you for speaking with Brandy today! Please review and sign your agreement using the link below.\n\nIf you have any questions, feel free to reply to this email.`,
+          docuSignLink: 'https://www.docusign.com'
+        })
+      });
+      callLog(session.callSid, '[docusign] sent successfully');
+      pushToBrowser(session, { event: 'docusign-sent', email: session.capturedEmail });
+    } catch (e) {
+      callLog(session.callSid, '[docusign] send failed:', e.message);
+    }
+  }
+
+  if (shouldEndCall(fullReply)) {
+    callLog(session.callSid, '[call] ending call — farewell detected');
     pushToBrowser(session, { event: 'call-ended' });
-    // Send form at end of call if we have email + link configured
-    sendForm(session);
-    session.state = 'speaking';
-    session.ttsAbort = new AbortController();
-    try { await streamTTS(session, prepareForSpeech(fullReply)); } catch (_) {}
-    setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 1000);
+    setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 500);
     return;
   }
 
-  // 5. Speak reply
-  session.state = 'speaking';
-  session.bargedIn = false;
-  session.ttsAbort = new AbortController();
-  if (session.twilioWs?.readyState === WebSocket.OPEN) {
-    session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-  }
-  pushToBrowser(session, { event: 'ai-speaking', text: fullReply });
-  try {
-    await streamTTS(session, fullReply);
-    const markName = 'tts-' + Date.now();
-    if (sendMark(session, markName)) await awaitMark(session, markName, 2000);
-  } catch (_) {}
-  if (!watchdogFired) enterListening(session);
-
-  } finally { clearTimeout(watchdog); }
+  enterListening(session);
 }
 
 function enterListening(session) {
@@ -541,53 +484,93 @@ function prepareForSpeech(text) {
     .trim();
 }
 
-// Streams AI tokens, calls onSentence(text) as soon as a sentence boundary is
-// detected so TTS can start early. Returns the full reply text.
-async function fetchAIReply(messages, onSentence) {
+// Collect full OpenAI reply via streaming, then speak as one continuous TTS call
+async function streamOpenAIAndSpeak(session, messages) {
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 45, temperature: 0.7, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
     if (!resp.ok) return null;
+
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
-    let buf = '', fullText = '', sentenceFired = false;
+    let buf = '';
+    let fullText = '';
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       buf += decoder.decode(value, { stream: true });
-      const lines = buf.split('\n'); buf = lines.pop();
+      const lines = buf.split('\n');
+      buf = lines.pop();
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
-        const d = line.slice(6);
-        if (d === '[DONE]') break;
+        const data = line.slice(6);
+        if (data === '[DONE]') break;
         try {
-          const tok = JSON.parse(d).choices?.[0]?.delta?.content;
-          if (tok) {
-            fullText += tok;
-            // Fire as soon as we have a complete sentence (~10+ chars ending in . ! ?)
-            if (!sentenceFired && onSentence && fullText.length > 10 && /[.!?]/.test(fullText)) {
-              sentenceFired = true;
-              onSentence(fullText.trim());
-            }
-          }
+          const token = JSON.parse(data).choices?.[0]?.delta?.content;
+          if (token) fullText += token;
         } catch {}
       }
     }
-    return fullText.trim() || null;
-  } catch (e) { callLog('?', '[ai] fetch error:', e.message); return null; }
+    fullText = fullText.trim();
+    if (!fullText) return null;
+
+    if (session.twilioWs?.readyState === WebSocket.OPEN) {
+      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+    }
+    session.state = 'speaking';
+    pushToBrowser(session, { event: 'ai-speaking', text: fullText });
+    await streamTTS(session, fullText);
+
+    const markName = 'tts-' + Date.now();
+    if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
+
+    return fullText;
+  } catch (e) {
+    callLog(session.callSid, '[ai] stream error:', e.message);
+    return null;
+  }
+}
+
+async function callOpenAI(messages) {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 6000);
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7 }),
+      signal: ctrl.signal
+    });
+    clearTimeout(t);
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content?.trim() || null;
+  } catch (e) { console.error('[openai] error:', e.message); return null; }
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_turbo_v2_5',
-  voice_settings: { stability: 0.55, similarity_boost: 0.75, style: 0.20, use_speaker_boost: false, speed: 1.0 }
+  model_id: 'eleven_flash_v2_5',
+  voice_settings: { stability: 0.45, similarity_boost: 0.85, style: 0.35, use_speaker_boost: false, speed: 0.90 }
 };
+
+// Reset after 5 minutes so a newly-paid account recovers automatically
+let elevenlabsBlocked = false;
+let elevenlabsBlockedAt = 0;
+function isElevenlabsBlocked() {
+  if (!elevenlabsBlocked) return false;
+  if (Date.now() - elevenlabsBlockedAt > 5 * 60 * 1000) {
+    elevenlabsBlocked = false;
+    console.log('[elevenlabs] retry window elapsed — unblocking');
+    return false;
+  }
+  return true;
+}
 
 function sendMark(session, name) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return false;
@@ -605,57 +588,57 @@ function awaitMark(session, name, ms = 10000) {
 async function speakToTwilio(session, text) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
   session.state = 'speaking';
-  session.ttsAbort = new AbortController();
   callLog(session.callSid, '[tts] speaking:', text.slice(0, 60));
   pushToBrowser(session, { event: 'ai-speaking', text });
   try {
     await streamTTS(session, text);
   } catch (e) { callLog(session.callSid, '[tts] error:', e.message); }
+  // Wait for Twilio to confirm audio is done — keep Deepgram alive throughout
   const markName = 'tts-' + Date.now();
-  if (sendMark(session, markName)) await awaitMark(session, markName, 2000);
+  if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
   enterListening(session);
 }
 
 async function streamTTS(session, text) {
-  // session.ttsAbort is set by the caller before invoking this function
-  const abort = session.ttsAbort;
-  if (abort?.signal.aborted) return;
-
-  const prepared = prepareForSpeech(text);
-
-  if (ELEVENLABS_KEY) {
+  // Try ElevenLabs — skip entirely if it failed before on this server instance
+  if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
     try {
-      const elTimeout = setTimeout(() => abort?.abort(), 12000);
-      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000&optimize_streaming_latency=4`, {
-        method: 'POST',
-        headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: prepared, ...ELEVENLABS_VOICE_SETTINGS }),
-        signal: abort?.signal
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 5000);
+      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000&optimize_streaming_latency=4`, {
+        method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
+        signal: ctrl.signal
       });
-      clearTimeout(elTimeout);
-      if (session.bargedIn) return; // interrupted during fetch — stop cleanly
-      console.log(`[elevenlabs] status=${resp.status}`);
+      clearTimeout(t);
+      const ct = resp.headers.get('content-type') || '';
+      console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
       if (resp.ok) {
-        await pipeToTwilio(session, resp, 'pcm16k');
+        elevenlabsBlocked = false;
+        await pipeToTwilio(session, resp, 'ulaw8k');
         return;
       }
-      console.log('[elevenlabs] non-ok — falling back to OpenAI TTS');
-    } catch (e) {
-      if (session.bargedIn) return; // barge-in — stop cleanly, don't fall through
-      console.log('[elevenlabs] timeout/error:', e.message, '— falling back to OpenAI TTS');
+      const errBody = await resp.text().catch(() => '');
+      console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
+      elevenlabsBlocked = true;
+      elevenlabsBlockedAt = Date.now();
+      console.log('[elevenlabs] blocked — falling back to OpenAI TTS, will retry in 5m');
+    } catch (_) {
+      elevenlabsBlocked = true;
+      elevenlabsBlockedAt = Date.now();
+      console.log('[elevenlabs] timed out — falling back to OpenAI TTS, will retry in 5m');
     }
   }
 
-  if (session.bargedIn) return;
-  const t2 = setTimeout(() => abort?.abort(), 12000);
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 12000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepared }),
-    signal: abort?.signal
+    body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) }),
+    signal: ctrl.signal
   });
-  clearTimeout(t2);
-  if (abort?.signal.aborted) return;
+  clearTimeout(t);
   if (!resp.ok) throw new Error(`OpenAI TTS ${resp.status}`);
   await pipeToTwilio(session, resp, 'pcm24k');
 }
@@ -665,11 +648,7 @@ async function pipeToTwilio(session, resp, type) {
   let buffer = Buffer.alloc(0);
   const readWithTimeout = () => Promise.race([
     reader.read(),
-    new Promise((_, rej) => setTimeout(() => rej(new Error('read timeout')), 8000)),
-    new Promise((_, rej) => {
-      if (session.ttsAbort?.signal.aborted) { rej(new Error('tts aborted')); return; }
-      session.ttsAbort?.signal.addEventListener('abort', () => rej(new Error('tts aborted')), { once: true });
-    })
+    new Promise((_, rej) => setTimeout(() => rej(new Error('read timeout')), 8000))
   ]);
 
   // ulaw_8000 from ElevenLabs is already what Twilio needs — pass straight through
@@ -760,11 +739,7 @@ function pushToBrowser(session, data) {
   if (session.browserWs?.readyState === WebSocket.OPEN) session.browserWs.send(JSON.stringify(data));
 }
 
-function cleanup(session) {
-  clearTimeout(session.greetingTimer);
-  try { session.ttsAbort?.abort(); } catch {}
-  try { session.dgWs?.close(); } catch {}
-}
+function cleanup(session) { try { session.dgWs?.close(); } catch {} }
 
 // ── OPENAI REALTIME ──────────────────────────────────────────────
 function handleTwilioRealtime(ws) {

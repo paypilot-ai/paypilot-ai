@@ -24,7 +24,7 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const { toNumber, customerName, callReason, companyName, customerEmail } = req.body || {};
+  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail } = req.body || {};
   if (!toNumber) return res.status(400).json({ error: 'Phone number required' });
 
   const cleaned = toNumber.replace(/\D/g, '');
@@ -38,6 +38,7 @@ module.exports = async function handler(req, res) {
     const r = encodeURIComponent(callReason  || '');
     const c = encodeURIComponent(companyName || '');
     const e = encodeURIComponent(customerEmail || '');
+    const s = encodeURIComponent(senderEmail || '');
 
     // Try Railway (OpenAI Realtime + ElevenLabs) first
     const rawWsUrl = (process.env.RAILWAY_WS_URL || '').trim();
@@ -53,7 +54,7 @@ module.exports = async function handler(req, res) {
       } catch (_) { railwayUp = false; }
 
       if (railwayUp) {
-        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}&e=${e}`;
+        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}`;
         const resp = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
           {
