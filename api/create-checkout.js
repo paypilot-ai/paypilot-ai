@@ -1,6 +1,3 @@
-// api/create-checkout.js
-// Stripe checkout session — key never touches the browser
-
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -8,16 +5,13 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Billing temporarily disabled
-  return res.status(503).json({ error: 'Subscriptions are temporarily unavailable. Please check back soon.' });
-
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return res.status(500).json({ error: 'Stripe key not configured' });
 
   const { plan, successUrl, cancelUrl } = req.body || {};
 
   const priceIds = {
-   starter: 'price_1TQdvP84nVx3JlYAn5pAbYAb',
+    starter: 'price_1TQdvP84nVx3JlYAn5pAbYAb',
     pro: 'price_1TQdx284nVx3JlYAHl6dGlci'
   };
 
@@ -36,8 +30,8 @@ module.exports = async function handler(req, res) {
         'line_items[0][price]': priceId,
         'line_items[0][quantity]': '1',
         'mode': 'subscription',
-        'success_url': successUrl || 'https://paypilot-ai.vercel.app/?success=true',
-        'cancel_url': cancelUrl || 'https://paypilot-ai.vercel.app/?canceled=true'
+        'success_url': successUrl || 'https://paypilotai.live/?success=true',
+        'cancel_url': cancelUrl || 'https://paypilotai.live/?canceled=true'
       }).toString()
     });
 
@@ -45,8 +39,7 @@ module.exports = async function handler(req, res) {
     if (!response.ok) return res.status(500).json({ error: session.error?.message || 'Stripe error' });
 
     return res.status(200).json({ url: session.url });
-
-  } catch(e) {
+  } catch (e) {
     return res.status(500).json({ error: e.message });
   }
 };

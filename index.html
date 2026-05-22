@@ -3,7 +3,27 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PayPilot AI</title>
+<title>PayPilot AI — AI That Calls, Talks & Closes</title>
+<meta name="description" content="PayPilot AI handles your full sales cycle — AI Auto-Caller that dials leads, holds real conversations, and sends agreements on the spot. Live rebuttals, scripts & analytics. From $99/mo." />
+<meta name="keywords" content="AI sales tool, AI phone agent, outbound sales automation, AI caller, sales automation software, live sales assist" />
+<link rel="canonical" href="https://paypilotai.live/" />
+
+<!-- Open Graph (LinkedIn, Facebook, Slack previews) -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://paypilotai.live/" />
+<meta property="og:title" content="PayPilot AI — AI That Calls, Talks & Closes" />
+<meta property="og:description" content="AI Auto-Caller that dials leads, holds real conversations, and sends agreements on the spot. Plus live rebuttals and script control. From $99/mo." />
+<meta property="og:image" content="https://paypilotai.live/og-image.png" />
+
+<!-- Twitter / X card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="PayPilot AI — AI That Calls, Talks & Closes" />
+<meta name="twitter:description" content="AI Auto-Caller that dials leads, holds real conversations, and sends agreements on the spot. From $99/mo." />
+<meta name="twitter:image" content="https://paypilotai.live/og-image.png" />
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231a6fff'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='sans-serif' fill='white'>P</text></svg>" />
+
 <!-- v2.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -120,6 +140,8 @@ body.modal-open{overflow:hidden}
   box-shadow:0 8px 28px rgba(26,111,255,.45),inset 0 1px 0 rgba(255,255,255,.15);
 }
 .btn-primary:hover{box-shadow:0 14px 40px rgba(26,111,255,.60),inset 0 1px 0 rgba(255,255,255,.2)}
+.nav-link{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.62);font-size:14px;font-weight:600;padding:8px 14px;border-radius:8px;transition:color .15s;letter-spacing:-.01em}
+.nav-link:hover{color:#fff}
 .btn-ghost{color:rgba(255,255,255,.88);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14)}
 .btn-ghost:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24)}
 .btn-white{color:var(--text);background:#fff;box-shadow:var(--shadow)}
@@ -169,50 +191,63 @@ body.modal-open{overflow:hidden}
 
 /* ── DEVICE ── */
 .device{
-  position:relative;padding:16px;border-radius:30px;
-  background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
-  border:1px solid rgba(255,255,255,.14);
-  box-shadow:var(--shadow-dark),var(--glow-blue);
+  position:relative;padding:10px;border-radius:28px;
+  background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06),0 0 80px rgba(26,111,255,.25);
   animation:float 6s ease-in-out infinite;
 }
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 .device-glow{
-  position:absolute;inset:auto -60px -70px auto;width:280px;height:280px;border-radius:50%;
-  background:radial-gradient(circle,rgba(0,212,255,.30),transparent 70%);
-  filter:blur(28px);pointer-events:none;animation:glow-pulse 4s ease-in-out infinite;
+  position:absolute;inset:auto -80px -80px auto;width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle,rgba(26,111,255,.35),rgba(0,212,255,.15) 40%,transparent 70%);
+  filter:blur(40px);pointer-events:none;animation:glow-pulse 4s ease-in-out infinite;
 }
-@keyframes glow-pulse{0%,100%{opacity:.7}50%{opacity:1}}
-.device-screen{background:#08111e;border-radius:24px;overflow:hidden;min-height:520px;border:1px solid rgba(255,255,255,.07)}
-.device-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06)}
-.dot-wrap{display:flex;gap:7px}
-.dot{width:9px;height:9px;border-radius:50%}
-.dot:nth-child(1){background:#ff5f57}
-.dot:nth-child(2){background:#febc2e}
-.dot:nth-child(3){background:#28c840}
-.device-main{display:grid;grid-template-columns:175px 1fr;min-height:476px}
-.device-side{background:rgba(0,0,0,.45);border-right:1px solid rgba(255,255,255,.05);color:#fff;padding:14px}
-.device-side .item{border-radius:10px;padding:10px 12px;margin-bottom:5px;font-weight:600;font-size:12px;color:rgba(255,255,255,.55);border:1px solid transparent}
-.device-side .item.active{background:rgba(26,111,255,.18);border-color:rgba(26,111,255,.3);color:var(--blue-3)}
-.device-content{padding:14px;background:rgba(255,255,255,.02)}
+@keyframes glow-pulse{0%,100%{opacity:.6}50%{opacity:1}}
+.device-screen{background:linear-gradient(180deg,#0a1628 0%,#060e1c 100%);border-radius:20px;overflow:hidden;min-height:520px;border:1px solid rgba(255,255,255,.08)}
+.device-top{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.07);backdrop-filter:blur(8px);}
+.device-top strong{font-size:12px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.01em;}
+.dot-wrap{display:flex;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot:nth-child(1){background:#ff5f57;box-shadow:0 0 6px rgba(255,95,87,.5)}
+.dot:nth-child(2){background:#febc2e;box-shadow:0 0 6px rgba(254,188,46,.5)}
+.dot:nth-child(3){background:#28c840;box-shadow:0 0 6px rgba(40,200,64,.5)}
+.device-main{display:grid;grid-template-columns:160px 1fr;min-height:476px}
+.device-side{background:rgba(0,0,0,.5);border-right:1px solid rgba(255,255,255,.06);padding:16px 12px}
+.device-side .side-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:rgba(255,255,255,.25);padding:0 10px;margin:14px 0 6px}
+.device-side .item{border-radius:9px;padding:9px 10px;margin-bottom:3px;font-weight:600;font-size:12px;color:rgba(255,255,255,.45);border:1px solid transparent;display:flex;align-items:center;gap:8px;cursor:default}
+.device-side .item.active{background:linear-gradient(135deg,rgba(26,111,255,.22),rgba(26,111,255,.08));border-color:rgba(26,111,255,.35);color:#7fa4ff}
+.device-side .item:not(.active):hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.65)}
+.device-content{padding:16px;background:rgba(255,255,255,.01)}
 .mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
 .mini-card{
-  background:rgba(255,255,255,.06);border-radius:14px;padding:13px;
-  border:1px solid rgba(255,255,255,.08);
-  background:linear-gradient(135deg,rgba(26,111,255,.10),rgba(255,255,255,.04));
+  border-radius:13px;padding:13px 12px;
+  background:linear-gradient(135deg,rgba(26,111,255,.12),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.09);
 }
-.mini-card b{font-size:22px;letter-spacing:-.04em;color:#fff;font-family:'Sora',sans-serif;font-weight:700}
-.mini-card span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.10em;color:rgba(255,255,255,.45);font-weight:600;margin-bottom:3px}
+.mini-card b{font-size:24px;letter-spacing:-.05em;color:#fff;font-family:'Sora',sans-serif;font-weight:800;display:block;line-height:1.1;margin-bottom:4px}
+.mini-card span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.10em;color:rgba(255,255,255,.38);font-weight:700}
+.mini-card .trend{font-size:10px;font-weight:700;color:#4ade80;margin-top:4px;}
 .mini-ai{
-  border-radius:14px;padding:16px;
-  background:linear-gradient(135deg,rgba(26,111,255,.18),rgba(0,212,255,.08));
-  border:1px solid rgba(26,111,255,.25);
+  border-radius:14px;padding:14px 16px;
+  background:linear-gradient(135deg,rgba(26,111,255,.20),rgba(0,212,255,.06));
+  border:1px solid rgba(79,124,255,.35);
+  box-shadow:0 4px 20px rgba(26,111,255,.15);
+  margin-bottom:10px;
 }
 .mini-badge{
-  display:inline-flex;padding:4px 10px;border-radius:999px;
-  background:rgba(26,111,255,.20);border:1px solid rgba(26,111,255,.30);
-  font-size:9px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;margin-bottom:8px;color:var(--blue-3);
+  display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;
+  background:rgba(26,111,255,.25);border:1px solid rgba(79,124,255,.4);
+  font-size:9px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;margin-bottom:8px;color:#7fa4ff;
 }
-.mini-ai p{margin:0;font-size:12px;line-height:1.6;color:rgba(255,255,255,.80)}
+.mini-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px #4ade80;animation:glow-pulse 2s ease-in-out infinite;}
+.mini-ai p{margin:0;font-size:12px;line-height:1.65;color:rgba(255,255,255,.82)}
+.dev-bar{width:3px;border-radius:999px;background:linear-gradient(180deg,#00d4ff,#1a6fff);animation:devBarBounce 0.65s ease-in-out infinite alternate;}
+@keyframes devBarBounce{0%{height:2px;opacity:.4}100%{height:13px;opacity:1}}
+@keyframes devScan{0%{transform:translateY(-100%)}100%{transform:translateY(200%)}}
+.mini-call-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);font-size:11px;}
+.mini-call-row span{color:rgba(255,255,255,.55);}
+.mini-call-row strong{color:#4ade80;font-weight:700;}
 
 /* ── SECTION ── */
 .section{max-width:1320px;margin:0 auto;padding:0 36px 88px}
@@ -1388,9 +1423,8 @@ body.modal-open{overflow:hidden}
       </div>
     </div>
     <div class="nav-actions">
-      <button class="btn btn-ghost" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">Get Pricing</button>
       <button class="btn btn-white" onclick="showAuth()">Login</button>
-      <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Open Demo</button>
+      <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Open Demo &rarr;</button>
     </div>
   </div>
 
@@ -1412,26 +1446,68 @@ body.modal-open{overflow:hidden}
       <div class="device-screen">
         <div class="device-top">
           <div class="dot-wrap"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-          <strong>PayPilot Workspace</strong>
+          <strong>PayPilot AI Workspace</strong>
+          <div style="font-size:10px;color:rgba(255,255,255,.35);font-weight:600;">v2.2</div>
         </div>
         <div class="device-main">
           <div class="device-side">
-            <div class="item active">Dashboard</div>
-            <div class="item">AI Caller</div>
-            <div class="item">Live Assist</div>
-            <div class="item">Scripts</div>
-            <div class="item">Analytics</div>
-            <div class="item">Billing</div>
+            <div class="side-label">Main</div>
+            <div class="item active"><span>⚡</span>Dashboard</div>
+            <div class="item"><span>📞</span>AI Caller</div>
+            <div class="item"><span>🤖</span>Live Assist</div>
+            <div class="side-label">Tools</div>
+            <div class="item"><span>📜</span>Scripts</div>
+            <div class="item"><span>📊</span>Analytics</div>
+            <div class="item"><span>👥</span>Contacts</div>
           </div>
           <div class="device-content">
             <div class="mini-grid">
-              <div class="mini-card"><span>AI calls today</span><b>18</b></div>
-              <div class="mini-card"><span>Agreements sent</span><b>7</b></div>
-              <div class="mini-card"><span>Close score</span><b>81%</b></div>
+              <div class="mini-card">
+                <b>18</b>
+                <span>AI Calls Today</span>
+                <div class="trend">↑ +6 vs yesterday</div>
+              </div>
+              <div class="mini-card">
+                <b>7</b>
+                <span>Agreements Sent</span>
+                <div class="trend">↑ 39% rate</div>
+              </div>
+              <div class="mini-card">
+                <b>81%</b>
+                <span>Close Score</span>
+                <div class="trend">↑ Strong</div>
+              </div>
             </div>
             <div class="mini-ai">
-              <div class="mini-badge">AI Auto-Caller active</div>
+              <div class="mini-badge">AI Caller Live</div>
               <p>"Your agreement has been sent — check your inbox. Ready to move forward today?"</p>
+            </div>
+            <div class="mini-call-row">
+              <span>Last call · Sarah M. · 2m ago</span>
+              <strong>✓ Agreement sent</strong>
+            </div>
+            <!-- Mini AI avatar — uses same canvas style as AI Caller -->
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(26,111,255,.08));border:1px solid rgba(0,212,255,.2);">
+              <div style="position:relative;flex-shrink:0;">
+                <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px rgba(0,212,255,.5),0 0 14px rgba(0,212,255,.25);">
+                  <canvas id="devMiniCanvas" width="44" height="44" style="display:block;"></canvas>
+                </div>
+                <div style="position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;background:#00ff88;border:2px solid #060e1c;box-shadow:0 0 6px #00ff88;animation:glow-pulse 2s ease-in-out infinite;"></div>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:10px;font-weight:800;color:#00d4ff;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px;">Brandy · AI Agent</div>
+                <div style="display:flex;align-items:flex-end;gap:2px;height:14px;">
+                  <div class="dev-bar" style="animation-delay:0s"></div>
+                  <div class="dev-bar" style="animation-delay:.08s"></div>
+                  <div class="dev-bar" style="animation-delay:.16s"></div>
+                  <div class="dev-bar" style="animation-delay:.12s"></div>
+                  <div class="dev-bar" style="animation-delay:.04s"></div>
+                  <div class="dev-bar" style="animation-delay:.2s"></div>
+                  <div class="dev-bar" style="animation-delay:.1s"></div>
+                  <div class="dev-bar" style="animation-delay:.18s"></div>
+                  <span style="font-size:10px;color:rgba(0,212,255,.6);margin-left:6px;letter-spacing:.04em;">speaking</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1540,44 +1616,97 @@ body.modal-open{overflow:hidden}
         </div>
       </div>
     </div><!-- /.pricing-grid -->
-    <div style="text-align:center;padding:18px 24px 4px;color:rgba(255,255,255,.42);font-size:12px;line-height:1.7;max-width:620px;margin:0 auto;">
-      All plans are month-to-month subscriptions billed automatically. <strong style="color:rgba(255,255,255,.60);">No refunds.</strong> Your subscription continues until you cancel — cancel anytime from Settings before your next billing date. By subscribing you agree to these terms.
+    <div style="text-align:center;padding:18px 24px 4px;color:rgba(255,255,255,.72);font-size:12px;line-height:1.7;max-width:620px;margin:0 auto;">
+      All plans are month-to-month subscriptions billed automatically. <strong style="color:rgba(255,255,255,.88);">No refunds.</strong> Your subscription continues until you cancel — cancel anytime from Settings before your next billing date. By subscribing you agree to these terms.
     </div>
 
-    <!-- COMPETITOR COMPARISON TABLE -->
+    <!-- COMPETITOR COMPARISON CARDS -->
     <div style="padding-bottom:96px;">
-      <div style="text-align:center;margin-bottom:40px;">
-        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.38);margin-bottom:14px;">See how we stack up</div>
+      <div style="text-align:center;margin-bottom:48px;">
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.72);margin-bottom:14px;">See how we stack up</div>
         <h2 style="margin:0;font-family:'Playfair Display',serif;font-size:40px;color:#fff;letter-spacing:-.04em;line-height:1.1;">Why teams choose PayPilot AI</h2>
         <p style="margin:12px auto 0;color:rgba(255,255,255,.58);font-size:16px;max-width:520px;line-height:1.7;">Built specifically for outbound sales teams — not bolted onto a CRM.</p>
       </div>
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-        <table style="width:100%;border-collapse:separate;border-spacing:0;min-width:640px;">
-          <thead>
-            <tr>
-              <th style="padding:14px 20px;text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.38);background:transparent;border-bottom:1px solid rgba(255,255,255,.08);"></th>
-              <th style="padding:14px 20px;text-align:center;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,rgba(79,124,255,.22),rgba(79,124,255,.08));border-radius:14px 14px 0 0;border:1px solid rgba(79,124,255,.35);border-bottom:none;letter-spacing:-.01em;">
-                <span style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#4f7cff;margin-bottom:4px;">Best Value</span>
-                PayPilot AI
-              </th>
-              <th style="padding:14px 20px;text-align:center;font-size:13px;font-weight:700;color:rgba(255,255,255,.62);background:rgba(255,255,255,.03);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,.07);border-bottom:none;">Salesforce<br><span style="font-size:11px;font-weight:400;color:rgba(255,255,255,.35);">Einstein / Sales Cloud</span></th>
-              <th style="padding:14px 20px;text-align:center;font-size:13px;font-weight:700;color:rgba(255,255,255,.62);background:rgba(255,255,255,.03);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,.07);border-bottom:none;">Synthflow</th>
-              <th style="padding:14px 20px;text-align:center;font-size:13px;font-weight:700;color:rgba(255,255,255,.62);background:rgba(255,255,255,.03);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,.07);border-bottom:none;">Bland AI</th>
-            </tr>
-          </thead>
-          <tbody id="compTable"></tbody>
-          <tfoot>
-            <tr>
-              <td style="padding:18px 20px;border-top:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.38);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Starting price / mo</td>
-              <td style="padding:18px 20px;text-align:center;border-top:1px solid rgba(79,124,255,.35);background:linear-gradient(180deg,rgba(79,124,255,.08),rgba(79,124,255,.04));border-left:1px solid rgba(79,124,255,.35);border-right:1px solid rgba(79,124,255,.35);border-radius:0 0 14px 14px;font-size:15px;font-weight:800;color:#7fa4ff;">$99 / mo</td>
-              <td style="padding:18px 20px;text-align:center;border-top:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);border-radius:0 0 14px 14px;font-size:13px;color:rgba(255,255,255,.5);">$165+ / user / mo<br><span style="font-size:11px;color:rgba(255,255,255,.28);">+ implementation fees</span></td>
-              <td style="padding:18px 20px;text-align:center;border-top:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);border-radius:0 0 14px 14px;font-size:13px;color:rgba(255,255,255,.5);">$29 / mo<br><span style="font-size:11px;color:rgba(255,255,255,.28);">limited minutes</span></td>
-              <td style="padding:18px 20px;text-align:center;border-top:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);border-radius:0 0 14px 14px;font-size:13px;color:rgba(255,255,255,.5);">Usage-based<br><span style="font-size:11px;color:rgba(255,255,255,.28);">~$0.09 / min all-in</span></td>
-            </tr>
-          </tfoot>
-        </table>
+
+      <!-- Featured PayPilot AI card -->
+      <div style="background:linear-gradient(135deg,rgba(79,124,255,.18),rgba(53,214,255,.08));border:1px solid rgba(79,124,255,.4);border-radius:24px;padding:36px;margin-bottom:18px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;right:0;width:260px;height:260px;background:radial-gradient(circle,rgba(79,124,255,.15),transparent 70%);pointer-events:none;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:28px;">
+          <div style="min-width:200px;">
+            <div style="display:inline-block;background:rgba(79,124,255,.25);border:1px solid rgba(79,124,255,.5);border-radius:999px;padding:4px 14px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#7fa4ff;margin-bottom:14px;">Best Value</div>
+            <h3 style="margin:0 0 6px;font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:#fff;letter-spacing:-.03em;">PayPilot AI</h3>
+            <div style="font-size:22px;font-weight:800;color:#7fa4ff;margin-bottom:6px;">$99 <span style="font-size:14px;font-weight:500;color:rgba(255,255,255,.45);">/ mo</span></div>
+            <div style="font-size:13px;color:rgba(255,255,255,.45);">No contracts. Cancel anytime.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 32px;flex:1;min-width:260px;">
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);"><span style="color:#4ade80;font-size:18px;flex-shrink:0;">✓</span>Outbound AI voice agent</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);"><span style="color:#4ade80;font-size:18px;flex-shrink:0;">✓</span>Built for outbound sales</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);"><span style="color:#4ade80;font-size:18px;flex-shrink:0;">✓</span>Live rebuttal assist</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);"><span style="color:#4ade80;font-size:18px;flex-shrink:0;">✓</span>Send agreement mid-call</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);"><span style="color:#4ade80;font-size:18px;flex-shrink:0;">✓</span>Real-time transcript</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);"><span style="color:#4ade80;font-size:18px;flex-shrink:0;">✓</span>No setup needed</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);"><span style="color:#4ade80;font-size:18px;flex-shrink:0;">✓</span>Flat monthly pricing</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);"><span style="color:#4ade80;font-size:18px;flex-shrink:0;">✓</span>Human-handoff mode</div>
+          </div>
+        </div>
       </div>
-      <div style="text-align:center;margin-top:36px;">
+
+      <!-- Competitor cards grid -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:36px;">
+
+        <!-- Salesforce -->
+        <div style="background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:28px;">
+          <div style="font-size:16px;font-weight:800;color:rgba(255,255,255,.92);margin-bottom:4px;">Salesforce</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);margin-bottom:4px;">Einstein / Sales Cloud</div>
+          <div style="font-size:18px;font-weight:700;color:rgba(255,255,255,.78);margin-bottom:20px;">$165+<span style="font-size:12px;font-weight:400;"> / user / mo</span></div>
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Outbound AI voice agent</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Built for outbound sales</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Live rebuttal assist</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Send agreement mid-call</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:#4ade80;font-size:16px;flex-shrink:0;">✓</span>Real-time transcript</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>No setup needed</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Flat monthly pricing</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:#4ade80;font-size:16px;flex-shrink:0;">✓</span>Human-handoff mode</div>
+          </div>
+        </div>
+
+        <!-- Synthflow -->
+        <div style="background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:28px;">
+          <div style="font-size:16px;font-weight:800;color:rgba(255,255,255,.92);margin-bottom:4px;">Synthflow</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);margin-bottom:4px;">AI Voice Automation</div>
+          <div style="font-size:18px;font-weight:700;color:rgba(255,255,255,.78);margin-bottom:20px;">$29+<span style="font-size:12px;font-weight:400;"> / mo</span></div>
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:#4ade80;font-size:16px;flex-shrink:0;">✓</span>Outbound AI voice agent</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Built for outbound sales</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Live rebuttal assist</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Send agreement mid-call</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:#4ade80;font-size:16px;flex-shrink:0;">✓</span>Real-time transcript</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:#4ade80;font-size:16px;flex-shrink:0;">✓</span>No setup needed</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:#4ade80;font-size:16px;flex-shrink:0;">✓</span>Flat monthly pricing</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Human-handoff mode</div>
+          </div>
+        </div>
+
+        <!-- Bland AI -->
+        <div style="background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:28px;">
+          <div style="font-size:16px;font-weight:800;color:rgba(255,255,255,.92);margin-bottom:4px;">Bland AI</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);margin-bottom:4px;">Conversational AI Calls</div>
+          <div style="font-size:18px;font-weight:700;color:rgba(255,255,255,.78);margin-bottom:20px;">~$0.09<span style="font-size:12px;font-weight:400;"> / min</span></div>
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:#4ade80;font-size:16px;flex-shrink:0;">✓</span>Outbound AI voice agent</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Built for outbound sales</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Live rebuttal assist</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Send agreement mid-call</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:#4ade80;font-size:16px;flex-shrink:0;">✓</span>Real-time transcript</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:#4ade80;font-size:16px;flex-shrink:0;">✓</span>No setup needed</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Flat monthly pricing</div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.68);"><span style="color:rgba(255,100,100,.8);font-size:16px;flex-shrink:0;">✗</span>Human-handoff mode</div>
+          </div>
+        </div>
+
+      </div>
+      <div style="text-align:center;">
         <button class="btn btn-primary" style="font-size:16px;padding:16px 36px;" onclick="enterPlanDemo('pro');setTimeout(()=>showPage('billing',document.querySelector('[data-page=billing]')),100);">Start Free Demo</button>
       </div>
     </div>
@@ -1595,6 +1724,15 @@ body.modal-open{overflow:hidden}
         </div>
       </div>
     </div>
+  <!-- FOOTER -->
+  <div style="background:rgba(255,255,255,.05);border-top:1px solid rgba(255,255,255,.12);padding:32px 36px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;max-width:100%;">
+    <span style="font-size:13px;color:rgba(255,255,255,.7);">© 2025 PayPilot AI. All rights reserved.</span>
+    <div style="display:flex;gap:28px;align-items:center;">
+      <a onclick="window.location.href='/partners'" style="font-size:14px;font-weight:700;color:#7fa4ff;cursor:pointer;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#7fa4ff'">Partner Program</a>
+      <a onclick="openPrivacyModal()" style="font-size:13px;font-weight:600;color:rgba(255,255,255,.75);cursor:pointer;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.75)'">Privacy</a>
+      <a onclick="openTermsModal()" style="font-size:13px;font-weight:600;color:rgba(255,255,255,.75);cursor:pointer;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.75)'">Terms</a>
+    </div>
+  </div>
   </div><!-- /.section -->
 </div><!-- /#home -->
 
@@ -1741,16 +1879,16 @@ body.modal-open{overflow:hidden}
 
           <div class="grid-4">
             <div class="card" style="background:linear-gradient(135deg,#07101f,#0d1e38);border:1px solid rgba(26,111,255,.22);box-shadow:0 4px 24px rgba(26,111,255,.16);">
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Calls today</div>
-              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricCalls">43</div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Calls made</div>
+              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricCalls">—</div>
             </div>
             <div class="card" style="background:linear-gradient(135deg,#0d1f10,#142a1a);border:1px solid rgba(0,197,122,.22);box-shadow:0 4px 24px rgba(0,197,122,.12);">
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Responses generated</div>
-              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricResponses">127</div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Contacts reached</div>
+              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricResponses">—</div>
             </div>
             <div class="card" style="background:linear-gradient(135deg,#1a1007,#251808);border:1px solid rgba(201,162,39,.22);box-shadow:0 4px 24px rgba(201,162,39,.10);">
               <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Close score</div>
-              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricClose">81%</div>
+              <div style="font-family:'Sora',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="metricClose">—</div>
             </div>
             <div class="card" style="background:linear-gradient(135deg,#15071a,#200e26);border:1px solid rgba(139,92,246,.22);box-shadow:0 4px 24px rgba(139,92,246,.12);">
               <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.75);margin-bottom:8px;font-size:12px;">Active plan</div>
@@ -1807,65 +1945,7 @@ body.modal-open{overflow:hidden}
               </div>
             </div>
 
-            <div class="stack">
-              <div style="background:#fff;border-radius:22px;padding:22px;border:1.5px solid #e0eaff;box-shadow:0 4px 20px rgba(13,27,46,.08);">
-                <div style="font-family:'Sora',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.03em;color:#0d1b2e;margin-bottom:18px;display:flex;align-items:center;gap:10px;">
-                  <span style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#0f5fe8,#1a6fff);display:grid;place-items:center;font-size:14px;flex-shrink:0;">📊</span>
-                  Rep Performance
-                </div>
-                <table style="width:100%;border-collapse:collapse;">
-                  <thead>
-                    <tr>
-                      <th style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#6b7fa3;padding:0 10px 12px 0;text-align:left;">Rep</th>
-                      <th style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#6b7fa3;padding:0 10px 12px;text-align:left;">Calls</th>
-                      <th style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#6b7fa3;padding:0 10px 12px;text-align:left;">AI Quality</th>
-                      <th style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#6b7fa3;padding:0 0 12px;text-align:left;">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody id="managerTable">
-                    <tr>
-                      <td style="padding:10px 10px 10px 0;border-top:1px solid #f0f4f8;font-weight:700;color:#0d1b2e;font-size:14px;">Sean</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;color:#3a5070;font-size:14px;font-weight:600;">43</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;font-size:14px;"><span style="background:#dcfce7;color:#15803d;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;">91%</span></td>
-                      <td style="padding:10px 0 10px 10px;border-top:1px solid #f0f4f8;font-size:14px;font-weight:700;color:#0d1b2e;">🔥 Hot</td>
-                    </tr>
-                    <tr>
-                      <td style="padding:10px 10px 10px 0;border-top:1px solid #f0f4f8;font-weight:700;color:#0d1b2e;font-size:14px;">Cory</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;color:#3a5070;font-size:14px;font-weight:600;">31</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;font-size:14px;"><span style="background:#dbeafe;color:#1d4ed8;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;">84%</span></td>
-                      <td style="padding:10px 0 10px 10px;border-top:1px solid #f0f4f8;font-size:14px;font-weight:700;color:#0d1b2e;">✅ Strong</td>
-                    </tr>
-                    <tr>
-                      <td style="padding:10px 10px 10px 0;border-top:1px solid #f0f4f8;font-weight:700;color:#0d1b2e;font-size:14px;">Jess</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;color:#3a5070;font-size:14px;font-weight:600;">26</td>
-                      <td style="padding:10px;border-top:1px solid #f0f4f8;font-size:14px;"><span style="background:#fef9c3;color:#854d0e;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;">78%</span></td>
-                      <td style="padding:10px 0 10px 10px;border-top:1px solid #f0f4f8;font-size:14px;font-weight:700;color:#0d1b2e;">↗ Improving</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
 
-              <div style="background:#fff;border-radius:22px;padding:22px;border:1.5px solid #e0eaff;box-shadow:0 4px 20px rgba(13,27,46,.08);">
-                <div style="font-family:'Sora',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.03em;color:#0d1b2e;margin-bottom:18px;display:flex;align-items:center;gap:10px;">
-                  <span style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#0f5fe8,#1a6fff);display:grid;place-items:center;font-size:14px;flex-shrink:0;">⚡</span>
-                  Top Objections
-                </div>
-                <div id="objectionList" style="display:flex;flex-direction:column;gap:10px;">
-                  <div style="padding:14px 16px;border-radius:14px;background:#fff7f0;border:1.5px solid #fed7aa;">
-                    <div style="font-size:14px;font-weight:700;color:#0d1b2e;margin-bottom:4px;">Fee pushback</div>
-                    <div style="font-size:13px;color:#6b7fa3;line-height:1.5;">Usually needs value reframing, not pressure.</div>
-                  </div>
-                  <div style="padding:14px 16px;border-radius:14px;background:#f0f9ff;border:1.5px solid #bae6fd;">
-                    <div style="font-size:14px;font-weight:700;color:#0d1b2e;margin-bottom:4px;">"We prefer checks"</div>
-                    <div style="font-size:13px;color:#6b7fa3;line-height:1.5;">Best answered with speed + remittance clarity.</div>
-                  </div>
-                  <div style="padding:14px 16px;border-radius:14px;background:#f0fdf4;border:1.5px solid #86efac;">
-                    <div style="font-size:14px;font-weight:700;color:#0d1b2e;margin-bottom:4px;">Need owner approval</div>
-                    <div style="font-size:13px;color:#6b7fa3;line-height:1.5;">Use an easy-forward explanation and soft close.</div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -3501,9 +3581,6 @@ function enterRealApp(){
   const lp = document.getElementById('livePill');
   if(lp){ lp.textContent = '🟢 Live'; lp.style.background = '#dcfce7'; lp.style.color = '#166534'; }
   document.getElementById('metricPlan').textContent = 'Pro';
-  document.getElementById('metricCalls').textContent = cfg.calls;
-  document.getElementById('metricResponses').textContent = cfg.responses;
-  document.getElementById('metricClose').textContent = cfg.close;
   document.getElementById('analyticsQuality').textContent = cfg.quality;
   document.getElementById('analyticsTime').textContent = cfg.time;
   document.getElementById('analyticsSolved').textContent = cfg.solved;
@@ -3519,8 +3596,7 @@ function enterRealApp(){
   document.getElementById('starterAnalyticsNote').style.display = 'none';
   document.getElementById('enterpriseDashboardCard').style.display = 'none';
 
-  // Update manager table
-  document.getElementById('managerTable').innerHTML = '<tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr><tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr><tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>';
+  refreshDashboardMetrics();
 
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
@@ -3577,26 +3653,6 @@ function applyPlanDemo(plan){
     <div class="script-item"><b>${o[0]}</b><span class="subtle">${o[1]}</span></div>
   `).join('');
 
-  const managerTable = document.getElementById('managerTable');
-  if(plan === 'starter'){
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>18</td><td>74%</td><td>⚡ Building</td></tr>
-      <tr><td>Brandy</td><td>12</td><td>69%</td><td>↗ Learning</td></tr>
-      <tr><td>Tori</td><td>9</td><td>71%</td><td>✅ Steady</td></tr>
-    `;
-  } else if(plan === 'enterprise'){
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>112</td><td>95%</td><td>🔥 Elite</td></tr>
-      <tr><td>Cory</td><td>98</td><td>91%</td><td>✅ Strong</td></tr>
-      <tr><td>Jess</td><td>87</td><td>89%</td><td>↗ Growing</td></tr>
-    `;
-  } else {
-    managerTable.innerHTML = `
-      <tr><td>Sean</td><td>43</td><td>91%</td><td>🔥 Hot</td></tr>
-      <tr><td>Cory</td><td>31</td><td>84%</td><td>✅ Strong</td></tr>
-      <tr><td>Jess</td><td>26</td><td>78%</td><td>↗ Improving</td></tr>
-    `;
-  }
 
   // Sync billing current plan display
   const billingPlanName = document.getElementById('billingPlanName');
@@ -6120,8 +6176,8 @@ async function loadCallHistory() {
     const meta = getCallMeta();
     list.innerHTML = recs.map(rec => {
       const m = meta[rec.callSid] || {};
-      const label = [m.name, m.company].filter(Boolean).join(' @ ') || rec.callSid;
-      const phone = m.toNumber || '';
+      const label = [m.name, m.company].filter(Boolean).join(' @ ') || rec.friendlyName || rec.toNumber || rec.callSid;
+      const phone = m.toNumber || rec.toNumber || '';
       const reason = m.reason ? `<span style="color:#7a90b0;font-size:12px;margin-left:8px">${m.reason}</span>` : '';
       const dur = rec.duration ? `${Math.floor(rec.duration/60)}:${String(rec.duration%60).padStart(2,'0')}` : '--';
       const date = rec.dateCreated ? new Date(rec.dateCreated).toLocaleString() : '';
@@ -6891,40 +6947,40 @@ window.showPage = function(pageId, btn) {
     <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:10px;background:rgba(0,255,136,.12);color:#00ff88;border:1px solid rgba(0,255,136,.4);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(0,255,136,.5);">✉️ Send Email</button>
   </div>
 </div>
+
 <script>
 (function(){
-  var rows=[
-    ['Outbound AI voice agent',          '✓','✗','✓','✓'],
-    ['Built for outbound sales',          '✓','✗','✗','✗'],
-    ['Live agent rebuttal assist',       '✓','✗','✗','✗'],
-    ['Send agreement mid-call',          '✓','✗','✗','✗'],
-    ['Real-time call transcript',        '✓','✓','✓','✓'],
-    ['No setup / start in minutes',      '✓','✗','✓','✓'],
-    ['Flat monthly pricing',             '✓','✗','✓','✗'],
-    ['Human-handoff (live assist mode)', '✓','✓','✗','✗'],
-  ];
-  var tbody=document.getElementById('compTable');
-  if(!tbody)return;
-  rows.forEach(function(r,i){
-    var tr=document.createElement('tr');
-    r.forEach(function(cell,ci){
-      var td=document.createElement('td');
-      var bg=i%2===0?'rgba(255,255,255,.025)':'transparent';
-      if(ci===0){
-        td.style.cssText='padding:14px 20px;font-size:14px;color:rgba(255,255,255,.72);white-space:nowrap;background:'+bg+';border-bottom:1px solid rgba(255,255,255,.05);';
-        td.textContent=cell;
-      } else {
-        var pp=ci===1;
-        var icon=cell==='✓'?'<span style="color:#4ade80;font-size:18px;line-height:1;">✓</span>'
-               :cell==='✗'?'<span style="color:rgba(255,255,255,.2);font-size:18px;line-height:1;">✗</span>'
-               :'<span style="color:#fbbf24;font-size:12px;font-weight:700;letter-spacing:.02em;">Partial</span>';
-        td.style.cssText='padding:14px 20px;text-align:center;border-bottom:1px solid '+(pp?'rgba(79,124,255,.18)':'rgba(255,255,255,.05)')+';background:'+(pp?'linear-gradient(180deg,rgba(79,124,255,.10),rgba(79,124,255,.05))':bg)+';'+(pp?'border-left:1px solid rgba(79,124,255,.22);border-right:1px solid rgba(79,124,255,.22);':'');
-        td.innerHTML=icon;
+  var cv = document.getElementById('devMiniCanvas');
+  if(!cv) return;
+  var ctx = cv.getContext('2d');
+  var W=44, H=44;
+  var img = new Image();
+  img.crossOrigin='anonymous';
+  img.onload=function(){
+    var CHARS=['0','1'];
+    var cols=11, cw=W/cols;
+    var drops=Array.from({length:cols},function(){return -Math.random()*6;});
+    var spds=Array.from({length:cols},function(){return 0.35+Math.random()*0.4;});
+    var tick=0;
+    function frame(){
+      requestAnimationFrame(frame);
+      tick++;
+      ctx.drawImage(img,0,0,img.naturalWidth,img.naturalHeight*0.82,0,0,W,H);
+      ctx.globalAlpha=0.52; ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H); ctx.globalAlpha=1;
+      for(var i=0;i<cols;i++){
+        var x=i*cw+cw/2, y=Math.floor(drops[i])*8;
+        var dx=(x-W/2)/(W*0.44), dy=(y-H*0.40)/(H*0.46);
+        var onFace=(dx*dx+dy*dy)<1;
+        ctx.font='bold 7px monospace';
+        ctx.fillStyle=onFace?'rgba(0,255,70,1)':'rgba(0,180,40,0.45)';
+        ctx.fillText(CHARS[Math.floor(Math.random()*2)],x-3,y);
+        drops[i]+=spds[i];
+        if(drops[i]*8>H) drops[i]=-Math.random()*4;
       }
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
+    }
+    frame();
+  };
+  img.src='/240_F_790682991_iBTGcSFOXSkIm6eJN8PBli4wyG8iHYG4.jpg';
 })();
 </script>
 </body>

@@ -506,7 +506,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 30, temperature: 0.7, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -559,7 +559,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.7 }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 30, temperature: 0.7 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -569,8 +569,8 @@ async function callOpenAI(messages) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_flash_v2_5',
-  voice_settings: { stability: 0.45, similarity_boost: 0.85, style: 0.35, use_speaker_boost: false, speed: 0.90 }
+  model_id: 'eleven_turbo_v2_5',
+  voice_settings: { stability: 0.85, similarity_boost: 0.90, style: 0, use_speaker_boost: false, speed: 0.95 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
@@ -618,8 +618,8 @@ async function streamTTS(session, text) {
   if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
     try {
       const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 5000);
-      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000&optimize_streaming_latency=4`, {
+      const t = setTimeout(() => ctrl.abort(), 9000);
+      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000`, {
         method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
         signal: ctrl.signal
