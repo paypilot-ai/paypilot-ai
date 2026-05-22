@@ -325,7 +325,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=200';
+    '&interim_results=false&endpointing=600';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -340,8 +340,9 @@ function connectDeepgram(session) {
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       if (!transcript || !result.is_final) return;
       const words = transcript.split(/\s+/).filter(Boolean);
-      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|huh|mhm|ah+|oh+|ow+|ha+)\s*[.?!]?$/i;
-      if (words.length < 1 || NOISE_ONLY.test(transcript)) {
+      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|yep|nope|yeah|nah|ok|okay|hello+|hey+|hi+|bye+|ew+|wow|whoa)\s*[.?!]?$/i;
+      const TWO_WORD_NOISE = /^(uh (huh|oh|yeah|ok|okay|hm)|oh (ok|okay|yeah|wow|right|sure|hmm)|mm (hmm|yeah|ok)|yeah (ok|okay|sure|right|hmm))[.?!]?$/i;
+      if (words.length < 1 || NOISE_ONLY.test(transcript) || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
         callLog(session.callSid, '[dg] filtered noise:', transcript);
         return;
       }
@@ -358,8 +359,22 @@ function connectDeepgram(session) {
       }
 
       if (session.state === 'processing') { return; }
+      if (session.state === 'speaking') {
+        // Barge-in: user spoke while Brandy is talking — cut her off and respond
+        callLog(session.callSid, '[barge-in] cutting Brandy off:', transcript);
+        if (session.twilioWs?.readyState === WebSocket.OPEN) {
+          session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+        }
+        session.pendingTranscript = null;
+        session.state = 'processing';
+        session.history.push({ role: 'user', content: transcript });
+        generateAndSpeak(session).catch(e => {
+          callLog(session.callSid, '[ai] barge-in error:', e.message);
+          session.state = 'listening';
+        });
+        return;
+      }
       if (session.state !== 'listening') {
-        // Buffer the latest transcript — fire it the moment we finish speaking
         session.pendingTranscript = transcript;
         callLog(session.callSid, '[dg] buffered (state=' + session.state + '):', transcript);
         return;
