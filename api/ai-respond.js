@@ -16,7 +16,7 @@ function gather(sayXml, historyB64, retries, turns, n, r, c, e, s) {
   const action = `/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e||'')}&amp;s=${encodeURIComponent(s||'')}`;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="${action}" method="POST" timeout="5" speechTimeout="1" speechModel="phone_call" language="en-US">
+  <Gather input="speech" action="${action}" method="POST" timeout="8" speechTimeout="auto" speechModel="phone_call" language="en-US">
     ${sayXml}
   </Gather>
   <Hangup/>
@@ -44,25 +44,30 @@ async function sendFollowUpEmail(customerEmail, senderEmail, customerName, compa
   } catch (_) {}
 }
 
-function buildPrompt(customerName, companyName, callReason) {
+function buildPrompt(customerName, companyName, callReason, history) {
   const company = companyName || 'our company';
   const name    = customerName || 'the prospect';
   const reason  = callReason  || '';
+
+  const alreadySaid = (history || [])
+    .filter(m => m.role === 'assistant')
+    .map(m => `- "${m.content}"`)
+    .join('\n');
+
   return `You are Brandy, a real Southern woman on a live call for ${company}.${reason ? ` Calling about: ${reason}.` : ''} Talking to ${name}.
 
 You are NOT a bot. You are a real person who genuinely enjoys talking to people.
-Make ${name} comfortable first — match their energy, listen closely.
-Once they seem comfortable, naturally work toward why you called.
+Match their energy, listen closely, respond directly to what they just said.
 
 Rules:
-- ONE sentence only, then stop.
-- Natural fillers: "mm", "yeah", "oh", "well" — only when real.
-- BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Definitely".
-- NEVER repeat the same pitch or benefit you already said. Each response must use a NEW angle.
-- First pushback → acknowledge their concern genuinely, then address it from a completely different angle.
-- Second pushback → shift to "let me send you some info" and offer a soft close.
+- ONE sentence only, max 20 words, then stop.
+- Natural fillers: "mm", "yeah", "oh", "well" — only when it fits naturally.
+- BANNED words: "I understand", "Absolutely", "Certainly", "Of course", "Definitely", "Great".
+- Read the conversation history. Do NOT reuse any phrasing or point you already made.
+- First pushback → address their SPECIFIC concern from a brand new angle you haven't tried.
+- Second pushback → offer to send info by email and ask if that's okay.
 - Third clear refusal → add [END] on its own line.
-- If they agree or say yes → wrap up warmly, mention you'll send them a follow-up email, then add [END].`;
+- If they agree or say yes → close warmly, say you'll send a follow-up email, add [END].${alreadySaid ? `\n\nYou have already said:\n${alreadySaid}\n\nDo NOT repeat any of these points or phrases.` : ''}`;
 }
 
 module.exports = async function handler(req, res) {
@@ -116,10 +121,10 @@ module.exports = async function handler(req, res) {
 
     // Scripted fallback replies — used if OpenAI is slow or unavailable
     const SCRIPTED = [
-      `Oh yeah, absolutely — so the reason I was reaching out is about ${reason || 'some great options we have'}. Does that sound like something you'd be open to?`,
-      `Mm, yeah — I totally get that. What would be the best time to talk about this more?`,
-      `Oh interesting, tell me more about that.`,
-      `Right, right — well, I appreciate your time. Can I follow up with you later this week?`,
+      `So the reason I'm calling is ${reason || 'something I think could help you'}. Does that sound like something you'd want to hear more about?`,
+      `Yeah, totally — what's the biggest thing holding you back right now?`,
+      `That's fair. Would it be okay if I sent you a quick email with the details?`,
+      `I appreciate your time. Mind if I follow up later this week?`,
     ];
 
     const controller = new AbortController();
@@ -127,12 +132,12 @@ module.exports = async function handler(req, res) {
 
     let reply;
     try {
-      const messages = [{ role: 'system', content: buildPrompt(n, c, r) }, ...history.slice(-12)];
+      const messages = [{ role: 'system', content: buildPrompt(n, c, r, history) }, ...history.slice(-12)];
       const apiKey = process.env.OPENAI_API_KEY;
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 40, temperature: 0.8 }),
+        body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 35, temperature: 0.7 }),
         signal: controller.signal
       });
       clearTimeout(timeout);
