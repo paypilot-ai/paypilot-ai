@@ -16,7 +16,7 @@ function gather(sayXml, historyB64, retries, turns, n, r, c, e, s) {
   const action = `/api/ai-respond?h=${historyB64}&amp;retries=${retries}&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e||'')}&amp;s=${encodeURIComponent(s||'')}`;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="3" speechModel="phone_call" language="en-US">
+  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="4" speechModel="phone_call" language="en-US">
     ${sayXml}
   </Gather>
   <Hangup/>
@@ -113,21 +113,6 @@ module.exports = async function handler(req, res) {
 
     history.push({ role: 'user', content: transcript });
 
-    const company = c || 'our company';
-    const reason  = r || '';
-
-    if (turns <= 0) {
-      const intros = [
-        `Oh hey! Yeah, this is Brandy with ${company}${reason ? '. I was reaching out about ' + reason : ''}. You got a quick second?`,
-        `Hey! Brandy here from ${company}${reason ? ', hoping to talk about ' + reason : ''}. Is now an okay time?`,
-        `Oh hi! It's Brandy calling from ${company}${reason ? ' about ' + reason : ''}. You got a minute?`,
-        `Hey there! Brandy with ${company}${reason ? '. I was reaching out about ' + reason : ''}. Am I catching you at an okay time?`,
-      ];
-      const reply = intros[Math.floor(Math.random() * intros.length)];
-      history.push({ role: 'assistant', content: reply });
-      return res.status(200).send(gather(say(reply), b64enc(history), 0, 1, n, r, c, e, s));
-    }
-
     // Scripted fallback replies — used if OpenAI is slow or unavailable
     const SCRIPTED = [
       `So the reason I'm calling is ${reason || 'something I think could help you'}. Does that sound like something you'd want to hear more about?`,
@@ -158,7 +143,7 @@ module.exports = async function handler(req, res) {
         if (reply) {
           history.push({ role: 'assistant', content: reply });
           while (Buffer.byteLength(JSON.stringify(history)) > 5500) history.splice(0, 2);
-          if (wantsEnd && turns >= 3) {
+          if (wantsEnd) {
             sendFollowUpEmail(e, s, n, c, r);
             return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say(reply)}<Hangup/></Response>`);
           }

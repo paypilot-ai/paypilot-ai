@@ -69,32 +69,19 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // Fallback: inline TwiML with Polly
-    const GREETINGS = [
-      `Hey, is ${name || 'there'} around?`,
-      `Hi there, is ${name || 'someone'} available?`,
-      `Hey, is ${name || 'there'} there?`,
-      `Hi, can I speak with ${name || 'someone'}?`,
-    ];
-    const greeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-    const history  = Buffer.from(JSON.stringify([{ role: 'assistant', content: greeting }]))
-      .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-
-    const actionUrl = `https://paypilotai.live/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0&amp;n=${n}&amp;r=${r}&amp;c=${c}&amp;e=${e}&amp;s=${s}`;
-    const safeGreeting = greeting.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${actionUrl}" method="POST" timeout="7" speechTimeout="auto" speechModel="phone_call" language="en-US"><Say voice="Polly.Joanna-Neural">${safeGreeting}</Say></Gather><Hangup/></Response>`;
-
+    // Fallback: route through ai-twiml.js (uses ElevenLabs TTS, consistent voice)
+    const twimlUrl = `https://paypilotai.live/api/ai-twiml?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}`;
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
       {
         method: 'POST',
         headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ To: e164, From: fromNumber, Twiml: twiml }).toString()
+        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
       }
     );
     const data = await response.json();
     if (!response.ok) return res.status(500).json({ error: `Twilio: ${data.message}`, code: data.code });
-    return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode: 'inline-twiml' });
+    return res.status(200).json({ callSid: data.sid, status: data.status, to: e164, mode: 'twiml' });
 
   } catch (e) {
     return res.status(500).json({ error: e.message });

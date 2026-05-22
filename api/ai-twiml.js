@@ -1,7 +1,7 @@
 const BASE_URL = 'https://paypilotai.live';
 
-function say(text) {
-  return `<Play>${BASE_URL}/api/tts?text=${encodeURIComponent(text)}</Play>`;
+function ttsUrl(text) {
+  return `${BASE_URL}/api/tts?text=${encodeURIComponent(text)}`;
 }
 
 function b64enc(obj) {
@@ -9,11 +9,10 @@ function b64enc(obj) {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
-const GREETINGS = [
-  'Hey, is {name} around?',
-  'Hi there, is {name} available?',
-  'Hey, is {name} there?',
-  'Hi, can I speak with {name}?',
+const INTROS = [
+  'Hey {name}! This is Brandy calling from {company}{reason}. You got a quick second?',
+  'Hi {name}! Brandy here with {company}{reason}. Is now an okay time?',
+  'Hey {name}! It\'s Brandy from {company}{reason}. Am I catching you at an okay time?',
 ];
 
 module.exports = async function handler(req, res) {
@@ -22,22 +21,31 @@ module.exports = async function handler(req, res) {
     const n = (req.query.n || '').trim();
     const r = (req.query.r || '').trim();
     const c = (req.query.c || '').trim();
+    const e = (req.query.e || '').trim();
+    const s = (req.query.s || '').trim();
 
-    const name = n || 'there';
-    const tmpl = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-    const greeting = tmpl.replace('{name}', name);
+    const name    = n || 'there';
+    const company = c || 'PayPilot AI';
+    const reason  = r ? ` — I was reaching out about ${r}` : '';
+
+    const tmpl   = INTROS[Math.floor(Math.random() * INTROS.length)];
+    const greeting = tmpl
+      .replace('{name}', name)
+      .replace('{company}', company)
+      .replace('{reason}', reason);
 
     const history = b64enc([{ role: 'assistant', content: greeting }]);
-    const action = `https://paypilotai.live/api/ai-respond?h=${history}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}`;
+    const action  = `https://paypilotai.live/api/ai-respond?h=${history}&amp;retries=0&amp;turns=1&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}`;
 
     res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="3" speechModel="phone_call" language="en-US">
-    ${say(greeting)}
+  <Pause length="1"/>
+  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="4" speechModel="phone_call" language="en-US">
+    <Play>${ttsUrl(greeting)}</Play>
   </Gather>
   <Hangup/>
 </Response>`);
   } catch (e) {
-    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say>Hi there, who am I speaking with?</Say><Hangup/></Response>`);
+    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Hangup/></Response>`);
   }
 };
