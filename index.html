@@ -140,6 +140,8 @@ body.modal-open{overflow:hidden}
   box-shadow:0 8px 28px rgba(26,111,255,.45),inset 0 1px 0 rgba(255,255,255,.15);
 }
 .btn-primary:hover{box-shadow:0 14px 40px rgba(26,111,255,.60),inset 0 1px 0 rgba(255,255,255,.2)}
+.nav-link{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.62);font-size:14px;font-weight:600;padding:8px 14px;border-radius:8px;transition:color .15s;letter-spacing:-.01em}
+.nav-link:hover{color:#fff}
 .btn-ghost{color:rgba(255,255,255,.88);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14)}
 .btn-ghost:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24)}
 .btn-white{color:var(--text);background:#fff;box-shadow:var(--shadow)}
@@ -1408,8 +1410,8 @@ body.modal-open{overflow:hidden}
       </div>
     </div>
     <div class="nav-actions">
-      <button class="btn btn-ghost" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">Get Pricing</button>
-      <button class="btn btn-ghost" onclick="window.location.href='/partners'">Partners</button>
+      <button class="nav-link" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">Pricing</button>
+      <button class="nav-link" onclick="window.location.href='/partners'">Partners</button>
       <button class="btn btn-white" onclick="showAuth()">Login</button>
       <button class="btn btn-primary" onclick="enterPlanDemo('pro')">Open Demo</button>
     </div>
