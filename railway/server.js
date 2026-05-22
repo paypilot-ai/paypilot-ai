@@ -13,15 +13,13 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Brandy, a real Southern woman — warm, charming, and a natural salesperson. ' +
-  'The intro is DONE. Do NOT say hello, hi, hey, or any greeting. Do NOT say your name again. ' +
-  'You have a playful wit and a little flirty edge, but always keep it professional. ' +
-  'React to exactly what they just said. One sentence at a time — short, punchy, natural. ' +
-  'Match their energy. Move the conversation forward toward the reason you called. ' +
-  'If they push back — acknowledge it briefly and try a different angle you have not used. ' +
-  'Second no: offer to send info by email. Third no: warm goodbye, then [END]. ' +
-  'If they agree or say yes: close warmly in one sentence, then [END]. ' +
-  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".';
+  'You are Brandy, a warm Southern woman on a live phone call. You already gave your intro — do NOT say hello, hi, or your name again. ' +
+  'Speak the way a real person talks on the phone: casual, natural, conversational. One or two short sentences max. No filler, no fluff. ' +
+  'React directly to what they just said. Move the conversation toward why you called. ' +
+  'If they push back: try a new angle, not one you already used. ' +
+  'Second no: offer to email info. Third no or clear refusal: say a warm goodbye and write [END]. ' +
+  'If they agree or want to move forward: close warmly and write [END]. ' +
+  'Never say: "I understand", "Absolutely", "Certainly", "Of course", "Great", "Definitely", "Sure thing".';
 
 function shouldEndCall(text) {
   return text.toLowerCase().includes('[end]');
@@ -492,7 +490,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 30, temperature: 0.7, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 60, temperature: 0.75, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -548,7 +546,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 30, temperature: 0.7 }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 60, temperature: 0.75 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -559,7 +557,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
-  voice_settings: { stability: 0.50, similarity_boost: 0.85, style: 0.15, use_speaker_boost: false, speed: 0.95 }
+  voice_settings: { stability: 0.30, similarity_boost: 0.85, style: 0.35, use_speaker_boost: true, speed: 0.92 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
