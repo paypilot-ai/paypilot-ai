@@ -6200,8 +6200,8 @@ async function loadCallHistory() {
     const meta = getCallMeta();
     list.innerHTML = recs.map(rec => {
       const m = meta[rec.callSid] || {};
-      const label = [m.name, m.company].filter(Boolean).join(' @ ') || rec.callSid;
-      const phone = m.toNumber || '';
+      const label = [m.name, m.company].filter(Boolean).join(' @ ') || rec.friendlyName || rec.toNumber || rec.callSid;
+      const phone = m.toNumber || rec.toNumber || '';
       const reason = m.reason ? `<span style="color:#7a90b0;font-size:12px;margin-left:8px">${m.reason}</span>` : '';
       const dur = rec.duration ? `${Math.floor(rec.duration/60)}:${String(rec.duration%60).padStart(2,'0')}` : '--';
       const date = rec.dateCreated ? new Date(rec.dateCreated).toLocaleString() : '';

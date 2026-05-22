@@ -44,12 +44,33 @@ module.exports = async function handler(req, res) {
     const r = await fetch(url, { headers: { Authorization: `Basic ${credentials}` } });
     const data = await r.json();
     if (!r.ok) return res.status(r.status).json({ error: data.message });
-    const recordings = (data.recordings || []).map(rec => ({
-      sid:         rec.sid,
-      callSid:     rec.call_sid,
-      duration:    parseInt(rec.duration, 10) || 0,
-      dateCreated: rec.date_created,
-      status:      rec.status,
+
+    const recs = data.recordings || [];
+
+    // Fetch call details (to number + friendly name) for each unique callSid in parallel
+    const uniqueCallSids = [...new Set(recs.map(r => r.call_sid).filter(Boolean))];
+    const callMap = {};
+    await Promise.all(uniqueCallSids.map(async csid => {
+      try {
+        const cr = await fetch(
+          `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls/${csid}.json`,
+          { headers: { Authorization: `Basic ${credentials}` } }
+        );
+        if (cr.ok) {
+          const cd = await cr.json();
+          callMap[csid] = { to: cd.to, friendlyName: cd.friendly_name || '' };
+        }
+      } catch {}
+    }));
+
+    const recordings = recs.map(rec => ({
+      sid:          rec.sid,
+      callSid:      rec.call_sid,
+      duration:     parseInt(rec.duration, 10) || 0,
+      dateCreated:  rec.date_created,
+      status:       rec.status,
+      toNumber:     callMap[rec.call_sid]?.to || '',
+      friendlyName: callMap[rec.call_sid]?.friendlyName || '',
     }));
     return res.status(200).json({ recordings });
   } catch (e) {
