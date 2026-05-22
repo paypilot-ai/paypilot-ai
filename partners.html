@@ -25,10 +25,12 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:20px 4
 .nav-brand{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#fff;cursor:pointer;}
 .nav-brand span{color:#4f7cff;}
 .nav-actions{display:flex;gap:10px;}
-.btn{border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s;}
-.btn:hover{opacity:.85}
-.btn-ghost{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);}
-.btn-primary{background:linear-gradient(135deg,#1a6fff,#0050e0);color:#fff;}
+.btn{border:none;border-radius:12px;padding:11px 22px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.01em;position:relative;overflow:hidden;}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.18);}
+.btn-ghost:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.32);color:#fff;}
+.btn-primary{background:linear-gradient(135deg,#2979ff,#0050e0);color:#fff;border:1px solid rgba(255,255,255,.15);box-shadow:0 4px 20px rgba(26,111,255,.45),inset 0 1px 0 rgba(255,255,255,.15);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(26,111,255,.6),inset 0 1px 0 rgba(255,255,255,.2);}
+.btn-primary:active{transform:translateY(0);}
 
 /* Hero */
 .hero{text-align:center;padding:80px 24px 64px;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(79,124,255,.18),transparent);}
@@ -73,8 +75,9 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:20px 4
 .field textarea{resize:vertical;}
 .field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,.3);}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(79,124,255,.5);}
-.submit-btn{background:linear-gradient(135deg,#1a6fff,#0050e0);color:#fff;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;width:100%;margin-top:4px;transition:opacity .15s;}
-.submit-btn:hover{opacity:.9}
+.submit-btn{background:linear-gradient(135deg,#2979ff,#0050e0);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:16px;font-size:16px;font-weight:700;letter-spacing:.02em;cursor:pointer;width:100%;margin-top:4px;transition:all .2s;box-shadow:0 4px 24px rgba(26,111,255,.5),inset 0 1px 0 rgba(255,255,255,.15);}
+.submit-btn:hover{transform:translateY(-1px);box-shadow:0 8px 32px rgba(26,111,255,.65),inset 0 1px 0 rgba(255,255,255,.2);}
+.submit-btn:active{transform:translateY(0);}
 .success-msg{display:none;text-align:center;font-size:15px;color:#4ade80;padding:8px 0;}
 
 /* Footer */
@@ -99,7 +102,7 @@ footer a:hover{color:#fff;}
   <div class="nav-brand" onclick="window.location.href='/'">Pay<span>Pilot AI</span></div>
   <div class="nav-actions">
     <button class="btn btn-ghost" onclick="window.location.href='/'">Back to site</button>
-    <button class="btn btn-primary" onclick="document.querySelector('.form-card').scrollIntoView({behavior:'smooth'})">Apply Now</button>
+    <button class="btn btn-primary" onclick="document.querySelector('.form-card').scrollIntoView({behavior:'smooth'})">Apply Now &rarr;</button>
   </div>
 </nav>
 
@@ -108,7 +111,7 @@ footer a:hover{color:#fff;}
   <div class="eyebrow">Partner Program</div>
   <h1>Sell PayPilot AI.<br><span>Earn recurring income.</span></h1>
   <p>Refer a customer and earn 20% of every payment, every month, for as long as they stay. No cap. No contracts. We handle everything else.</p>
-  <button class="btn btn-primary" style="font-size:16px;padding:16px 40px;" onclick="document.querySelector('.form-card').scrollIntoView({behavior:'smooth'})">Apply — It's Free</button>
+  <button class="btn btn-primary" style="font-size:16px;padding:16px 40px;" onclick="document.querySelector('.form-card').scrollIntoView({behavior:'smooth'})">Apply — It's Free &rarr;</button>
   <div class="hero-stats">
     <div class="stat"><strong>20%</strong><span>Recurring commission</span></div>
     <div class="stat"><strong>$99+</strong><span>Plans start at</span></div>
