@@ -13,13 +13,16 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Brandy, a warm Southern woman on a live phone call. You already gave your intro — do NOT say hello, hi, or your name again. ' +
-  'Speak the way a real person talks on the phone: casual, natural, conversational. One or two short sentences max. No filler, no fluff. ' +
-  'React directly to what they just said. Move the conversation toward why you called. ' +
-  'If they push back: try a new angle, not one you already used. ' +
-  'Second no: offer to email info. Third no or clear refusal: say a warm goodbye and write [END]. ' +
-  'If they agree or want to move forward: close warmly and write [END]. ' +
-  'Never say: "I understand", "Absolutely", "Certainly", "Of course", "Great", "Definitely", "Sure thing".';
+  'You are Brandy, a warm Southern woman making an outbound sales call. ' +
+  'You just asked if you reached the right person. ' +
+  'If they confirm: introduce yourself by name, say which company you are calling from, and briefly state why you called — then ask if they have a moment. One or two sentences. ' +
+  'If they say wrong number or not available: apologize politely and write [END]. ' +
+  'Once past the intro, speak like a real person on the phone: casual, natural, one or two short sentences. ' +
+  'React to what they just said. Move the conversation forward toward why you called. ' +
+  'On pushback: try a different angle you have not used yet. ' +
+  'Second no: offer to send info by email. Third no or clear refusal: warm goodbye, then write [END]. ' +
+  'If they agree or want to move forward: close warmly, mention the follow-up email, then write [END]. ' +
+  'Never say: "I understand", "Absolutely", "Certainly", "Of course", "Great", "Definitely".';
 
 function shouldEndCall(text) {
   return text.toLowerCase().includes('[end]');
@@ -280,7 +283,7 @@ function handleTwilio(ws) {
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
       connectDeepgram(session);
-      setTimeout(() => sendGreeting(session), 500);
+      setTimeout(() => sendGreeting(session), 1500);
     }
     if (msg.event === 'media' && session) {
       const dgState = session.dgWs?.readyState;
@@ -382,20 +385,21 @@ function connectDeepgram(session) {
   });
 }
 
-function buildGreeting(name, company, reason) {
-  const n = name    ? name    : 'there';
-  const c = company ? company : 'us';
-  const r = reason  ? ` — I was reaching out about ${reason}` : '';
-  const GREETINGS = [
-    `Hey ${n}! This is Brandy calling from ${c}${r}. You got a quick second?`,
-    `Hi ${n}! Brandy here with ${c}${r}. Is now an okay time?`,
-    `Hey ${n}! It's Brandy from ${c}${r}. Am I catching you at an okay time?`,
-  ];
-  return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+function buildGreeting(name, company) {
+  if (name) {
+    const GREETINGS = [
+      `Hi, is this ${name}?`,
+      `Hey, may I speak with ${name}?`,
+      `Hi there — is ${name} available?`,
+    ];
+    return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+  }
+  const c = company || 'us';
+  return `Hi there! This is Brandy calling from ${c}. Who am I speaking with?`;
 }
 
 async function sendGreeting(session) {
-  const greeting = buildGreeting(session.name, session.company, session.reason);
+  const greeting = buildGreeting(session.name, session.company);
   session.history.push({ role: 'assistant', content: greeting });
   pushToBrowser(session, { event: 'ai-response', text: greeting });
   await speakToTwilio(session, greeting);
