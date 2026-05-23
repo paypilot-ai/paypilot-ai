@@ -37,8 +37,8 @@ module.exports = async function handler(req, res) {
 
     res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Pause length="2"/>
   <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="2" speechModel="phone_call" language="en-US">
+    <Pause length="1"/>
     <Say voice="Polly.Joanna-Neural">${xmlEsc(greeting)}</Say>
   </Gather>
   <Hangup/>
