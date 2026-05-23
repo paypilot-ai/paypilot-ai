@@ -122,7 +122,7 @@ module.exports = async function handler(req, res) {
 
     // Scripted fallback replies — used if OpenAI is slow or unavailable
     const SCRIPTED = [
-      `We help with ${reason || 'outbound sales'} — want to hear more?`,
+      `We help with ${r || 'outbound sales'} — want to hear more?`,
       `What's the biggest thing holding you back right now?`,
       `Can I send you a quick email with the details?`,
       `I appreciate your time — mind if I follow up?`,
@@ -138,7 +138,7 @@ module.exports = async function handler(req, res) {
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 30, temperature: 0.7 }),
+        body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 50, temperature: 0.7 }),
         signal: controller.signal
       });
       clearTimeout(timeout);
