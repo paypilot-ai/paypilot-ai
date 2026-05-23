@@ -103,8 +103,8 @@ module.exports = async function handler(req, res) {
 </Response>`);
     }
 
-    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|aah+|oop+|yep|nope|yeah|nah|ok|okay|hello+|hey+|hi+|bye+|hm+|ew+|wow|whoa|oops|ouch)\s*[.?!]?$/i;
-    const TWO_WORD_NOISE = /^(uh (huh|oh|yeah|ok|okay|hm)|oh (ok|okay|yeah|wow|right|sure|hmm)|mm (hmm|yeah|ok)|yeah (ok|okay|sure|right|hmm))[.?!]?$/i;
+    const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|ow+|eh+|er+|ugh+|ooh+|aah+|oop+|ew+)\s*[.?!]?$/i;
+    const TWO_WORD_NOISE = /^(uh (huh|hm)|mm hmm)\s*[.?!]?$/i;
     const words = transcript.split(/\s+/).filter(Boolean);
     if (words.length < 1
       || (words.length === 1 && NOISE_ONLY.test(transcript))
