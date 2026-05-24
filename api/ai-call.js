@@ -5,9 +5,12 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method === 'GET') {
+    const wsUrl = (process.env.RAILWAY_WS_URL || '').trim();
     return res.status(200).json({
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
+      RAILWAY_WS_URL_set: !!wsUrl,
+      RAILWAY_WS_URL_preview: wsUrl ? wsUrl.slice(0, 40) + '...' : '(not set)',
     });
   }
 
