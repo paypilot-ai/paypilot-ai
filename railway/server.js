@@ -610,7 +610,7 @@ async function streamTTS(session, text, gen) {
     try {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 9000);
-      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
+      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000`, {
         method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
         signal: ctrl.signal
@@ -620,7 +620,7 @@ async function streamTTS(session, text, gen) {
       console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
       if (resp.ok) {
         elevenlabsBlocked = false;
-        await pipeToTwilio(session, resp, 'pcm16k', gen);
+        await pipeToTwilio(session, resp, 'ulaw8k', gen);
         return;
       }
       const errBody = await resp.text().catch(() => '');
