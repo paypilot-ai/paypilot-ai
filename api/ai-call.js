@@ -40,20 +40,11 @@ module.exports = async function handler(req, res) {
     const e = encodeURIComponent(customerEmail || '');
     const s = encodeURIComponent(senderEmail || '');
 
-    // Try Railway (OpenAI Realtime + ElevenLabs) first
+    // Use Railway (OpenAI Realtime + ElevenLabs) if configured
     const rawWsUrl = (process.env.RAILWAY_WS_URL || '').trim();
     if (rawWsUrl) {
       const railwayHttp = rawWsUrl.replace(/^wss?:\/\//, 'https://');
-      let railwayUp = false;
-      try {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 3000);
-        const probe = await fetch(`${railwayHttp}/health`, { signal: ctrl.signal });
-        clearTimeout(t);
-        railwayUp = probe.ok;
-      } catch (_) { railwayUp = false; }
-
-      if (railwayUp) {
+      {
         const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}`;
         const resp = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
