@@ -13,15 +13,16 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Brandy, a real Southern woman — warm, charming, and a natural salesperson. ' +
+  'You are Brandy, a real Southern woman — warm, charming, natural salesperson. ' +
   'The intro is DONE. Do NOT say hello, hi, hey, or any greeting. Do NOT say your name again. ' +
-  'You have a playful wit and a little flirty edge, but always keep it professional. ' +
-  'React to exactly what they just said. One sentence at a time — short, punchy, natural. ' +
-  'Match their energy. Move the conversation forward toward the reason you called. ' +
-  'If they push back — acknowledge it briefly and try a different angle you have not used. ' +
-  'Second no: offer to send info by email. Third no: warm goodbye, then [END]. ' +
-  'If they agree or say yes: close warmly in one sentence, then [END]. ' +
-  'BANNED: "I understand", "Absolutely", "Certainly", "Of course", "Great question", "Definitely".';
+  'React to exactly what they just said. One or two short sentences MAX — short, punchy, casual. ' +
+  'Start with "Yeah", "Oh", "So", "Look", "I mean", "Right", "Honestly" — the way people actually talk. ' +
+  'React naturally: funny → "Ha, yeah!" — hesitating → "Aw yeah, totally get that." ' +
+  'Match their energy. Move the conversation forward. Leave space for them to talk. ' +
+  'If they give their email: read it back casually, say you\'ll send something over, keep talking. Do NOT end the call just because they gave an email. ' +
+  'Before ending: say a warm genuine goodbye first, THEN write [END]. Never write [END] alone. ' +
+  'End only when truly done, wrong number, or they ask to stop. ' +
+  'Banned: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate that", "No problem", "That\'s a great question", "Sounds good".';
 
 function shouldEndCall(text) {
   return text.toLowerCase().includes('[end]');
@@ -32,6 +33,7 @@ function buildSystemPrompt(session) {
   if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
   if (session.reason)  parts.push(`Background context for this call (use this to guide the conversation, don't recite it): ${session.reason}.`);
   if (session.name)    parts.push(`You are speaking with ${session.name}.`);
+  parts.push('NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time. Do not give away your bottom line.');
   return parts.join(' ');
 }
 
@@ -325,7 +327,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=600';
+    '&interim_results=false&endpointing=400';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -432,15 +434,23 @@ async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating response (streaming)...');
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
-  const fullReply = await streamOpenAIAndSpeak(session, messages);
+  let fullReply;
+  try {
+    fullReply = await streamOpenAIAndSpeak(session, messages);
+  } catch (e) {
+    callLog(session.callSid, '[ai] generateAndSpeak error:', e.message);
+    enterListening(session);
+    return;
+  }
   if (!fullReply) { enterListening(session); return; }
 
-  callLog(session.callSid, '[ai] reply:', fullReply.slice(0, 80));
-  session.history.push({ role: 'assistant', content: fullReply });
-  pushToBrowser(session, { event: 'ai-response', text: fullReply });
+  const cleanReply = fullReply.replace(/\[END\]/gi, '').trim();
+  callLog(session.callSid, '[ai] reply:', cleanReply.slice(0, 80));
+  session.history.push({ role: 'assistant', content: cleanReply });
+  pushToBrowser(session, { event: 'ai-response', text: cleanReply });
 
   // Auto-send DocuSign if we just captured an email and haven't sent yet
-  if (session.capturedEmail && !session.docuSignSent) {
+  if (session.capturedEmail && !session.docuSignSent && !shouldEndCall(fullReply)) {
     session.docuSignSent = true;
     callLog(session.callSid, '[docusign] sending agreement to', session.capturedEmail);
     try {
@@ -463,7 +473,7 @@ async function generateAndSpeak(session) {
     }
   }
 
-  if (shouldEndCall(fullReply)) {
+  if (shouldEndCall(fullReply)) {  // check original text for [END] signal
     callLog(session.callSid, '[call] ending call — farewell detected');
     pushToBrowser(session, { event: 'call-ended' });
     setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 500);
@@ -506,7 +516,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 30, temperature: 0.7, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 80, temperature: 0.75, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -559,7 +569,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 30, temperature: 0.7 }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 80, temperature: 0.75 }),
       signal: ctrl.signal
     });
     clearTimeout(t);

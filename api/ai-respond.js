@@ -1,8 +1,7 @@
 const BASE_URL = 'https://paypilotai.live';
 
 function say(text) {
-  const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  return `<Say voice="Polly.Joanna-Neural">${safe}</Say>`;
+  return `<Play>${BASE_URL}/api/tts?text=${encodeURIComponent(text)}</Play>`;
 }
 function b64enc(obj) {
   return Buffer.from(JSON.stringify(obj)).toString('base64')
@@ -57,24 +56,22 @@ function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName
 }
 
 function buildPrompt(customerName, companyName, callReason) {
-  const company = companyName || 'our company';
-  const name    = customerName || 'the prospect';
-  const reason  = callReason  || 'our services';
-  return `You are Brandy — a real, warm Southern woman on a live sales call for ${company}, talking to ${name} about ${reason}.
+  const company   = companyName || 'our company';
+  const firstName = (customerName || 'the prospect').trim().split(/\s+/)[0];
+  const reason    = callReason  || 'our services';
+  return `You are Brandy — a real, warm Southern woman on a live sales call for ${company}, talking to ${firstName} about ${reason}.
 
 The intro is done. Do NOT say hello, hi, hey, or any greeting. Do NOT say your name again.
 
-Reply to exactly what they just said. One short sentence — 10 words max. Stop after the period.
+Reply to exactly what they just said. One or two short sentences MAX. Natural, casual, direct.
+Start with "Yeah", "Oh", "So", "Look", "I mean", "Right", "Honestly" — the way people actually talk.
+React: funny → "Ha, yeah!" — hesitating → "Aw yeah, totally get that." Never lecture or explain.
 
-Tone: calm, genuine, Southern. Not peppy. Not salesy.
-Banned: "I understand", "Absolutely", "Great", "Certainly", "Of course", "Definitely", "I hear you".
-
-If they push back or say no:
-— Look at the conversation history. Pick an angle you have NOT used yet.
-— Second no: offer to email them details and ask if that works.
-— Third no or "not interested": say a short warm goodbye, then write [END] on its own line.
-
-If they say yes, agree, or want to move forward: close warmly in one sentence, mention the follow-up email, then write [END] on its own line.`;
+If they give their email: read it back casually, say you'll shoot something over, keep talking. Do NOT end the call just because they gave an email.
+Before ending: warm genuine goodbye first — then write [END]. Never write [END] alone.
+On pushback: try a different angle. Second no: offer to email. Third no: warm goodbye then [END].
+NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time.
+Banned: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate that", "No problem", "That's a great question", "Sounds good".`;
 }
 
 module.exports = async function handler(req, res) {
@@ -122,7 +119,7 @@ module.exports = async function handler(req, res) {
 
     // Scripted fallback replies — used if OpenAI is slow or unavailable
     const SCRIPTED = [
-      `We help with ${reason || 'outbound sales'} — want to hear more?`,
+      `We help with ${r || 'outbound sales'} — want to hear more?`,
       `What's the biggest thing holding you back right now?`,
       `Can I send you a quick email with the details?`,
       `I appreciate your time — mind if I follow up?`,
@@ -138,7 +135,7 @@ module.exports = async function handler(req, res) {
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 30, temperature: 0.7 }),
+        body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 80, temperature: 0.75 }),
         signal: controller.signal
       });
       clearTimeout(timeout);
