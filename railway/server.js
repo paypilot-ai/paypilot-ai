@@ -325,7 +325,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=600';
+    '&interim_results=false&endpointing=400';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -337,14 +337,12 @@ function connectDeepgram(session) {
     if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
-      const alt = result?.channel?.alternatives?.[0];
-      const transcript = alt?.transcript?.trim();
-      const confidence = alt?.confidence ?? 1;
+      const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       if (!transcript || !result.is_final) return;
       const words = transcript.split(/\s+/).filter(Boolean);
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|ow+|eh+|er+|ugh+|ooh+|aah+|oop+|ew+)\s*[.?!]?$/i;
       const TWO_WORD_NOISE = /^(uh (huh|hm)|mm hmm)\s*[.?!]?$/i;
-      if (words.length < 2 || confidence < 0.75 || NOISE_ONLY.test(transcript) || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
+      if (words.length < 1 || NOISE_ONLY.test(transcript) || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
         callLog(session.callSid, '[dg] filtered noise:', transcript);
         return;
       }
@@ -608,7 +606,7 @@ async function speakToTwilio(session, text) {
 
 async function streamTTS(session, text, gen) {
   // Try ElevenLabs — skip entirely if it failed before on this server instance
-  if (false && ELEVENLABS_KEY && !isElevenlabsBlocked()) {
+  if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
     try {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 15000);
