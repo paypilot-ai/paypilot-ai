@@ -270,7 +270,7 @@ function handleTwilio(ws) {
   ws.on('message', async (raw) => {
     let msg;
     try { msg = JSON.parse(raw); } catch { return; }
-    if (msg.event === 'start') {
+    if (msg.event === 'start' && !session) {
       const callSid   = msg.start.callSid;
       const streamSid = msg.start.streamSid;
       const cp = msg.start?.customParameters || {};
