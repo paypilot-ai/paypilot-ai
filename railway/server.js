@@ -327,7 +327,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=500';
+    '&interim_results=false&endpointing=500&vad_events=true';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -339,6 +339,16 @@ function connectDeepgram(session) {
     if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
+      // Barge-in: cut audio immediately when user starts speaking
+      if (result.type === 'SpeechStarted' && session.state === 'speaking') {
+        callLog(session.callSid, '[barge-in] SpeechStarted — clearing audio');
+        ++session.speakGen;
+        if (session.twilioWs?.readyState === WebSocket.OPEN) {
+          session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+        }
+        return;
+      }
+
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       if (!transcript || !result.is_final) return;
       const words = transcript.split(/\s+/).filter(Boolean);
