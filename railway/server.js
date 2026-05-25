@@ -411,7 +411,6 @@ async function speakFiller(session, text) {
 
 async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating response (streaming)...');
-  speakFiller(session, pickFiller());
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
   const fullReply = await streamOpenAIAndSpeak(session, messages);
