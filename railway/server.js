@@ -15,11 +15,14 @@ const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'DODLEQrClDo8wCz460
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy, a real Southern woman — warm, charming, natural salesperson. ' +
   'The intro is DONE. Do NOT say hello, hi, hey, or any greeting. Do NOT say your name again. ' +
-  'React to exactly what they just said. One or two short sentences MAX — short, punchy, casual. ' +
+  'React to exactly what they just said. ONE short sentence MAX — punchy, casual, natural. ' +
   'Start with "Yeah", "Oh", "So", "Look", "I mean", "Right", "Honestly" — the way people actually talk. ' +
   'React naturally: funny → "Ha, yeah!" — hesitating → "Aw yeah, totally get that." ' +
-  'Match their energy. Move the conversation forward. Leave space for them to talk. ' +
+  'NEVER invent product names, service names, or details you were not told. Only use what you were given. ' +
   'If they give their email: read it back casually, say you\'ll send something over, keep talking. Do NOT end the call just because they gave an email. ' +
+  'NEGOTIATION: First pushback → do NOT drop the price. Try a different angle — reframe the value, ask what their concern is. ' +
+  'Second pushback → you may offer one small step down. Third pushback → offer to email details, then [END] if they\'re still not interested. ' +
+  'Never reveal your floor. Never jump to a lower number on the first "no". ' +
   'Before ending: say a warm genuine goodbye first, THEN write [END]. Never write [END] alone. ' +
   'End only when truly done, wrong number, or they ask to stop. ' +
   'Banned: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate that", "No problem", "That\'s a great question", "Sounds good".';
@@ -279,7 +282,7 @@ function handleTwilio(ws) {
       const c = cp.c || '';
       const e = cp.e || '';
       const s = cp.s || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, senderEmail: s || null, docuSignSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
@@ -356,7 +359,8 @@ function connectDeepgram(session) {
       if (emailMatch && !session.capturedEmail) {
         const rawEmail = emailMatch[0].replace(/\s+/g, '').replace(/\bat\b/gi, '@');
         session.capturedEmail = rawEmail;
-        callLog(session.callSid, '[email] captured:', rawEmail);
+        session.emailFromSpeech = true;
+        callLog(session.callSid, '[email] captured from speech:', rawEmail);
         pushToBrowser(session, { event: 'email-captured', email: rawEmail });
       }
 
@@ -449,8 +453,8 @@ async function generateAndSpeak(session) {
   session.history.push({ role: 'assistant', content: cleanReply });
   pushToBrowser(session, { event: 'ai-response', text: cleanReply });
 
-  // Auto-send DocuSign if we just captured an email and haven't sent yet
-  if (session.capturedEmail && !session.docuSignSent && !shouldEndCall(fullReply)) {
+  // Auto-send DocuSign only when email was captured from speech during this call
+  if (session.capturedEmail && session.emailFromSpeech && !session.docuSignSent && !shouldEndCall(fullReply)) {
     session.docuSignSent = true;
     callLog(session.callSid, '[docusign] sending agreement to', session.capturedEmail);
     try {
@@ -516,7 +520,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 80, temperature: 0.75, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 120, temperature: 0.75, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -569,7 +573,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 80, temperature: 0.75 }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 120, temperature: 0.75 }),
       signal: ctrl.signal
     });
     clearTimeout(t);

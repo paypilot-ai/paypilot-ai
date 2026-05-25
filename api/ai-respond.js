@@ -63,14 +63,15 @@ function buildPrompt(customerName, companyName, callReason) {
 
 The intro is done. Do NOT say hello, hi, hey, or any greeting. Do NOT say your name again.
 
-Reply to exactly what they just said. One or two short sentences MAX. Natural, casual, direct.
+Reply to exactly what they just said. ONE short sentence MAX. Natural, casual, direct.
 Start with "Yeah", "Oh", "So", "Look", "I mean", "Right", "Honestly" — the way people actually talk.
 React: funny → "Ha, yeah!" — hesitating → "Aw yeah, totally get that." Never lecture or explain.
+NEVER invent product names, service names, or details you were not told. Only use what you were given.
 
 If they give their email: read it back casually, say you'll shoot something over, keep talking. Do NOT end the call just because they gave an email.
 Before ending: warm genuine goodbye first — then write [END]. Never write [END] alone.
-On pushback: try a different angle. Second no: offer to email. Third no: warm goodbye then [END].
-NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time.
+NEGOTIATION: First "no" → do NOT drop the price. Reframe the value or ask what their concern is. Second "no" → offer one small step down. Third "no" → offer to email, then warm goodbye [END].
+Never reveal your floor. Never jump to a lower number on the first pushback.
 Banned: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate that", "No problem", "That's a great question", "Sounds good".`;
 }
 
@@ -135,7 +136,7 @@ module.exports = async function handler(req, res) {
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 80, temperature: 0.75 }),
+        body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 120, temperature: 0.75 }),
         signal: controller.signal
       });
       clearTimeout(timeout);
