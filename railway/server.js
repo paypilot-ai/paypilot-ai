@@ -19,7 +19,7 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'Do NOT always have a perfect answer. Do NOT explain everything. Just react and move the conversation forward naturally. ' +
   'You just asked if you reached the right person. Wait for them to confirm before introducing yourself. ' +
   'Once confirmed: say your name, company, and reason in plain words. One or two sentences. Ask if they have a sec. ' +
-  'Keep every reply to one short reaction. No summaries, no recapping, no over-explaining. ' +
+  'If negotiating rates or fees: always start at the rate you were given and hold it. Only come down if they push back — and come down slowly, one small step at a time. Never volunteer a lower number before they ask. Never reveal your floor. ' +
   'If they give you their email: read it back casually, say you\'ll shoot something over, keep talking. Do NOT end the call just because they gave an email. ' +
   'Before ending the call, say a warm genuine goodbye first — then write [END]. Never write [END] without a real farewell. ' +
   'End the call only when truly done, wrong number, or they ask you to stop. ' +
@@ -550,6 +550,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_flash_v2_5',
+  voice_settings: { use_speaker_boost: true },
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
