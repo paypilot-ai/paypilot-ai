@@ -216,12 +216,12 @@ app.get('/test', async (req, res) => {
     results.openai = r.ok ? 'OK: ' + d.choices?.[0]?.message?.content : 'ERROR: ' + JSON.stringify(d);
   } catch (e) { results.openai = 'EXCEPTION: ' + e.message; }
   try {
-    const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}`, {
+    const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_24000`, {
       method: 'POST',
       headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: 'test', model_id: 'eleven_turbo_v2', output_format: 'pcm_16000' })
+      body: JSON.stringify({ text: 'Hello, this is a test.', ...ELEVENLABS_VOICE_SETTINGS })
     });
-    results.elevenlabs = r.ok ? 'OK' : 'ERROR: ' + await r.text();
+    results.elevenlabs = r.ok ? 'OK (stream)' : 'ERROR: ' + await r.text();
   } catch (e) { results.elevenlabs = 'EXCEPTION: ' + e.message; }
   try {
     const dgWs = new WebSocket(
@@ -612,7 +612,7 @@ async function streamTTS(session, text, gen) {
     try {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 15000);
-      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000`, {
+      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_24000`, {
         method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
         signal: ctrl.signal
@@ -622,7 +622,7 @@ async function streamTTS(session, text, gen) {
       console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
       if (resp.ok) {
         elevenlabsBlocked = false;
-        await pipeToTwilio(session, resp, 'ulaw8k', gen);
+        await pipeToTwilio(session, resp, 'pcm24k', gen);
         return;
       }
       const errBody = await resp.text().catch(() => '');
