@@ -13,15 +13,15 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Brandy, a warm Southern woman making an outbound sales call. ' +
+  'You are Brandy, a friendly and natural-sounding woman making an outbound call. Talk like a real person — casual, warm, never robotic or scripted. ' +
   'You just asked if you reached the right person. ' +
-  'Treat ANY of these as a YES: "yes", "sure", "yeah", "yep", "speaking", "this is", "that\'s me", "uh huh", or anything that does not clearly say wrong number. ' +
-  'If YES: say "This is Brandy with [company]", briefly say why you called, ask if they have a moment. One or two natural sentences. ' +
-  'Only write [END] if they clearly say wrong number, not available, or ask you to stop. ' +
-  'After the intro: speak casually, one short sentence, react to exactly what they say. ' +
-  'On pushback: try a different angle not yet used. Second no: offer to email info. Third no: warm goodbye then [END]. ' +
-  'If they agree or want to move forward: close warmly, mention follow-up email, then [END]. ' +
-  'Never say: "I understand", "Absolutely", "Certainly", "Of course", "Great", "Definitely".';
+  'Treat ANY of these as a YES: "yes", "sure", "yeah", "yep", "speaking", "this is", "that\'s me", "uh huh", or anything that does not clearly mean wrong number. ' +
+  'If YES: introduce yourself and the company, briefly say why you\'re calling, ask if they have a minute. Keep it short and natural — one or two sentences max. ' +
+  'Only write [END] if they clearly say wrong number, not available, or ask you to stop calling. ' +
+  'After the intro: keep each reply to one short natural sentence. React directly to what they just said. Use contractions. Sound like you\'re having a real conversation. ' +
+  'On pushback: try a different angle. Second no: offer to follow up by email. Third no: friendly goodbye then [END]. ' +
+  'If they agree or want to move forward: close warmly, mention a follow-up email, then [END]. ' +
+  'Never say: "I understand", "Absolutely", "Certainly", "Of course", "Great", "Definitely", "I appreciate that". No filler phrases.';
 
 function shouldEndCall(text) {
   return text.toLowerCase().includes('[end]');
@@ -360,12 +360,13 @@ function connectDeepgram(session) {
 
       if (session.state === 'processing') { return; }
       if (session.state !== 'listening') {
-        // Brandy is speaking — hold the latest transcript and respond after she finishes
-        session.pendingTranscript = transcript;
-        callLog(session.callSid, '[dg] buffered (state=' + session.state + '):', transcript);
+        callLog(session.callSid, '[dg] dropped (state=' + session.state + '):', transcript);
         return;
       }
-      session.pendingTranscript = null;
+      if (Date.now() - (session.listeningAt || 0) < 1500) {
+        callLog(session.callSid, '[dg] cooldown drop:', transcript);
+        return;
+      }
       session.state = 'processing';
       session.history.push({ role: 'user', content: transcript });
       await generateAndSpeak(session);
@@ -461,19 +462,10 @@ async function generateAndSpeak(session) {
 }
 
 function enterListening(session) {
+  session.listeningAt = Date.now();
   session.state = 'listening';
+  session.pendingTranscript = null;
   pushToBrowser(session, { event: 'ai-done' });
-  if (session.pendingTranscript) {
-    const t = session.pendingTranscript;
-    session.pendingTranscript = null;
-    callLog(session.callSid, '[dg] flushing buffered transcript:', t);
-    session.state = 'processing';
-    session.history.push({ role: 'user', content: t });
-    generateAndSpeak(session).catch(e => {
-      callLog(session.callSid, '[ai] error:', e.message);
-      session.state = 'listening';
-    });
-  }
 }
 
 function prepareForSpeech(text) {
