@@ -340,9 +340,9 @@ function connectDeepgram(session) {
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       if (!transcript || !result.is_final) return;
       const words = transcript.split(/\s+/).filter(Boolean);
-      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|ow+|eh+|er+|ugh+|ooh+|aah+|oop+|ew+)\s*[.?!]?$/i;
-      const TWO_WORD_NOISE = /^(uh (huh|hm)|mm hmm)\s*[.?!]?$/i;
-      if (words.length < 2 || NOISE_ONLY.test(transcript) || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
+      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|ow+|eh+|er+|ugh+|ooh+|aah+|oop+|ew+|the|a|an|and|or|but|so|like|just|i|it|is|was|be|to|of|in|that|he|she|they|we)\s*[.?!,]?$/i;
+      const TWO_WORD_NOISE = /^(uh (huh|hm)|mm hmm|the the|and and|I I)\s*[.?!]?$/i;
+      if (words.length < 1 || NOISE_ONLY.test(transcript) || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
         callLog(session.callSid, '[dg] filtered noise:', transcript);
         return;
       }
