@@ -364,8 +364,8 @@ function connectDeepgram(session) {
       // Barge-in: cut audio immediately when user starts speaking
       if (result.type === 'SpeechStarted' && session.state === 'speaking' && session.state !== 'ending') {
         callLog(session.callSid, '[barge-in] SpeechStarted — clearing audio');
-        ++session.speakGen;
-        ++session.turnId;
+        ++session.speakGen; // cuts TTS audio immediately
+        // do NOT increment turnId here — only a real transcript should invalidate the turn
         if (session.twilioWs?.readyState === WebSocket.OPEN) {
           session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
         }
@@ -538,9 +538,10 @@ async function generateAndSpeak(session) {
     return;
   }
 
-  // If barge-in happened while we were generating, discard this response entirely
+  // If a real barge-in happened (new transcript arrived), discard this response.
+  // The new generateAndSpeak will call enterListening when it's done.
   if (session.turnId !== myTurn) {
-    callLog(session.callSid, '[ai] turn superseded, discarding reply');
+    callLog(session.callSid, '[ai] turn superseded by barge-in, discarding reply');
     return;
   }
 
@@ -621,9 +622,6 @@ function prepareForSpeech(text) {
 // Stream OpenAI tokens; start TTS as soon as first sentence arrives, chain the rest
 async function streamOpenAIAndSpeak(session, messages, callerTurn) {
   try {
-    // Capture speakGen at entry — if it changes before we start TTS it means barge-in
-    const startGen = session.speakGen;
-
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -646,10 +644,9 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     const flushChunk = (chunk) => {
       chunk = chunk.trim();
       if (!chunk) return;
-      // Bail if barge-in happened before we even started speaking
+      // Only bail if a real barge-in (transcript) arrived — turnId will have been incremented
       if (session.turnId !== callerTurn) return;
       if (myGen === null) {
-        if (session.speakGen !== startGen) return; // barge-in invalidated us
         if (session.twilioWs?.readyState === WebSocket.OPEN) {
           session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
         }
@@ -658,7 +655,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
       }
       const gen = myGen;
       ttsChain = ttsChain.then(() => {
-        if (session.speakGen !== gen || session.turnId !== callerTurn) return;
+        if (session.turnId !== callerTurn) return;
         return streamTTS(session, chunk, gen);
       });
     };
