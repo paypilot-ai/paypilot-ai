@@ -349,7 +349,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2-phonecall&punctuate=true' +
-    '&interim_results=false&endpointing=300&vad_events=true';
+    '&interim_results=false&endpointing=250&vad_events=true';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -478,7 +478,7 @@ async function speakFiller(session, text) {
   try { await streamTTS(session, text); } catch (_) {}
 }
 
-const FILLERS = ['Mm-hmm.', 'Yeah.', 'Right.', 'Oh.', 'Mm.'];
+const FILLERS = ['Yeah, so...', 'Right, look...', 'Oh, so...', 'Mm, yeah...', 'I mean...'];
 let fillerIdx = 0;
 
 // Pre-cache filler audio at startup so they play instantly (no API round-trip)
@@ -675,8 +675,9 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
           if (token) {
             fullText += token;
             sentenceBuf += token;
-            // Flush as soon as we hit sentence-ending punctuation
-            if (/[.!?](\s|$)/.test(token)) {
+            const wordCount = sentenceBuf.trim().split(/\s+/).length;
+            // Flush on sentence end OR after 6 words — whichever comes first
+            if (/[.!?](\s|$)/.test(token) || (wordCount >= 6 && /\s/.test(token))) {
               flushChunk(sentenceBuf);
               sentenceBuf = '';
             }
