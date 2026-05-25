@@ -928,9 +928,9 @@ function handleTwilioRealtime(ws) {
   let greeted       = false;
   let fallbackTimer = null;
   let startReceived = false;
-  let responseText  = '';
 
-  const FAREWELL_RE = /\b(talk soon|take care|goodbye|good ?bye|have a great|have a good one|good luck|bye now|see you|until next time|looking forward to it|have a wonderful)\b/i;
+  let capturedEmail = e || null;
+  let emailSent = false;
 
   function buildInstructions() {
     const parts = [
@@ -941,11 +941,12 @@ function handleTwilioRealtime(ws) {
       'Create mild urgency — mention limited availability or others in their area moving on it.',
       'On interest: ask a trial close — "Does that sound like something that would work for you?"',
       'On hesitation: dig — "What\'s the main thing holding you back?"',
-      'On price: hold firm, reframe ROI. First no = reframe. Second no = one small concession. Third no = offer to email, warm goodbye.',
+      'On price: hold firm, reframe ROI. First no = reframe. Second no = one small concession. Third no = offer to email, warm goodbye then call end_call.',
       'Never apologize for the price. "Yeah, it\'s an investment, and it pays for itself fast."',
       'NEVER invent product names, prices, or details you weren\'t given.',
       'Start replies: "Yeah", "Look", "So", "Right", "Oh", "Honestly", "I mean".',
       'Banned: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "No problem", "Sounds good", "I appreciate that", "I get that", "I hear you", "That makes sense".',
+      'ENDING THE CALL: When the conversation is over, say a warm goodbye first, then immediately call the end_call function. Never leave the call open.',
     ];
     if (c) parts.push(`You are calling on behalf of ${c}.`);
     if (r) parts.push(`Background context (guide conversation, don't recite): ${r}.`);
@@ -970,8 +971,46 @@ function handleTwilioRealtime(ws) {
           silence_duration_ms: 500,
           create_response: true,
         },
+        input_audio_transcription: { model: 'whisper-1' },
+        tools: [{
+          type: 'function',
+          name: 'end_call',
+          description: 'End the phone call. Call this after saying a warm goodbye.',
+          parameters: { type: 'object', properties: {} },
+        }],
+        tool_choice: 'auto',
       }
     };
+  }
+
+  function sendFollowUpEmail() {
+    if (!capturedEmail || emailSent) return;
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) return;
+    emailSent = true;
+    const firstName = (n || 'there').trim().split(/\s+/)[0];
+    const company   = c || 'PayPilot AI';
+    const reason    = r || 'our conversation today';
+    const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
+    const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
+    fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendKey}` },
+      body: JSON.stringify({
+        from: `${fromName} <${fromEmail}>`,
+        to: [capturedEmail],
+        reply_to: s || fromEmail,
+        subject: `Following up from our call — ${company}`,
+        html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;">
+          <h2 style="color:#0f172a;">Hi ${firstName},</h2>
+          <p style="color:#374151;font-size:16px;line-height:1.7;">
+            Thanks so much for chatting today! As promised, I'm following up about ${reason}.
+            If you have any questions or want to move forward, just reply to this email — I'd love to help.
+          </p>
+          <p style="color:#64748b;font-size:14px;margin-top:28px;">Talk soon,<br/>Brandy<br/>${company}</p>
+        </div>`,
+      }),
+    }).then(r => console.log('[email] sent:', r.status)).catch(err => console.error('[email] error:', err.message));
   }
 
   function triggerGreeting() {
@@ -1045,17 +1084,20 @@ function handleTwilioRealtime(ws) {
           sendAudio(ev.delta);
         }
 
-        if (ev.type === 'response.text.delta' && ev.delta) {
-          responseText += ev.delta;
+        // end_call function tool — most reliable hangup trigger
+        if (ev.type === 'response.output_item.done' && ev.item?.type === 'function_call' && ev.item?.name === 'end_call') {
+          console.log('[realtime] end_call tool invoked — hanging up');
+          sendFollowUpEmail();
+          setTimeout(doHangup, 1500);
         }
 
-        if (ev.type === 'response.done') {
-          const text = responseText;
-          responseText = '';
-          console.log('[realtime] response done:', text.slice(0, 100));
-          if (FAREWELL_RE.test(text)) {
-            console.log('[realtime] farewell detected — hanging up in 2s');
-            setTimeout(doHangup, 2000);
+        // Capture email from user speech transcript
+        if (ev.type === 'conversation.item.input_audio_transcription.completed' && ev.transcript) {
+          const t = ev.transcript;
+          const emailMatch = t.match(/\b[a-zA-Z0-9._%+\-]+\s*[@at]+\s*[a-zA-Z0-9.\-]+\s*\.\s*(?:com|net|org|edu|gov|io|co)\b/i);
+          if (emailMatch && !capturedEmail) {
+            capturedEmail = emailMatch[0].replace(/\s+/g, '').replace(/\bat\b/gi, '@');
+            console.log('[realtime] email captured:', capturedEmail);
           }
         }
 
