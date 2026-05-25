@@ -12,6 +12,8 @@ const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'DODLEQrClDo8wCz460ld';
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+const TWILIO_AUTH_TOKEN  = process.env.TWILIO_AUTH_TOKEN;
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy — a sharp, confident Southern saleswoman on a live outbound call. You close deals. ' +
   'ONE sentence per response, max two. Conversational, never scripted. ' +
@@ -30,6 +32,22 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
 
 function shouldEndCall(text) {
   return text.toLowerCase().includes('[end]');
+}
+
+function hangupCall(session) {
+  callLog(session.callSid, '[hangup] ending call via REST + WebSocket');
+  // Twilio REST API — most reliable way to end the call
+  if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && session.callSid) {
+    const creds = Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
+    fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Calls/${session.callSid}.json`, {
+      method: 'POST',
+      headers: { Authorization: `Basic ${creds}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'Status=completed'
+    }).then(r => callLog(session.callSid, '[hangup] REST status:', r.status))
+      .catch(e => callLog(session.callSid, '[hangup] REST error:', e.message));
+  }
+  // Also close WebSocket as backup
+  setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 2000);
 }
 function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
@@ -344,7 +362,7 @@ function connectDeepgram(session) {
     try {
       const result = JSON.parse(data);
       // Barge-in: cut audio immediately when user starts speaking
-      if (result.type === 'SpeechStarted' && session.state === 'speaking') {
+      if (result.type === 'SpeechStarted' && session.state === 'speaking' && session.state !== 'ending') {
         callLog(session.callSid, '[barge-in] SpeechStarted — clearing audio');
         ++session.speakGen;
         ++session.turnId;
@@ -404,6 +422,7 @@ function connectDeepgram(session) {
         });
         return;
       }
+      if (session.state === 'ending') return; // call is wrapping up — ignore everything
       if (session.state !== 'listening') {
         session.pendingTranscript = transcript;
         callLog(session.callSid, '[dg] buffered (state=' + session.state + '):', transcript);
@@ -565,8 +584,9 @@ async function generateAndSpeak(session) {
 
   if (shouldEndCall(fullReply)) {  // check original text for [END] signal
     callLog(session.callSid, '[call] ending call — farewell detected');
+    session.state = 'ending';
     pushToBrowser(session, { event: 'call-ended' });
-    setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 500);
+    hangupCall(session);
     return;
   }
 
