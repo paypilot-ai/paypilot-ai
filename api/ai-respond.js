@@ -136,7 +136,7 @@ module.exports = async function handler(req, res) {
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 120, temperature: 0.75 }),
+        body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 70, temperature: 0.75 }),
         signal: controller.signal
       });
       clearTimeout(timeout);
