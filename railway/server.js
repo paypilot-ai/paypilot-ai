@@ -325,7 +325,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=500';
+    '&interim_results=false&endpointing=350';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -411,6 +411,7 @@ async function speakFiller(session, text) {
 
 async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating response (streaming)...');
+  speakFiller(session, pickFiller());
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
   const fullReply = await streamOpenAIAndSpeak(session, messages);
@@ -544,7 +545,7 @@ async function callOpenAI(messages) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_turbo_v2_5',
+  model_id: 'eleven_flash_v2_5',
   voice_settings: { stability: 0.30, similarity_boost: 0.80, style: 0.40, use_speaker_boost: true, speed: 0.90 }
 };
 
