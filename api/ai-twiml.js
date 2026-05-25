@@ -7,12 +7,8 @@ function xmlEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-const INTROS_WITH_NAME = [
-  'Hi, is this {name}?',
-  'Hey, may I speak with {name}?',
-  'Hi there — is {name} available?',
-];
-const INTRO_NO_NAME = 'Hi there! This is Brandy calling from {company}. Who am I speaking with?';
+const INTROS_WITH_NAME = ['Hi, may I speak with {firstName}?'];
+const INTRO_NO_NAME = 'Hi there, this is Brandy calling from {company}. Who am I speaking with?';
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
@@ -26,8 +22,8 @@ module.exports = async function handler(req, res) {
     const company = c || 'PayPilot AI';
     let greeting;
     if (n) {
-      const tmpl = INTROS_WITH_NAME[Math.floor(Math.random() * INTROS_WITH_NAME.length)];
-      greeting = tmpl.replace('{name}', n);
+      const firstName = n.trim().split(/\s+/)[0];
+      greeting = INTROS_WITH_NAME[0].replace('{firstName}', firstName);
     } else {
       greeting = INTRO_NO_NAME.replace('{company}', company);
     }
