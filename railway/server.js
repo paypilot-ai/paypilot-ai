@@ -547,7 +547,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_flash_v2_5',
-  voice_settings: { stability: 0.30, similarity_boost: 0.80, style: 0.40, use_speaker_boost: true, speed: 0.90 }
+  voice_settings: { stability: 0.20, similarity_boost: 0.75, style: 0.60, use_speaker_boost: true, speed: 0.88 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
