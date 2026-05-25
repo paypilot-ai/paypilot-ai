@@ -929,7 +929,7 @@ function handleTwilioRealtime(ws) {
   let fallbackTimer = null;
   let startReceived = false;
 
-  let capturedEmail = e || null;
+  let capturedEmail = null; // set after 'start' event when e= param arrives
   let emailSent     = false;
   let responseText  = '';
 
@@ -1117,7 +1117,8 @@ function handleTwilioRealtime(ws) {
         startReceived = true;
         const cp = msg.start?.customParameters || {};
         n = cp.n || ''; r = cp.r || ''; c = cp.c || ''; e = cp.e || ''; s = cp.s || '';
-        console.log('[realtime] start — name:', n || '(none)', '| company:', c || '(none)');
+        if (e && !capturedEmail) capturedEmail = e; // email from call setup params
+        console.log('[realtime] start — name:', n || '(none)', '| email:', capturedEmail || '(none)');
 
         if (openAiWs?.readyState === WebSocket.OPEN) {
           openAiWs.send(JSON.stringify(buildSessionUpdate()));
