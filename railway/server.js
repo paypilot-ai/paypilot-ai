@@ -13,15 +13,13 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You\'re Brandy — real, warm, a little Southern. You talk the way people actually talk on the phone: short sentences, contractions, natural reactions. ' +
-  'You\'re making an outbound call and just asked if you reached the right person. ' +
-  'When they confirm it\'s them, introduce yourself and why you\'re calling in one or two easy sentences — don\'t rush it. ' +
-  'Keep every reply short. Don\'t summarize or explain too much. React to what they just said like a real person would. ' +
-  'If they push back, try a different angle. If they say no twice, offer to email them. If they say no three times, let them go warmly and write [END]. ' +
-  'If they give you their email, confirm it back to them naturally and keep the conversation going — do NOT write [END] just because they shared an email. ' +
-  'Only write [END] after you\'ve fully wrapped up: said goodbye, confirmed next steps, and the conversation is clearly over. ' +
-  'Write [END] if they clearly have the wrong number or ask you to stop. ' +
-  'Never use these words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate". Don\'t sound like a call center bot.';
+  'You are Brandy, making an outbound call. Speak the way real people talk — casual, direct, warm. Short sentences. Contractions. No corporate language. ' +
+  'You just asked if you reached the right person. Wait for them to confirm before introducing yourself. ' +
+  'Once confirmed: say your name, the company, and why you\'re calling. One sentence each. Then ask if they have a moment. ' +
+  'After that: one reply at a time. React to exactly what they said. Don\'t repeat yourself or add unnecessary detail. ' +
+  'If they give you their email: repeat it back to confirm, say you\'ll send something over, keep talking. Do NOT end the call just because they gave an email. ' +
+  'End the call (write [END]) only when the conversation is fully wrapped up, they say wrong number, or they ask you to stop. ' +
+  'Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate that", "No problem".';
 
 function shouldEndCall(text) {
   return text.toLowerCase().includes('[end]');
@@ -478,7 +476,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 80, temperature: 0.9, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 70, temperature: 0.8, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -488,23 +486,6 @@ async function streamOpenAIAndSpeak(session, messages) {
     const decoder = new TextDecoder();
     let buf = '';
     let fullText = '';
-    let sentenceBuf = '';
-    let myGen = null;
-
-    const flushSentence = async (chunk) => {
-      chunk = chunk.trim();
-      if (!chunk) return;
-      if (myGen === null) {
-        if (session.twilioWs?.readyState === WebSocket.OPEN) {
-          session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-        }
-        session.state = 'speaking';
-        myGen = ++session.speakGen;
-        pushToBrowser(session, { event: 'ai-speaking', text: fullText });
-      }
-      if (session.speakGen === myGen) await streamTTS(session, chunk, myGen);
-    };
-
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -517,28 +498,20 @@ async function streamOpenAIAndSpeak(session, messages) {
         if (data === '[DONE]') break;
         try {
           const token = JSON.parse(data).choices?.[0]?.delta?.content;
-          if (!token) continue;
-          fullText += token;
-          sentenceBuf += token;
-          const match = sentenceBuf.match(/^(.+?[.!?])\s*/s);
-          if (match) {
-            await flushSentence(match[1]);
-            sentenceBuf = sentenceBuf.slice(match[0].length);
-          }
+          if (token) fullText += token;
         } catch {}
       }
     }
-    if (sentenceBuf.trim()) await flushSentence(sentenceBuf);
-
     fullText = fullText.trim();
     if (!fullText) return null;
-    if (myGen === null) {
-      // GPT returned text with no sentence boundary (shouldn't happen, but handle it)
-      session.state = 'speaking';
-      myGen = ++session.speakGen;
-      pushToBrowser(session, { event: 'ai-speaking', text: fullText });
-      await streamTTS(session, fullText, myGen);
+
+    if (session.twilioWs?.readyState === WebSocket.OPEN) {
+      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
     }
+    session.state = 'speaking';
+    const myGen = ++session.speakGen;
+    pushToBrowser(session, { event: 'ai-speaking', text: fullText });
+    await streamTTS(session, fullText, myGen);
 
     if (session.speakGen === myGen) {
       const markName = 'tts-' + Date.now();
@@ -559,7 +532,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 80, temperature: 0.9 }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 70, temperature: 0.8 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
