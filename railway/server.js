@@ -385,7 +385,10 @@ function connectDeepgram(session) {
 }
 
 function buildGreeting(name, company) {
-  if (name) return `Hi, is this ${name}?`;
+  if (name) {
+    const firstName = name.trim().split(/\s+/)[0];
+    return `Hi, may I speak with ${firstName}?`;
+  }
   const c = company || 'us';
   return `Hi there, this is Brandy calling from ${c}. Who am I speaking with?`;
 }
