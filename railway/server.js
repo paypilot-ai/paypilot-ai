@@ -357,14 +357,19 @@ function connectDeepgram(session) {
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       const confidence = result?.channel?.alternatives?.[0]?.confidence ?? 1;
       if (!transcript || !result.is_final) return;
-      if (confidence < 0.75) {
+      if (confidence < 0.80) {
         callLog(session.callSid, '[dg] low confidence (' + confidence.toFixed(2) + '), skipping:', transcript);
         return;
       }
       const words = transcript.split(/\s+/).filter(Boolean);
-      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|yep|nope|yeah|nah|ok|okay|hello+|hey+|hi+|bye+|ew+|wow|whoa)\s*[.?!]?$/i;
-      const TWO_WORD_NOISE = /^(uh (huh|oh|yeah|ok|okay|hm)|oh (ok|okay|yeah|wow|right|sure|hmm)|mm (hmm|yeah|ok)|yeah (ok|okay|sure|right|hmm))[.?!]?$/i;
-      if (words.length < 1 || NOISE_ONLY.test(transcript) || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
+      // Single-word filler sounds
+      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|yep|nope|yeah|nah|ok|okay|hello+|hey+|hi+|bye+|ew+|wow|whoa|right|sure|cool|nice|yep|yup|no|yes|mhm|aha)\s*[.?!]?$/i;
+      // Two-word noise combos
+      const TWO_WORD_NOISE = /^(uh (huh|oh|yeah|ok|okay|hm)|oh (ok|okay|yeah|wow|right|sure|hmm|really)|mm (hmm|yeah|ok)|yeah (ok|okay|sure|right|hmm|yeah)|oh my|my god|oh god|all right|alright)[.?!]?$/i;
+      if (words.length < 1
+        || NOISE_ONLY.test(transcript)
+        || (words.length === 2 && TWO_WORD_NOISE.test(transcript))
+        || (words.length < 3 && /^[^a-zA-Z]*$/.test(transcript))) {
         callLog(session.callSid, '[dg] filtered noise:', transcript);
         return;
       }
@@ -457,6 +462,39 @@ async function speakFiller(session, text) {
 const FILLERS = ['Mm-hmm.', 'Yeah.', 'Right.', 'Oh.', 'Mm.'];
 let fillerIdx = 0;
 
+// Pre-cache filler audio at startup so they play instantly (no API round-trip)
+const fillerCache = new Map(); // text → Buffer of mulaw 8kHz bytes
+async function precacheFillers() {
+  if (!ELEVENLABS_KEY) return;
+  for (const text of FILLERS) {
+    try {
+      const resp = await fetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000`,
+        { method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, ...ELEVENLABS_VOICE_SETTINGS }) }
+      );
+      if (resp.ok) {
+        fillerCache.set(text, Buffer.from(await resp.arrayBuffer()));
+        console.log('[filler] cached:', text);
+      }
+    } catch (e) { console.log('[filler] cache failed for:', text, e.message); }
+  }
+}
+
+function playCachedFiller(session, text, gen) {
+  const buf = fillerCache.get(text);
+  if (!buf || session.twilioWs?.readyState !== WebSocket.OPEN) return;
+  const isStale = () => session.speakGen !== gen;
+  const CHUNK = 160;
+  for (let i = 0; i < buf.length; i += CHUNK) {
+    if (isStale()) break;
+    session.twilioWs.send(JSON.stringify({
+      event: 'media', streamSid: session.streamSid,
+      media: { payload: buf.slice(i, Math.min(i + CHUNK, buf.length)).toString('base64') }
+    }));
+  }
+}
+
 async function generateAndSpeak(session) {
   const myTurn = ++session.turnId;
   callLog(session.callSid, '[ai] generating response (turn=' + myTurn + ')...');
@@ -466,7 +504,11 @@ async function generateAndSpeak(session) {
   const fillerGen = ++session.speakGen;
   session.state = 'speaking';
   const filler = FILLERS[fillerIdx++ % FILLERS.length];
-  streamTTS(session, filler, fillerGen).catch(() => {});
+  if (fillerCache.has(filler)) {
+    playCachedFiller(session, filler, fillerGen);
+  } else {
+    streamTTS(session, filler, fillerGen).catch(() => {});
+  }
 
   let fullReply;
   try {
@@ -567,7 +609,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 90, temperature: 0.75, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.75, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -1056,4 +1098,7 @@ process.on('uncaughtException', (err) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`PayPilot AI server on :${PORT}`));
+server.listen(PORT, () => {
+  console.log(`PayPilot AI server on :${PORT}`);
+  precacheFillers();
+});
