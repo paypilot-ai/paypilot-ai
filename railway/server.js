@@ -330,8 +330,8 @@ function handleBrowser(ws, callSid) {
 function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
-    '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=500&vad_events=true';
+    '&model=nova-2-phonecall&punctuate=true' +
+    '&interim_results=false&endpointing=300&vad_events=true';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -354,7 +354,12 @@ function connectDeepgram(session) {
       }
 
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
+      const confidence = result?.channel?.alternatives?.[0]?.confidence ?? 1;
       if (!transcript || !result.is_final) return;
+      if (confidence < 0.75) {
+        callLog(session.callSid, '[dg] low confidence (' + confidence.toFixed(2) + '), skipping:', transcript);
+        return;
+      }
       const words = transcript.split(/\s+/).filter(Boolean);
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|yep|nope|yeah|nah|ok|okay|hello+|hey+|hi+|bye+|ew+|wow|whoa)\s*[.?!]?$/i;
       const TWO_WORD_NOISE = /^(uh (huh|oh|yeah|ok|okay|hm)|oh (ok|okay|yeah|wow|right|sure|hmm)|mm (hmm|yeah|ok)|yeah (ok|okay|sure|right|hmm))[.?!]?$/i;
@@ -446,9 +451,18 @@ async function speakFiller(session, text) {
   try { await streamTTS(session, text); } catch (_) {}
 }
 
+const FILLERS = ['Mm-hmm.', 'Yeah.', 'Right.', 'Oh.', 'Mm.'];
+let fillerIdx = 0;
+
 async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating response (streaming)...');
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
+
+  // Play a filler immediately so there's no dead air while OpenAI generates
+  const fillerGen = ++session.speakGen;
+  session.state = 'speaking';
+  const filler = FILLERS[fillerIdx++ % FILLERS.length];
+  streamTTS(session, filler, fillerGen).catch(() => {});
 
   let fullReply;
   try {
@@ -633,7 +647,7 @@ async function callOpenAI(messages) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_turbo_v2_5',
+  model_id: 'eleven_flash_v2_5',
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
