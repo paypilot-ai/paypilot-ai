@@ -608,7 +608,7 @@ async function speakToTwilio(session, text) {
 
 async function streamTTS(session, text, gen) {
   // Try ElevenLabs — skip entirely if it failed before on this server instance
-  if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
+  if (false && ELEVENLABS_KEY && !isElevenlabsBlocked()) {
     try {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 15000);
