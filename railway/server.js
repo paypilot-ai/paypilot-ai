@@ -562,7 +562,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
-  voice_settings: { stability: 0.20, similarity_boost: 0.75, style: 0.55, use_speaker_boost: true, speed: 0.90 }
+  voice_settings: { stability: 0.30, similarity_boost: 0.80, style: 0.40, use_speaker_boost: true, speed: 0.90 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
@@ -611,7 +611,7 @@ async function streamTTS(session, text, gen) {
   if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
     try {
       const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 9000);
+      const t = setTimeout(() => ctrl.abort(), 15000);
       const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000`, {
         method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
