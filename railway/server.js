@@ -11,7 +11,7 @@ const wss = new WebSocketServer({ noServer: true });
 const DEEPGRAM_API_KEY  = process.env.DEEPGRAM_API_KEY;
 const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
+const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'DODLEQrClDo8wCz460ld';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy, a real Southern woman — warm, charming, natural salesperson. ' +
   'The intro is DONE. Do NOT say hello, hi, hey, or any greeting. Do NOT say your name again. ' +
@@ -612,48 +612,57 @@ function awaitMark(session, name, ms = 10000) {
 async function speakToTwilio(session, text) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
   session.state = 'speaking';
+  const myGen = ++session.speakGen;
   callLog(session.callSid, '[tts] speaking:', text.slice(0, 60));
   pushToBrowser(session, { event: 'ai-speaking', text });
   try {
-    await streamTTS(session, text);
+    await streamTTS(session, text, myGen);
   } catch (e) { callLog(session.callSid, '[tts] error:', e.message); }
-  // Wait for Twilio to confirm audio is done — keep Deepgram alive throughout
+  if (session.speakGen !== myGen) return; // barged in — don't advance state
   const markName = 'tts-' + Date.now();
   if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
-  enterListening(session);
+  if (session.speakGen === myGen) enterListening(session);
 }
 
-async function streamTTS(session, text) {
-  // Try ElevenLabs — skip entirely if it failed before on this server instance
+async function streamTTS(session, text, gen) {
   if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
-    try {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 9000);
-      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000`, {
-        method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
-        signal: ctrl.signal
-      });
-      clearTimeout(t);
-      const ct = resp.headers.get('content-type') || '';
-      console.log(`[elevenlabs] status=${resp.status} content-type=${ct}`);
-      if (resp.ok) {
-        elevenlabsBlocked = false;
-        await pipeToTwilio(session, resp, 'ulaw8k');
-        return;
+    // Try ulaw_8000 first (no conversion needed) — fall back to pcm_24000 if plan doesn't support it
+    for (const [fmt, fmtType] of [['ulaw_8000', 'ulaw8k'], ['pcm_24000', 'pcm24k']]) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 12000);
+        const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=${fmt}`, {
+          method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
+          signal: ctrl.signal
+        });
+        clearTimeout(t);
+        console.log(`[elevenlabs] fmt=${fmt} status=${resp.status}`);
+        if (resp.ok) {
+          elevenlabsBlocked = false;
+          await pipeToTwilio(session, resp, fmtType, gen);
+          return;
+        }
+        const errBody = await resp.text().catch(() => '');
+        // 4xx on ulaw_8000 means plan doesn't support it → try pcm_24000 without blocking
+        if (fmt === 'ulaw_8000' && resp.status >= 400 && resp.status < 500) {
+          console.log(`[elevenlabs] ulaw_8000 not supported (${resp.status}), trying pcm_24000`);
+          continue;
+        }
+        console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
+        elevenlabsBlocked = true;
+        elevenlabsBlockedAt = Date.now();
+        break;
+      } catch (e) {
+        if (fmt === 'ulaw_8000') { console.log('[elevenlabs] ulaw_8000 failed, trying pcm_24000'); continue; }
+        elevenlabsBlocked = true;
+        elevenlabsBlockedAt = Date.now();
+        break;
       }
-      const errBody = await resp.text().catch(() => '');
-      console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
-      elevenlabsBlocked = true;
-      elevenlabsBlockedAt = Date.now();
-      console.log('[elevenlabs] blocked — falling back to OpenAI TTS, will retry in 5m');
-    } catch (_) {
-      elevenlabsBlocked = true;
-      elevenlabsBlockedAt = Date.now();
-      console.log('[elevenlabs] timed out — falling back to OpenAI TTS, will retry in 5m');
     }
   }
 
+  // OpenAI TTS fallback
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 12000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
@@ -664,12 +673,13 @@ async function streamTTS(session, text) {
   });
   clearTimeout(t);
   if (!resp.ok) throw new Error(`OpenAI TTS ${resp.status}`);
-  await pipeToTwilio(session, resp, 'pcm24k');
+  await pipeToTwilio(session, resp, 'pcm24k', gen);
 }
 
-async function pipeToTwilio(session, resp, type) {
+async function pipeToTwilio(session, resp, type, gen) {
   const reader = resp.body.getReader();
   let buffer = Buffer.alloc(0);
+  const isStale = () => gen !== undefined && session.speakGen !== gen;
   const readWithTimeout = () => Promise.race([
     reader.read(),
     new Promise((_, rej) => setTimeout(() => rej(new Error('read timeout')), 8000))
@@ -680,17 +690,18 @@ async function pipeToTwilio(session, resp, type) {
     const CHUNK = 160; // 20ms at 8kHz
     try {
       while (true) {
+        if (isStale()) break;
         const { done, value } = await readWithTimeout();
         if (done) break;
         if (!value?.length) continue;
-        if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
+        if (isStale() || session.twilioWs?.readyState !== WebSocket.OPEN) break;
         buffer = Buffer.concat([buffer, Buffer.from(value)]);
         while (buffer.length >= CHUNK) {
           session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: buffer.slice(0, CHUNK).toString('base64') } }));
           buffer = buffer.slice(CHUNK);
         }
       }
-      if (buffer.length > 0 && session.twilioWs?.readyState === WebSocket.OPEN) {
+      if (!isStale() && buffer.length > 0 && session.twilioWs?.readyState === WebSocket.OPEN) {
         session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: buffer.toString('base64') } }));
       }
     } finally { reader.cancel().catch(() => {}); }
@@ -698,17 +709,16 @@ async function pipeToTwilio(session, resp, type) {
   }
 
   // PCM → mulaw; 160 mulaw bytes = 20ms at 8kHz (Twilio standard chunk)
-  // pcm16k: need 320 Int16 samples (640 bytes) → 160 mulaw bytes
-  // pcm24k: need 480 Int16 samples (960 bytes) → 160 mulaw bytes
   const chunkBytes = type === 'pcm24k' ? 960 : 640;
   const samplesPerChunk = chunkBytes / 2;
   const encoder = type === 'pcm24k' ? pcm24ToMulaw : pcm16ToMulaw;
   try {
     while (true) {
+      if (isStale()) break;
       const { done, value } = await readWithTimeout();
       if (done) break;
       if (!value?.length) continue;
-      if (session.twilioWs?.readyState !== WebSocket.OPEN) break;
+      if (isStale() || session.twilioWs?.readyState !== WebSocket.OPEN) break;
       buffer = Buffer.concat([buffer, Buffer.from(value)]);
       while (buffer.length >= chunkBytes) {
         const pcm = new Int16Array(buffer.buffer, buffer.byteOffset, samplesPerChunk);
@@ -716,7 +726,7 @@ async function pipeToTwilio(session, resp, type) {
         buffer = buffer.slice(chunkBytes);
       }
     }
-    if (buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
+    if (!isStale() && buffer.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
       const pcm = new Int16Array(buffer.buffer, buffer.byteOffset, Math.floor(buffer.length / 2));
       session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: encoder(pcm).toString('base64') } }));
     }
