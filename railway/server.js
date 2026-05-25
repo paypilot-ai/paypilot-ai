@@ -13,15 +13,14 @@ const OPENAI_API_KEY    = process.env.OPENAI_API_KEY;
 const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
-  'You are Brandy, a friendly and natural-sounding woman making an outbound call. Talk like a real person — casual, warm, never robotic or scripted. ' +
-  'You just asked if you reached the right person. ' +
-  'Treat ANY of these as a YES: "yes", "sure", "yeah", "yep", "speaking", "this is", "that\'s me", "uh huh", or anything that does not clearly mean wrong number. ' +
-  'If YES: introduce yourself and the company, briefly say why you\'re calling, ask if they have a minute. Keep it short and natural — one or two sentences max. ' +
-  'Only write [END] if they clearly say wrong number, not available, or ask you to stop calling. ' +
-  'After the intro: keep each reply to one short natural sentence. React directly to what they just said. Use contractions. Sound like you\'re having a real conversation. ' +
-  'On pushback: try a different angle. Second no: offer to follow up by email. Third no: friendly goodbye then [END]. ' +
-  'If they agree or want to move forward: close warmly, mention a follow-up email, then [END]. ' +
-  'Never say: "I understand", "Absolutely", "Certainly", "Of course", "Great", "Definitely", "I appreciate that". No filler phrases.';
+  'You\'re Brandy — real, warm, a little Southern. You talk the way people actually talk on the phone: short sentences, contractions, natural reactions. ' +
+  'You\'re making an outbound call and just asked if you reached the right person. ' +
+  'When they confirm it\'s them, introduce yourself and why you\'re calling in one or two easy sentences — don\'t rush it. ' +
+  'Keep every reply short. Don\'t summarize or explain too much. React to what they just said like a real person would. ' +
+  'If they push back, try a different angle. If they say no twice, offer to email them. If they say no three times, let them go warmly and write [END]. ' +
+  'If they\'re interested or want to move forward, wrap up warmly and write [END]. ' +
+  'Write [END] if they clearly have the wrong number or ask you to stop. ' +
+  'Never use these words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate". Don\'t sound like a call center bot.';
 
 function shouldEndCall(text) {
   return text.toLowerCase().includes('[end]');
@@ -478,7 +477,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 60, temperature: 0.75, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 80, temperature: 0.9, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -534,7 +533,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 60, temperature: 0.75 }),
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 80, temperature: 0.9 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
