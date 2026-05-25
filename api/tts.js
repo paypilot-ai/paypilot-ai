@@ -8,14 +8,14 @@ module.exports = async function handler(req, res) {
 
   try {
     const el = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?optimize_streaming_latency=4`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
       {
         method: 'POST',
         headers: { 'xi-api-key': API_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
           model_id: 'eleven_turbo_v2_5',
-          voice_settings: { stability: 0.85, similarity_boost: 0.90, style: 0, use_speaker_boost: false, speed: 0.95 }
+          voice_settings: { use_speaker_boost: true },
         })
       }
     );
