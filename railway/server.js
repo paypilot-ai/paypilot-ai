@@ -386,16 +386,9 @@ function connectDeepgram(session) {
 }
 
 function buildGreeting(name, company) {
-  if (name) {
-    const GREETINGS = [
-      `Hi, is this ${name}?`,
-      `Hey, may I speak with ${name}?`,
-      `Hi there — is ${name} available?`,
-    ];
-    return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-  }
+  if (name) return `Hi, is this ${name}?`;
   const c = company || 'us';
-  return `Hi there! This is Brandy calling from ${c}. Who am I speaking with?`;
+  return `Hi there, this is Brandy calling from ${c}. Who am I speaking with?`;
 }
 
 async function sendGreeting(session) {
@@ -560,7 +553,7 @@ let elevenlabsBlocked = false;
 let elevenlabsBlockedAt = 0;
 function isElevenlabsBlocked() {
   if (!elevenlabsBlocked) return false;
-  if (Date.now() - elevenlabsBlockedAt > 5 * 60 * 1000) {
+  if (Date.now() - elevenlabsBlockedAt > 30 * 1000) {
     elevenlabsBlocked = false;
     console.log('[elevenlabs] retry window elapsed — unblocking');
     return false;
@@ -619,11 +612,11 @@ async function streamTTS(session, text, gen) {
       console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
       elevenlabsBlocked = true;
       elevenlabsBlockedAt = Date.now();
-      console.log('[elevenlabs] blocked — falling back to OpenAI TTS, will retry in 5m');
+      console.log('[elevenlabs] blocked — falling back to OpenAI TTS, will retry in 30s');
     } catch (_) {
       elevenlabsBlocked = true;
       elevenlabsBlockedAt = Date.now();
-      console.log('[elevenlabs] timed out — falling back to OpenAI TTS, will retry in 5m');
+      console.log('[elevenlabs] timed out — falling back to OpenAI TTS, will retry in 30s');
     }
   }
 
