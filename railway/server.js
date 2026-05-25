@@ -325,7 +325,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=350';
+    '&interim_results=false&endpointing=600';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -337,12 +337,14 @@ function connectDeepgram(session) {
     if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
-      const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
+      const alt = result?.channel?.alternatives?.[0];
+      const transcript = alt?.transcript?.trim();
+      const confidence = alt?.confidence ?? 1;
       if (!transcript || !result.is_final) return;
       const words = transcript.split(/\s+/).filter(Boolean);
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|ow+|eh+|er+|ugh+|ooh+|aah+|oop+|ew+)\s*[.?!]?$/i;
       const TWO_WORD_NOISE = /^(uh (huh|hm)|mm hmm)\s*[.?!]?$/i;
-      if (words.length < 1 || NOISE_ONLY.test(transcript) || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
+      if (words.length < 2 || confidence < 0.75 || NOISE_ONLY.test(transcript) || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
         callLog(session.callSid, '[dg] filtered noise:', transcript);
         return;
       }
@@ -560,7 +562,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
-  voice_settings: { stability: 0.30, similarity_boost: 0.85, style: 0.35, use_speaker_boost: true, speed: 0.92 }
+  voice_settings: { stability: 0.20, similarity_boost: 0.75, style: 0.55, use_speaker_boost: true, speed: 0.90 }
 };
 
 // Reset after 5 minutes so a newly-paid account recovers automatically
