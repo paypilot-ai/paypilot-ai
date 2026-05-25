@@ -325,7 +325,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     '&model=nova-2&punctuate=true&smart_format=true' +
-    '&interim_results=false&endpointing=400';
+    '&interim_results=false&endpointing=500';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -342,7 +342,7 @@ function connectDeepgram(session) {
       const words = transcript.split(/\s+/).filter(Boolean);
       const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|ow+|eh+|er+|ugh+|ooh+|aah+|oop+|ew+)\s*[.?!]?$/i;
       const TWO_WORD_NOISE = /^(uh (huh|hm)|mm hmm)\s*[.?!]?$/i;
-      if (words.length < 1 || NOISE_ONLY.test(transcript) || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
+      if (words.length < 2 || NOISE_ONLY.test(transcript) || (words.length === 2 && TWO_WORD_NOISE.test(transcript))) {
         callLog(session.callSid, '[dg] filtered noise:', transcript);
         return;
       }
