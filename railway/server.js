@@ -283,7 +283,7 @@ function handleTwilio(ws) {
       const c = cp.c || '';
       const e = cp.e || '';
       const s = cp.s || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
@@ -347,6 +347,7 @@ function connectDeepgram(session) {
       if (result.type === 'SpeechStarted' && session.state === 'speaking') {
         callLog(session.callSid, '[barge-in] SpeechStarted — clearing audio');
         ++session.speakGen;
+        ++session.turnId;
         if (session.twilioWs?.readyState === WebSocket.OPEN) {
           session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
         }
@@ -388,6 +389,8 @@ function connectDeepgram(session) {
           session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
         }
         session.pendingTranscript = null;
+        ++session.speakGen;
+        ++session.turnId;
         session.state = 'processing';
         session.history.push({ role: 'user', content: transcript });
         generateAndSpeak(session).catch(e => {
@@ -455,7 +458,8 @@ const FILLERS = ['Mm-hmm.', 'Yeah.', 'Right.', 'Oh.', 'Mm.'];
 let fillerIdx = 0;
 
 async function generateAndSpeak(session) {
-  callLog(session.callSid, '[ai] generating response (streaming)...');
+  const myTurn = ++session.turnId;
+  callLog(session.callSid, '[ai] generating response (turn=' + myTurn + ')...');
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
   // Play a filler immediately so there's no dead air while OpenAI generates
@@ -466,12 +470,19 @@ async function generateAndSpeak(session) {
 
   let fullReply;
   try {
-    fullReply = await streamOpenAIAndSpeak(session, messages);
+    fullReply = await streamOpenAIAndSpeak(session, messages, myTurn);
   } catch (e) {
     callLog(session.callSid, '[ai] generateAndSpeak error:', e.message);
-    enterListening(session);
+    if (session.turnId === myTurn) enterListening(session);
     return;
   }
+
+  // If barge-in happened while we were generating, discard this response entirely
+  if (session.turnId !== myTurn) {
+    callLog(session.callSid, '[ai] turn superseded, discarding reply');
+    return;
+  }
+
   const SCRIPTED_FALLBACK = [
     'So what does your situation look like right now?',
     'What\'s the main thing holding you back?',
@@ -546,8 +557,11 @@ function prepareForSpeech(text) {
 }
 
 // Stream OpenAI tokens; start TTS as soon as first sentence arrives, chain the rest
-async function streamOpenAIAndSpeak(session, messages) {
+async function streamOpenAIAndSpeak(session, messages, callerTurn) {
   try {
+    // Capture speakGen at entry — if it changes before we start TTS it means barge-in
+    const startGen = session.speakGen;
+
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -570,8 +584,10 @@ async function streamOpenAIAndSpeak(session, messages) {
     const flushChunk = (chunk) => {
       chunk = chunk.trim();
       if (!chunk) return;
+      // Bail if barge-in happened before we even started speaking
+      if (session.turnId !== callerTurn) return;
       if (myGen === null) {
-        // First chunk — set up speaking state now
+        if (session.speakGen !== startGen) return; // barge-in invalidated us
         if (session.twilioWs?.readyState === WebSocket.OPEN) {
           session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
         }
@@ -580,7 +596,7 @@ async function streamOpenAIAndSpeak(session, messages) {
       }
       const gen = myGen;
       ttsChain = ttsChain.then(() => {
-        if (session.speakGen !== gen) return;
+        if (session.speakGen !== gen || session.turnId !== callerTurn) return;
         return streamTTS(session, chunk, gen);
       });
     };
@@ -618,7 +634,7 @@ async function streamOpenAIAndSpeak(session, messages) {
     pushToBrowser(session, { event: 'ai-speaking', text: fullText });
     await ttsChain;
 
-    if (session.speakGen === myGen) {
+    if (session.speakGen === myGen && session.turnId === callerTurn) {
       const markName = 'tts-' + Date.now();
       if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
     }
