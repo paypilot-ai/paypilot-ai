@@ -488,6 +488,23 @@ async function streamOpenAIAndSpeak(session, messages) {
     const decoder = new TextDecoder();
     let buf = '';
     let fullText = '';
+    let sentenceBuf = '';
+    let myGen = null;
+
+    const flushSentence = async (chunk) => {
+      chunk = chunk.trim();
+      if (!chunk) return;
+      if (myGen === null) {
+        if (session.twilioWs?.readyState === WebSocket.OPEN) {
+          session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+        }
+        session.state = 'speaking';
+        myGen = ++session.speakGen;
+        pushToBrowser(session, { event: 'ai-speaking', text: fullText });
+      }
+      if (session.speakGen === myGen) await streamTTS(session, chunk, myGen);
+    };
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -500,20 +517,28 @@ async function streamOpenAIAndSpeak(session, messages) {
         if (data === '[DONE]') break;
         try {
           const token = JSON.parse(data).choices?.[0]?.delta?.content;
-          if (token) fullText += token;
+          if (!token) continue;
+          fullText += token;
+          sentenceBuf += token;
+          const match = sentenceBuf.match(/^(.+?[.!?])\s*/s);
+          if (match) {
+            await flushSentence(match[1]);
+            sentenceBuf = sentenceBuf.slice(match[0].length);
+          }
         } catch {}
       }
     }
+    if (sentenceBuf.trim()) await flushSentence(sentenceBuf);
+
     fullText = fullText.trim();
     if (!fullText) return null;
-
-    if (session.twilioWs?.readyState === WebSocket.OPEN) {
-      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+    if (myGen === null) {
+      // GPT returned text with no sentence boundary (shouldn't happen, but handle it)
+      session.state = 'speaking';
+      myGen = ++session.speakGen;
+      pushToBrowser(session, { event: 'ai-speaking', text: fullText });
+      await streamTTS(session, fullText, myGen);
     }
-    session.state = 'speaking';
-    const myGen = ++session.speakGen;
-    pushToBrowser(session, { event: 'ai-speaking', text: fullText });
-    await streamTTS(session, fullText, myGen);
 
     if (session.speakGen === myGen) {
       const markName = 'tts-' + Date.now();
