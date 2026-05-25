@@ -1,8 +1,7 @@
 const BASE_URL = 'https://paypilotai.live';
 
 function say(text) {
-  const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  return `<Say voice="Polly.Joanna-Neural">${safe}</Say>`;
+  return `<Play>${BASE_URL}/api/tts?text=${encodeURIComponent(text)}</Play>`;
 }
 function b64enc(obj) {
   return Buffer.from(JSON.stringify(obj)).toString('base64')

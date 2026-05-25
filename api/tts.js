@@ -1,21 +1,21 @@
-const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'tnSpp4vdxKPjI9w0GnoV';
+const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
 const API_KEY  = process.env.ELEVENLABS_API_KEY;
 
 module.exports = async function handler(req, res) {
-  const text = (req.query.text || '').trim();
-  if (!text)   return res.status(400).send('missing text');
+  const text = (req.query.text || '').trim().slice(0, 500);
+  if (!text)    return res.status(400).send('missing text');
   if (!API_KEY) return res.status(500).send('no ElevenLabs key');
 
   try {
     const el = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?optimize_streaming_latency=4`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
       {
         method: 'POST',
         headers: { 'xi-api-key': API_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_turbo_v2_5',
-          voice_settings: { stability: 0.85, similarity_boost: 0.90, style: 0, use_speaker_boost: false, speed: 0.95 }
+          model_id: 'eleven_flash_v2_5',
+          voice_settings: { use_speaker_boost: true },
         })
       }
     );

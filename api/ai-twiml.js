@@ -3,8 +3,9 @@ function b64enc(obj) {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
-function xmlEsc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const BASE_URL = 'https://paypilotai.live';
+function ttsPlay(text) {
+  return `<Play>${BASE_URL}/api/tts?text=${encodeURIComponent(text)}</Play>`;
 }
 
 const INTROS_WITH_NAME = ['Hi, may I speak with {firstName}?'];
@@ -35,7 +36,7 @@ module.exports = async function handler(req, res) {
 <Response>
   <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="2" speechModel="phone_call" language="en-US">
     <Pause length="1"/>
-    <Say voice="Polly.Joanna-Neural">${xmlEsc(greeting)}</Say>
+    ${ttsPlay(greeting)}
   </Gather>
   <Hangup/>
 </Response>`);
