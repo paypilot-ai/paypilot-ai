@@ -73,7 +73,7 @@ function buildPrompt(customerName, companyName, callReason) {
     'Email given: read it back, confirm you\'ll send something over, keep moving toward the close.',
     'To end: warm, confident close — "Talk soon!" or "Looking forward to it!" — then [END]. Never [END] without a goodbye.',
     'Start replies with: "Yeah", "Look", "So", "Right", "Oh", "Honestly", "I mean" — real talk.',
-    'Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "No problem", "Sounds good", "I appreciate that".',
+    'Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "No problem", "Sounds good", "I appreciate that", "I get that", "I totally get that", "I hear you", "I can understand", "That makes sense".',
     `You are calling on behalf of ${company}.`,
     `Background context for this call (use this to guide the conversation, don't recite it): ${reason}.`,
     `You are speaking with ${firstName}.`,

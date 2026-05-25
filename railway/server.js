@@ -26,7 +26,7 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'Email given: read it back, confirm you\'ll send something over, keep moving toward the close. ' +
   'To end: warm, confident close — "Talk soon!" or "Looking forward to it!" — then [END]. Never [END] without a goodbye. ' +
   'Start replies with: "Yeah", "Look", "So", "Right", "Oh", "Honestly", "I mean" — real talk. ' +
-  'Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "No problem", "Sounds good", "I appreciate that".';
+  'Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "No problem", "Sounds good", "I appreciate that", "I get that", "I totally get that", "I hear you", "I can understand", "That makes sense".';
 
 function shouldEndCall(text) {
   return text.toLowerCase().includes('[end]');
@@ -436,7 +436,7 @@ async function sendGreeting(session) {
 }
 
 const FILLER_PHRASES = [
-  'Oh yeah.', 'Mm-hmm.', 'Right, right.', 'Well now...', 'Yeah, I hear you.', 'Oh, for sure.'
+  'Oh yeah.', 'Mm-hmm.', 'Right, right.', 'Well now...', 'Yeah, for sure.'
 ];
 function pickFiller() { return FILLER_PHRASES[Math.floor(Math.random() * FILLER_PHRASES.length)]; }
 
@@ -457,35 +457,42 @@ async function generateAndSpeak(session) {
     enterListening(session);
     return;
   }
-  if (!fullReply) { enterListening(session); return; }
+  const SCRIPTED_FALLBACK = [
+    'So what does your situation look like right now?',
+    'What\'s the main thing holding you back?',
+    'Can I shoot you a quick email with the details?',
+  ];
+  if (!fullReply) {
+    const fb = SCRIPTED_FALLBACK[Math.min(session.history.filter(m => m.role === 'assistant').length, SCRIPTED_FALLBACK.length - 1)];
+    session.history.push({ role: 'assistant', content: fb });
+    await speakToTwilio(session, fb);
+    return;
+  }
 
   const cleanReply = fullReply.replace(/\[END\]/gi, '').trim();
   callLog(session.callSid, '[ai] reply:', cleanReply.slice(0, 80));
   session.history.push({ role: 'assistant', content: cleanReply });
   pushToBrowser(session, { event: 'ai-response', text: cleanReply });
 
-  // Auto-send DocuSign only when email was captured from speech during this call
+  // Auto-send DocuSign only when email was captured from speech during this call — fire and forget
   if (session.capturedEmail && session.emailFromSpeech && !session.docuSignSent && !shouldEndCall(fullReply)) {
     session.docuSignSent = true;
     callLog(session.callSid, '[docusign] sending agreement to', session.capturedEmail);
-    try {
-      await fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: session.name || '',
-          customerEmail: session.capturedEmail,
-          callReason: session.reason || 'follow-up call',
-          subject: 'Your Agreement — Please Review & Sign',
-          message: `Hi${session.name ? ' ' + session.name : ''},\n\nThank you for speaking with Brandy today! Please review and sign your agreement using the link below.\n\nIf you have any questions, feel free to reply to this email.`,
-          docuSignLink: 'https://www.docusign.com'
-        })
-      });
-      callLog(session.callSid, '[docusign] sent successfully');
+    fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName: session.name || '',
+        customerEmail: session.capturedEmail,
+        callReason: session.reason || 'follow-up call',
+        subject: 'Your Agreement — Please Review & Sign',
+        message: `Hi${session.name ? ' ' + session.name : ''},\n\nThank you for speaking with Brandy today! Please review and sign your agreement using the link below.\n\nIf you have any questions, feel free to reply to this email.`,
+        docuSignLink: 'https://www.docusign.com'
+      })
+    }).then(r => r.json()).then(d => {
+      callLog(session.callSid, '[docusign] sent:', d.ok ? 'ok' : d.error);
       pushToBrowser(session, { event: 'docusign-sent', email: session.capturedEmail });
-    } catch (e) {
-      callLog(session.callSid, '[docusign] send failed:', e.message);
-    }
+    }).catch(e => callLog(session.callSid, '[docusign] send failed:', e.message));
   }
 
   if (shouldEndCall(fullReply)) {  // check original text for [END] signal
@@ -523,7 +530,7 @@ function prepareForSpeech(text) {
     .trim();
 }
 
-// Collect full OpenAI reply via streaming, then speak as one continuous TTS call
+// Stream OpenAI tokens; start TTS as soon as first sentence arrives, chain the rest
 async function streamOpenAIAndSpeak(session, messages) {
   try {
     const ctrl = new AbortController();
@@ -539,34 +546,62 @@ async function streamOpenAIAndSpeak(session, messages) {
 
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
-    let buf = '';
+    let parseBuf = '';
     let fullText = '';
+    let sentenceBuf = '';
+    let myGen = null;
+    let ttsChain = Promise.resolve();
+
+    const flushChunk = (chunk) => {
+      chunk = chunk.trim();
+      if (!chunk) return;
+      if (myGen === null) {
+        // First chunk — set up speaking state now
+        if (session.twilioWs?.readyState === WebSocket.OPEN) {
+          session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+        }
+        session.state = 'speaking';
+        myGen = ++session.speakGen;
+      }
+      const gen = myGen;
+      ttsChain = ttsChain.then(() => {
+        if (session.speakGen !== gen) return;
+        return streamTTS(session, chunk, gen);
+      });
+    };
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      buf += decoder.decode(value, { stream: true });
-      const lines = buf.split('\n');
-      buf = lines.pop();
+      parseBuf += decoder.decode(value, { stream: true });
+      const lines = parseBuf.split('\n');
+      parseBuf = lines.pop();
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
         const data = line.slice(6);
         if (data === '[DONE]') break;
         try {
           const token = JSON.parse(data).choices?.[0]?.delta?.content;
-          if (token) fullText += token;
+          if (token) {
+            fullText += token;
+            sentenceBuf += token;
+            // Flush as soon as we hit sentence-ending punctuation
+            if (/[.!?](\s|$)/.test(token)) {
+              flushChunk(sentenceBuf);
+              sentenceBuf = '';
+            }
+          }
         } catch {}
       }
     }
-    fullText = fullText.trim();
-    if (!fullText) return null;
+    // Flush any remaining text that didn't end with punctuation
+    if (sentenceBuf.trim()) flushChunk(sentenceBuf);
 
-    if (session.twilioWs?.readyState === WebSocket.OPEN) {
-      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-    }
-    session.state = 'speaking';
-    const myGen = ++session.speakGen;
+    fullText = fullText.trim();
+    if (!fullText || myGen === null) return null;
+
     pushToBrowser(session, { event: 'ai-speaking', text: fullText });
-    await streamTTS(session, fullText, myGen);
+    await ttsChain;
 
     if (session.speakGen === myGen) {
       const markName = 'tts-' + Date.now();
