@@ -1144,7 +1144,7 @@ function handleTwilioRealtime(ws) {
     } catch (err) { console.error('[realtime] ws message error:', err.message); }
   });
 
-  ws.on('close', () => { if (fallbackTimer) clearTimeout(fallbackTimer); openAiWs?.close(); });
+  ws.on('close', () => { if (fallbackTimer) clearTimeout(fallbackTimer); sendFollowUpEmail(); openAiWs?.close(); });
   ws.on('error', e => console.error('[realtime] Twilio ws error:', e.message));
 }
 
