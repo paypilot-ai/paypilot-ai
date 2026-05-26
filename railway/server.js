@@ -977,15 +977,18 @@ function handleTwilioRealtime(ws) {
   }
 
   function sendFollowUpEmail() {
-    if (!capturedEmail || emailSent) return;
+    console.log('[email] sendFollowUpEmail called — capturedEmail:', capturedEmail, '| emailSent:', emailSent);
+    if (emailSent) { console.log('[email] skipped — already sent'); return; }
+    if (!capturedEmail) { console.log('[email] skipped — no capturedEmail'); return; }
     const resendKey = process.env.RESEND_API_KEY;
-    if (!resendKey) return;
+    if (!resendKey) { console.log('[email] skipped — RESEND_API_KEY not set'); return; }
     emailSent = true;
     const firstName = (n || 'there').trim().split(/\s+/)[0];
     const company   = c || 'PayPilot AI';
     const reason    = r || 'our conversation today';
     const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
     const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
+    console.log('[email] sending to:', capturedEmail, '| from:', fromEmail, '| company:', company);
     fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendKey}` },
@@ -996,7 +999,10 @@ function handleTwilioRealtime(ws) {
         subject: `Following up from our call — ${company}`,
         html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;"><h2 style="color:#0f172a;">Hi ${firstName},</h2><p style="color:#374151;font-size:16px;line-height:1.7;">Thanks so much for chatting today! As promised, I'm following up about ${reason}. If you have any questions or want to move forward, just reply to this email — I'd love to help.</p><p style="color:#64748b;font-size:14px;margin-top:28px;">Talk soon,<br/>Brandy<br/>${company}</p></div>`,
       }),
-    }).then(r => console.log('[email] sent:', r.status)).catch(err => console.error('[email] error:', err.message));
+    }).then(async resp => {
+      const body = await resp.text();
+      console.log('[email] Resend response:', resp.status, body.slice(0, 200));
+    }).catch(err => console.error('[email] fetch error:', err.message));
   }
 
   function triggerGreeting() {
