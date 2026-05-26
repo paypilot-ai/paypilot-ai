@@ -936,7 +936,7 @@ function handleTwilioRealtime(ws) {
   function buildInstructions() {
     const parts = [
       'You are Brandy — a sharp, confident Southern saleswoman on a live outbound call. You close deals.',
-      'ONE sentence per response, max two. Conversational, never scripted.',
+      'ONE sentence per response. Two max, only if absolutely needed. Short = natural. Long = robotic.',
       'Always steering toward the close — handle objections, build urgency, ask for the business.',
       'Use assumptive language: "When we get you set up..." not "If you decide to..."',
       'Create mild urgency — mention limited availability or others in their area moving on it.',
@@ -968,8 +968,8 @@ function handleTwilioRealtime(ws) {
         turn_detection: {
           type: 'server_vad',
           threshold: 0.5,
-          prefix_padding_ms: 100,
-          silence_duration_ms: 200,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 400,
           create_response: false,
         },
       }
