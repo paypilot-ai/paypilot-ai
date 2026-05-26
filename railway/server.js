@@ -1006,9 +1006,9 @@ function handleTwilioRealtime(ws) {
     let msg = 'Give a brief, warm Southern greeting. Say your name is Brandy';
     if (c) msg += `, calling from ${c}`;
     msg += '.';
-    if (n) msg += ` Ask if ${n} is available.`;
+    if (n) msg += ` Address ${n} directly by name — you are calling their number, not asking for them through a receptionist. Example: "Hey ${n}! Brandy here with ${c || 'us'} — you got a quick second?"`;
     else   msg += ' Ask who you\'re speaking with.';
-    msg += ' One or two sentences, natural and friendly.';
+    msg += ' One or two sentences max, natural and conversational.';
     openAiWs.send(JSON.stringify({
       type: 'response.create',
       response: { modalities: ['audio', 'text'], instructions: msg }
