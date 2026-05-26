@@ -968,8 +968,8 @@ function handleTwilioRealtime(ws) {
         turn_detection: {
           type: 'server_vad',
           threshold: 0.5,
-          prefix_padding_ms: 200,
-          silence_duration_ms: 300,
+          prefix_padding_ms: 100,
+          silence_duration_ms: 200,
           create_response: false,
         },
       }
@@ -1091,8 +1091,8 @@ function handleTwilioRealtime(ws) {
           }
         }
 
-        // User stopped speaking — manually trigger a response
-        if (ev.type === 'input_audio_buffer.speech_stopped') {
+        // Buffer committed — trigger response immediately (faster than waiting for speech_stopped)
+        if (ev.type === 'input_audio_buffer.committed') {
           openAiWs.send(JSON.stringify({ type: 'response.create' }));
         }
 
