@@ -967,7 +967,7 @@ function handleTwilioRealtime(ws) {
         output_audio_format: 'g711_ulaw',
         turn_detection: {
           type: 'server_vad',
-          threshold: 0.5,
+          threshold: 0.7,
           prefix_padding_ms: 300,
           silence_duration_ms: 600,
           create_response: false,
@@ -1097,8 +1097,12 @@ function handleTwilioRealtime(ws) {
         }
 
         // Barge-in: user started speaking — cancel in-flight response + clear Twilio audio buffer
+        // Only act if we are NOT already mid-response (avoid self-triggering on Brandy's own audio)
         if (ev.type === 'input_audio_buffer.speech_started') {
-          openAiWs.send(JSON.stringify({ type: 'response.cancel' }));
+          const isResponding = ev.item_id != null;
+          if (!isResponding) {
+            openAiWs.send(JSON.stringify({ type: 'response.cancel' }));
+          }
           if (streamSid && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ event: 'clear', streamSid }));
           }
