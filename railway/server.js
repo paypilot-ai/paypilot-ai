@@ -149,7 +149,7 @@ app.all('/twiml-stream', (req, res) => {
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
   console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'e:', e ? '(set)' : '(none)', 's:', s ? '(set)' : '(none)', 'method:', req.method);
-  const wsUrl = `wss://${host}/twilio-realtime`;
+  const wsUrl = `wss://${host}/twilio`;
   // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
   const paramXml = [
     n ? `<Parameter name="n" value="${xmlEsc(n)}"/>` : '',
@@ -301,7 +301,7 @@ function handleTwilio(ws) {
       const c = cp.c || '';
       const e = cp.e || '';
       const s = cp.s || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
@@ -334,7 +334,32 @@ function handleTwilio(ws) {
       sessions.delete(session.callSid);
     }
   });
-  ws.on('close', () => { if (session) { cleanup(session); sessions.delete(session.callSid); } });
+  ws.on('close', () => { if (session) { sendFollowUpEmailLegacy(session); cleanup(session); sessions.delete(session.callSid); } });
+}
+
+function sendFollowUpEmailLegacy(session) {
+  if (!session || !session.capturedEmail || session.emailSent) return;
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) { console.log('[email] skipped — RESEND_API_KEY not set'); return; }
+  session.emailSent = true;
+  const firstName = (session.name || 'there').trim().split(/\s+/)[0];
+  const company   = session.company  || 'PayPilot AI';
+  const reason    = session.reason   || 'our conversation today';
+  const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
+  const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
+  console.log('[email] sending to:', session.capturedEmail);
+  fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendKey}` },
+    body: JSON.stringify({
+      from: `${fromName} <${fromEmail}>`,
+      to: [session.capturedEmail],
+      reply_to: session.senderEmail || fromEmail,
+      subject: `Following up from our call — ${company}`,
+      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;"><h2 style="color:#0f172a;">Hi ${firstName},</h2><p style="color:#374151;font-size:16px;line-height:1.7;">Thanks so much for chatting today! As promised, I'm following up about ${reason}. If you have any questions or want to move forward, just reply to this email — I'd love to help.</p><p style="color:#64748b;font-size:14px;margin-top:28px;">Talk soon,<br/>Brandy<br/>${company}</p></div>`,
+    }),
+  }).then(async r => { const b = await r.text(); console.log('[email] Resend:', r.status, b.slice(0, 200)); })
+    .catch(e => console.error('[email] error:', e.message));
 }
 
 function handleBrowser(ws, callSid) {
@@ -587,6 +612,7 @@ async function generateAndSpeak(session) {
     callLog(session.callSid, '[call] ending call — farewell detected');
     session.state = 'ending';
     pushToBrowser(session, { event: 'call-ended' });
+    sendFollowUpEmailLegacy(session);
     hangupCall(session);
     return;
   }
