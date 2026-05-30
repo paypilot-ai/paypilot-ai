@@ -405,16 +405,20 @@ function connectDeepgram(session) {
         return;
       }
       const words = transcript.split(/\s+/).filter(Boolean);
-      // Single-word filler sounds
-      const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|yep|nope|yeah|nah|ok|okay|hello+|hey+|hi+|bye+|ew+|wow|whoa|right|sure|cool|nice|yep|yup|no|yes|mhm|aha)\s*[.?!]?$/i;
-      // Two-word noise combos
-      const TWO_WORD_NOISE = /^(uh (huh|oh|yeah|ok|okay|hm)|oh (ok|okay|yeah|wow|right|sure|hmm|really)|mm (hmm|yeah|ok)|yeah (ok|okay|sure|right|hmm|yeah)|oh my|my god|oh god|all right|alright)[.?!]?$/i;
-      if (words.length < 1
-        || NOISE_ONLY.test(transcript)
-        || (words.length === 2 && TWO_WORD_NOISE.test(transcript))
-        || (words.length < 3 && /^[^a-zA-Z]*$/.test(transcript))) {
-        callLog(session.callSid, '[dg] filtered noise:', transcript);
-        return;
+      // Only filter noise mid-conversation — never filter the first response to the greeting
+      const isFirstResponse = session.history.filter(m => m.role === 'user').length === 0;
+      if (!isFirstResponse) {
+        // Single-word filler sounds
+        const NOISE_ONLY = /^(uh+|um+|mm+|hmm+|hm+|huh|mhm|ah+|oh+|ow+|ha+|eh+|er+|ugh+|ooh+|yep|nope|nah|ew+|wow|whoa)\s*[.?!]?$/i;
+        // Two-word noise combos
+        const TWO_WORD_NOISE = /^(uh (huh|oh|yeah|ok|okay|hm)|oh (ok|okay|wow|hmm|really)|mm (hmm|yeah|ok)|oh my|my god|oh god)[.?!]?$/i;
+        if (words.length < 1
+          || NOISE_ONLY.test(transcript)
+          || (words.length === 2 && TWO_WORD_NOISE.test(transcript))
+          || (words.length < 3 && /^[^a-zA-Z]*$/.test(transcript))) {
+          callLog(session.callSid, '[dg] filtered noise:', transcript);
+          return;
+        }
       }
       callLog(session.callSid, '[prospect]', transcript, '| state:', session.state);
       pushToBrowser(session, { event: 'transcript', speaker: 'prospect', text: transcript });
