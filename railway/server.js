@@ -493,8 +493,19 @@ async function sendGreeting(session) {
   session.history.push({ role: 'assistant', content: greeting });
   pushToBrowser(session, { event: 'ai-response', text: greeting });
   await speakToTwilio(session, greeting);
-  // speakToTwilio already calls enterListening when done — don't overwrite state here
-  // or we'll clobber 'speaking'/'processing' if the user barged in during the greeting
+
+  // Safety net: if no user response detected within 4s, re-engage
+  setTimeout(() => {
+    const userTurns = session.history.filter(m => m.role === 'user').length;
+    if (userTurns === 0 && session.state === 'listening') {
+      callLog(session.callSid, '[greeting] no response detected — re-engaging');
+      const nudge = session.name
+        ? `${session.name.split(' ')[0]}, hey — can you hear me okay?`
+        : 'Hey, can you hear me okay?';
+      session.history.push({ role: 'assistant', content: nudge });
+      speakToTwilio(session, nudge);
+    }
+  }, 4000);
 }
 
 const FILLER_PHRASES = [
