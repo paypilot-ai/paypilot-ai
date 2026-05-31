@@ -2750,6 +2750,49 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               </div>
             </div>
           </div>
+
+          <!-- Automation card -->
+          <div class="card" style="margin-top:16px;border:1.5px solid #e0eaff;">
+            <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:20px;letter-spacing:-.03em;">⚡ Automation</div>
+
+            <!-- Voicemail Drop -->
+            <div style="margin-bottom:16px;padding:16px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div>
+                  <div style="font-weight:700;color:var(--text);font-size:14px;">📭 Voicemail Drop</div>
+                  <div style="font-size:12px;color:var(--text-2);margin-top:2px;">Auto-play a message when the AI reaches voicemail (TwiML mode)</div>
+                </div>
+                <label class="toggle"><input type="checkbox" id="vmdToggle" onchange="saveAutomationSettings()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+              <label class="label" style="color:var(--text-2);font-size:11px;">Voicemail Message</label>
+              <textarea class="textarea" id="vmdMessage" placeholder="e.g. Hi, this is Brandy from PayPilot AI. I was calling about our payment program — please call us back or visit paypilotai.live. Thanks!" style="min-height:72px;" oninput="saveAutomationSettings()"></textarea>
+            </div>
+
+            <!-- SMS Follow-up -->
+            <div style="margin-bottom:16px;padding:16px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div>
+                  <div style="font-weight:700;color:var(--text);font-size:14px;">💬 Auto SMS After Completed Calls</div>
+                  <div style="font-size:12px;color:var(--text-2);margin-top:2px;">Send a follow-up text automatically when a dialer call completes</div>
+                </div>
+                <label class="toggle"><input type="checkbox" id="smsToggle" onchange="saveAutomationSettings()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+              <label class="label" style="color:var(--text-2);font-size:11px;">SMS Message Template</label>
+              <textarea class="textarea" id="smsTemplate" placeholder="e.g. Hi {name}, thanks for speaking with us today! Questions? Reply here or visit paypilotai.live" style="min-height:72px;" oninput="saveAutomationSettings()"></textarea>
+              <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Use <code>{name}</code> for contact name. Requires Twilio SMS on your account.</div>
+            </div>
+
+            <!-- Webhook -->
+            <div style="padding:16px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
+              <div style="margin-bottom:12px;">
+                <div style="font-weight:700;color:var(--text);font-size:14px;">🔗 Webhook / Zapier</div>
+                <div style="font-size:12px;color:var(--text-2);margin-top:2px;">POST call results to your endpoint when you tag a disposition</div>
+              </div>
+              <label class="label" style="color:var(--text-2);font-size:11px;">Webhook URL</label>
+              <input class="input" id="webhookUrl" placeholder="https://hooks.zapier.com/hooks/catch/..." oninput="saveAutomationSettings()"/>
+              <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Receives: <code>{ name, phone, status, disposition, timestamp }</code></div>
+            </div>
+          </div>
         </section>
 
         <!-- BILLING -->
@@ -4108,6 +4151,7 @@ function saveSettings(){
   document.getElementById('profileNameView').textContent = name;
   document.getElementById('avatarBox').textContent = name.charAt(0).toUpperCase();
   enterPlanDemo(plan);
+  saveAutomationSettings();
   toast('Settings saved.');
 }
 
@@ -4116,6 +4160,37 @@ function resetSettings(){
   document.getElementById('profileBio').value = 'Charismatic sales rep using AI to move faster on live calls.';
   document.getElementById('profileCompany').value = 'PayPilot AI';
   document.getElementById('profilePlan').value = currentPlan;
+}
+
+function saveAutomationSettings() {
+  localStorage.setItem('pp_automation', JSON.stringify({
+    vmdEnabled:  document.getElementById('vmdToggle')?.checked  || false,
+    vmdMessage:  document.getElementById('vmdMessage')?.value   || '',
+    smsEnabled:  document.getElementById('smsToggle')?.checked  || false,
+    smsTemplate: document.getElementById('smsTemplate')?.value  || '',
+    webhookUrl:  document.getElementById('webhookUrl')?.value   || '',
+  }));
+}
+
+function loadAutomationSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('pp_automation') || '{}');
+    if (document.getElementById('vmdToggle'))   document.getElementById('vmdToggle').checked   = !!s.vmdEnabled;
+    if (document.getElementById('vmdMessage'))  document.getElementById('vmdMessage').value    = s.vmdMessage  || '';
+    if (document.getElementById('smsToggle'))   document.getElementById('smsToggle').checked   = !!s.smsEnabled;
+    if (document.getElementById('smsTemplate')) document.getElementById('smsTemplate').value   = s.smsTemplate || '';
+    if (document.getElementById('webhookUrl'))  document.getElementById('webhookUrl').value    = s.webhookUrl  || '';
+  } catch {}
+}
+
+function fireWebhook(data) {
+  const s = JSON.parse(localStorage.getItem('pp_automation') || '{}');
+  if (!s.webhookUrl) return;
+  fetch(s.webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).catch(() => {});
 }
 
 // ============================================================
@@ -5933,6 +6008,7 @@ function syncComplianceStatus(){
 document.addEventListener('DOMContentLoaded', function(){
   renderDNC();
   syncComplianceStatus();
+  loadAutomationSettings();
   const consent = localStorage.getItem('pp_cookie_consent');
   if(consent) updateCookieStatus(consent);
 });
@@ -6009,18 +6085,29 @@ function renderAdRows() {
   if (countEl) countEl.textContent = `(${adContacts.length} contact${adContacts.length !== 1 ? 's' : ''})`;
   const statusColor = { pending:'#94a3b8', calling:'#1a6fff', done:'#16a34a', failed:'#ef4444', skipped:'#94a3b8' };
   const statusLabel = { pending:'—', calling:'📞 Calling…', done:'✓ Done', failed:'✗ Failed', skipped:'Skipped' };
+  const DISPOSITIONS = ['Interested','Callback','Not Interested','Voicemail','No Answer'];
+  const dispColor = { 'Interested':'#16a34a', 'Callback':'#1a6fff', 'Not Interested':'#94a3b8', 'Voicemail':'#d97706', 'No Answer':'#94a3b8' };
   const dis = adRunning ? 'disabled' : '';
   container.innerHTML = adContacts.map((c, i) => `
-    <div id="ad-row-${c.id}" style="display:grid;grid-template-columns:22px 1fr 140px 1fr 36px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9">
-      <span style="font-size:12px;color:#cbd5e1;text-align:center">${i+1}</span>
-      <input class="ad-name"   value="${c.name}"   placeholder="Full name"                     style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
-      <input class="ad-phone"  value="${c.phone}"  placeholder="Phone number"                  style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
-      <input class="ad-reason" value="${c.reason}" placeholder="Reason / product (or default)" style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
-      <div style="text-align:center">
-        ${adRunning
-          ? `<span style="font-size:11px;color:${statusColor[c.status]}">${statusLabel[c.status]}</span>`
-          : `<button onclick="adRemoveRow(${c.id})" style="background:none;border:none;color:#ef4444;font-size:18px;cursor:pointer;padding:0 4px;line-height:1">×</button>`}
+    <div>
+      <div id="ad-row-${c.id}" style="display:grid;grid-template-columns:22px 1fr 140px 1fr 36px;gap:8px;align-items:center;padding:6px 0;${c.status==='done'?'padding-bottom:4px;':'border-bottom:1px solid #f1f5f9'}">
+        <span style="font-size:12px;color:#cbd5e1;text-align:center">${i+1}</span>
+        <input class="ad-name"   value="${c.name}"   placeholder="Full name"                     style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
+        <input class="ad-phone"  value="${c.phone}"  placeholder="Phone number"                  style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
+        <input class="ad-reason" value="${c.reason}" placeholder="Reason / product (or default)" style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
+        <div style="text-align:center">
+          ${c.status === 'done'
+            ? `<span style="font-size:11px;color:#16a34a">✓</span>`
+            : adRunning
+              ? `<span style="font-size:11px;color:${statusColor[c.status]}">${statusLabel[c.status]}</span>`
+              : `<button onclick="adRemoveRow(${c.id})" style="background:none;border:none;color:#ef4444;font-size:18px;cursor:pointer;padding:0 4px;line-height:1">×</button>`}
+        </div>
       </div>
+      ${c.status === 'done' ? `
+      <div style="padding:3px 0 8px 30px;border-bottom:1px solid #f1f5f9;display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:10px;color:#94a3b8;margin-right:2px;white-space:nowrap;">Tag:</span>
+        ${DISPOSITIONS.map(d => `<button onclick="adSetDisposition(${c.id},'${d}')" style="padding:2px 8px;font-size:10px;border-radius:999px;border:1px solid ${c.disposition===d?dispColor[d]:'#e2e8f0'};background:${c.disposition===d?'#f0f9ff':'#fff'};color:${c.disposition===d?dispColor[d]:'#64748b'};cursor:pointer;white-space:nowrap;font-weight:${c.disposition===d?'700':'400'}">${d}</button>`).join('')}
+      </div>` : ''}
     </div>`).join('');
 }
 
@@ -6028,6 +6115,15 @@ function adClearAll() {
   if (adRunning) return;
   adContacts = [];
   adRowIdCounter = 0;
+  renderAdRows();
+}
+
+function adSetDisposition(id, disp) {
+  const c = adContacts.find(x => x.id === id);
+  if (!c) return;
+  c.disposition = c.disposition === disp ? null : disp; // toggle off if same
+  try { if (c.disposition) crmAutoLog(c.phone, c.name, `Disposition: ${c.disposition}`); } catch {}
+  fireWebhook({ name: c.name, phone: c.phone, status: c.status, disposition: c.disposition, timestamp: new Date().toISOString() });
   renderAdRows();
 }
 
@@ -6107,11 +6203,13 @@ async function dialNextContact() {
   setTimeout(() => { startMatrixAnimation(); startWaveAnimation(); startMouthAnimation(); startCallTimer(); }, 600);
   const company       = document.getElementById('adCompany').value.trim();
   const defaultReason = document.getElementById('adReason').value.trim();
+  const automation    = JSON.parse(localStorage.getItem('pp_automation') || '{}');
+  const voicemailMessage = automation.vmdEnabled ? (automation.vmdMessage || '') : '';
   try {
     const resp = await fetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company })
+      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company, voicemailMessage })
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Call failed');
@@ -6137,6 +6235,20 @@ async function pollAdCall(contact) {
       clearInterval(adPollTimer); adPollTimer = null;
       contact.status = data.status === 'completed' ? 'done' : 'failed';
       try { crmAutoLog(contact.phone, contact.name, `Auto-dialer call — ${data.status}`); } catch(e) {}
+
+      // Auto SMS on completed calls
+      if (data.status === 'completed') {
+        const automation = JSON.parse(localStorage.getItem('pp_automation') || '{}');
+        if (automation.smsEnabled && automation.smsTemplate && contact.phone) {
+          const msg = automation.smsTemplate.replace(/\{name\}/gi, contact.name || 'there');
+          fetch('/api/send-sms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to: contact.phone, message: msg })
+          }).catch(() => {});
+        }
+      }
+
       const done  = adContacts.filter(c => c.status === 'done' || c.status === 'failed').length;
       const total = adContacts.filter(c => c.status !== 'skipped').length;
       document.getElementById('adProgress').textContent = `${done} of ${total} done`;

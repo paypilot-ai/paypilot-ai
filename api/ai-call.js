@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail } = req.body || {};
+  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail, voicemailMessage } = req.body || {};
   if (!toNumber) return res.status(400).json({ error: 'Phone number required' });
 
   const cleaned = toNumber.replace(/\D/g, '');
@@ -42,6 +42,7 @@ module.exports = async function handler(req, res) {
     const c = encodeURIComponent(companyName || '');
     const e = encodeURIComponent(customerEmail || '');
     const s = encodeURIComponent(senderEmail || '');
+    const vmd = encodeURIComponent((voicemailMessage || '').trim());
 
     // Use Railway (OpenAI Realtime + ElevenLabs) if configured
     const rawWsUrl = (process.env.RAILWAY_WS_URL || '').trim();
@@ -64,13 +65,15 @@ module.exports = async function handler(req, res) {
     }
 
     // Fallback: route through ai-twiml.js (uses ElevenLabs TTS, consistent voice)
-    const twimlUrl = `https://paypilotai.live/api/ai-twiml?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}`;
+    const twimlUrl = `https://paypilotai.live/api/ai-twiml?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}${vmd ? '&vmd=' + vmd : ''}`;
+    const callParams = { To: e164, From: fromNumber, Url: twimlUrl };
+    if (vmd) callParams.MachineDetection = 'DetectMessageEnd';
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
       {
         method: 'POST',
         headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
+        body: new URLSearchParams(callParams).toString()
       }
     );
     const data = await response.json();

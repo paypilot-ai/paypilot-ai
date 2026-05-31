@@ -19,6 +19,18 @@ module.exports = async function handler(req, res) {
     const c = (req.query.c || '').trim();
     const e = (req.query.e || '').trim();
     const s = (req.query.s || '').trim();
+    const vmd = decodeURIComponent(req.query.vmd || '').trim();
+
+    // Twilio AMD: machine detected — play voicemail drop and hang up
+    const answeredBy = (req.body && req.body.AnsweredBy) || '';
+    if (vmd && (answeredBy === 'machine_end_beep' || answeredBy === 'machine_end_other')) {
+      return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Pause length="1"/>
+  ${ttsPlay(vmd)}
+  <Hangup/>
+</Response>`);
+    }
 
     const company = c || 'PayPilot AI';
     let greeting;
