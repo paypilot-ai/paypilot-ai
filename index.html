@@ -4226,12 +4226,8 @@ async function startDeepgram(){
     if(event.error === 'not-allowed'){
       toast('Mic access denied. Allow mic in your browser settings.');
       stopDeepgram();
-    } else if(event.error === 'no-speech'){
-      // Silence timeout — onend will auto-restart
-    } else {
-      toast('Mic error: ' + event.error + '. Click mic to try again.');
-      stopDeepgram();
     }
+    // All other errors (no-speech, aborted, network, audio-capture) — let onend restart
   };
 
   recognition.onend = () => {
