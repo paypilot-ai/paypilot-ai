@@ -1826,6 +1826,9 @@ body.modal-open{overflow:hidden}
       <div class="mob-drawer" onclick="event.stopPropagation()">
         <div class="mob-drawer-handle"></div>
         <div class="mob-drawer-title">More</div>
+        <button class="mob-drawer-btn" data-mob-page="crm" onclick="showPage('crm',document.querySelector('[data-page=crm]'));closeMobDrawer()">
+          <span class="mob-icon">👥</span>CRM
+        </button>
         <button class="mob-drawer-btn" data-mob-page="scripts" onclick="showPage('scripts',document.querySelector('[data-page=scripts]'));closeMobDrawer()">
           <span class="mob-icon">📜</span>Scripts
         </button>
