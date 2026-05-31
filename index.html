@@ -4156,14 +4156,8 @@ let finalTranscriptBuffer = '';
 let autoGenTimer = null;
 
 async function toggleMic(){
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   if(micActive){
-    if(isIOS && recognition === null){
-      // iOS: mic is "active" but stopped — restart on tap
-      await startDeepgram();
-    } else {
-      stopDeepgram();
-    }
+    stopDeepgram();
   } else {
     await startDeepgram();
   }
@@ -4241,19 +4235,9 @@ async function startDeepgram(){
       }
     };
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     recognition.onend = () => {
-      if(!micActive) return;
-      if(isIOS){
-        // iOS requires a direct user gesture for each start() — can't auto-restart
-        // Keep micActive true so tapping the mic button restarts cleanly
-        setMicUI(true);
-        document.getElementById('callInfo').textContent = 'Tap mic again to keep listening.';
-      } else {
-        setTimeout(() => {
-          if(!micActive) return;
-          try { attachRecognition(); recognition.start(); } catch(e){}
-        }, 150);
+      if(micActive){
+        try { recognition.start(); } catch(e){}
       }
     };
 
