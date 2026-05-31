@@ -4179,72 +4179,67 @@ async function startDeepgram(){
     return;
   }
 
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
   micActive = true;
   setMicUI(true);
   toast('PayPilot is listening — speak naturally.');
   document.getElementById('callInfo').textContent = 'Listening...';
 
-  function attachRecognition() {
-    recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
+  recognition.onresult = (event) => {
+    let interimTranscript = '';
+    let newFinal = '';
 
-    recognition.onresult = (event) => {
-      let interimTranscript = '';
-      let newFinal = '';
-
-      for(let i = event.resultIndex; i < event.results.length; i++){
-        const result = event.results[i];
-        if(result.isFinal){
-          newFinal += result[0].transcript;
-        } else {
-          interimTranscript += result[0].transcript;
-        }
-      }
-
-      const inputBox = document.getElementById('assistInput');
-
-      if(newFinal){
-        finalTranscriptBuffer = (finalTranscriptBuffer + ' ' + newFinal).trim();
-
-        if(detectedLanguage !== 'English'){
-          inputBox.value = '[' + detectedLanguage + '] ' + finalTranscriptBuffer;
-          document.getElementById('callInfo').textContent = 'Translating ' + detectedLanguage + ' → English...';
-          translateAndSpeakToRep(finalTranscriptBuffer, detectedLanguage, inputBox);
-        } else {
-          inputBox.value = finalTranscriptBuffer;
-          document.getElementById('callInfo').textContent = 'Heard: "' + finalTranscriptBuffer + '"';
-        }
-
-        document.getElementById('callInfo').textContent = 'Ready — click Generate response when you want a rebuttal.';
+    for(let i = event.resultIndex; i < event.results.length; i++){
+      const result = event.results[i];
+      if(result.isFinal){
+        newFinal += result[0].transcript;
       } else {
-        inputBox.value = (finalTranscriptBuffer + ' ' + interimTranscript).trim();
+        interimTranscript += result[0].transcript;
       }
-    };
+    }
 
-    recognition.onerror = (event) => {
-      if(event.error === 'not-allowed'){
-        toast('Mic access denied. Allow mic in your browser settings.');
-        stopDeepgram();
-      } else if(event.error === 'no-speech' || event.error === 'aborted'){
-        // Expected during normal operation — onend will restart
+    const inputBox = document.getElementById('assistInput');
+
+    if(newFinal){
+      finalTranscriptBuffer = (finalTranscriptBuffer + ' ' + newFinal).trim();
+
+      if(detectedLanguage !== 'English'){
+        inputBox.value = '[' + detectedLanguage + '] ' + finalTranscriptBuffer;
+        document.getElementById('callInfo').textContent = 'Translating ' + detectedLanguage + ' → English...';
+        translateAndSpeakToRep(finalTranscriptBuffer, detectedLanguage, inputBox);
       } else {
-        toast('Mic error: ' + event.error + '. Click mic to try again.');
-        stopDeepgram();
+        inputBox.value = finalTranscriptBuffer;
+        document.getElementById('callInfo').textContent = 'Heard: "' + finalTranscriptBuffer + '"';
       }
-    };
 
-    recognition.onend = () => {
-      if(micActive){
-        try { recognition.start(); } catch(e){}
-      }
-    };
+      document.getElementById('callInfo').textContent = 'Ready — click Generate response when you want a rebuttal.';
+    } else {
+      inputBox.value = (finalTranscriptBuffer + ' ' + interimTranscript).trim();
+    }
+  };
 
-    return recognition;
-  }
+  recognition.onerror = (event) => {
+    if(event.error === 'not-allowed'){
+      toast('Mic access denied. Allow mic in your browser settings.');
+      stopDeepgram();
+    } else if(event.error === 'no-speech'){
+      // Silence timeout — onend will auto-restart
+    } else {
+      toast('Mic error: ' + event.error + '. Click mic to try again.');
+      stopDeepgram();
+    }
+  };
 
-  attachRecognition();
+  recognition.onend = () => {
+    // Web Speech API stops after silence — restart automatically if still active
+    if(micActive){
+      try { recognition.start(); } catch(e){}
+    }
+  };
 
   try {
     recognition.start();
