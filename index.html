@@ -3736,18 +3736,24 @@ function logout(){
 
 // Restore session on page load
 (function restoreSession(){
-  const sess = localStorage.getItem('pp_session');
-  if(!sess) return;
-  if(sess === 'real'){
-    enterRealApp();
-  } else if(sess.startsWith('demo:')){
-    const plan = sess.split(':')[1] || 'starter';
-    enterPlanDemo(plan);
-  }
-  // Restore last visited page
-  const lastPage = localStorage.getItem('pp_last_page');
-  if(lastPage && document.getElementById(lastPage)){
-    showPage(lastPage, document.querySelector(`[data-page="${lastPage}"]`), false, true);
+  try {
+    const sess = localStorage.getItem('pp_session');
+    if(!sess) return;
+    if(sess === 'real'){
+      enterRealApp();
+    } else if(sess.startsWith('demo:')){
+      const plan = sess.split(':')[1] || 'starter';
+      enterPlanDemo(plan);
+    }
+    // Restore last visited page
+    const lastPage = localStorage.getItem('pp_last_page');
+    if(lastPage && document.getElementById(lastPage)){
+      showPage(lastPage, document.querySelector(`[data-page="${lastPage}"]`), false, true);
+    }
+  } catch(e) {
+    console.warn('[restoreSession] error, clearing saved session:', e.message);
+    localStorage.removeItem('pp_session');
+    localStorage.removeItem('pp_last_page');
   }
 })();
 
