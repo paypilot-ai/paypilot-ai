@@ -504,18 +504,16 @@ async function sendGreeting(session) {
   pushToBrowser(session, { event: 'ai-response', text: greeting });
   await speakToTwilio(session, greeting);
 
-  // Safety net: if no user response detected within 4s, re-engage
+  // Safety net: give 7s AFTER greeting finishes for prospect to respond
   setTimeout(() => {
     const userTurns = session.history.filter(m => m.role === 'user').length;
     if (userTurns === 0 && session.state === 'listening') {
-      callLog(session.callSid, '[greeting] no response detected — re-engaging');
-      const nudge = session.name
-        ? `${session.name.split(' ')[0]}, hey — can you hear me okay?`
-        : 'Hey, can you hear me okay?';
+      callLog(session.callSid, '[greeting] no response — re-pinging');
+      const nudge = session.name ? `${session.name.trim().split(' ')[0]}?` : 'Hello?';
       session.history.push({ role: 'assistant', content: nudge });
       speakToTwilio(session, nudge);
     }
-  }, 4000);
+  }, 7000);
 }
 
 const FILLER_PHRASES = [
@@ -720,8 +718,8 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
           if (token) {
             fullText += token;
             sentenceBuf += token;
-            // Flush on sentence-ending punctuation or natural clause break
-            if (/[.!?](\s|$)/.test(token) || /[,;](\s)/.test(token)) {
+            // Flush only on sentence-ending punctuation — one ElevenLabs call per sentence
+            if (/[.!?](\s|$)/.test(token)) {
               flushChunk(sentenceBuf);
               sentenceBuf = '';
             }
@@ -768,7 +766,7 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
-  voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.0, use_speaker_boost: true },
+  voice_settings: { stability: 0.75, similarity_boost: 0.85, style: 0.0, use_speaker_boost: true },
 };
 
 
