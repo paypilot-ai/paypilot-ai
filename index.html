@@ -3642,7 +3642,7 @@ function enterRealApp(){
   if(billingMob2) billingMob2.style.display = 'none';
   const pricingBtn2 = document.getElementById('getPricingBtn');
   if(pricingBtn2) pricingBtn2.style.display = 'none';
-  showPage('dashboard');
+  showPage('dashboard', null, false, true);
   resetDemoState();
   toast('Welcome back, Sean.');
 }
@@ -3719,11 +3719,15 @@ function applyPlanDemo(plan){
     livePillDemo.style.color = '#854d0e';
   }
 
-  showPage('dashboard');
+  showPage('dashboard', null, false, true);
 }
 
-function showPage(id, el, fromPopState){
-  if(!fromPopState) history.pushState({ page: id }, '', '#' + id);
+function showPage(id, el, fromPopState, replaceState){
+  if(!fromPopState){
+    const state = { page: id };
+    if(replaceState) history.replaceState(state, '', '#' + id);
+    else history.pushState(state, '', '#' + id);
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById('pageTitle').textContent = ({
