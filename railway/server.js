@@ -310,7 +310,7 @@ function handleTwilio(ws) {
       const e = cp.e || '';
       const s = cp.s || '';
       const l = cp.l || 'en';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false, ttsVoice: null };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       elevenlabsBlocked = false; // always give ElevenLabs a fresh chance on each new call
@@ -818,8 +818,10 @@ async function speakToTwilio(session, text) {
 }
 
 async function streamTTS(session, text, gen) {
-  if (ELEVENLABS_KEY && !isElevenlabsBlocked()) {
-    // Try ulaw_8000 first (no conversion needed) — fall back to pcm_24000 if plan doesn't support it
+  // Once a call commits to a TTS provider it never switches — prevents two different voices.
+  const useElevenLabs = session.ttsVoice !== 'openai' && ELEVENLABS_KEY && !isElevenlabsBlocked();
+
+  if (useElevenLabs) {
     for (const [fmt, fmtType] of [['ulaw_8000', 'ulaw8k'], ['pcm_24000', 'pcm24k']]) {
       try {
         const ctrl = new AbortController();
@@ -830,24 +832,20 @@ async function streamTTS(session, text, gen) {
           signal: ctrl.signal
         });
         clearTimeout(t);
-        console.log(`[elevenlabs] fmt=${fmt} status=${resp.status}`);
         if (resp.ok) {
           elevenlabsBlocked = false;
+          session.ttsVoice = 'elevenlabs'; // lock this call to ElevenLabs
           await pipeToTwilio(session, resp, fmtType, gen);
           return;
         }
         const errBody = await resp.text().catch(() => '');
-        // 4xx on ulaw_8000 means plan doesn't support it → try pcm_24000 without blocking
-        if (fmt === 'ulaw_8000' && resp.status >= 400 && resp.status < 500) {
-          console.log(`[elevenlabs] ulaw_8000 not supported (${resp.status}), trying pcm_24000`);
-          continue;
-        }
+        if (fmt === 'ulaw_8000' && resp.status >= 400 && resp.status < 500) continue;
         console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
         elevenlabsBlocked = true;
         elevenlabsBlockedAt = Date.now();
         break;
       } catch (e) {
-        if (fmt === 'ulaw_8000') { console.log('[elevenlabs] ulaw_8000 failed, trying pcm_24000'); continue; }
+        if (fmt === 'ulaw_8000') continue;
         elevenlabsBlocked = true;
         elevenlabsBlockedAt = Date.now();
         break;
@@ -855,7 +853,8 @@ async function streamTTS(session, text, gen) {
     }
   }
 
-  // OpenAI TTS fallback
+  // OpenAI TTS — used when ElevenLabs is unavailable or this call already committed to it
+  session.ttsVoice = 'openai'; // lock this call to OpenAI TTS for consistency
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 12000);
   const resp = await fetch('https://api.openai.com/v1/audio/speech', {
