@@ -404,7 +404,7 @@ function connectDeepgram(session) {
       if (result.type === 'SpeechStarted') {
         if (session.state === 'speaking') {
           const elapsed = session.speakStartTime ? Date.now() - session.speakStartTime : 0;
-          if (elapsed > 800 && session.twilioWs?.readyState === WebSocket.OPEN) {
+          if (elapsed > 1500 && session.twilioWs?.readyState === WebSocket.OPEN) {
             session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
           }
         }
@@ -573,16 +573,8 @@ async function generateAndSpeak(session) {
   callLog(session.callSid, '[ai] generating response (turn=' + myTurn + ')...');
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
-  // Play a filler immediately so there's no dead air while OpenAI generates
-  const fillerGen = ++session.speakGen;
   session.state = 'speaking';
   session.speakStartTime = Date.now();
-  const filler = FILLERS[fillerIdx++ % FILLERS.length];
-  if (fillerCache.has(filler)) {
-    playCachedFiller(session, filler, fillerGen);
-  } else {
-    streamTTS(session, filler, fillerGen).catch(() => {});
-  }
 
   let fullReply;
   try {
@@ -683,7 +675,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 38, temperature: 0.75, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 55, temperature: 0.75, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
