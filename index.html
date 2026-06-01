@@ -2077,6 +2077,22 @@ body.modal-open{overflow:hidden}
                 </div>
               </div>
 
+              <div style="margin-bottom:16px;">
+                <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Call Language</label>
+                <select id="aiCallLanguage" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;background:#fff;">
+                  <option value="en">🇺🇸 English</option>
+                  <option value="es">🇪🇸 Spanish</option>
+                  <option value="pt">🇧🇷 Portuguese</option>
+                  <option value="fr">🇫🇷 French</option>
+                  <option value="zh">🇨🇳 Mandarin Chinese</option>
+                  <option value="vi">🇻🇳 Vietnamese</option>
+                  <option value="ko">🇰🇷 Korean</option>
+                  <option value="ar">🇸🇦 Arabic</option>
+                  <option value="hi">🇮🇳 Hindi</option>
+                  <option value="ht">🇭🇹 Haitian Creole</option>
+                </select>
+              </div>
+
               <button id="aiCallBtn" onclick="startAiCall()" style="width:100%;padding:14px;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.03em;">🤖 Launch AI Call</button>
               </div><!-- end panelSingleCall -->
 
@@ -5276,6 +5292,7 @@ async function startAiCall(){
   const companyName   = document.getElementById('aiCallerCompany').value.trim();
   const customerEmail = document.getElementById('aiCallerEmail') ? document.getElementById('aiCallerEmail').value.trim() : '';
   const senderEmail   = document.getElementById('aiSenderEmail') ? document.getElementById('aiSenderEmail').value.trim() : '';
+  const language      = document.getElementById('aiCallLanguage')?.value || 'en';
   const btn = document.getElementById('aiCallBtn');
   btn.disabled = true;
   btn.textContent = 'Dialing...';
@@ -5284,7 +5301,7 @@ async function startAiCall(){
     const resp = await fetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail }),
+      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail, language }),
       signal: AbortSignal.timeout(15000)
     });
     const data = await resp.json();
