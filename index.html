@@ -3722,7 +3722,8 @@ function applyPlanDemo(plan){
   showPage('dashboard');
 }
 
-function showPage(id, el){
+function showPage(id, el, fromPopState){
+  if(!fromPopState) history.pushState({ page: id }, '', '#' + id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById('pageTitle').textContent = ({
@@ -3764,6 +3765,11 @@ function showPage(id, el){
     if(mb) mb.classList.add('active');
   }
 }
+
+window.addEventListener('popstate', function(e){
+  const page = (e.state && e.state.page) || 'dashboard';
+  showPage(page, document.querySelector(`[data-page="${page}"]`), true);
+});
 
 function openMobDrawer(){
   document.getElementById('mobDrawerOverlay').classList.add('open');
