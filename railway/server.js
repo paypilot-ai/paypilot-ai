@@ -251,7 +251,7 @@ app.get('/test', async (req, res) => {
     const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}`, {
       method: 'POST',
       headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: 'test', model_id: 'eleven_turbo_v2', output_format: 'pcm_16000' })
+      body: JSON.stringify({ text: 'test', model_id: ELEVENLABS_VOICE_SETTINGS.model_id, output_format: 'pcm_16000' })
     });
     results.elevenlabs = r.ok ? 'OK' : 'ERROR: ' + await r.text();
   } catch (e) { results.elevenlabs = 'EXCEPTION: ' + e.message; }
@@ -313,7 +313,8 @@ function handleTwilio(ws) {
       session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
-      callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
+      elevenlabsBlocked = false; // always give ElevenLabs a fresh chance on each new call
+      callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)', '| voice:', ELEVENLABS_VOICE);
       connectDeepgram(session);
       setTimeout(() => sendGreeting(session), 800);
     }
@@ -775,15 +776,16 @@ async function callOpenAI(messages) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_flash_v2_5',
+  model_id: 'eleven_turbo_v2_5',
+  voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.0, use_speaker_boost: true },
 };
 
-// Reset after 5 minutes so a newly-paid account recovers automatically
+// Reset after 60 seconds — short enough that a transient failure doesn't silence all calls
 let elevenlabsBlocked = false;
 let elevenlabsBlockedAt = 0;
 function isElevenlabsBlocked() {
   if (!elevenlabsBlocked) return false;
-  if (Date.now() - elevenlabsBlockedAt > 5 * 60 * 1000) {
+  if (Date.now() - elevenlabsBlockedAt > 60 * 1000) {
     elevenlabsBlocked = false;
     console.log('[elevenlabs] retry window elapsed — unblocking');
     return false;
