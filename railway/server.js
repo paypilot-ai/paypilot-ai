@@ -49,12 +49,18 @@ function hangupCall(session) {
   // Also close WebSocket as backup
   setTimeout(() => { try { session.twilioWs?.close(); } catch {} }, 2000);
 }
+const LANG_NAMES = { en:'English', es:'Spanish', pt:'Portuguese', fr:'French', zh:'Mandarin Chinese', vi:'Vietnamese', ko:'Korean', ar:'Arabic', hi:'Hindi', ht:'Haitian Creole' };
+
 function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
   const parts = [base];
   if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
   if (session.reason)  parts.push(`Background context for this call (use this to guide the conversation, don't recite it): ${session.reason}.`);
   if (session.name)    parts.push(`You are speaking with ${session.name}.`);
+  if (session.language && session.language !== 'en') {
+    const langName = LANG_NAMES[session.language] || session.language;
+    parts.push(`IMPORTANT: Conduct this entire call in ${langName}. Greet, respond, and close entirely in ${langName}.`);
+  }
   parts.push('NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time. Do not give away your bottom line.');
   return parts.join(' ');
 }
@@ -145,10 +151,11 @@ app.all('/twiml-stream', (req, res) => {
   const c = req.query.c || '';
   const e = req.query.e || '';
   const s = req.query.s || '';
+  const l = req.query.l || 'en';
   const host = process.env.RAILWAY_PUBLIC_DOMAIN ||
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
-  console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'e:', e ? '(set)' : '(none)', 's:', s ? '(set)' : '(none)', 'method:', req.method);
+  console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'e:', e ? '(set)' : '(none)', 's:', s ? '(set)' : '(none)', 'lang:', l, 'method:', req.method);
   const wsUrl = `wss://${host}/twilio`;
   // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
   const paramXml = [
@@ -157,6 +164,7 @@ app.all('/twiml-stream', (req, res) => {
     c ? `<Parameter name="c" value="${xmlEsc(c)}"/>` : '',
     e ? `<Parameter name="e" value="${xmlEsc(e)}"/>` : '',
     s ? `<Parameter name="s" value="${xmlEsc(s)}"/>` : '',
+    l ? `<Parameter name="l" value="${xmlEsc(l)}"/>` : '',
   ].join('');
   res.setHeader('Content-Type', 'text/xml');
   res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}">${paramXml}</Stream></Connect></Response>`);
@@ -301,7 +309,8 @@ function handleTwilio(ws) {
       const c = cp.c || '';
       const e = cp.e || '';
       const s = cp.s || '';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false };
+      const l = cp.l || 'en';
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)');
@@ -370,10 +379,13 @@ function handleBrowser(ws, callSid) {
   ws.on('close', () => { if (callSid && sessions.has(callSid)) sessions.get(callSid).browserWs = null; });
 }
 
+const LANG_TO_DG = { en:'en-US', es:'es', pt:'pt-BR', fr:'fr', zh:'zh-CN', vi:'vi', ko:'ko', ar:'ar', hi:'hi', ht:'fr-HT' };
+
 function connectDeepgram(session) {
+  const dgLang = LANG_TO_DG[session.language || 'en'] || 'en-US';
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
-    '&model=nova-2-phonecall&punctuate=true' +
+    `&model=nova-2-phonecall&punctuate=true&language=${dgLang}` +
     '&interim_results=false&endpointing=300&vad_events=true';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
