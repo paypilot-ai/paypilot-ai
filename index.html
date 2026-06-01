@@ -1798,6 +1798,7 @@ body.modal-open{overflow:hidden}
       <button class="side-btn" data-page="billing" onclick="showPage('billing', this)">💳 Billing</button>
       <button class="side-btn" data-page="compliance" onclick="showPage('compliance', this)">🛡️ Compliance</button>
       <button class="side-btn" data-page="guide" onclick="showPage('guide', this)">📖 How to Use</button>
+      <button class="side-btn" onclick="logout()" style="margin-top:auto;color:#ef4444;">🚪 Log Out</button>
     </aside>
 
     <!-- Mobile bottom nav -->
@@ -1847,6 +1848,9 @@ body.modal-open{overflow:hidden}
         </button>
         <button class="mob-drawer-btn" data-mob-page="guide" onclick="showPage('guide',document.querySelector('[data-page=guide]'));closeMobDrawer()">
           <span class="mob-icon">📖</span>How to Use
+        </button>
+        <button class="mob-drawer-btn" onclick="logout()" style="color:#ef4444;">
+          <span class="mob-icon">🚪</span>Log Out
         </button>
       </div>
     </div>
@@ -3642,6 +3646,7 @@ function enterRealApp(){
   if(billingMob2) billingMob2.style.display = 'none';
   const pricingBtn2 = document.getElementById('getPricingBtn');
   if(pricingBtn2) pricingBtn2.style.display = 'none';
+  localStorage.setItem('pp_session', 'real');
   showPage('dashboard', null, false, true);
   resetDemoState();
   toast('Welcome back, Sean.');
@@ -3719,8 +3724,26 @@ function applyPlanDemo(plan){
     livePillDemo.style.color = '#854d0e';
   }
 
+  localStorage.setItem('pp_session', 'demo:' + (plan || 'starter'));
   showPage('dashboard', null, false, true);
 }
+
+function logout(){
+  localStorage.removeItem('pp_session');
+  location.href = location.pathname;
+}
+
+// Restore session on page load
+(function restoreSession(){
+  const sess = localStorage.getItem('pp_session');
+  if(!sess) return;
+  if(sess === 'real'){
+    enterRealApp();
+  } else if(sess.startsWith('demo:')){
+    const plan = sess.split(':')[1] || 'starter';
+    enterPlanDemo(plan);
+  }
+})();
 
 function showPage(id, el, fromPopState, replaceState){
   if(!fromPopState){
