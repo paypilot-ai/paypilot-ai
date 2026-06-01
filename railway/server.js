@@ -807,29 +807,25 @@ async function speakToTwilio(session, text) {
 async function streamTTS(session, text, gen) {
   if (!ELEVENLABS_KEY) { console.log('[tts] no ElevenLabs key — skipping'); return; }
 
-  for (const [fmt, fmtType] of [['ulaw_8000', 'ulaw8k'], ['pcm_24000', 'pcm24k']]) {
-    try {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 12000);
-      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=${fmt}`, {
-        method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
-        signal: ctrl.signal
-      });
-      clearTimeout(t);
-      if (resp.ok) {
-        await pipeToTwilio(session, resp, fmtType, gen);
-        return;
-      }
-      const errBody = await resp.text().catch(() => '');
-      if (fmt === 'ulaw_8000' && resp.status >= 400 && resp.status < 500) continue;
-      console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
-      return; // skip this turn rather than switch voices
-    } catch (e) {
-      if (fmt === 'ulaw_8000') continue;
-      console.log('[elevenlabs] request failed:', e.message);
-      return; // skip this turn rather than switch voices
+  // pcm_16000 is supported on all ElevenLabs plans and uses the clean 2:1 pcm16ToMulaw
+  // conversion — consistent quality on every turn, no format switching.
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 12000);
+    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
+      method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
+      signal: ctrl.signal
+    });
+    clearTimeout(t);
+    if (resp.ok) {
+      await pipeToTwilio(session, resp, 'pcm16k', gen);
+      return;
     }
+    const errBody = await resp.text().catch(() => '');
+    console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
+  } catch (e) {
+    console.log('[elevenlabs] request failed:', e.message);
   }
 }
 
@@ -865,7 +861,7 @@ async function pipeToTwilio(session, resp, type, gen) {
     return;
   }
 
-  // PCM → mulaw; 160 mulaw bytes = 20ms at 8kHz (Twilio standard chunk)
+  // PCM16 → mulaw; 640 bytes PCM16 at 16kHz → 160 bytes mulaw at 8kHz (20ms chunk)
   const chunkBytes = type === 'pcm24k' ? 960 : 640;
   const samplesPerChunk = chunkBytes / 2;
   const encoder = type === 'pcm24k' ? pcm24ToMulaw : pcm16ToMulaw;
