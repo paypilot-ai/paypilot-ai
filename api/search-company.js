@@ -1,6 +1,6 @@
 // /api/search-company.js
-// Vercel serverless function — Google Places Text Search
-// Requires GOOGLE_PLACES_KEY in your Vercel environment variables
+// Company lookup: Clearbit autocomplete (free, no key) → domain → Google Places by domain
+// Falls back to plain Google Places text search if Clearbit finds nothing
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,41 +10,56 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ found: false, error: 'Method not allowed' });
 
   const { query } = req.query;
-  if (!query || !query.trim()) return res.status(400).json({ found: false, error: 'Query is required' });
+  if (!query?.trim()) return res.status(400).json({ found: false, error: 'Query is required' });
 
   const apiKey = process.env.GOOGLE_PLACES_KEY;
   if (!apiKey) return res.status(500).json({ found: false, error: 'API key not configured' });
 
+  const baseQuery = query.trim();
+
   try {
-    const baseQuery = query.trim();
-
-    // Run two searches in parallel: plain name and name + "inc" to catch corporate listings
-    const queries = [baseQuery, baseQuery + ' inc'];
-    const allPlaces = new Map(); // dedupe by place_id
-
-    await Promise.all(queries.map(async (q) => {
-      const url = new URL('https://maps.googleapis.com/maps/api/place/textsearch/json');
-      url.searchParams.set('query', q);
-      url.searchParams.set('key', apiKey);
-      // No type filter — corporate offices aren't always "establishment"
-      const resp = await fetch(url.toString());
-      if (!resp.ok) return;
-      const data = await resp.json();
-      if (data.status === 'OK' && data.results) {
-        for (const place of data.results) {
-          if (!allPlaces.has(place.place_id)) allPlaces.set(place.place_id, place);
+    // Step 1: Clearbit autocomplete — free, no key, returns accurate domain for companies
+    let domain = null;
+    let clearbitName = null;
+    try {
+      const cbResp = await fetch(
+        `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(baseQuery)}`,
+        { signal: AbortSignal.timeout(3000) }
+      );
+      if (cbResp.ok) {
+        const cbData = await cbResp.json();
+        if (cbData.length > 0) {
+          domain = cbData[0].domain;
+          clearbitName = cbData[0].name;
         }
       }
-    }));
+    } catch (_) { /* Clearbit unavailable — fall through */ }
 
-    if (allPlaces.size === 0) return res.json({ found: false, results: [] });
+    // Step 2: Google Places text search — use domain as query if we have it (finds the right listing)
+    const placesQuery = domain ? `${clearbitName || baseQuery} ${domain}` : baseQuery;
+    const searchUrl = new URL('https://maps.googleapis.com/maps/api/place/textsearch/json');
+    searchUrl.searchParams.set('query', placesQuery);
+    searchUrl.searchParams.set('key', apiKey);
 
-    // Sort by user_ratings_total descending — the real HQ has the most reviews.
-    // Registered agent addresses and satellite offices have very few or zero.
-    const sorted = [...allPlaces.values()].sort(
+    const searchResp = await fetch(searchUrl.toString());
+    if (!searchResp.ok) throw new Error(`Google Places API returned ${searchResp.status}`);
+    let searchData = await searchResp.json();
+
+    // If domain search returned nothing, retry with plain company name
+    if (domain && (!searchData.results?.length || searchData.status === 'ZERO_RESULTS')) {
+      const fallbackUrl = new URL('https://maps.googleapis.com/maps/api/place/textsearch/json');
+      fallbackUrl.searchParams.set('query', baseQuery);
+      fallbackUrl.searchParams.set('key', apiKey);
+      const fallbackResp = await fetch(fallbackUrl.toString());
+      if (fallbackResp.ok) searchData = await fallbackResp.json();
+    }
+
+    if (!searchData.results?.length) return res.json({ found: false, results: [] });
+
+    // Sort by review count — real HQ has the most reviews
+    const sorted = [...searchData.results].sort(
       (a, b) => (b.user_ratings_total || 0) - (a.user_ratings_total || 0)
     );
-
     const top5 = sorted.slice(0, 5);
 
     const industryMap = {
@@ -68,49 +83,44 @@ module.exports = async function handler(req, res) {
       try {
         const detailUrl = new URL('https://maps.googleapis.com/maps/api/place/details/json');
         detailUrl.searchParams.set('place_id', place.place_id);
-        detailUrl.searchParams.set('fields', 'name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,types,business_status');
+        detailUrl.searchParams.set('fields', 'name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,types');
         detailUrl.searchParams.set('key', apiKey);
 
         const detailResp = await fetch(detailUrl.toString());
-        const detailData = await detailResp.json();
-        const d = detailData.result || {};
+        const d = (await detailResp.json()).result || {};
 
         const rawTypes = d.types || place.types || [];
         let industry = 'Business';
-        for (const t of rawTypes) {
-          if (industryMap[t]) { industry = industryMap[t]; break; }
-        }
+        for (const t of rawTypes) { if (industryMap[t]) { industry = industryMap[t]; break; } }
 
         let website = 'Not listed';
         if (d.website) {
-          try { website = new URL(d.website).hostname.replace(/^www\./, ''); }
-          catch { website = d.website; }
+          try { website = new URL(d.website).hostname.replace(/^www\./, ''); } catch { website = d.website; }
         }
+        // Prefer Clearbit domain if Google doesn't have a website
+        if (website === 'Not listed' && domain) website = domain;
 
         return {
-          company:  d.name || place.name,
-          address:  d.formatted_address || place.formatted_address || 'Address not listed',
-          phone:    d.formatted_phone_number || 'Not listed',
+          company:     clearbitName && place === top5[0] ? clearbitName : (d.name || place.name),
+          address:     d.formatted_address || place.formatted_address || 'Address not listed',
+          phone:       d.formatted_phone_number || 'Not listed',
           website,
           industry,
-          rating:         d.rating || place.rating || null,
-          reviewCount:    d.user_ratings_total || place.user_ratings_total || 0,
-          placeId:        place.place_id,
+          rating:      d.rating || place.rating || null,
+          reviewCount: d.user_ratings_total || place.user_ratings_total || 0,
+          placeId:     place.place_id,
         };
       } catch {
         return {
-          company:  place.name,
-          address:  place.formatted_address || 'Address not listed',
-          phone:    'Not listed', website: 'Not listed', industry: 'Business',
-          rating:   place.rating || null, reviewCount: place.user_ratings_total || 0,
-          placeId:  place.place_id,
+          company: place.name, address: place.formatted_address || 'Not listed',
+          phone: 'Not listed', website: domain || 'Not listed', industry: 'Business',
+          rating: null, reviewCount: 0, placeId: place.place_id,
         };
       }
     });
 
     const results = (await Promise.all(detailPromises)).filter(Boolean);
-
-    return res.json({ found: results.length > 0, results, total: allPlaces.size });
+    return res.json({ found: results.length > 0, results, total: searchData.results.length });
 
   } catch (err) {
     console.error('search-company error:', err.message);
