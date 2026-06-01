@@ -669,7 +669,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 38, temperature: 0.75, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 50, temperature: 0.75, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -755,7 +755,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 38, temperature: 0.75 }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 50, temperature: 0.75 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -801,20 +801,17 @@ async function speakToTwilio(session, text) {
 
 async function streamTTS(session, text, gen) {
   if (!ELEVENLABS_KEY) { console.log('[tts] no ElevenLabs key — skipping'); return; }
-
-  // pcm_16000 is supported on all ElevenLabs plans and uses the clean 2:1 pcm16ToMulaw
-  // conversion — consistent quality on every turn, no format switching.
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 12000);
-    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000`, {
+    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000`, {
       method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
       signal: ctrl.signal
     });
     clearTimeout(t);
     if (resp.ok) {
-      await pipeToTwilio(session, resp, 'pcm16k', gen);
+      await pipeToTwilio(session, resp, 'ulaw8k', gen);
       return;
     }
     const errBody = await resp.text().catch(() => '');
