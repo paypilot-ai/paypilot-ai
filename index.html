@@ -3730,6 +3730,7 @@ function applyPlanDemo(plan){
 
 function logout(){
   localStorage.removeItem('pp_session');
+  localStorage.removeItem('pp_last_page');
   location.href = location.pathname;
 }
 
@@ -3743,6 +3744,11 @@ function logout(){
     const plan = sess.split(':')[1] || 'starter';
     enterPlanDemo(plan);
   }
+  // Restore last visited page
+  const lastPage = localStorage.getItem('pp_last_page');
+  if(lastPage && document.getElementById(lastPage)){
+    showPage(lastPage, document.querySelector(`[data-page="${lastPage}"]`), false, true);
+  }
 })();
 
 function showPage(id, el, fromPopState, replaceState){
@@ -3751,6 +3757,7 @@ function showPage(id, el, fromPopState, replaceState){
     if(replaceState) history.replaceState(state, '', '#' + id);
     else history.pushState(state, '', '#' + id);
   }
+  localStorage.setItem('pp_last_page', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById('pageTitle').textContent = ({
