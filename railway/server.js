@@ -16,7 +16,7 @@ const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN  = process.env.TWILIO_AUTH_TOKEN;
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy — a sharp, confident Southern saleswoman on a live outbound call. You close deals. ' +
-  'ONE sentence per response. Never two. Stop after the first period. Conversational, never scripted. ' +
+  'ONE sentence per response — then ask a short question. Always end with a question to keep them talking. Conversational, never scripted. ' +
   'You are always steering toward the close — every response either handles an objection, builds urgency, or asks for the business. ' +
   'Use assumptive language: "When we get you set up..." not "If you decide to..." ' +
   'Create mild urgency naturally — mention limited availability or that others in their area are moving on it. ' +
@@ -399,9 +399,17 @@ function connectDeepgram(session) {
     if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
-      // Skip SpeechStarted — it fires on background noise and cuts Brandy off too early.
-      // Real barge-in is handled below when a confirmed final transcript arrives.
-      if (result.type === 'SpeechStarted') return;
+      // Only act on SpeechStarted if Brandy has been speaking for at least 800ms.
+      // This lets real interruptions cut her off while ignoring brief background noise.
+      if (result.type === 'SpeechStarted') {
+        if (session.state === 'speaking') {
+          const elapsed = session.speakStartTime ? Date.now() - session.speakStartTime : 0;
+          if (elapsed > 800 && session.twilioWs?.readyState === WebSocket.OPEN) {
+            session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+          }
+        }
+        return;
+      }
 
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       const confidence = result?.channel?.alternatives?.[0]?.confidence ?? 1;
@@ -568,6 +576,7 @@ async function generateAndSpeak(session) {
   // Play a filler immediately so there's no dead air while OpenAI generates
   const fillerGen = ++session.speakGen;
   session.state = 'speaking';
+  session.speakStartTime = Date.now();
   const filler = FILLERS[fillerIdx++ % FILLERS.length];
   if (fillerCache.has(filler)) {
     playCachedFiller(session, filler, fillerGen);
@@ -698,6 +707,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
           session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
         }
         session.state = 'speaking';
+        session.speakStartTime = Date.now();
         myGen = ++session.speakGen;
       }
       const gen = myGen;
@@ -802,6 +812,7 @@ function awaitMark(session, name, ms = 10000) {
 async function speakToTwilio(session, text) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return;
   session.state = 'speaking';
+  session.speakStartTime = Date.now();
   const myGen = ++session.speakGen;
   callLog(session.callSid, '[tts] speaking:', text.slice(0, 60));
   pushToBrowser(session, { event: 'ai-speaking', text });
@@ -984,7 +995,7 @@ function handleTwilioRealtime(ws) {
   function buildInstructions() {
     const parts = [
       'You are Brandy — a sharp, confident Southern saleswoman on a live outbound call. You close deals.',
-      'ONE sentence per response. Two max, only if absolutely needed. Short = natural. Long = robotic.',
+      'ONE sentence per response, then a short question. Always end with a question — never leave a statement hanging.',
       'Always steering toward the close — handle objections, build urgency, ask for the business.',
       'Use assumptive language: "When we get you set up..." not "If you decide to..."',
       'Create mild urgency — mention limited availability or others in their area moving on it.',
