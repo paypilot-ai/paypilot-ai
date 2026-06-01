@@ -399,11 +399,10 @@ function connectDeepgram(session) {
     if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
-      // Barge-in: cut audio immediately when user starts speaking
-      if (result.type === 'SpeechStarted' && session.state === 'speaking' && session.state !== 'ending') {
-        callLog(session.callSid, '[barge-in] SpeechStarted — clearing audio');
-        ++session.speakGen; // cuts TTS audio immediately
-        // do NOT increment turnId here — only a real transcript should invalidate the turn
+      // SpeechStarted: clear Twilio's audio buffer so playback stops immediately,
+      // but do NOT kill the TTS pipeline yet — wait for the real transcript.
+      if (result.type === 'SpeechStarted' && session.state === 'speaking') {
+        callLog(session.callSid, '[barge-in] SpeechStarted — clearing Twilio buffer');
         if (session.twilioWs?.readyState === WebSocket.OPEN) {
           session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
         }
