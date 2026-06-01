@@ -310,10 +310,9 @@ function handleTwilio(ws) {
       const e = cp.e || '';
       const s = cp.s || '';
       const l = cp.l || 'en';
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false, ttsVoice: null };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
-      elevenlabsBlocked = false; // always give ElevenLabs a fresh chance on each new call
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)', '| voice:', ELEVENLABS_VOICE);
       connectDeepgram(session);
       setTimeout(() => sendGreeting(session), 800);
@@ -775,18 +774,6 @@ const ELEVENLABS_VOICE_SETTINGS = {
   voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.0, use_speaker_boost: true },
 };
 
-// Reset after 60 seconds — short enough that a transient failure doesn't silence all calls
-let elevenlabsBlocked = false;
-let elevenlabsBlockedAt = 0;
-function isElevenlabsBlocked() {
-  if (!elevenlabsBlocked) return false;
-  if (Date.now() - elevenlabsBlockedAt > 60 * 1000) {
-    elevenlabsBlocked = false;
-    console.log('[elevenlabs] retry window elapsed — unblocking');
-    return false;
-  }
-  return true;
-}
 
 function sendMark(session, name) {
   if (session.twilioWs?.readyState !== WebSocket.OPEN) return false;
@@ -818,54 +805,32 @@ async function speakToTwilio(session, text) {
 }
 
 async function streamTTS(session, text, gen) {
-  // Once a call commits to a TTS provider it never switches — prevents two different voices.
-  const useElevenLabs = session.ttsVoice !== 'openai' && ELEVENLABS_KEY && !isElevenlabsBlocked();
+  if (!ELEVENLABS_KEY) { console.log('[tts] no ElevenLabs key — skipping'); return; }
 
-  if (useElevenLabs) {
-    for (const [fmt, fmtType] of [['ulaw_8000', 'ulaw8k'], ['pcm_24000', 'pcm24k']]) {
-      try {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 12000);
-        const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=${fmt}`, {
-          method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
-          signal: ctrl.signal
-        });
-        clearTimeout(t);
-        if (resp.ok) {
-          elevenlabsBlocked = false;
-          session.ttsVoice = 'elevenlabs'; // lock this call to ElevenLabs
-          await pipeToTwilio(session, resp, fmtType, gen);
-          return;
-        }
-        const errBody = await resp.text().catch(() => '');
-        if (fmt === 'ulaw_8000' && resp.status >= 400 && resp.status < 500) continue;
-        console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
-        elevenlabsBlocked = true;
-        elevenlabsBlockedAt = Date.now();
-        break;
-      } catch (e) {
-        if (fmt === 'ulaw_8000') continue;
-        elevenlabsBlocked = true;
-        elevenlabsBlockedAt = Date.now();
-        break;
+  for (const [fmt, fmtType] of [['ulaw_8000', 'ulaw8k'], ['pcm_24000', 'pcm24k']]) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 12000);
+      const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=${fmt}`, {
+        method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
+        signal: ctrl.signal
+      });
+      clearTimeout(t);
+      if (resp.ok) {
+        await pipeToTwilio(session, resp, fmtType, gen);
+        return;
       }
+      const errBody = await resp.text().catch(() => '');
+      if (fmt === 'ulaw_8000' && resp.status >= 400 && resp.status < 500) continue;
+      console.log(`[elevenlabs] error ${resp.status}: ${errBody.slice(0, 200)}`);
+      return; // skip this turn rather than switch voices
+    } catch (e) {
+      if (fmt === 'ulaw_8000') continue;
+      console.log('[elevenlabs] request failed:', e.message);
+      return; // skip this turn rather than switch voices
     }
   }
-
-  // OpenAI TTS — used when ElevenLabs is unavailable or this call already committed to it
-  session.ttsVoice = 'openai'; // lock this call to OpenAI TTS for consistency
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 12000);
-  const resp = await fetch('https://api.openai.com/v1/audio/speech', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-    body: JSON.stringify({ model: 'tts-1', voice: 'shimmer', response_format: 'pcm', speed: 1.0, input: prepareForSpeech(text) }),
-    signal: ctrl.signal
-  });
-  clearTimeout(t);
-  if (!resp.ok) throw new Error(`OpenAI TTS ${resp.status}`);
-  await pipeToTwilio(session, resp, 'pcm24k', gen);
 }
 
 async function pipeToTwilio(session, resp, type, gen) {
