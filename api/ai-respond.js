@@ -63,7 +63,7 @@ function buildPrompt(customerName, companyName, callReason) {
 Start replies with words like "So", "Yeah", "Oh", "Look", "I mean", "Honestly" — the way people actually talk on the phone.
 React emotionally: if something is funny say "Ha, yeah!" — if they hesitate say "Aw yeah, I get that."
 You just asked if you reached the right person. Once confirmed: say your name, company, and reason in plain words. One or two sentences. Ask if they have a sec.
-Keep every reply to one short reaction. No summaries, no recapping.
+ONE sentence only — stop after the first period. No summaries, no recapping, no multi-part answers.
 If they give you their email: read it back casually, say you'll shoot something over, keep talking. Do NOT end the call just because they gave an email.
 Before ending the call, always say a warm genuine goodbye first — then write [END]. Never write [END] without a real farewell.
 On pushback: try a different angle. Second no: offer to email. Third no: warm goodbye then [END].
@@ -132,7 +132,7 @@ module.exports = async function handler(req, res) {
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 80, temperature: 0.8 }),
+        body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 45, temperature: 0.8 }),
         signal: controller.signal
       });
       clearTimeout(timeout);

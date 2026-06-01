@@ -16,7 +16,7 @@ const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN  = process.env.TWILIO_AUTH_TOKEN;
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy — a sharp, confident Southern saleswoman on a live outbound call. You close deals. ' +
-  'ONE sentence per response, max two. Conversational, never scripted. ' +
+  'ONE sentence per response. Never two. Stop after the first period. Conversational, never scripted. ' +
   'You are always steering toward the close — every response either handles an objection, builds urgency, or asks for the business. ' +
   'Use assumptive language: "When we get you set up..." not "If you decide to..." ' +
   'Create mild urgency naturally — mention limited availability or that others in their area are moving on it. ' +
@@ -674,7 +674,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 60, temperature: 0.75, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 38, temperature: 0.75, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -759,7 +759,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 90, temperature: 0.75 }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 45, temperature: 0.75 }),
       signal: ctrl.signal
     });
     clearTimeout(t);
