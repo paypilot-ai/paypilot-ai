@@ -30,27 +30,30 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // Step 1: Text Search to find matching businesses
+    // Step 1: Text Search — try "headquarters" first for better corporate accuracy,
+    // fall back to plain query if no results
     const searchUrl = new URL(
       'https://maps.googleapis.com/maps/api/place/textsearch/json'
     );
-    searchUrl.searchParams.set('query', query.trim());
+    const baseQuery = query.trim();
+    const hasLocationHint = /\b(hq|headquarters|corp|office|inc|llc|ltd)\b/i.test(baseQuery);
+    searchUrl.searchParams.set('query', hasLocationHint ? baseQuery : baseQuery + ' headquarters');
     searchUrl.searchParams.set('key', apiKey);
     searchUrl.searchParams.set('type', 'establishment');
 
-    const searchResp = await fetch(searchUrl.toString());
+    let searchResp = await fetch(searchUrl.toString());
+    if (!searchResp.ok) throw new Error(`Google Places API returned ${searchResp.status}`);
+    let searchData = await searchResp.json();
 
-    if (!searchResp.ok) {
-      throw new Error(`Google Places API returned ${searchResp.status}`);
+    // If "headquarters" query returned nothing, retry with plain company name
+    if (!hasLocationHint && (searchData.status === 'ZERO_RESULTS' || !searchData.results?.length)) {
+      searchUrl.searchParams.set('query', baseQuery);
+      searchResp = await fetch(searchUrl.toString());
+      if (!searchResp.ok) throw new Error(`Google Places API returned ${searchResp.status}`);
+      searchData = await searchResp.json();
     }
 
-    const searchData = await searchResp.json();
-
-    if (
-      searchData.status === 'ZERO_RESULTS' ||
-      !searchData.results ||
-      searchData.results.length === 0
-    ) {
+    if (searchData.status === 'ZERO_RESULTS' || !searchData.results?.length) {
       return res.json({ found: false, results: [] });
     }
 
