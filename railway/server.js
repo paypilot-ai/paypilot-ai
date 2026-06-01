@@ -490,15 +490,12 @@ function connectDeepgram(session) {
 }
 
 function buildGreeting(name, company, reason) {
-  const n = name    ? name    : 'there';
-  const c = company ? company : 'us';
-  const r = reason  ? ` — I was reaching out about ${reason}` : '';
-  const GREETINGS = [
-    `Hey ${n}! This is Brandy calling from ${c}${r}. You got a quick second?`,
-    `Hi ${n}! Brandy here with ${c}${r}. Is now an okay time?`,
-    `Hey ${n}! It's Brandy from ${c}${r}. Am I catching you at an okay time?`,
-  ];
-  return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+  if (name) {
+    const firstName = name.trim().split(/\s+/)[0];
+    return `Hi, may I speak with ${firstName}?`;
+  }
+  const c = company || 'PayPilot AI';
+  return `Hi there, this is Brandy calling from ${c}. Who am I speaking with?`;
 }
 
 async function sendGreeting(session) {
@@ -674,7 +671,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 55, temperature: 0.75, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 38, temperature: 0.75, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -760,7 +757,7 @@ async function callOpenAI(messages) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 45, temperature: 0.75 }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 38, temperature: 0.75 }),
       signal: ctrl.signal
     });
     clearTimeout(t);

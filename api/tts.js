@@ -1,4 +1,4 @@
-const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
+const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'DODLEQrClDo8wCz460ld';
 const API_KEY  = process.env.ELEVENLABS_API_KEY;
 
 module.exports = async function handler(req, res) {
