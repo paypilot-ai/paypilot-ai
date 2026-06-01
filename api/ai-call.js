@@ -5,12 +5,9 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method === 'GET') {
-    const wsUrl = (process.env.RAILWAY_WS_URL || '').trim();
     return res.status(200).json({
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
-      RAILWAY_WS_URL_set: !!wsUrl,
-      RAILWAY_WS_URL_preview: wsUrl ? wsUrl.slice(0, 40) + '...' : '(not set)',
     });
   }
 
@@ -27,7 +24,7 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail } = req.body || {};
+  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail, language } = req.body || {};
   if (!toNumber) return res.status(400).json({ error: 'Phone number required' });
 
   const cleaned = toNumber.replace(/\D/g, '');
@@ -42,13 +39,23 @@ module.exports = async function handler(req, res) {
     const c = encodeURIComponent(companyName || '');
     const e = encodeURIComponent(customerEmail || '');
     const s = encodeURIComponent(senderEmail || '');
+    const l = encodeURIComponent(language || 'en');
 
-    // Use Railway (OpenAI Realtime + ElevenLabs) if configured
+    // Try Railway (OpenAI Realtime + ElevenLabs) first
     const rawWsUrl = (process.env.RAILWAY_WS_URL || '').trim();
     if (rawWsUrl) {
       const railwayHttp = rawWsUrl.replace(/^wss?:\/\//, 'https://');
-      {
-        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}`;
+      let railwayUp = false;
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 3000);
+        const probe = await fetch(`${railwayHttp}/health`, { signal: ctrl.signal });
+        clearTimeout(t);
+        railwayUp = probe.ok;
+      } catch (_) { railwayUp = false; }
+
+      if (railwayUp) {
+        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}&l=${l}`;
         const resp = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
           {
