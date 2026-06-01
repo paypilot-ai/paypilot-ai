@@ -34,7 +34,7 @@ module.exports = async function handler(req, res) {
 
     res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="2" speechModel="phone_call" language="en-US">
+  <Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="3" speechModel="phone_call" language="en-US">
     <Pause length="1"/>
     ${ttsPlay(greeting)}
   </Gather>
