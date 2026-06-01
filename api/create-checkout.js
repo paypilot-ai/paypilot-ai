@@ -30,7 +30,7 @@ module.exports = async function handler(req, res) {
         'line_items[0][price]': priceId,
         'line_items[0][quantity]': '1',
         'mode': 'subscription',
-        'success_url': successUrl || 'https://paypilotai.live/?success=true',
+        'success_url': successUrl || 'https://paypilotai.live/?success=true&session_id={CHECKOUT_SESSION_ID}',
         'cancel_url': cancelUrl || 'https://paypilotai.live/?canceled=true'
       }).toString()
     });

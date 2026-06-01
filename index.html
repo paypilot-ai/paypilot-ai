@@ -2876,7 +2876,8 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               <div style="color:var(--text-2);font-size:14px;margin-top:4px;" id="billingCurrentPlan"><div class="subtle" style="margin-top:6px">You are on the Pro plan. To upgrade or change your plan, choose an option above.</div></div>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button class="app-btn soft" onclick="showPage('billing',document.querySelector('[data-page=billing]'))">Manage Plan</button>
+              <button class="app-btn soft" onclick="openBillingPortal()">Update Payment</button>
+              <button class="app-btn line" onclick="confirmCancelPlan()" style="border-color:#fca5a5;color:#ef4444;">Cancel Plan</button>
             </div>
           </div>
 
@@ -4225,6 +4226,36 @@ async function fakeStripe(plan, amount){
     }
   } catch(e){
     toast('Checkout error. Try again.');
+  }
+}
+
+async function openBillingPortal() {
+  const sessionId = localStorage.getItem('stripeSessionId');
+  if (!sessionId) {
+    toast('No subscription found. Contact support at info@paypilotai.live');
+    return;
+  }
+  toast('Opening billing portal...');
+  try {
+    const resp = await fetch('/api/billing-portal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId })
+    });
+    const data = await resp.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      toast('Could not open portal. Contact info@paypilotai.live');
+    }
+  } catch(e) {
+    toast('Error opening portal. Try again.');
+  }
+}
+
+function confirmCancelPlan() {
+  if (confirm('Cancel your subscription?\n\nYou\'ll keep full access through the end of your current billing period.')) {
+    openBillingPortal();
   }
 }
 
@@ -6008,6 +6039,13 @@ document.addEventListener('DOMContentLoaded', function(){
   syncComplianceStatus();
   const consent = localStorage.getItem('pp_cookie_consent');
   if(consent) updateCookieStatus(consent);
+
+  // Capture Stripe session ID after successful checkout so billing portal works
+  const params = new URLSearchParams(window.location.search);
+  const stripeSessionId = params.get('session_id');
+  if (stripeSessionId) localStorage.setItem('stripeSessionId', stripeSessionId);
+  if (params.get('success') === 'true') toast('Subscription activated — welcome to PayPilot!');
+  if (params.get('canceled') === 'true') toast('Checkout cancelled. Your plan was not changed.');
 });
 
 // ============================================================
