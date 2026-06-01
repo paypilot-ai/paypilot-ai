@@ -5697,13 +5697,8 @@ async function lookupContact(){
     if(loading) loading.style.display = 'none';
 
     if(data.found && data.results && data.results.length > 0){
-      if(data.results.length === 1){
-        // Only one result — show it directly
-        selectGoogleResult(data.results[0]);
-      } else {
-        // Multiple results — show picker so rep chooses the right location
-        showResultPicker(data.results, val);
-      }
+      // Always show picker — even for 1 result — so user can confirm or refine
+      showResultPicker(data.results, val);
     } else {
       if(notFound){
         notFound.style.display = 'block';
@@ -5757,7 +5752,7 @@ function showResultPicker(results, query){
   window._pickerResults = results;
   picker.style.cssText = 'display:block;background:#fff;border-radius:20px;padding:20px;border:1.5px solid #bfdbfe;margin-bottom:14px;box-shadow:0 4px 20px rgba(13,27,46,.08);';
 
-  let html = '<div style="font-family:Space Grotesk,sans-serif;font-size:15px;font-weight:800;color:#0d1b2e;margin-bottom:14px;">Found ' + results.length + ' locations for <em>' + query + '</em> — pick the right one:</div>';
+  let html = '<div style="font-family:Space Grotesk,sans-serif;font-size:15px;font-weight:800;color:#0d1b2e;margin-bottom:4px;">Found ' + results.length + ' result' + (results.length !== 1 ? 's' : '') + ' for <em>' + query + '</em> — pick the right one:</div><div style="font-size:12px;color:#64748b;margin-bottom:14px;">Not seeing it? Try adding a city — e.g. "' + query + ' Charlotte"</div>';
 
   results.forEach(function(r, i){
     var cardStyle = 'padding:14px 16px;border-radius:14px;background:#f8fbff;border:1.5px solid #e0eaff;margin-bottom:10px;cursor:pointer;transition:all .15s;';
