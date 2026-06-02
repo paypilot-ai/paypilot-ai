@@ -765,7 +765,7 @@ async function callOpenAI(messages) {
 }
 
 const ELEVENLABS_VOICE_SETTINGS = {
-  model_id: 'eleven_flash_v2_5',
+  model_id: 'eleven_turbo_v2_5',
   voice_settings: { use_speaker_boost: true },
 };
 
@@ -804,14 +804,14 @@ async function streamTTS(session, text, gen) {
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 12000);
-    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_24000`, {
+    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000`, {
       method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
       signal: ctrl.signal
     });
     clearTimeout(t);
     if (resp.ok) {
-      await pipeToTwilio(session, resp, 'pcm24k', gen);
+      await pipeToTwilio(session, resp, 'ulaw8k', gen);
       return;
     }
     const errBody = await resp.text().catch(() => '');
