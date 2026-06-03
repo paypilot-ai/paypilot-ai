@@ -707,7 +707,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     pushToBrowser(session, { event: 'ai-speaking', text: result });
     if (session.speakGen === myGen && session.turnId === callerTurn) {
       const markName = 'tts-' + Date.now();
-      if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
+      if (sendMark(session, markName)) await awaitMark(session, markName, 20000);
     }
     return result;
   } catch (e) {
