@@ -2049,9 +2049,9 @@ body.modal-open{overflow:hidden}
               </div>
 
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-                <div>
-                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Reason for Call</label>
-                  <input id="aiCallerObjective" type="text" placeholder="e.g. Insurance quote follow-up, switch to direct deposit, accounts payable intro" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
+                <div style="grid-column:1/-1;">
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:4px;">Call Context &amp; Objective <span style="font-weight:400;color:#94a3b8;">— the more detail, the sharper the rebuttals</span></label>
+                  <textarea id="aiCallerObjective" rows="4" placeholder="Example: We're calling to enroll Jennifer's company (Midwest Supply Co.) into our early payment program — invoices paid in 1-2 business days instead of net 30-60. Standard fee is 1.2% of invoice value, negotiable to 0.95%. Common objections: fee too high, prefers checks, owner approval needed, security concerns. Goal: overcome objections and get her to agree to receive a DocuSign enrollment form." style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;resize:vertical;font-family:inherit;line-height:1.5;"></textarea>
                 </div>
                 <div>
                   <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Call Language</label>
