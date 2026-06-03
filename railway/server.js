@@ -592,6 +592,7 @@ function prepareForSpeech(text) {
     .replace(/\[END\]/gi, '')
     .replace(/\s*—\s*/g, ', ')
     .replace(/\s+([.,!?])/g, '$1')
+    .replace(/([^.!?])$/, '$1.')
     .trim();
 }
 
@@ -734,9 +735,9 @@ async function callOpenAI(messages) {
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
   voice_settings: {
-    stability: 0.30,
+    stability: 0.45,
     similarity_boost: 0.80,
-    style: 0.40,
+    style: 0.20,
     use_speaker_boost: true,
   },
 };
