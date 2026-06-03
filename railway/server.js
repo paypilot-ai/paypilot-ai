@@ -386,7 +386,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     `&model=nova-2-phonecall&punctuate=true&language=${dgLang}` +
-    '&interim_results=false&endpointing=500&vad_events=true';
+    '&interim_results=false&endpointing=300&vad_events=true';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -596,63 +596,116 @@ function prepareForSpeech(text) {
     .trim();
 }
 
-// Collect full OpenAI response, then speak it in one ElevenLabs call — keeps voice tone consistent
+// Stream OpenAI tokens directly into ElevenLabs WebSocket — fast response + consistent voice
 async function streamOpenAIAndSpeak(session, messages, callerTurn) {
   try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 8000);
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    const aiCtrl = new AbortController();
+    const aiTimer = setTimeout(() => aiCtrl.abort(), 8000);
+    const aiResp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
       body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 80, temperature: 0.75, stream: true }),
-      signal: ctrl.signal
+      signal: aiCtrl.signal
     });
-    clearTimeout(t);
-    if (!resp.ok) return null;
+    clearTimeout(aiTimer);
+    if (!aiResp.ok) return null;
+    if (session.turnId !== callerTurn) { aiResp.body.cancel().catch(() => {}); return null; }
 
-    const reader = resp.body.getReader();
-    const decoder = new TextDecoder();
-    let parseBuf = '';
+    const elUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream-input` +
+      `?model_id=${ELEVENLABS_VOICE_SETTINGS.model_id}&output_format=ulaw_8000&optimize_streaming_latency=4`;
+    const elWs = new WebSocket(elUrl, { headers: { 'xi-api-key': ELEVENLABS_KEY } });
+
     let fullText = '';
+    let myGen = null;
+    let audioStarted = false;
+    let audioBuf = Buffer.alloc(0);
+    let elReady = false;
+    let textQueue = '';
+    let resolved = false;
+    const CHUNK = 160;
+    const isStale = () => session.turnId !== callerTurn || (myGen !== null && session.speakGen !== myGen);
 
-    while (true) {
-      if (session.turnId !== callerTurn) { reader.cancel().catch(() => {}); break; }
-      const { done, value } = await reader.read();
-      if (done) break;
-      parseBuf += decoder.decode(value, { stream: true });
-      const lines = parseBuf.split('\n');
-      parseBuf = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6);
-        if (data === '[DONE]') break;
+    const result = await new Promise((resolve) => {
+      const done = (val) => { if (!resolved) { resolved = true; resolve(val); } };
+
+      elWs.on('open', () => {
+        elReady = true;
+        elWs.send(JSON.stringify({ text: ' ', voice_settings: ELEVENLABS_VOICE_SETTINGS.voice_settings }));
+        if (textQueue) { elWs.send(JSON.stringify({ text: textQueue })); textQueue = ''; }
+      });
+
+      elWs.on('message', (raw) => {
+        if (isStale()) { elWs.close(); done(fullText.trim() || null); return; }
         try {
-          const token = JSON.parse(data).choices?.[0]?.delta?.content;
-          if (token) fullText += token;
-        } catch {}
-      }
-    }
+          const msg = JSON.parse(raw.toString());
+          if (msg.audio) {
+            if (!audioStarted) {
+              audioStarted = true;
+              if (session.twilioWs?.readyState === WebSocket.OPEN)
+                session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+              session.state = 'speaking';
+              session.speakStartTime = Date.now();
+              myGen = ++session.speakGen;
+            }
+            audioBuf = Buffer.concat([audioBuf, Buffer.from(msg.audio, 'base64')]);
+            while (!isStale() && audioBuf.length >= CHUNK && session.twilioWs?.readyState === WebSocket.OPEN) {
+              session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: audioBuf.slice(0, CHUNK).toString('base64') } }));
+              audioBuf = audioBuf.slice(CHUNK);
+            }
+          }
+          if (msg.isFinal) {
+            if (!isStale() && audioBuf.length > 0 && session.twilioWs?.readyState === WebSocket.OPEN)
+              session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: audioBuf.toString('base64') } }));
+            done(fullText.trim() || null);
+          }
+        } catch (e) { callLog(session.callSid, '[el-ws] msg error:', e.message); }
+      });
 
-    fullText = fullText.trim();
-    if (!fullText) return null;
-    if (session.turnId !== callerTurn) return fullText;
+      elWs.on('error', (e) => { callLog(session.callSid, '[el-ws] error:', e.message); done(null); });
+      elWs.on('close', (code) => { if (code !== 1000) callLog(session.callSid, '[el-ws] closed code:', code); done(fullText.trim() || null); });
 
-    if (session.twilioWs?.readyState === WebSocket.OPEN) {
-      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-    }
-    session.state = 'speaking';
-    session.speakStartTime = Date.now();
-    const myGen = ++session.speakGen;
+      // Pipe OpenAI tokens into ElevenLabs WS as they arrive
+      (async () => {
+        const reader = aiResp.body.getReader();
+        const decoder = new TextDecoder();
+        let parseBuf = '';
+        try {
+          while (true) {
+            if (isStale()) { reader.cancel().catch(() => {}); break; }
+            const { done: d, value } = await reader.read();
+            if (d) break;
+            parseBuf += decoder.decode(value, { stream: true });
+            const lines = parseBuf.split('\n');
+            parseBuf = lines.pop();
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              const data = line.slice(6);
+              if (data === '[DONE]') break;
+              try {
+                const token = JSON.parse(data).choices?.[0]?.delta?.content;
+                if (token) {
+                  fullText += token;
+                  if (elReady && elWs.readyState === WebSocket.OPEN)
+                    elWs.send(JSON.stringify({ text: token }));
+                  else
+                    textQueue += token;
+                }
+              } catch {}
+            }
+          }
+        } catch (e) { callLog(session.callSid, '[ai] pipe error:', e.message); }
+        if (elWs.readyState === WebSocket.OPEN) elWs.send(JSON.stringify({ text: '' }));
+      })();
+    });
 
-    pushToBrowser(session, { event: 'ai-speaking', text: fullText });
-    await streamTTS(session, fullText, myGen);
+    if (!result || !audioStarted || myGen === null) return result;
 
+    pushToBrowser(session, { event: 'ai-speaking', text: result });
     if (session.speakGen === myGen && session.turnId === callerTurn) {
       const markName = 'tts-' + Date.now();
       if (sendMark(session, markName)) await awaitMark(session, markName, 4000);
     }
-
-    return fullText;
+    return result;
   } catch (e) {
     callLog(session.callSid, '[ai] stream error:', e.message);
     return null;
