@@ -735,9 +735,9 @@ async function callOpenAI(messages) {
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
   voice_settings: {
-    stability: 0.45,
+    stability: 0.50,
     similarity_boost: 0.80,
-    style: 0.20,
+    style: 0.05,
     use_speaker_boost: true,
   },
 };
