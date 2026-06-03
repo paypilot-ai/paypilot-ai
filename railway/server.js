@@ -315,7 +315,7 @@ function handleTwilio(ws) {
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)', '| voice:', ELEVENLABS_VOICE);
       connectDeepgram(session);
-      setTimeout(() => sendGreeting(session), 300);
+      setTimeout(() => sendGreeting(session), 600);
     }
     if (msg.event === 'media' && session) {
       const dgState = session.dgWs?.readyState;
@@ -589,26 +589,8 @@ async function generateAndSpeak(session) {
 
 function enterListening(session) {
   session.state = 'listening';
-  const pending = session.pendingTranscript;
   session.pendingTranscript = null;
   pushToBrowser(session, { event: 'ai-done' });
-  if (pending) {
-    // Wait 1.5s before using a transcript captured during Brandy's speech.
-    // If the prospect speaks in that window, their new words take over and
-    // this fires as a no-op. If they don't speak (e.g. gave the rest of an
-    // email address while Brandy was talking), this picks it up.
-    setTimeout(() => {
-      if (session.state === 'listening' && !session.pendingTranscript) {
-        callLog(session.callSid, '[dg] flushing delayed transcript:', pending);
-        session.state = 'processing';
-        session.history.push({ role: 'user', content: pending });
-        generateAndSpeak(session).catch(e => {
-          callLog(session.callSid, '[ai] error:', e.message);
-          session.state = 'listening';
-        });
-      }
-    }, 1500);
-  }
 }
 
 function prepareForSpeech(text) {
