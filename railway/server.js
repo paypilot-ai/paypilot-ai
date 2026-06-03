@@ -592,7 +592,6 @@ function prepareForSpeech(text) {
     .replace(/\[END\]/gi, '')
     .replace(/\s*—\s*/g, ', ')
     .replace(/\s+([.,!?])/g, '$1')
-    .replace(/([^.!?])$/, '$1.')
     .trim();
 }
 
@@ -630,7 +629,11 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
 
       elWs.on('open', () => {
         elReady = true;
-        elWs.send(JSON.stringify({ text: ' ', voice_settings: ELEVENLABS_VOICE_SETTINGS.voice_settings }));
+        elWs.send(JSON.stringify({
+          text: ' ',
+          voice_settings: ELEVENLABS_VOICE_SETTINGS.voice_settings,
+          generation_config: { chunk_length_schedule: [80, 120, 200] },
+        }));
         if (textQueue) { elWs.send(JSON.stringify({ text: textQueue })); textQueue = ''; }
       });
 
@@ -730,7 +733,12 @@ async function callOpenAI(messages) {
 
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
-  voice_settings: { use_speaker_boost: true },
+  voice_settings: {
+    stability: 0.30,
+    similarity_boost: 0.80,
+    style: 0.40,
+    use_speaker_boost: true,
+  },
 };
 
 
