@@ -386,7 +386,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     `&model=nova-2-phonecall&punctuate=true&language=${dgLang}` +
-    '&interim_results=false&endpointing=300&vad_events=true';
+    '&interim_results=false&endpointing=500&vad_events=true';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -398,17 +398,7 @@ function connectDeepgram(session) {
     if (session.dgWs !== dg) return;
     try {
       const result = JSON.parse(data);
-      // Only act on SpeechStarted if Brandy has been speaking for at least 800ms.
-      // This lets real interruptions cut her off while ignoring brief background noise.
-      if (result.type === 'SpeechStarted') {
-        if (session.state === 'speaking') {
-          const elapsed = session.speakStartTime ? Date.now() - session.speakStartTime : 0;
-          if (elapsed > 1500 && session.twilioWs?.readyState === WebSocket.OPEN) {
-            session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-          }
-        }
-        return;
-      }
+      if (result.type === 'SpeechStarted') return;
 
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       const confidence = result?.channel?.alternatives?.[0]?.confidence ?? 1;
@@ -616,7 +606,7 @@ function prepareForSpeech(text) {
     .trim();
 }
 
-// Stream OpenAI tokens; start TTS as soon as first sentence arrives, chain the rest
+// Collect full OpenAI response, then speak it in one ElevenLabs call — keeps voice tone consistent
 async function streamOpenAIAndSpeak(session, messages, callerTurn) {
   try {
     const ctrl = new AbortController();
@@ -624,7 +614,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 50, temperature: 0.75, stream: true }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: 80, temperature: 0.75, stream: true }),
       signal: ctrl.signal
     });
     clearTimeout(t);
@@ -634,31 +624,9 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     const decoder = new TextDecoder();
     let parseBuf = '';
     let fullText = '';
-    let sentenceBuf = '';
-    let myGen = null;
-    let ttsChain = Promise.resolve();
-
-    const flushChunk = (chunk) => {
-      chunk = chunk.trim();
-      if (!chunk) return;
-      // Only bail if a real barge-in (transcript) arrived — turnId will have been incremented
-      if (session.turnId !== callerTurn) return;
-      if (myGen === null) {
-        if (session.twilioWs?.readyState === WebSocket.OPEN) {
-          session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-        }
-        session.state = 'speaking';
-        session.speakStartTime = Date.now();
-        myGen = ++session.speakGen;
-      }
-      const gen = myGen;
-      ttsChain = ttsChain.then(() => {
-        if (session.turnId !== callerTurn) return;
-        return streamTTS(session, chunk, gen);
-      });
-    };
 
     while (true) {
+      if (session.turnId !== callerTurn) { reader.cancel().catch(() => {}); break; }
       const { done, value } = await reader.read();
       if (done) break;
       parseBuf += decoder.decode(value, { stream: true });
@@ -670,26 +638,24 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
         if (data === '[DONE]') break;
         try {
           const token = JSON.parse(data).choices?.[0]?.delta?.content;
-          if (token) {
-            fullText += token;
-            sentenceBuf += token;
-            // Flush only on sentence-ending punctuation — one ElevenLabs call per sentence
-            if (/[.!?](\s|$)/.test(token)) {
-              flushChunk(sentenceBuf);
-              sentenceBuf = '';
-            }
-          }
+          if (token) fullText += token;
         } catch {}
       }
     }
-    // Flush any remaining text that didn't end with punctuation
-    if (sentenceBuf.trim()) flushChunk(sentenceBuf);
 
     fullText = fullText.trim();
-    if (!fullText || myGen === null) return null;
+    if (!fullText) return null;
+    if (session.turnId !== callerTurn) return fullText;
+
+    if (session.twilioWs?.readyState === WebSocket.OPEN) {
+      session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+    }
+    session.state = 'speaking';
+    session.speakStartTime = Date.now();
+    const myGen = ++session.speakGen;
 
     pushToBrowser(session, { event: 'ai-speaking', text: fullText });
-    await ttsChain;
+    await streamTTS(session, fullText, myGen);
 
     if (session.speakGen === myGen && session.turnId === callerTurn) {
       const markName = 'tts-' + Date.now();
