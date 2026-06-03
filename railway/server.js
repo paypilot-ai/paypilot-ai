@@ -386,7 +386,7 @@ function connectDeepgram(session) {
   const dgUrl = 'wss://api.deepgram.com/v1/listen' +
     '?encoding=mulaw&sample_rate=8000&channels=1' +
     `&model=nova-2-phonecall&punctuate=true&language=${dgLang}` +
-    '&interim_results=false&endpointing=600&vad_events=true';
+    '&interim_results=false&endpointing=300&vad_events=true';
   const dg = new WebSocket(dgUrl, { headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` } });
   session.dgWs = dg;
   dg.on('open', () => {
@@ -639,7 +639,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
         elWs.send(JSON.stringify({
           text: ' ',
           voice_settings: ELEVENLABS_VOICE_SETTINGS.voice_settings,
-          generation_config: { chunk_length_schedule: [80, 120, 200] },
+          generation_config: { chunk_length_schedule: [50, 100, 150] },
         }));
         if (textQueue) { elWs.send(JSON.stringify({ text: textQueue })); textQueue = ''; }
       });
@@ -671,8 +671,28 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
         } catch (e) { callLog(session.callSid, '[el-ws] msg error:', e.message); }
       });
 
-      elWs.on('error', (e) => { callLog(session.callSid, '[el-ws] error:', e.message); done(null); });
-      elWs.on('close', (code) => { if (code !== 1000) callLog(session.callSid, '[el-ws] closed code:', code); done(fullText.trim() || null); });
+      elWs.on('error', (e) => {
+        callLog(session.callSid, '[el-ws] error:', e.message);
+        if (!audioStarted && fullText.trim() && session.turnId === callerTurn) {
+          callLog(session.callSid, '[el-ws] falling back to HTTP TTS');
+          session.state = 'speaking'; session.speakStartTime = Date.now();
+          myGen = ++session.speakGen; audioStarted = true;
+          streamTTS(session, fullText.trim(), myGen).then(() => done(fullText.trim())).catch(() => done(null));
+        } else { done(null); }
+      });
+      elWs.on('close', (code) => {
+        if (code !== 1000) {
+          callLog(session.callSid, '[el-ws] closed code:', code);
+          if (!audioStarted && fullText.trim() && session.turnId === callerTurn) {
+            callLog(session.callSid, '[el-ws] falling back to HTTP TTS');
+            session.state = 'speaking'; session.speakStartTime = Date.now();
+            myGen = ++session.speakGen; audioStarted = true;
+            streamTTS(session, fullText.trim(), myGen).then(() => done(fullText.trim())).catch(() => done(null));
+            return;
+          }
+        }
+        done(fullText.trim() || null);
+      });
 
       // Pipe OpenAI tokens into ElevenLabs WS as they arrive
       (async () => {
