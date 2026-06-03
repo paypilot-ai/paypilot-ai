@@ -438,10 +438,26 @@ function connectDeepgram(session) {
 
       if (session.state === 'processing') { return; }
       if (session.state === 'speaking') {
-        // Queue for after Brandy finishes — barge-in causes echo feedback (Deepgram hears
-        // Brandy's own voice through the phone, triggers a second AI response = two voices)
+        const elapsed = session.speakStartTime ? Date.now() - session.speakStartTime : 0;
+        // Allow barge-in only after 2s — echo from Brandy's own audio hits Deepgram
+        // immediately; real interruptions from the prospect happen after she's been talking a bit
+        if (elapsed > 2000) {
+          callLog(session.callSid, '[barge-in] cutting Brandy off:', transcript);
+          if (session.twilioWs?.readyState === WebSocket.OPEN)
+            session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
+          session.pendingTranscript = null;
+          ++session.speakGen;
+          ++session.turnId;
+          session.state = 'processing';
+          session.history.push({ role: 'user', content: transcript });
+          generateAndSpeak(session).catch(e => {
+            callLog(session.callSid, '[ai] barge-in error:', e.message);
+            session.state = 'listening';
+          });
+          return;
+        }
         session.pendingTranscript = transcript;
-        callLog(session.callSid, '[dg] queued during speech:', transcript);
+        callLog(session.callSid, '[dg] queued during speech (echo window):', transcript);
         return;
       }
       if (session.state === 'ending') return; // call is wrapping up — ignore everything
