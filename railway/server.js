@@ -438,20 +438,10 @@ function connectDeepgram(session) {
 
       if (session.state === 'processing') { return; }
       if (session.state === 'speaking') {
-        // Barge-in: user spoke while Brandy is talking — cut her off and respond
-        callLog(session.callSid, '[barge-in] cutting Brandy off:', transcript);
-        if (session.twilioWs?.readyState === WebSocket.OPEN) {
-          session.twilioWs.send(JSON.stringify({ event: 'clear', streamSid: session.streamSid }));
-        }
-        session.pendingTranscript = null;
-        ++session.speakGen;
-        ++session.turnId;
-        session.state = 'processing';
-        session.history.push({ role: 'user', content: transcript });
-        generateAndSpeak(session).catch(e => {
-          callLog(session.callSid, '[ai] barge-in error:', e.message);
-          session.state = 'listening';
-        });
+        // Queue for after Brandy finishes — barge-in causes echo feedback (Deepgram hears
+        // Brandy's own voice through the phone, triggers a second AI response = two voices)
+        session.pendingTranscript = transcript;
+        callLog(session.callSid, '[dg] queued during speech:', transcript);
         return;
       }
       if (session.state === 'ending') return; // call is wrapping up — ignore everything
