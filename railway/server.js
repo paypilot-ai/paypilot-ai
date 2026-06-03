@@ -315,7 +315,7 @@ function handleTwilio(ws) {
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)', '| voice:', ELEVENLABS_VOICE);
       connectDeepgram(session);
-      setTimeout(() => sendGreeting(session), 800);
+      setTimeout(() => sendGreeting(session), 300);
     }
     if (msg.event === 'media' && session) {
       const dgState = session.dgWs?.readyState;
@@ -657,7 +657,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
         elWs.send(JSON.stringify({
           text: ' ',
           voice_settings: ELEVENLABS_VOICE_SETTINGS.voice_settings,
-          generation_config: { chunk_length_schedule: [50, 100, 150] },
+          generation_config: { chunk_length_schedule: [20, 60, 120] },
         }));
         if (textQueue) { elWs.send(JSON.stringify({ text: textQueue })); textQueue = ''; }
       });
