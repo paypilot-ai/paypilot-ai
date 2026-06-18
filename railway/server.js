@@ -761,9 +761,9 @@ async function callOpenAI(messages) {
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
   voice_settings: {
-    stability: 0.48,
+    stability: 0.42,
     similarity_boost: 0.80,
-    style: 0.12,
+    style: 0.16,
     use_speaker_boost: true,
   },
 };
@@ -803,7 +803,7 @@ async function streamTTS(session, text, gen) {
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 12000);
-    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000`, {
+    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000&optimize_streaming_latency=4`, {
       method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
       signal: ctrl.signal
