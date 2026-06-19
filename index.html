@@ -3599,8 +3599,8 @@ function loginDemo(){
     return;
   }
 
-  // Demo login — anyone else gets demo mode
-  enterPlanDemo(plan);
+  // No match — reject instead of silently dropping into demo mode
+  toast('Invalid email or password.');
 }
 
 function enterTesterApp(){
