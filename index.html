@@ -6277,7 +6277,7 @@ async function loadCallHistory() {
   const list = document.getElementById('historyList');
   list.innerHTML = '<div style="color:#7a90b0;font-size:13px;text-align:center;padding:30px 0">Loading…</div>';
   try {
-    const resp = await fetch('/api/recordings');
+    const resp = await fetch('/api/call-status?type=recordings');
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Failed to load');
     const recs = data.recordings || [];
@@ -6313,7 +6313,7 @@ function playRecording(sid, label, callSid) {
   const audio  = document.getElementById('historyAudio');
   const lbl    = document.getElementById('historyPlayerLabel');
   lbl.textContent = label || sid;
-  audio.src = `/api/recordings?action=audio&sid=${sid}`;
+  audio.src = `/api/call-status?action=audio&sid=${sid}`;
   player.style.display = 'block';
   audio.play();
 }
@@ -6321,7 +6321,7 @@ function playRecording(sid, label, callSid) {
 async function deleteRecording(sid) {
   if (!confirm('Delete this recording? This cannot be undone.')) return;
   try {
-    const resp = await fetch(`/api/recordings?sid=${sid}`, { method: 'DELETE' });
+    const resp = await fetch(`/api/call-status?sid=${sid}`, { method: 'DELETE' });
     if (!resp.ok) throw new Error('Delete failed');
     toast('Recording deleted.');
     loadCallHistory();
