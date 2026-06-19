@@ -4189,7 +4189,7 @@ function saveSettings(){
   const plan = document.getElementById('profilePlan').value;
   document.getElementById('profileNameView').textContent = name;
   document.getElementById('avatarBox').textContent = name.charAt(0).toUpperCase();
-  enterPlanDemo(plan);
+  if(!isLiveUser) enterPlanDemo(plan);
   toast('Settings saved.');
 }
 
