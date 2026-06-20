@@ -618,7 +618,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     if (session.turnId !== callerTurn) { aiResp.body.cancel().catch(() => {}); return null; }
 
     const elUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream-input` +
-      `?model_id=${ELEVENLABS_VOICE_SETTINGS.model_id}&output_format=ulaw_8000&optimize_streaming_latency=4`;
+      `?model_id=${ELEVENLABS_VOICE_SETTINGS.model_id}&output_format=pcm_16000&optimize_streaming_latency=4`;
     const elWs = new WebSocket(elUrl, { headers: { 'xi-api-key': ELEVENLABS_KEY } });
 
     let fullText = '';
@@ -628,7 +628,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     let elReady = false;
     let textQueue = '';
     let resolved = false;
-    const CHUNK = 160;
+    const CHUNK = 640; // pcm_16000: 640 bytes = 320 samples = 20ms, downsampled to 160 bytes mulaw
     const isStale = () => session.turnId !== callerTurn || (myGen !== null && session.speakGen !== myGen);
 
     const result = await new Promise((resolve) => {
@@ -659,13 +659,16 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
             }
             audioBuf = Buffer.concat([audioBuf, Buffer.from(msg.audio, 'base64')]);
             while (!isStale() && audioBuf.length >= CHUNK && session.twilioWs?.readyState === WebSocket.OPEN) {
-              session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: audioBuf.slice(0, CHUNK).toString('base64') } }));
+              const pcm = new Int16Array(audioBuf.buffer, audioBuf.byteOffset, CHUNK / 2);
+              session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm).toString('base64') } }));
               audioBuf = audioBuf.slice(CHUNK);
             }
           }
           if (msg.isFinal) {
-            if (!isStale() && audioBuf.length > 0 && session.twilioWs?.readyState === WebSocket.OPEN)
-              session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: audioBuf.toString('base64') } }));
+            if (!isStale() && audioBuf.length >= 2 && session.twilioWs?.readyState === WebSocket.OPEN) {
+              const pcm = new Int16Array(audioBuf.buffer, audioBuf.byteOffset, Math.floor(audioBuf.length / 2));
+              session.twilioWs.send(JSON.stringify({ event: 'media', streamSid: session.streamSid, media: { payload: pcm16ToMulaw(pcm).toString('base64') } }));
+            }
             done(fullText.trim() || null);
           }
         } catch (e) { callLog(session.callSid, '[el-ws] msg error:', e.message); }
