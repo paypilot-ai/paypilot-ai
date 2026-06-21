@@ -639,7 +639,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
         elWs.send(JSON.stringify({
           text: ' ',
           voice_settings: ELEVENLABS_VOICE_SETTINGS.voice_settings,
-          generation_config: { chunk_length_schedule: [20, 60, 120] },
+          generation_config: { chunk_length_schedule: [15, 35, 70] },
         }));
         if (textQueue) { elWs.send(JSON.stringify({ text: textQueue })); textQueue = ''; }
       });
