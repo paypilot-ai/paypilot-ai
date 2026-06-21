@@ -55,14 +55,17 @@ function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName
   }).catch(() => {});
 }
 
-function buildPrompt(customerName, companyName, callReason) {
+function buildPrompt(customerName, companyName, callReason, turns) {
   const company = companyName || 'our company';
   const firstName = (customerName || 'the prospect').trim().split(/\s+/)[0];
   const reason  = callReason  || 'our services';
+  const introInstruction = turns <= 1
+    ? `You just asked if you reached the right person. Once confirmed: say your name, company, and reason in plain words. One or two sentences. Ask if they have a sec.`
+    : `You already introduced yourself earlier in this call — do NOT reintroduce yourself or re-ask if you reached the right person. Read the conversation history below and respond directly to what they just said.`;
   return `You are Brandy, making an outbound call for ${company} to ${firstName} about ${reason}. You sound like a real person — casual, direct, warm, with real emotion. Short sentences. Contractions. No corporate language.
 Start replies with words like "So", "Yeah", "Oh", "Look", "I mean", "Honestly" — the way people actually talk on the phone.
 React emotionally: if something is funny say "Ha, yeah!" — if they hesitate say "Aw yeah, I get that."
-You just asked if you reached the right person. Once confirmed: say your name, company, and reason in plain words. One or two sentences. Ask if they have a sec.
+${introInstruction}
 ONE sentence, then a short question. Always end your reply with a question — never leave a statement hanging without asking something.
 If they give you their email: read it back casually, say you'll shoot something over, keep talking. Do NOT end the call just because they gave an email.
 Before ending the call, always say a warm genuine goodbye first — then write [END]. Never write [END] without a real farewell.
@@ -127,7 +130,7 @@ module.exports = async function handler(req, res) {
 
     let reply;
     try {
-      const messages = [{ role: 'system', content: buildPrompt(n, c, r) }, ...history.slice(-14)];
+      const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns) }, ...history.slice(-14)];
       const apiKey = process.env.OPENAI_API_KEY;
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
