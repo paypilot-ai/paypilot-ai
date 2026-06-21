@@ -618,7 +618,8 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     if (session.turnId !== callerTurn) { aiResp.body.cancel().catch(() => {}); return null; }
 
     const elUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream-input` +
-      `?model_id=${ELEVENLABS_VOICE_SETTINGS.model_id}&output_format=pcm_16000&optimize_streaming_latency=4`;
+      `?model_id=${ELEVENLABS_VOICE_SETTINGS.model_id}&output_format=pcm_16000&optimize_streaming_latency=4` +
+      `&xi_api_key=${ELEVENLABS_KEY}`;
     const elWs = new WebSocket(elUrl, { headers: { 'xi-api-key': ELEVENLABS_KEY } });
 
     let fullText = '';
@@ -683,9 +684,14 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
           streamTTS(session, fullText.trim(), myGen).then(() => done(fullText.trim())).catch(() => done(null));
         } else { done(null); }
       });
-      elWs.on('close', (code) => {
+      elWs.on('unexpected-response', (req, res) => {
+        let body = '';
+        res.on('data', (c) => { body += c; });
+        res.on('end', () => callLog(session.callSid, '[el-ws] unexpected-response:', res.statusCode, body.slice(0, 300)));
+      });
+      elWs.on('close', (code, reason) => {
         if (code !== 1000) {
-          callLog(session.callSid, '[el-ws] closed code:', code);
+          callLog(session.callSid, '[el-ws] closed code:', code, 'reason:', (reason?.toString() || '(none)').slice(0, 300));
           if (!audioStarted && fullText.trim() && session.turnId === callerTurn) {
             callLog(session.callSid, '[el-ws] falling back to HTTP TTS');
             session.state = 'speaking'; session.speakStartTime = Date.now();
