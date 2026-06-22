@@ -23,13 +23,23 @@ function gather(sayXml, historyB64, retries, turns, n, r, c, e, s) {
 </Response>`;
 }
 
+// Call Context & Objective often includes an internal negotiation/objection
+// script after the offer description — strip that before it reaches the customer.
+function summarizeReasonForEmail(reason) {
+  if (!reason) return reason;
+  const cutMarker = /\b(he|she|they)\s+may\s+say\b|common objections?\s*:|goal\s*:/i;
+  const match = cutMarker.exec(reason);
+  const summary = (match ? reason.slice(0, match.index) : reason).trim().replace(/[\s,;:—-]+$/, '');
+  return summary || reason.trim();
+}
+
 function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName, callReason) {
   if (!customerEmail) return;
   const resendKey = process.env.RESEND_API_KEY;
   if (!resendKey) return;
   const name    = customerName || 'there';
   const company = companyName  || 'PayPilot AI';
-  const reason  = callReason   || 'our conversation today';
+  const reason  = callReason ? summarizeReasonForEmail(callReason) : 'our conversation today';
   const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
   const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
   const bodyHtml = `

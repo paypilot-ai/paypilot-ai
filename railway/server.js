@@ -14,6 +14,16 @@ const ELEVENLABS_KEY    = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE  = process.env.ELEVENLABS_VOICE_ID || 'DODLEQrClDo8wCz460ld';
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN  = process.env.TWILIO_AUTH_TOKEN;
+
+// Call Context & Objective often includes an internal negotiation/objection
+// script after the offer description — strip that before it reaches the customer.
+function summarizeReasonForEmail(reason) {
+  if (!reason) return reason;
+  const cutMarker = /\b(he|she|they)\s+may\s+say\b|common objections?\s*:|goal\s*:/i;
+  const match = cutMarker.exec(reason);
+  const summary = (match ? reason.slice(0, match.index) : reason).trim().replace(/[\s,;:—-]+$/, '');
+  return summary || reason.trim();
+}
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy — a sharp, confident Southern saleswoman on a live outbound call. You close deals. ' +
   'ONE sentence per response — then ask a short question. Always end with a question to keep them talking. Conversational, never scripted. ' +
@@ -353,7 +363,7 @@ function sendFollowUpEmailLegacy(session) {
   session.emailSent = true;
   const firstName = (session.name || 'there').trim().split(/\s+/)[0];
   const company   = session.company  || 'PayPilot AI';
-  const reason    = session.reason   || 'our conversation today';
+  const reason    = session.reason ? summarizeReasonForEmail(session.reason) : 'our conversation today';
   const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
   const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
   console.log('[email] sending to:', session.capturedEmail);
@@ -996,7 +1006,7 @@ function handleTwilioRealtime(ws) {
     emailSent = true;
     const firstName = (n || 'there').trim().split(/\s+/)[0];
     const company   = c || 'PayPilot AI';
-    const reason    = r || 'our conversation today';
+    const reason    = r ? summarizeReasonForEmail(r) : 'our conversation today';
     const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
     const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
     console.log('[email] sending to:', capturedEmail, '| from:', fromEmail, '| company:', company);
