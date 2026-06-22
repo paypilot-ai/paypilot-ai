@@ -24,8 +24,9 @@ function gather(sayXml, historyB64, retries, turns, n, r, c, e, s) {
 }
 
 // Call Context & Objective often includes an internal negotiation/objection
-// script after the offer description — strip that before it reaches the customer.
-function summarizeReasonForEmail(reason) {
+// script after the offer description — strip that before it reaches the customer
+// (used both for the follow-up email and the spoken scripted fallback).
+function summarizeReason(reason) {
   if (!reason) return reason;
   const cutMarker = /\b(he|she|they)\s+may\s+say\b|common objections?\s*:|goal\s*:/i;
   const match = cutMarker.exec(reason);
@@ -39,7 +40,7 @@ function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName
   if (!resendKey) return;
   const name    = customerName || 'there';
   const company = companyName  || 'PayPilot AI';
-  const reason  = callReason ? summarizeReasonForEmail(callReason) : 'our conversation today';
+  const reason  = callReason ? summarizeReason(callReason) : 'our conversation today';
   const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
   const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
   const bodyHtml = `
@@ -129,7 +130,7 @@ module.exports = async function handler(req, res) {
 
     // Scripted fallback replies — used if OpenAI is slow or unavailable
     const SCRIPTED = [
-      `We help with ${r || 'outbound sales'} — want to hear more?`,
+      `We help with ${r ? summarizeReason(r) : 'outbound sales'} — want to hear more?`,
       `What's the biggest thing holding you back right now?`,
       `Can I send you a quick email with the details?`,
       `I appreciate your time — mind if I follow up?`,

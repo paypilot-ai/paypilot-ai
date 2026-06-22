@@ -14,7 +14,7 @@ module.exports = async function handler(req, res) {
         headers: { 'xi-api-key': API_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_turbo_v2_5',
+          model_id: 'eleven_flash_v2_5',
           voice_settings: { use_speaker_boost: true },
         })
       }
