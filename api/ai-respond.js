@@ -87,6 +87,7 @@ Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
+  const reqStart = Date.now();
   try {
     const n       = (req.query.n || '').trim();
     const r       = (req.query.r || '').trim();
@@ -143,6 +144,7 @@ module.exports = async function handler(req, res) {
     try {
       const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns) }, ...history.slice(-14)];
       const apiKey = process.env.OPENAI_API_KEY;
+      const openaiStart = Date.now();
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
@@ -150,6 +152,7 @@ module.exports = async function handler(req, res) {
         signal: controller.signal
       });
       clearTimeout(timeout);
+      console.log(`[ai-respond] turn=${turns} openai took ${Date.now() - openaiStart}ms, total so far ${Date.now() - reqStart}ms`);
       if (resp.ok) {
         const d = await resp.json();
         const raw = (d.choices?.[0]?.message?.content || '').trim();
@@ -170,6 +173,7 @@ module.exports = async function handler(req, res) {
     }
 
     // Fallback to scripted reply if OpenAI failed or timed out
+    console.log(`[ai-respond] turn=${turns} hit SCRIPTED fallback, total ${Date.now() - reqStart}ms`);
     reply = SCRIPTED[Math.min(turns - 1, SCRIPTED.length - 1)];
     history.push({ role: 'assistant', content: reply });
     return res.status(200).send(gather(say(reply), b64enc(history), 0, turns + 1, n, r, c, e, s));
