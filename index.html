@@ -3586,7 +3586,7 @@ const MASTER_PASS  = 'icyunv220';
 ];
 
 function loginDemo(){
-  const email = document.getElementById('loginEmail').value.trim();
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value.trim();
   const plan  = document.getElementById('loginPlan').value;
 
@@ -3596,13 +3596,13 @@ function loginDemo(){
   }
 
   // Master login
-  if(email === MASTER_EMAIL && pass === MASTER_PASS){
+  if(email === MASTER_EMAIL.toLowerCase() && pass === MASTER_PASS){
     enterRealApp();
     return;
   }
 
   // Tester login — full Pro access, unlimited calls
-  const isTester = TESTER_ACCOUNTS.find(a => a.email === email && a.password === pass);
+  const isTester = TESTER_ACCOUNTS.find(a => a.email.toLowerCase() === email && a.password === pass);
   if(isTester){
     enterTesterApp();
     return;
