@@ -6733,10 +6733,17 @@ function confirmCrmDialerImport() {
   const checked = [...document.querySelectorAll('.crm-dialer-check:checked')].map(cb => cb.value);
   if (!checked.length) { toast('Select at least one contact.'); return; }
   const contacts = crmLoad();
+  const defaultReason = document.getElementById('adReason').value.trim();
   let added = 0;
   checked.forEach(id => {
     const c = contacts.find(x => x.id === id);
-    if (c && c.phone) { adAddRow(c.name || '', c.phone, c.company || ''); added++; }
+    if (c && c.phone) {
+      const reason = c.company && defaultReason
+        ? `Calling ${c.company}. ${defaultReason}`
+        : (defaultReason || c.company || '');
+      adAddRow(c.name || '', c.phone, reason);
+      added++;
+    }
   });
   closeCrmDialerImportModal();
   showPage('aicaller', document.querySelector('[data-page="aicaller"]') || document.querySelector('[data-page="assist"]'));
