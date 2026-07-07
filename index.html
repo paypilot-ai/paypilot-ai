@@ -5745,8 +5745,10 @@ async function lookupContact(){
     } else {
       if(notFound){
         notFound.style.display = 'block';
-        document.getElementById('contactNotFoundMsg').textContent =
-          'No results for "' + val + '". Try adding a city name e.g. "AvidXchange Charlotte".';
+        const msg = data.error
+          ? `Search error: ${data.error}`
+          : `No results for "${val}". Try adding a city name e.g. "AvidXchange Charlotte".`;
+        document.getElementById('contactNotFoundMsg').textContent = msg;
       }
     }
   } catch(e) {
@@ -5754,7 +5756,7 @@ async function lookupContact(){
     if(notFound){
       notFound.style.display = 'block';
       document.getElementById('contactNotFoundMsg').textContent =
-        'Search unavailable. Check your connection and try again.';
+        'Search unavailable: ' + e.message;
     }
   }
 }
