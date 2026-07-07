@@ -6236,7 +6236,8 @@ async function dialNextContact() {
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Call failed');
-    contact.callSid = data.callSid;
+    contact.callSid   = data.callSid;
+    contact.startedAt = Date.now();
     saveCallMeta(data.callSid, contact.name, company, contact.reason || defaultReason, contact.phone);
     if (adPollTimer) clearInterval(adPollTimer);
     adPollTimer = setInterval(() => pollAdCall(contact), 5000);
@@ -6254,10 +6255,27 @@ async function pollAdCall(contact) {
   try {
     const resp = await fetch('/api/call-status?sid=' + contact.callSid);
     const data = await resp.json();
-    if (['completed','failed','busy','no-answer','canceled'].includes(data.status)) {
+
+    const isTerminal = ['completed','failed','busy','no-answer','canceled'].includes(data.status);
+    const elapsed    = Date.now() - (contact.startedAt || Date.now());
+    const timedOut   = !isTerminal && elapsed > 5 * 60 * 1000;
+
+    if (isTerminal || timedOut) {
       clearInterval(adPollTimer); adPollTimer = null;
-      contact.status = data.status === 'completed' ? 'done' : 'failed';
-      try { crmAutoLog(contact.phone, contact.name, `Auto-dialer call — ${data.status}`); } catch(e) {}
+
+      if (timedOut) {
+        // Force-hang up the Twilio leg so the call doesn't keep billing
+        try {
+          await fetch('/api/call-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ callSid: contact.callSid })
+          });
+        } catch {}
+      }
+
+      contact.status = (isTerminal && data.status !== 'completed') ? 'failed' : 'done';
+      try { crmAutoLog(contact.phone, contact.name, `Auto-dialer call — ${timedOut ? 'completed (timeout)' : data.status}`); } catch(e) {}
       const done  = adContacts.filter(c => c.status === 'done' || c.status === 'failed').length;
       const total = adContacts.filter(c => c.status !== 'skipped').length;
       document.getElementById('adProgress').textContent = `${done} of ${total} done`;
