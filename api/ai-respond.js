@@ -1,7 +1,8 @@
-const BASE_URL = 'https://paypilotai.live';
-
+function xmlEsc(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
 function say(text) {
-  return `<Play>${BASE_URL}/api/tts?text=${encodeURIComponent(text)}</Play>`;
+  return `<Say voice="Polly.Joanna-Neural">${xmlEsc(text)}</Say>`;
 }
 function b64enc(obj) {
   return Buffer.from(JSON.stringify(obj)).toString('base64')

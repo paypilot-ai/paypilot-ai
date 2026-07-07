@@ -3,9 +3,11 @@ function b64enc(obj) {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
-const BASE_URL = 'https://paypilotai.live';
+function xmlEsc(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
 function ttsPlay(text) {
-  return `<Play>${BASE_URL}/api/tts?text=${encodeURIComponent(text)}</Play>`;
+  return `<Say voice="Polly.Joanna-Neural">${xmlEsc(text)}</Say>`;
 }
 
 const INTROS_WITH_NAME = ['Hi, may I speak with {firstName}?'];
