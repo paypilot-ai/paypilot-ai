@@ -3773,6 +3773,9 @@ function showPage(id, el, fromPopState, replaceState){
     if(replaceState) history.replaceState(state, '', '#' + id);
     else history.pushState(state, '', '#' + id);
   }
+  // Let the dialer keep running in the background — just clear the full-screen
+  // matrix overlay so other pages are usable. The HUD stays visible (fixed position).
+  if (adRunning && id !== 'aicaller') stopPageMatrix();
   localStorage.setItem('pp_last_page', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -6236,7 +6239,8 @@ async function dialNextContact() {
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Call failed');
-    contact.callSid = data.callSid;
+    contact.callSid   = data.callSid;
+    contact.startedAt = Date.now();
     saveCallMeta(data.callSid, contact.name, company, contact.reason || defaultReason, contact.phone);
     if (adPollTimer) clearInterval(adPollTimer);
     adPollTimer = setInterval(() => pollAdCall(contact), 5000);
@@ -6254,10 +6258,25 @@ async function pollAdCall(contact) {
   try {
     const resp = await fetch('/api/call-status?sid=' + contact.callSid);
     const data = await resp.json();
-    if (['completed','failed','busy','no-answer','canceled'].includes(data.status)) {
+
+    const isTerminal = ['completed','failed','busy','no-answer','canceled'].includes(data.status);
+    const elapsed    = Date.now() - (contact.startedAt || Date.now());
+    const timedOut   = !isTerminal && elapsed > 5 * 60 * 1000;
+
+    if (isTerminal || timedOut) {
       clearInterval(adPollTimer); adPollTimer = null;
-      contact.status = data.status === 'completed' ? 'done' : 'failed';
-      try { crmAutoLog(contact.phone, contact.name, `Auto-dialer call — ${data.status}`); } catch(e) {}
+
+      if (timedOut) {
+        // Fire-and-forget: hang up the Twilio leg without blocking the dialer advance
+        fetch('/api/call-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callSid: contact.callSid })
+        }).catch(() => {});
+      }
+
+      contact.status = (isTerminal && data.status !== 'completed') ? 'failed' : 'done';
+      try { crmAutoLog(contact.phone, contact.name, `Auto-dialer call — ${timedOut ? 'completed (timeout)' : data.status}`); } catch(e) {}
       const done  = adContacts.filter(c => c.status === 'done' || c.status === 'failed').length;
       const total = adContacts.filter(c => c.status !== 'skipped').length;
       document.getElementById('adProgress').textContent = `${done} of ${total} done`;
@@ -6688,7 +6707,11 @@ function crmQueueDialer(id) {
   showPage('aicaller', document.querySelector('[data-page="aicaller"]') || document.querySelector('[data-page="assist"]'));
   setTimeout(() => {
     setCallerTab('auto');
-    adAddRow(c.name || '', c.phone, c.company || '');
+    const _defaultReason = document.getElementById('adReason')?.value.trim() || '';
+    const _reason = c.company && _defaultReason
+      ? `Calling ${c.company}. ${_defaultReason}`
+      : (_defaultReason || c.company || '');
+    adAddRow(c.name || '', c.phone, _reason);
     toast(`${c.name || c.phone} added to Auto Dialer.`);
   }, 200);
 }
@@ -6733,10 +6756,17 @@ function confirmCrmDialerImport() {
   const checked = [...document.querySelectorAll('.crm-dialer-check:checked')].map(cb => cb.value);
   if (!checked.length) { toast('Select at least one contact.'); return; }
   const contacts = crmLoad();
+  const defaultReason = document.getElementById('adReason').value.trim();
   let added = 0;
   checked.forEach(id => {
     const c = contacts.find(x => x.id === id);
-    if (c && c.phone) { adAddRow(c.name || '', c.phone, c.company || ''); added++; }
+    if (c && c.phone) {
+      const reason = c.company && defaultReason
+        ? `Calling ${c.company}. ${defaultReason}`
+        : (defaultReason || c.company || '');
+      adAddRow(c.name || '', c.phone, reason);
+      added++;
+    }
   });
   closeCrmDialerImportModal();
   showPage('aicaller', document.querySelector('[data-page="aicaller"]') || document.querySelector('[data-page="assist"]'));
