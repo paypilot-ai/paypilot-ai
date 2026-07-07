@@ -3773,6 +3773,9 @@ function showPage(id, el, fromPopState, replaceState){
     if(replaceState) history.replaceState(state, '', '#' + id);
     else history.pushState(state, '', '#' + id);
   }
+  // Let the dialer keep running in the background — just clear the full-screen
+  // matrix overlay so other pages are usable. The HUD stays visible (fixed position).
+  if (adRunning && id !== 'aicaller') stopPageMatrix();
   localStorage.setItem('pp_last_page', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -6264,14 +6267,12 @@ async function pollAdCall(contact) {
       clearInterval(adPollTimer); adPollTimer = null;
 
       if (timedOut) {
-        // Force-hang up the Twilio leg so the call doesn't keep billing
-        try {
-          await fetch('/api/call-status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ callSid: contact.callSid })
-          });
-        } catch {}
+        // Fire-and-forget: hang up the Twilio leg without blocking the dialer advance
+        fetch('/api/call-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callSid: contact.callSid })
+        }).catch(() => {});
       }
 
       contact.status = (isTerminal && data.status !== 'completed') ? 'failed' : 'done';
@@ -6706,7 +6707,11 @@ function crmQueueDialer(id) {
   showPage('aicaller', document.querySelector('[data-page="aicaller"]') || document.querySelector('[data-page="assist"]'));
   setTimeout(() => {
     setCallerTab('auto');
-    adAddRow(c.name || '', c.phone, c.company || '');
+    const _defaultReason = document.getElementById('adReason')?.value.trim() || '';
+    const _reason = c.company && _defaultReason
+      ? `Calling ${c.company}. ${_defaultReason}`
+      : (_defaultReason || c.company || '');
+    adAddRow(c.name || '', c.phone, _reason);
     toast(`${c.name || c.phone} added to Auto Dialer.`);
   }, 200);
 }
