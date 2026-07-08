@@ -2410,7 +2410,7 @@ body.modal-open{overflow:hidden}
                   <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;">Click to copy</div>
                 </div>
                 <div style="background:rgba(255,255,255,.06);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,.08);cursor:pointer;" onclick="copyField('contactEmail')">
-                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.50);margin-bottom:8px;">Email</div>
+                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.50);margin-bottom:8px;" id="contactEmailLabel">Email</div>
                   <div style="font-size:14px;font-weight:600;color:#60b3ff;word-break:break-all;" id="contactEmail">support@paypilotai.live</div>
                   <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;">Click to copy</div>
                 </div>
@@ -5779,6 +5779,8 @@ function selectGoogleResult(place){
   };
   showContactResult(contact);
   addToRecentLookups(contact);
+  const lbl = document.getElementById('contactEmailLabel');
+  if (lbl) lbl.textContent = 'Website';
 
   // Hide picker if open
   const picker = document.getElementById('resultPicker');
@@ -5828,6 +5830,8 @@ function showContactResult(c){
   set('contactTitle', c.title);
   set('contactPhone', c.phone);
   set('contactEmail', c.email);
+  const _lbl = document.getElementById('contactEmailLabel');
+  if (_lbl) _lbl.textContent = 'Email';
   set('contactAddress', c.address.replace(', ','<br>'));
   set('contactStatus', `<span style="background:${c.statusBg};color:${c.statusColor};padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${c.status}</span>`);
   set('contactNote', c.note);
