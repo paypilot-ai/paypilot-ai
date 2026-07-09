@@ -17,7 +17,7 @@ module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
   try {
     const n = (req.query.n || '').trim();
-    const r = (req.query.r || '').trim();
+    const r = (req.query.r || '').trim().slice(0, 500);
     const c = (req.query.c || '').trim();
     const e = (req.query.e || '').trim();
     const s = (req.query.s || '').trim();

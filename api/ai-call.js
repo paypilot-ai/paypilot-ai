@@ -35,7 +35,7 @@ module.exports = async function handler(req, res) {
 
     const name = (customerName || '').trim();
     const n = encodeURIComponent(name);
-    const r = encodeURIComponent(callReason  || '');
+    const r = encodeURIComponent((callReason || '').slice(0, 500));
     const c = encodeURIComponent(companyName || '');
     const e = encodeURIComponent(customerEmail || '');
     const s = encodeURIComponent(senderEmail || '');
