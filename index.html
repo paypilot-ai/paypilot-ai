@@ -3773,9 +3773,9 @@ function showPage(id, el, fromPopState, replaceState){
     if(replaceState) history.replaceState(state, '', '#' + id);
     else history.pushState(state, '', '#' + id);
   }
-  // Let the dialer keep running in the background — just clear the full-screen
+  // Let calls keep running in the background — just clear the full-screen
   // matrix overlay so other pages are usable. The HUD stays visible (fixed position).
-  if (adRunning && id !== 'aicaller') stopPageMatrix();
+  if ((adRunning || window.aiCallActive) && id !== 'aicaller') stopPageMatrix();
   localStorage.setItem('pp_last_page', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
