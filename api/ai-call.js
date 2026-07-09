@@ -27,28 +27,6 @@ module.exports = async function handler(req, res) {
   const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail, language } = req.body || {};
   if (!toNumber) return res.status(400).json({ error: 'Phone number required' });
 
-  if (callReason && process.env.OPENAI_API_KEY) {
-    try {
-      const modResp = await fetch('https://api.openai.com/v1/moderations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-        body: JSON.stringify({ input: callReason }),
-      });
-      const modData = await modResp.json();
-      if (modData.results?.[0]?.flagged) {
-        const flaggedCategories = Object.entries(modData.results[0].categories || {})
-          .filter(([, v]) => v).map(([k]) => k);
-        return res.status(400).json({
-          error: 'Call objective was flagged by content moderation and cannot be used.',
-          categories: flaggedCategories,
-        });
-      }
-    } catch (err) {
-      // Fail open on moderation-service errors — don't block legitimate calls on an outage.
-      console.error('moderation check failed:', err.message);
-    }
-  }
-
   const cleaned = toNumber.replace(/\D/g, '');
   const e164 = cleaned.startsWith('1') ? '+' + cleaned : '+1' + cleaned;
 
@@ -57,7 +35,7 @@ module.exports = async function handler(req, res) {
 
     const name = (customerName || '').trim();
     const n = encodeURIComponent(name);
-    const r = encodeURIComponent(callReason  || '');
+    const r = encodeURIComponent((callReason || '').slice(0, 500));
     const c = encodeURIComponent(companyName || '');
     const e = encodeURIComponent(customerEmail || '');
     const s = encodeURIComponent(senderEmail || '');
@@ -83,7 +61,7 @@ module.exports = async function handler(req, res) {
           {
             method: 'POST',
             headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
+            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: 'true' }).toString()
           }
         );
         const data = await resp.json();
@@ -99,7 +77,7 @@ module.exports = async function handler(req, res) {
       {
         method: 'POST',
         headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl }).toString()
+        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: 'true' }).toString()
       }
     );
     const data = await response.json();

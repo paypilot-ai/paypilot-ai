@@ -69,8 +69,11 @@ module.exports = async function handler(req, res) {
     searchUrl.searchParams.set('key', apiKey);
 
     const searchResp = await fetch(searchUrl.toString());
-    if (!searchResp.ok) throw new Error(`Google Places ${searchResp.status}`);
+    if (!searchResp.ok) throw new Error(`Google Places HTTP ${searchResp.status}`);
     let searchData = await searchResp.json();
+    if (searchData.status && searchData.status !== 'OK' && searchData.status !== 'ZERO_RESULTS') {
+      throw new Error(`Google Places: ${searchData.status} — ${searchData.error_message || 'check API key and billing'}`);
+    }
 
     // Fallback to plain name if domain search empty
     if (domain && !searchData.results?.length) {

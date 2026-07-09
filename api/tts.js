@@ -24,7 +24,7 @@ module.exports = async function handler(req, res) {
     const buf = Buffer.from(await el.arrayBuffer());
     console.log(`[tts] "${text.slice(0, 40)}" took ${Date.now() - start}ms`);
     res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Cache-Control', 'public, max-age=300');
     res.send(buf);
   } catch (e) {
     res.status(500).send('tts error: ' + e.message);

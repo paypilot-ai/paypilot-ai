@@ -36,6 +36,7 @@ const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'Never apologize for the price. Never say "I know it\'s a lot." Own it — "Yeah, it\'s an investment, and it pays for itself fast." ' +
   'NEVER invent product names, prices, or details you weren\'t given. Only sell what you know. ' +
   'Email given: read it back, confirm you\'ll send something over, keep moving toward the close. ' +
+  'AI DISCLOSURE — once the goal is achieved and you are ready to close the call: disclose you are an AI before saying goodbye. Say it naturally: "Oh hey, quick thing — I\'m actually an AI assistant, not a human. [company] uses AI for outreach. Anyway, " then give a warm confident goodbye and [END]. Disclose ONLY after the goal is reached, never before. ' +
   'To end: warm, confident close — "Talk soon!" or "Looking forward to it!" — then [END]. Never [END] without a goodbye. ' +
   'Start replies with: "Yeah", "Look", "So", "Right", "Oh", "Honestly", "I mean" — real talk. ' +
   'Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "No problem", "Sounds good", "I appreciate that", "I get that", "I totally get that", "I hear you", "I can understand", "That makes sense".';
@@ -72,7 +73,38 @@ function buildSystemPrompt(session) {
     parts.push(`IMPORTANT: Conduct this entire call in ${langName}. Greet, respond, and close entirely in ${langName}.`);
   }
   parts.push('NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time. Do not give away your bottom line.');
+  parts.push('IVR NAVIGATION: If you hear an automated phone menu (e.g. "press 1 for sales", "for billing press 2", "please listen to our menu options"), you MUST navigate it — do NOT speak. Output ONLY [PRESS:X] where X is the best digit: prefer any option for "corporate development", "strategy", "M&A", "business development", or "executive office"; otherwise press 0 for an operator. Never say anything when pressing a key — just [PRESS:X] by itself.');
   return parts.join(' ');
+}
+
+async function sendDTMF(session, digit) {
+  const accountSid = TWILIO_ACCOUNT_SID;
+  const authToken  = TWILIO_AUTH_TOKEN;
+  if (!accountSid || !authToken || !session.callSid) return;
+  const host = process.env.RAILWAY_PUBLIC_DOMAIN || '';
+  if (!host) { callLog(session.callSid, '[dtmf] skipped — RAILWAY_PUBLIC_DOMAIN not set'); return; }
+
+  const wsUrl = `wss://${host}/twilio`;
+  const paramXml = [
+    session.name          ? `<Parameter name="n" value="${xmlEsc(session.name)}"/>` : '',
+    session.reason        ? `<Parameter name="r" value="${xmlEsc(session.reason.slice(0, 500))}"/>` : '',
+    session.company       ? `<Parameter name="c" value="${xmlEsc(session.company)}"/>` : '',
+    session.capturedEmail ? `<Parameter name="e" value="${xmlEsc(session.capturedEmail)}"/>` : '',
+    session.senderEmail   ? `<Parameter name="s" value="${xmlEsc(session.senderEmail)}"/>` : '',
+    session.language      ? `<Parameter name="l" value="${xmlEsc(session.language)}"/>` : '',
+  ].join('');
+  const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Play digits="${digit}"/><Connect><Stream url="${wsUrl}">${paramXml}</Stream></Connect></Response>`;
+  const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
+  try {
+    const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls/${session.callSid}.json`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ Twiml: twiml }).toString()
+    });
+    callLog(session.callSid, '[dtmf] pressed', digit, '— Twilio status:', r.status);
+  } catch (e) {
+    callLog(session.callSid, '[dtmf] error:', e.message);
+  }
 }
 
 function sendForm(session) {
@@ -320,6 +352,20 @@ function handleTwilio(ws) {
       const e = cp.e || '';
       const s = cp.s || '';
       const l = cp.l || 'en';
+
+      // Reconnect after DTMF — preserve existing session history and state
+      const existing = sessions.get(callSid);
+      if (existing) {
+        existing.streamSid = streamSid;
+        existing.twilioWs = ws;
+        existing.ttsAbort = null;
+        session = existing;
+        dgAudioLogged = false;
+        callLog(callSid, '[call] reconnected after DTMF, history preserved');
+        connectDeepgram(session);
+        return;
+      }
+
       session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false };
       sessions.set(callSid, session);
       dgAudioLogged = false;
@@ -559,7 +605,8 @@ async function generateAndSpeak(session) {
     return;
   }
 
-  const cleanReply = fullReply.replace(/\[END\]/gi, '').trim();
+  const pressMatch = fullReply.match(/\[PRESS:([0-9#*])\]/i);
+  const cleanReply = fullReply.replace(/\[END\]/gi, '').replace(/\[PRESS:[0-9#*]\]/gi, '').trim();
   callLog(session.callSid, '[ai] reply:', cleanReply.slice(0, 80));
   session.history.push({ role: 'assistant', content: cleanReply });
   pushToBrowser(session, { event: 'ai-response', text: cleanReply });
@@ -594,6 +641,14 @@ async function generateAndSpeak(session) {
     return;
   }
 
+  if (pressMatch) {
+    callLog(session.callSid, '[dtmf] IVR detected — pressing', pressMatch[1]);
+    session.state = 'listening';
+    await sendDTMF(session, pressMatch[1]);
+    // Twilio will reconnect the stream — handleTwilio start event will resume the session
+    return;
+  }
+
   enterListening(session);
 }
 
@@ -606,6 +661,7 @@ function enterListening(session) {
 function prepareForSpeech(text) {
   return text.trim()
     .replace(/\[END\]/gi, '')
+    .replace(/\[PRESS:[0-9#*]\]/gi, '')
     .replace(/\s*—\s*/g, ', ')
     .replace(/\s+([.,!?])/g, '$1')
     .replace(/([^.!?])$/, '$1.')
