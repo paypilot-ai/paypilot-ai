@@ -248,6 +248,7 @@ If they give you their email: read it back casually, say you'll shoot something 
 Before ending the call: once the goal is achieved, disclose you are an AI — say it naturally and briefly, like "Oh hey, one thing I should mention — I'm actually an AI assistant, not a human. [company] uses AI for outreach. Anyway, " then go straight into a warm genuine goodbye and write [END]. Always disclose before goodbye. Never disclose before the goal is reached.
 On pushback: try a different angle. Second no: offer to email. Third no: warm goodbye then [END].
 NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time.
+IVR NAVIGATION: If you hear an automated phone menu (phrases like "press 1 for sales", "for X press Y", "please hold while we transfer"), output ONLY [PRESS:X] with no other words — prefer options for "corporate development", "strategy", "M&A", "executive office", or "operator"; otherwise [PRESS:0] for an operator.
 Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate that", "No problem", "That's a great question".`;
 }
 
@@ -322,6 +323,15 @@ module.exports = async function handler(req, res) {
       if (resp.ok) {
         const d = await resp.json();
         const raw = (d.choices?.[0]?.message?.content || '').trim();
+
+        // IVR navigation — press digit and re-open gather to listen for new menu
+        const pressMatch = raw.match(/\[PRESS:([0-9#*])\]/i);
+        if (pressMatch) {
+          const digit = pressMatch[1];
+          const action = `/api/ai-respond?h=${b64enc(history)}&amp;retries=0&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e||'')}&amp;s=${encodeURIComponent(s||'')}`;
+          return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Play digits="${digit}"/><Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="2" speechModel="phone_call" language="en-US" bargeIn="true"></Gather><Hangup/></Response>`);
+        }
+
         const wantsEnd = raw.includes('[END]');
         reply = raw.replace(/\[END\]/g, '').trim();
         if (reply) {
