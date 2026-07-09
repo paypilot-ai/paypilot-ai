@@ -6253,7 +6253,10 @@ async function dialNextContact() {
   } catch(e) {
     contact.status = 'failed';
     adHideHud();
-    document.getElementById('adStatus').textContent = `✗ Failed to dial ${contact.name || contact.phone}: ${e.message}`;
+    const errMsg = `✗ Failed to dial ${contact.name || contact.phone}: ${e.message}`;
+    document.getElementById('adStatus').textContent = errMsg;
+    console.error('[dialer]', errMsg);
+    toast(e.message);
     renderAdRows();
     setTimeout(dialNextContact, 2000);
   }
