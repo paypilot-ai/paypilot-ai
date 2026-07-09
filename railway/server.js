@@ -67,7 +67,11 @@ function buildSystemPrompt(session) {
   const parts = [base];
   if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
   if (session.reason)  parts.push(`Background context for this call (use this to guide the conversation, don't recite it): ${session.reason}.`);
-  if (session.name)    parts.push(`You are speaking with ${session.name}.`);
+  if (session.name) {
+    const cleanName = session.name.trim().split(/[,\-—|]/)[0].trim().split(/\s+/).slice(0, 2).join(' ');
+    parts.push(`You are speaking with ${cleanName}.`);
+  }
+  parts.push('Never mention the contact\'s job title, role, or any internal metadata — address them by first name only.');
   if (session.language && session.language !== 'en') {
     const langName = LANG_NAMES[session.language] || session.language;
     parts.push(`IMPORTANT: Conduct this entire call in ${langName}. Greet, respond, and close entirely in ${langName}.`);
