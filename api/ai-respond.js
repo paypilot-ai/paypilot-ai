@@ -55,6 +55,12 @@ function detectIvrDigit(transcript) {
   return options[0].digit;
 }
 
+// IVR menus almost always open with a preamble before ever saying "press N" —
+// "Thank you for calling X, your call may be recorded..." Without recognizing
+// this, that preamble reads as a live person answering and Brandy talks right
+// over the rest of the menu before it lists any options.
+const IVR_PREAMBLE_RE = /\b(thank you for calling|welcome to|your call (is important|may be (recorded|monitored))|please listen (carefully|closely)|menu options have changed|all (of )?our (representatives|agents|operators|lines) are (currently )?(busy|assisting)|please (continue to )?hold|please stay on the line|for quality (assurance|purposes)|to repeat this menu|if you know your party.?s extension|enter your party.?s extension|main menu|para espa(ñ|n)ol|is currently closed|business hours are|leave a message after the tone)\b/i;
+
 function buildGreeting(n, c) {
   if (n) {
     const firstName = n.trim().split(/\s+/)[0];
@@ -307,8 +313,12 @@ module.exports = async function handler(req, res) {
       // couple tries) open with the normal greeting.
       const ivrDigit = transcript ? detectIvrDigit(transcript) : null;
       const introAction = (nextAttempt) => `/api/ai-respond?h=${b64enc(history)}&amp;intro=1&amp;iattempt=${nextAttempt}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}`;
-      if (ivrDigit && iattempt < 8) {
+      if (ivrDigit && iattempt < 10) {
         return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Play digits="${ivrDigit}"/><Gather input="speech" action="${introAction(iattempt + 1)}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true"></Gather><Hangup/></Response>`);
+      }
+      if (transcript && !ivrDigit && IVR_PREAMBLE_RE.test(transcript) && iattempt < 10) {
+        // Automated system is still talking (preamble/hold message, no digit yet) — keep listening.
+        return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${introAction(iattempt + 1)}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true"></Gather><Hangup/></Response>`);
       }
       if (!transcript && iattempt < 2) {
         return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${introAction(iattempt + 1)}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true"></Gather><Hangup/></Response>`);
