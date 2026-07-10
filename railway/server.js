@@ -62,6 +62,11 @@ function hangupCall(session) {
 }
 const LANG_NAMES = { en:'English', es:'Spanish', pt:'Portuguese', fr:'French', zh:'Mandarin Chinese', vi:'Vietnamese', ko:'Korean', ar:'Arabic', hi:'Hindi', ht:'Haitian Creole' };
 
+// Calls only end when the model emits [END] — these caps stop a call from
+// running away if the model never reaches that on its own.
+const MAX_CALL_DURATION_MS = 6 * 60 * 1000;
+const MAX_ASSISTANT_TURNS  = 16;
+
 function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
   const parts = [base];
@@ -78,6 +83,9 @@ function buildSystemPrompt(session) {
   }
   parts.push('NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time. Do not give away your bottom line.');
   parts.push('IVR NAVIGATION: If you hear an automated phone menu (e.g. "press 1 for sales", "for billing press 2", "please listen to our menu options"), you MUST navigate it — do NOT speak. Output ONLY [PRESS:X] where X is the best digit: prefer any option for "corporate development", "strategy", "M&A", "business development", or "executive office"; otherwise press 0 for an operator. Never say anything when pressing a key — just [PRESS:X] by itself.');
+  if (session.history.filter(m => m.role === 'assistant').length >= MAX_ASSISTANT_TURNS - 3) {
+    parts.push('This call has gone on long enough — wrap it up in your next response: give a warm goodbye and [END]. Do not ask another question or start a new topic.');
+  }
   return parts.join(' ');
 }
 
@@ -370,7 +378,7 @@ function handleTwilio(ws) {
         return;
       }
 
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false, startedAt: Date.now() };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)', '| voice:', ELEVENLABS_VOICE);
@@ -576,6 +584,20 @@ async function sendGreeting(session) {
 async function generateAndSpeak(session) {
   const myTurn = ++session.turnId;
   callLog(session.callSid, '[ai] generating response (turn=' + myTurn + ')...');
+
+  if (Date.now() - session.startedAt > MAX_CALL_DURATION_MS) {
+    callLog(session.callSid, '[call] hit max duration cap — forcing hangup');
+    const goodbye = "Hey, I've got to hop on another call — really appreciate your time today, talk soon!";
+    session.history.push({ role: 'assistant', content: goodbye });
+    pushToBrowser(session, { event: 'ai-response', text: goodbye });
+    await speakToTwilio(session, goodbye);
+    session.state = 'ending';
+    pushToBrowser(session, { event: 'call-ended' });
+    sendFollowUpEmailLegacy(session);
+    hangupCall(session);
+    return;
+  }
+
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
   session.state = 'speaking';
