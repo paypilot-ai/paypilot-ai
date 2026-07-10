@@ -492,7 +492,9 @@ function connectDeepgram(session) {
       const transcript = result?.channel?.alternatives?.[0]?.transcript?.trim();
       const confidence = result?.channel?.alternatives?.[0]?.confidence ?? 1;
       if (!transcript || !result.is_final) return;
-      if (confidence < 0.80) {
+      // Automated/synthetic IVR menu voices often score lower confidence than natural
+      // speech — don't drop them before we've even had a chance to check for a menu.
+      if (confidence < 0.80 && session.state !== 'greeting') {
         callLog(session.callSid, '[dg] low confidence (' + confidence.toFixed(2) + '), skipping:', transcript);
         return;
       }
