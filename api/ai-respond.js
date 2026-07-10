@@ -35,6 +35,34 @@ function summarizeReason(reason) {
   return summary || reason.trim();
 }
 
+// Deterministic IVR-menu detection — don't rely on the model noticing "press 1
+// for sales" in the transcript and remembering to respond with a press instead
+// of talking through it. Runs on the raw transcript before any LLM call.
+const IVR_PRESS_RE = /(?:for\s+([a-z][a-z\s]{1,40}?)\s+)?press\s+(pound|star|[0-9]|one|two|three|four|five|six|seven|eight|nine|zero)\b/gi;
+const IVR_WORD_DIGIT = { zero:'0', one:'1', two:'2', three:'3', four:'4', five:'5', six:'6', seven:'7', eight:'8', nine:'9', pound:'#', star:'*' };
+const IVR_PRIORITY = ['corporate development', 'strategy', 'merger', 'm&a', 'business development', 'executive office', 'executive', 'operator', 'representative', 'agent'];
+function detectIvrDigit(transcript) {
+  const matches = [...transcript.matchAll(IVR_PRESS_RE)];
+  if (!matches.length) return null;
+  const options = matches.map(m => ({
+    context: (m[1] || '').toLowerCase().trim(),
+    digit: IVR_WORD_DIGIT[m[2].toLowerCase()] || m[2],
+  }));
+  for (const kw of IVR_PRIORITY) {
+    const hit = options.find(o => o.context.includes(kw));
+    if (hit) return hit.digit;
+  }
+  return options[0].digit;
+}
+
+function buildGreeting(n, c) {
+  if (n) {
+    const firstName = n.trim().split(/\s+/)[0];
+    return `Hi, may I speak with ${firstName}?`;
+  }
+  return `Hi there, this is Brandy calling from ${c || 'PayPilot AI'}. Who am I speaking with?`;
+}
+
 function isAcquisitionCall(reason) {
   if (!reason) return false;
   return /acqui(re|sition)|merger|M&A/i.test(reason);
@@ -264,12 +292,32 @@ module.exports = async function handler(req, res) {
     const s       = (req.query.s || '').trim();
     const retries = parseInt(req.query.retries || '0');
     const turns   = parseInt(req.query.turns   || '0');
+    const intro   = req.query.intro === '1';
+    const iattempt = parseInt(req.query.iattempt || '0');
     const historyParam = req.query.h || '';
 
     const transcript = ((req.body && req.body.SpeechResult) || '').trim();
 
     let history = [];
     try { if (historyParam) history = b64dec(historyParam); } catch {}
+
+    if (intro) {
+      // Listening for an automated menu before Brandy ever speaks. If we hear one,
+      // press through it silently; otherwise (a live person, or nothing after a
+      // couple tries) open with the normal greeting.
+      const ivrDigit = transcript ? detectIvrDigit(transcript) : null;
+      const introAction = (nextAttempt) => `/api/ai-respond?h=${b64enc(history)}&amp;intro=1&amp;iattempt=${nextAttempt}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}`;
+      if (ivrDigit && iattempt < 8) {
+        return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Play digits="${ivrDigit}"/><Gather input="speech" action="${introAction(iattempt + 1)}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true"></Gather><Hangup/></Response>`);
+      }
+      if (!transcript && iattempt < 2) {
+        return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${introAction(iattempt + 1)}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true"></Gather><Hangup/></Response>`);
+      }
+      const greeting = buildGreeting(n, c);
+      if (transcript) history.push({ role: 'user', content: transcript });
+      history.push({ role: 'assistant', content: greeting });
+      return res.status(200).send(gather(say(greeting), b64enc(history), 0, 1, n, r, c, e, s));
+    }
 
     if (!transcript) {
       if (retries >= 1) {
@@ -296,6 +344,14 @@ module.exports = async function handler(req, res) {
     }
 
     history.push({ role: 'user', content: transcript });
+
+    // If this sounds like an automated phone menu, press a digit deterministically
+    // instead of routing through the LLM, which doesn't reliably catch it.
+    const ivrDigit = detectIvrDigit(transcript);
+    if (ivrDigit) {
+      const action = `/api/ai-respond?h=${b64enc(history)}&amp;retries=0&amp;turns=${turns}&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e||'')}&amp;s=${encodeURIComponent(s||'')}`;
+      return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Play digits="${ivrDigit}"/><Gather input="speech" action="${action}" method="POST" timeout="10" speechTimeout="2" speechModel="phone_call" language="en-US" bargeIn="true"></Gather><Hangup/></Response>`);
+    }
 
     // Scripted fallback replies — used if OpenAI is slow or unavailable
     const SCRIPTED = [
