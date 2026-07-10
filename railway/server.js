@@ -45,6 +45,26 @@ function shouldEndCall(text) {
   return text.toLowerCase().includes('[end]');
 }
 
+// Deterministic IVR-menu detection — don't rely on the model noticing "press 1
+// for sales" in the transcript and remembering to respond with a press instead
+// of talking through it. Runs on the raw transcript before any LLM call.
+const IVR_PRESS_RE = /(?:for\s+([a-z][a-z\s]{1,40}?)\s+)?press\s+(pound|star|[0-9]|one|two|three|four|five|six|seven|eight|nine|zero)\b/gi;
+const IVR_WORD_DIGIT = { zero:'0', one:'1', two:'2', three:'3', four:'4', five:'5', six:'6', seven:'7', eight:'8', nine:'9', pound:'#', star:'*' };
+const IVR_PRIORITY = ['corporate development', 'strategy', 'merger', 'm&a', 'business development', 'executive office', 'executive', 'operator', 'representative', 'agent'];
+function detectIvrDigit(transcript) {
+  const matches = [...transcript.matchAll(IVR_PRESS_RE)];
+  if (!matches.length) return null;
+  const options = matches.map(m => ({
+    context: (m[1] || '').toLowerCase().trim(),
+    digit: IVR_WORD_DIGIT[m[2].toLowerCase()] || m[2],
+  }));
+  for (const kw of IVR_PRIORITY) {
+    const hit = options.find(o => o.context.includes(kw));
+    if (hit) return hit.digit;
+  }
+  return options[0].digit;
+}
+
 function hangupCall(session) {
   callLog(session.callSid, '[hangup] ending call via REST + WebSocket');
   // Twilio REST API — most reliable way to end the call
@@ -62,6 +82,11 @@ function hangupCall(session) {
 }
 const LANG_NAMES = { en:'English', es:'Spanish', pt:'Portuguese', fr:'French', zh:'Mandarin Chinese', vi:'Vietnamese', ko:'Korean', ar:'Arabic', hi:'Hindi', ht:'Haitian Creole' };
 
+// Calls only end when the model emits [END] — these caps stop a call from
+// running away if the model never reaches that on its own.
+const MAX_CALL_DURATION_MS = 6 * 60 * 1000;
+const MAX_ASSISTANT_TURNS  = 16;
+
 function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
   const parts = [base];
@@ -78,6 +103,9 @@ function buildSystemPrompt(session) {
   }
   parts.push('NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time. Do not give away your bottom line.');
   parts.push('IVR NAVIGATION: If you hear an automated phone menu (e.g. "press 1 for sales", "for billing press 2", "please listen to our menu options"), you MUST navigate it — do NOT speak. Output ONLY [PRESS:X] where X is the best digit: prefer any option for "corporate development", "strategy", "M&A", "business development", or "executive office"; otherwise press 0 for an operator. Never say anything when pressing a key — just [PRESS:X] by itself.');
+  if (session.history.filter(m => m.role === 'assistant').length >= MAX_ASSISTANT_TURNS - 3) {
+    parts.push('This call has gone on long enough — wrap it up in your next response: give a warm goodbye and [END]. Do not ask another question or start a new topic.');
+  }
   return parts.join(' ');
 }
 
@@ -367,15 +395,16 @@ function handleTwilio(ws) {
         dgAudioLogged = false;
         callLog(callSid, '[call] reconnected after DTMF, history preserved');
         connectDeepgram(session);
+        if (session.state === 'greeting') armIntroListen(session);
         return;
       }
 
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, introAttempts: 0, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false, startedAt: Date.now() };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)', '| voice:', ELEVENLABS_VOICE);
       connectDeepgram(session);
-      setTimeout(() => sendGreeting(session), 600);
+      armIntroListen(session);
     }
     if (msg.event === 'media' && session) {
       const dgState = session.dgWs?.readyState;
@@ -496,6 +525,21 @@ function connectDeepgram(session) {
         pushToBrowser(session, { event: 'email-captured', email: rawEmail });
       }
 
+      if (session.state === 'greeting') {
+        const ivrDigit = detectIvrDigit(transcript);
+        if (ivrDigit) {
+          clearTimeout(session.greetingTimer);
+          callLog(session.callSid, '[dtmf] IVR pattern detected before greeting — pressing', ivrDigit);
+          sendDTMF(session, ivrDigit); // reconnect re-arms the intro listen window
+          return;
+        }
+        // Doesn't look like a menu — a live person answered. Proceed with the
+        // normal greeting, folding in what they already said for context.
+        clearTimeout(session.greetingTimer);
+        session.history.push({ role: 'user', content: transcript });
+        sendGreeting(session);
+        return;
+      }
       if (session.state === 'processing') { return; }
       if (session.state === 'speaking') {
         const elapsed = session.speakStartTime ? Date.now() - session.speakStartTime : 0;
@@ -572,10 +616,46 @@ async function sendGreeting(session) {
   }, 7000);
 }
 
+// Many calls are answered by an automated phone menu that starts talking
+// immediately — listen silently first instead of speaking the greeting over it.
+// If what we hear looks like an IVR menu, press through it (re-arming this same
+// listen window for the next menu level) without ever speaking; otherwise proceed
+// with the normal greeting.
+function armIntroListen(session) {
+  clearTimeout(session.greetingTimer);
+  session.introAttempts = (session.introAttempts || 0) + 1;
+  session.greetingTimer = setTimeout(() => {
+    if (session.state === 'greeting') sendGreeting(session);
+  }, session.introAttempts > 6 ? 0 : 3500);
+}
+
 
 async function generateAndSpeak(session) {
   const myTurn = ++session.turnId;
   callLog(session.callSid, '[ai] generating response (turn=' + myTurn + ')...');
+
+  if (Date.now() - session.startedAt > MAX_CALL_DURATION_MS) {
+    callLog(session.callSid, '[call] hit max duration cap — forcing hangup');
+    const goodbye = "Hey, I've got to hop on another call — really appreciate your time today, talk soon!";
+    session.history.push({ role: 'assistant', content: goodbye });
+    pushToBrowser(session, { event: 'ai-response', text: goodbye });
+    await speakToTwilio(session, goodbye);
+    session.state = 'ending';
+    pushToBrowser(session, { event: 'call-ended' });
+    sendFollowUpEmailLegacy(session);
+    hangupCall(session);
+    return;
+  }
+
+  const lastUserMsg = [...session.history].reverse().find(m => m.role === 'user');
+  const ivrDigit = lastUserMsg ? detectIvrDigit(lastUserMsg.content) : null;
+  if (ivrDigit) {
+    callLog(session.callSid, '[dtmf] IVR pattern detected in transcript — pressing', ivrDigit);
+    session.state = 'listening';
+    await sendDTMF(session, ivrDigit);
+    return;
+  }
+
   const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
 
   session.state = 'speaking';
