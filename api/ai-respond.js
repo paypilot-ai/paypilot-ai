@@ -266,6 +266,10 @@ function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName
   }).catch(() => {});
 }
 
+// Calls only end when the model emits [END] — this cap stops a call from
+// running away if the model never reaches that on its own.
+const MAX_TURNS = 20;
+
 function buildPrompt(customerName, companyName, callReason, turns) {
   const company = companyName || 'our company';
   const firstName = (customerName || 'the prospect').trim().split(/\s+/)[0];
@@ -273,6 +277,9 @@ function buildPrompt(customerName, companyName, callReason, turns) {
   const introInstruction = turns <= 1
     ? `You just asked if you reached the right person. Once confirmed: say your name, company, and reason in plain words. One or two sentences. Ask if they have a sec.`
     : `You already introduced yourself earlier in this call — do NOT reintroduce yourself or re-ask if you reached the right person. Read the conversation history below and respond directly to what they just said.`;
+  const wrapUpNudge = turns >= MAX_TURNS - 6
+    ? `\nThis call has gone on long enough — wrap it up in your next response: give a warm goodbye and write [END]. Do not ask another question or start a new topic.`
+    : '';
   return `You are Brandy, making an outbound call for ${company} to ${firstName} about ${reason}. You sound like a real person — casual, direct, warm, with real emotion. Short sentences. Contractions. No corporate language.
 Start replies with words like "So", "Yeah", "Oh", "Look", "I mean", "Honestly" — the way people actually talk on the phone.
 React emotionally: if something is funny say "Ha, yeah!" — if they hesitate say "Aw yeah, I get that."
@@ -284,7 +291,7 @@ On pushback: try a different angle. Second no: offer to email. Third no: warm go
 NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time.
 IVR NAVIGATION: If you hear an automated phone menu (phrases like "press 1 for sales", "for X press Y", "please hold while we transfer"), output ONLY [PRESS:X] with no other words — prefer options for "corporate development", "strategy", "M&A", "executive office", or "operator"; otherwise [PRESS:0] for an operator.
 Never mention the contact's job title, role, or any metadata about them — use their first name only when addressing them directly.
-Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate that", "No problem", "That's a great question".`;
+Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate that", "No problem", "That's a great question".${wrapUpNudge}`;
 }
 
 module.exports = async function handler(req, res) {
@@ -354,6 +361,15 @@ module.exports = async function handler(req, res) {
     }
 
     history.push({ role: 'user', content: transcript });
+
+    // Hard cap — the call otherwise only ends when the model emits [END], with
+    // no fallback if it never does.
+    if (turns >= MAX_TURNS) {
+      const goodbye = "Hey, I've got to hop on another call — really appreciate your time today, talk soon!";
+      history.push({ role: 'assistant', content: goodbye });
+      sendFollowUpEmail(e, s, n, c, r);
+      return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say(goodbye)}<Hangup/></Response>`);
+    }
 
     // If this sounds like an automated phone menu, press a digit deterministically
     // instead of routing through the LLM, which doesn't reliably catch it.
