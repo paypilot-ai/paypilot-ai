@@ -1,3 +1,5 @@
+const { validateTwilioRequest } = require('../lib/twilioAuth');
+
 function b64enc(obj) {
   return Buffer.from(JSON.stringify(obj)).toString('base64')
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
@@ -20,6 +22,11 @@ function buildVoicemail(n, c, r, rn, s) {
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
   try {
+    if (!validateTwilioRequest(req, process.env.TWILIO_AUTH_TOKEN)) {
+      console.error('[ai-twiml] rejected request with invalid/missing Twilio signature');
+      return res.status(403).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Reject/></Response>`);
+    }
+
     // Inbound calls (someone calling the Twilio number back) — Twilio marks these
     // with Direction=inbound, vs. "outbound-api" for calls we place ourselves.
     // Handled here (rather than a separate file) to stay under Vercel's function limit.

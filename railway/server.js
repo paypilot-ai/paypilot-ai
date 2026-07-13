@@ -3,6 +3,7 @@ const { WebSocketServer, WebSocket } = require('ws');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { validateTwilioRequest } = require('../lib/twilioAuth');
 
 const app = express();
 app.use(express.json());
@@ -299,6 +300,11 @@ function buildVoicemail(n, c, r, rn, s) {
 }
 
 app.all('/twiml-stream', (req, res) => {
+  if (!validateTwilioRequest(req, TWILIO_AUTH_TOKEN)) {
+    console.error('[twiml-stream] rejected request with invalid/missing Twilio signature');
+    res.setHeader('Content-Type', 'text/xml');
+    return res.status(403).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Reject/></Response>`);
+  }
   const n = req.query.n || '';
   const r = req.query.r || '';
   const c = req.query.c || '';
