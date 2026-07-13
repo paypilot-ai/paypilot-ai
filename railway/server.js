@@ -1072,14 +1072,18 @@ async function streamTTS(session, text, gen) {
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 12000);
-    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=ulaw_8000&optimize_streaming_latency=4`, {
+    // Request raw PCM (not pre-encoded ulaw) so it goes through the same gain
+    // boost as the rest of Brandy's speech instead of bypassing it — ElevenLabs'
+    // default output level plus straight mulaw encoding sounds noticeably quiet
+    // over a phone line.
+    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000&optimize_streaming_latency=4`, {
       method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
       signal: ctrl.signal
     });
     clearTimeout(t);
     if (resp.ok) {
-      await pipeToTwilio(session, resp, 'ulaw8k', gen);
+      await pipeToTwilio(session, resp, 'pcm16k', gen);
       return;
     }
     const errBody = await resp.text().catch(() => '');
@@ -1147,11 +1151,16 @@ async function pipeToTwilio(session, resp, type, gen) {
 }
 
 
+// ElevenLabs' raw PCM output plus straight decimation to 8kHz mulaw comes
+// across as noticeably quiet over a phone line — boost it before encoding.
+// CLIP below already clamps the post-gain value, so this can't cause overflow.
+const TTS_GAIN = 1.6;
+
 function pcm16ToMulaw(samples) {
   const BIAS = 0x84, CLIP = 32635;
   const out = Buffer.allocUnsafe(Math.floor(samples.length / 2));
   for (let i = 0; i < out.length; i++) {
-    let s = samples[i * 2];
+    let s = samples[i * 2] * TTS_GAIN;
     const sign = s < 0 ? 0x80 : 0;
     if (sign) s = -s;
     if (s > CLIP) s = CLIP;
@@ -1169,7 +1178,7 @@ function pcm24ToMulaw(samples) {
   const BIAS = 0x84, CLIP = 32635;
   const out = Buffer.allocUnsafe(Math.floor(samples.length / 3));
   for (let i = 0; i < out.length; i++) {
-    let s = Math.round((samples[i * 3] + (samples[i * 3 + 1] || 0) + (samples[i * 3 + 2] || 0)) / 3);
+    let s = Math.round((samples[i * 3] + (samples[i * 3 + 1] || 0) + (samples[i * 3 + 2] || 0)) / 3) * TTS_GAIN;
     const sign = s < 0 ? 0x80 : 0;
     if (sign) s = -s;
     if (s > CLIP) s = CLIP;
