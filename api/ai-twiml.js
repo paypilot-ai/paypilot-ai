@@ -3,6 +3,17 @@ function b64enc(obj) {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
+function xmlEsc(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+
+function buildVoicemail(n, c, r) {
+  const firstName = n ? n.trim().split(/\s+/)[0] : '';
+  const company = c || 'PayPilot AI';
+  const reason = r ? r.slice(0, 200) : 'a quick call';
+  return `Hi${firstName ? ' ' + firstName : ''}, this is Brandy calling from ${company} about ${reason}. Sorry I missed you — feel free to give us a call back, or I'll try you again soon. Thanks, have a great day!`;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
   try {
@@ -11,6 +22,14 @@ module.exports = async function handler(req, res) {
     const c = (req.query.c || '').trim();
     const e = (req.query.e || '').trim();
     const s = (req.query.s || '').trim();
+
+    // Answering-machine detection (Twilio MachineDetection=Enable on the call) —
+    // leave a short voicemail instead of trying to hold a live conversation.
+    const answeredBy = ((req.body && req.body.AnsweredBy) || req.query.AnsweredBy || '').trim();
+    if (answeredBy.startsWith('machine') || answeredBy === 'fax') {
+      const voicemail = buildVoicemail(n, c, r);
+      return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="Polly.Joanna-Neural">${xmlEsc(voicemail)}</Say><Hangup/></Response>`);
+    }
 
     // Listen silently first — many calls are answered by an automated phone menu
     // that starts talking immediately. Speaking our greeting over it means Brandy
