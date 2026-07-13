@@ -20,6 +20,18 @@ function buildVoicemail(n, c, r, rn, s) {
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
   try {
+    // Inbound calls (someone calling the Twilio number back) — Twilio marks these
+    // with Direction=inbound, vs. "outbound-api" for calls we place ourselves.
+    // Handled here (rather than a separate file) to stay under Vercel's function limit.
+    if ((req.body && req.body.Direction) === 'inbound') {
+      const forwardTo = (process.env.FORWARD_TO_NUMBER || '').trim();
+      const voicemailPrompt = 'Sorry, we\'re not able to take your call right now. Please leave a message after the tone, and we\'ll get back to you.';
+      if (!forwardTo) {
+        return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="Polly.Joanna-Neural">${xmlEsc(voicemailPrompt)}</Say><Record maxLength="120" playBeep="true" trim="trim-silence"/><Hangup/></Response>`);
+      }
+      return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Dial timeout="20"><Number>${xmlEsc(forwardTo)}</Number></Dial><Say voice="Polly.Joanna-Neural">${xmlEsc(voicemailPrompt)}</Say><Record maxLength="120" playBeep="true" trim="trim-silence"/><Hangup/></Response>`);
+    }
+
     const n = (req.query.n || '').trim();
     const r = (req.query.r || '').trim().slice(0, 500);
     const c = (req.query.c || '').trim();
