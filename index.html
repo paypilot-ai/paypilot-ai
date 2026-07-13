@@ -2097,6 +2097,10 @@ body.modal-open{overflow:hidden}
                   <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Message (optional)</label>
                   <textarea id="aiEmailMessage" placeholder="Add a personal note, instructions, or any details..." style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;min-height:72px;resize:vertical;font-family:inherit;"></textarea>
                 </div>
+                <div style="margin-bottom:12px;">
+                  <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Return Phone Number (optional)</label>
+                  <input id="aiReturnNumber" type="tel" placeholder="e.g. (555) 123-4567 — mentioned if she leaves a voicemail" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
+                </div>
                 <div>
                   <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Attachment (optional)</label>
                   <label id="aiAgreementLabel" for="aiCallerAgreement" style="display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;padding:10px 14px;border:2px dashed #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;cursor:pointer;background:#fff;transition:border-color .2s,color .2s;">
@@ -2171,6 +2175,10 @@ body.modal-open{overflow:hidden}
                   <div style="margin-bottom:12px;">
                     <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Message (optional)</label>
                     <textarea id="adEmailMessage" placeholder="Add a personal note, instructions, or any details..." style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;min-height:72px;resize:vertical;font-family:inherit;"></textarea>
+                  </div>
+                  <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Return Phone Number (optional)</label>
+                    <input id="adReturnNumber" type="tel" placeholder="e.g. (555) 123-4567 — mentioned if she leaves a voicemail" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
                   </div>
                   <div>
                     <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Attachment (optional — same file sent to every contact)</label>
@@ -5410,6 +5418,7 @@ async function startAiCall(){
   const companyName   = document.getElementById('aiCallerCompany').value.trim();
   const customerEmail = document.getElementById('aiCallerEmail') ? document.getElementById('aiCallerEmail').value.trim() : '';
   const senderEmail   = document.getElementById('aiSenderEmail') ? document.getElementById('aiSenderEmail').value.trim() : '';
+  const returnNumber  = document.getElementById('aiReturnNumber') ? document.getElementById('aiReturnNumber').value.trim() : '';
   const language      = document.getElementById('aiCallLanguage')?.value || 'en';
   const btn = document.getElementById('aiCallBtn');
   btn.disabled = true;
@@ -5419,7 +5428,7 @@ async function startAiCall(){
     const resp = await fetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail, language }),
+      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language }),
       signal: AbortSignal.timeout(15000)
     });
     const data = await resp.json();
@@ -6309,11 +6318,13 @@ async function dialNextContact() {
   const company       = document.getElementById('adCompany').value.trim();
   const defaultReason = document.getElementById('adReason').value.trim();
   const callLanguage  = document.getElementById('adLanguage')?.value || 'en';
+  const senderEmail   = document.getElementById('adSenderEmail') ? document.getElementById('adSenderEmail').value.trim() : '';
+  const returnNumber  = document.getElementById('adReturnNumber') ? document.getElementById('adReturnNumber').value.trim() : '';
   try {
     const resp = await fetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company, language: callLanguage })
+      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company, customerEmail: contact.email, senderEmail, returnNumber, language: callLanguage })
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Call failed');

@@ -24,7 +24,7 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail, language } = req.body || {};
+  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language } = req.body || {};
   if (!toNumber) return res.status(400).json({ error: 'Phone number required' });
 
   const cleaned = toNumber.replace(/\D/g, '');
@@ -39,6 +39,7 @@ module.exports = async function handler(req, res) {
     const c = encodeURIComponent(companyName || '');
     const e = encodeURIComponent(customerEmail || '');
     const s = encodeURIComponent(senderEmail || '');
+    const rn = encodeURIComponent(returnNumber || '');
     const l = encodeURIComponent(language || 'en');
 
     // Try Railway (OpenAI Realtime + ElevenLabs) first
@@ -55,7 +56,7 @@ module.exports = async function handler(req, res) {
       } catch (_) { railwayUp = false; }
 
       if (railwayUp) {
-        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}&l=${l}`;
+        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}&rn=${rn}&l=${l}`;
         const resp = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
           {
@@ -71,7 +72,7 @@ module.exports = async function handler(req, res) {
     }
 
     // Fallback: route through ai-twiml.js (uses ElevenLabs TTS, consistent voice)
-    const twimlUrl = `https://paypilotai.live/api/ai-twiml?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}`;
+    const twimlUrl = `https://paypilotai.live/api/ai-twiml?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}&rn=${rn}`;
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
       {
