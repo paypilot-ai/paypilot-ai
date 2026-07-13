@@ -1,4 +1,5 @@
-const { requireAuth } = require('../lib/sessionAuth');
+// TEMPORARY: requireAuth() disabled until AUTH_SECRET etc. are set (see
+// loginDemo() in index.html for the matching rollback).
 
 module.exports = function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -7,7 +8,6 @@ module.exports = function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  if (!requireAuth(req, res)) return;
 
   const key = process.env.DEEPGRAM_API_KEY;
   if (!key) return res.status(500).json({ error: 'Deepgram API key not configured' });

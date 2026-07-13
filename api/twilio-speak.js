@@ -1,7 +1,8 @@
 // api/twilio-speak.js
 // Injects AI-generated Spanish audio directly into the active Twilio call
 
-const { requireAuth } = require('../lib/sessionAuth');
+// TEMPORARY: requireAuth() disabled until AUTH_SECRET etc. are set (see
+// loginDemo() in index.html for the matching rollback).
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,7 +10,6 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  if (!requireAuth(req, res)) return;
 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken  = process.env.TWILIO_AUTH_TOKEN;

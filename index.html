@@ -3619,7 +3619,22 @@ function showAuth(plan){
   }
 }
 
-async function loginDemo(){
+// TEMPORARY: server-side auth (lib/sessionAuth.js) is built and merged, but
+// its env vars (AUTH_SECRET etc.) aren't configured in Vercel/Railway yet.
+// Falling back to the old client-side check so login keeps working until
+// that setup is done — swap back to the apiFetch('/api/call-status?type=login')
+// flow once the env vars are set.
+const MASTER_EMAIL = 'info@paypilotai.live';
+const MASTER_PASS  = 'icyunv220';
+const TESTER_ACCOUNTS = [
+  { email: 'user1@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
+  { email: 'user2@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
+  { email: 'user3@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
+  { email: 'user4@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
+  { email: 'user5@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
+];
+
+function loginDemo(){
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value.trim();
 
@@ -3628,27 +3643,18 @@ async function loginDemo(){
     return;
   }
 
-  const btn = document.querySelector('#auth .app-btn.blue');
-  if(btn){ btn.disabled = true; btn.textContent = 'Logging in...'; }
-
-  try {
-    const resp = await apiFetch('/api/call-status?type=login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pass }),
-    });
-    const data = await resp.json();
-    if(!resp.ok || !data.token){
-      toast(data.error || 'Invalid email or password.');
-      return;
-    }
-    localStorage.setItem('pp_auth_token', data.token);
+  if(email === MASTER_EMAIL.toLowerCase() && pass === MASTER_PASS){
     enterRealApp();
-  } catch(e){
-    toast('Login failed — please try again.');
-  } finally {
-    if(btn){ btn.disabled = false; btn.textContent = 'Login'; }
+    return;
   }
+
+  const isTester = TESTER_ACCOUNTS.find(a => a.email.toLowerCase() === email && a.password === pass);
+  if(isTester){
+    enterRealApp();
+    return;
+  }
+
+  toast('Invalid email or password.');
 }
 
 function enterRealApp(){

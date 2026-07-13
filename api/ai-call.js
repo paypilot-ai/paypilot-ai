@@ -1,4 +1,5 @@
-const { requireAuth } = require('../lib/sessionAuth');
+// TEMPORARY: requireAuth() disabled here until AUTH_SECRET etc. are set in
+// Vercel/Railway (see loginDemo() in index.html for the matching rollback).
 const { rateLimit } = require('../lib/rateLimit');
 
 module.exports = async function handler(req, res) {
@@ -6,8 +7,6 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  const auth = requireAuth(req, res);
-  if (!auth) return;
 
   if (req.method === 'GET') {
     return res.status(200).json({
@@ -17,7 +16,7 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const rlIdentifier = auth.internal ? null : (auth.sub || undefined);
+  const rlIdentifier = undefined;
   if (!rateLimit(req, res, { key: 'ai-call', limit: 20, windowMs: 60_000, identifier: rlIdentifier })) return;
 
   const accountSid = (process.env.TWILIO_ACCOUNT_SID || '').trim();
