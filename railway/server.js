@@ -215,7 +215,7 @@ function sendForm(session) {
   callLog(session.callSid, '[form] sending to', session.capturedEmail);
   fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '' },
     body: JSON.stringify({
       customerName: session.name || '',
       customerEmail: session.capturedEmail,
@@ -312,6 +312,7 @@ app.all('/twiml-stream', (req, res) => {
   const s = req.query.s || '';
   const rn = req.query.rn || '';
   const l = req.query.l || 'en';
+  const disc = (req.query.disc || '').trim().slice(0, 500);
   const host = process.env.RAILWAY_PUBLIC_DOMAIN ||
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
@@ -336,8 +337,12 @@ app.all('/twiml-stream', (req, res) => {
     s ? `<Parameter name="s" value="${xmlEsc(s)}"/>` : '',
     l ? `<Parameter name="l" value="${xmlEsc(l)}"/>` : '',
   ].join('');
+  // Recording-consent disclosure, spoken once up front (Compliance settings)
+  // before the real-time stream connects.
+  const disclosureSay = disc ? `<Say voice="Polly.Joanna-Neural">${xmlEsc(disc)}</Say>` : '';
+
   res.setHeader('Content-Type', 'text/xml');
-  res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}">${paramXml}</Stream></Connect></Response>`);
+  res.send(`<?xml version="1.0" encoding="UTF-8"?><Response>${disclosureSay}<Connect><Stream url="${wsUrl}">${paramXml}</Stream></Connect></Response>`);
 });
 
 app.get('/test-realtime', (req, res) => {
@@ -821,7 +826,7 @@ async function generateAndSpeak(session) {
     callLog(session.callSid, '[docusign] sending agreement to', session.capturedEmail);
     fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '' },
       body: JSON.stringify({
         customerName: session.name || '',
         customerEmail: session.capturedEmail,

@@ -1,8 +1,13 @@
+const { requireAuth } = require('../lib/sessionAuth');
+const { rateLimit } = require('../lib/rateLimit');
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
+  const auth = requireAuth(req, res);
+  if (!auth) return;
 
   if (req.method === 'GET') {
     return res.status(200).json({
@@ -12,6 +17,8 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  const rlIdentifier = auth.internal ? null : (auth.sub || undefined);
+  if (!rateLimit(req, res, { key: 'ai-call', limit: 20, windowMs: 60_000, identifier: rlIdentifier })) return;
 
   const accountSid = (process.env.TWILIO_ACCOUNT_SID || '').trim();
   const authToken  = (process.env.TWILIO_AUTH_TOKEN  || '').trim();
@@ -24,11 +31,12 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language } = req.body || {};
+  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText } = req.body || {};
   if (!toNumber) return res.status(400).json({ error: 'Phone number required' });
 
   const cleaned = toNumber.replace(/\D/g, '');
   const e164 = cleaned.startsWith('1') ? '+' + cleaned : '+1' + cleaned;
+  const shouldRecord = recordCall !== false; // default true — matches prior always-on behavior
 
   try {
     const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
@@ -41,6 +49,7 @@ module.exports = async function handler(req, res) {
     const s = encodeURIComponent(senderEmail || '');
     const rn = encodeURIComponent(returnNumber || '');
     const l = encodeURIComponent(language || 'en');
+    const disc = shouldRecord ? encodeURIComponent((disclosureText || '').trim().slice(0, 500)) : '';
 
     // Try Railway (OpenAI Realtime + ElevenLabs) first
     const rawWsUrl = (process.env.RAILWAY_WS_URL || '').trim();
@@ -56,13 +65,13 @@ module.exports = async function handler(req, res) {
       } catch (_) { railwayUp = false; }
 
       if (railwayUp) {
-        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}&rn=${rn}&l=${l}`;
+        const twimlUrl = `${railwayHttp}/twiml-stream?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}&rn=${rn}&l=${l}&disc=${disc}`;
         const resp = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
           {
             method: 'POST',
             headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: 'true', MachineDetection: 'DetectMessageEnd' }).toString()
+            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: String(shouldRecord), MachineDetection: 'DetectMessageEnd' }).toString()
           }
         );
         const data = await resp.json();
@@ -72,13 +81,13 @@ module.exports = async function handler(req, res) {
     }
 
     // Fallback: route through ai-twiml.js (uses ElevenLabs TTS, consistent voice)
-    const twimlUrl = `https://paypilotai.live/api/ai-twiml?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}&rn=${rn}`;
+    const twimlUrl = `https://paypilotai.live/api/ai-twiml?n=${n}&r=${r}&c=${c}&e=${e}&s=${s}&rn=${rn}&disc=${disc}`;
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
       {
         method: 'POST',
         headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: 'true', MachineDetection: 'DetectMessageEnd' }).toString()
+        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: String(shouldRecord), MachineDetection: 'DetectMessageEnd' }).toString()
       }
     );
     const data = await response.json();

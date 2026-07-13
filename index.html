@@ -22,7 +22,7 @@
 <meta name="twitter:image" content="https://paypilotai.live/og-image.png" />
 
 <!-- Favicon -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='32' y2='32'><stop offset='0' stop-color='%231a6fff'/><stop offset='1' stop-color='%237c3aed'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><circle cx='16' cy='16' r='3.2' fill='white'/><circle cx='16' cy='16' r='7.5' fill='none' stroke='white' stroke-width='1.6' opacity='0.85'/><circle cx='16' cy='16' r='11.5' fill='none' stroke='white' stroke-width='1.4' opacity='0.5'/><circle cx='16' cy='4.3' r='1.6' fill='%23facc15'/></svg>" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M27 16 A11 11 0 1 1 21 6.2' fill='none' stroke='%231a56ff' stroke-width='4.2' stroke-linecap='round'/><circle cx='21' cy='6.2' r='3.6' fill='%23facc15'/></svg>" />
 
 <!-- v2.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,7 +71,7 @@
 }
 
 *{box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-html,body{margin:0;padding:0;height:100%;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--main-bg);color:var(--text);line-height:1.6}
+html,body{margin:0;padding:0;height:100%;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--main-bg);color:var(--text);line-height:1.6;cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Ctext x='18' y='27' font-size='30' font-weight='500' text-anchor='middle' font-family='Arial,Helvetica,sans-serif' fill='%23111' stroke='%23fff' stroke-width='1.3' paint-order='stroke'%3E%24%3C/text%3E%3C/svg%3E") 18 18, auto}
 button,input,textarea,select{font:inherit}
 .hidden{display:none!important}
 body.modal-open{overflow:hidden}
@@ -2713,27 +2713,27 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
           <div class="grid-4" style="margin-bottom:20px;">
             <div style="background:linear-gradient(135deg,#07101f,#0d1e38);border-radius:22px;padding:24px;border:1px solid rgba(26,111,255,.25);box-shadow:0 4px 24px rgba(26,111,255,.18);position:relative;overflow:hidden;">
               <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(26,111,255,.30),transparent 70%);pointer-events:none;"></div>
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.45);margin-bottom:10px;">Response Quality</div>
-              <div style="font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="analyticsQuality">89%</div>
-              <div style="margin-top:8px;font-size:12px;color:rgba(0,212,255,.80);font-weight:600;">↑ Strong performance</div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.45);margin-bottom:10px;">Calls Placed</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="analyticsCallsPlaced">0</div>
+              <div style="margin-top:8px;font-size:12px;color:rgba(0,212,255,.80);font-weight:600;" id="analyticsCallsPlacedSub">No calls yet</div>
             </div>
             <div style="background:linear-gradient(135deg,#0d1f10,#142a1a);border-radius:22px;padding:24px;border:1px solid rgba(0,197,122,.25);box-shadow:0 4px 24px rgba(0,197,122,.14);position:relative;overflow:hidden;">
               <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(0,197,122,.28),transparent 70%);pointer-events:none;"></div>
               <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.45);margin-bottom:10px;">Avg. Handle Time</div>
-              <div style="font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="analyticsTime">4.2m</div>
-              <div style="margin-top:8px;font-size:12px;color:rgba(0,197,122,.80);font-weight:600;">↓ Below average</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="analyticsTime">--</div>
+              <div style="margin-top:8px;font-size:12px;color:rgba(0,197,122,.80);font-weight:600;" id="analyticsTimeSub">No recordings yet</div>
             </div>
             <div style="background:linear-gradient(135deg,#1a1007,#251808);border-radius:22px;padding:24px;border:1px solid rgba(201,162,39,.25);box-shadow:0 4px 24px rgba(201,162,39,.12);position:relative;overflow:hidden;">
               <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(201,162,39,.28),transparent 70%);pointer-events:none;"></div>
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.45);margin-bottom:10px;">Objections Solved</div>
-              <div style="font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="analyticsSolved">67</div>
-              <div style="margin-top:8px;font-size:12px;color:rgba(240,192,64,.80);font-weight:600;">↑ This session</div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.45);margin-bottom:10px;">Deals Won</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="analyticsSolved">0</div>
+              <div style="margin-top:8px;font-size:12px;color:rgba(240,192,64,.80);font-weight:600;" id="analyticsSolvedSub">This session</div>
             </div>
             <div style="background:linear-gradient(135deg,#15071a,#200e26);border-radius:22px;padding:24px;border:1px solid rgba(139,92,246,.25);box-shadow:0 4px 24px rgba(139,92,246,.14);position:relative;overflow:hidden;">
               <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.28),transparent 70%);pointer-events:none;"></div>
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.45);margin-bottom:10px;">Rep Adoption</div>
-              <div style="font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="analyticsAdoption">94%</div>
-              <div style="margin-top:8px;font-size:12px;color:rgba(167,139,250,.80);font-weight:600;">↑ Excellent</div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.45);margin-bottom:10px;">Close Rate</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1;" id="analyticsClose">0%</div>
+              <div style="margin-top:8px;font-size:12px;color:rgba(167,139,250,.80);font-weight:600;" id="analyticsCloseSub">Won ÷ total contacts</div>
             </div>
           </div>
 
@@ -3029,7 +3029,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
                 </div>
                 <div style="margin-top:14px">
                   <label class="label">Disclosure message</label>
-                  <textarea class="textarea" id="disclosureText" rows="3" style="font-size:13px;resize:vertical">This call may be monitored or recorded for quality assurance and training purposes. By remaining on the line, you consent to being recorded.</textarea>
+                  <textarea class="textarea" id="disclosureText" rows="3" style="font-size:13px;resize:vertical" onchange="syncComplianceStatus()">This call may be monitored or recorded for quality assurance and training purposes. By remaining on the line, you consent to being recorded.</textarea>
                 </div>
               </div>
 
@@ -3079,7 +3079,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
                     <div class="toggle-sub">Honor deletion requests within 30 days</div>
                   </div>
                   <label class="toggle">
-                    <input type="checkbox" id="erasureToggle" checked>
+                    <input type="checkbox" id="erasureToggle" checked onchange="syncComplianceStatus()">
                     <div class="toggle-track"></div>
                     <div class="toggle-thumb"></div>
                   </label>
@@ -3109,14 +3109,14 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
                       <div style="font-size:14px;font-weight:600;color:var(--text)">Export My Data</div>
                       <div style="font-size:12px;color:var(--muted);margin-top:2px">Download all data (GDPR Art. 20)</div>
                     </div>
-                    <button class="app-btn line" style="font-size:12px;padding:8px 14px" onclick="toast('Data export requested. You will receive an email within 48 hours.')">Request</button>
+                    <button class="app-btn line" style="font-size:12px;padding:8px 14px" onclick="exportMyData()">Download</button>
                   </div>
                   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:14px;background:#fff0f0;border:1px solid #fecaca">
                     <div>
                       <div style="font-size:14px;font-weight:600;color:#b91c1c">Delete My Account</div>
                       <div style="font-size:12px;color:#ef4444;margin-top:2px">Permanently remove all data</div>
                     </div>
-                    <button class="app-btn" style="font-size:12px;padding:8px 14px;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5" onclick="toast('Contact support@paypilot.ai to complete account deletion.')">Request</button>
+                    <button class="app-btn" style="font-size:12px;padding:8px 14px;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5" onclick="deleteMyAccount()">Delete</button>
                   </div>
                 </div>
               </div>
@@ -3458,6 +3458,16 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
 // ============================================================
 // STATE
 // ============================================================
+// Wraps fetch() for /api/* calls — auto-attaches the signed session token
+// (issued by the real login endpoint) so protected endpoints can verify the
+// caller. Endpoints that don't require auth just ignore the extra header.
+function apiFetch(url, options = {}) {
+  const token = localStorage.getItem('pp_auth_token');
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(url, { ...options, headers });
+}
+
 let currentPlan = "pro";
 let isLiveUser = false; // true when master login used
 let currentIsReal = false; // true when master login used
@@ -3476,7 +3486,7 @@ const planConfigs = {
     planName: "Starter",
     banner: "Starter Plan — Core AI objection help and scripts.",
     calls: "18", responses: "41", close: "63%",
-    quality: "74%", time: "5.8m", solved: "23", adoption: "61%",
+    time: "5.8m", solved: "23",
     nextStepTitle: "Simple objection handling",
     nextStepBody: "Keep the response short, clear, and easy to say on a live call. Starter is designed for fast help without extra layers.",
     insights: [
@@ -3495,7 +3505,7 @@ const planConfigs = {
     planName: "Pro",
     banner: "Pro Plan — Live assist, stronger rebuttals, and full analytics.",
     calls: "43", responses: "127", close: "81%",
-    quality: "89%", time: "4.2m", solved: "67", adoption: "94%",
+    time: "4.2m", solved: "67",
     nextStepTitle: "Acknowledge → Reframe → Soft close",
     nextStepBody: "Start by validating the fee concern, then shift to speed, visibility, and reduced manual effort before asking a soft commitment question.",
     insights: [
@@ -3514,7 +3524,7 @@ const planConfigs = {
     planName: "Enterprise",
     banner: "Enterprise Plan — Custom AI training, rollout support, and deeper integrations.",
     calls: "112", responses: "318", close: "88%",
-    quality: "94%", time: "3.7m", solved: "146", adoption: "98%",
+    time: "3.7m", solved: "146",
     nextStepTitle: "Coach + personalize + roll out at scale",
     nextStepBody: "Enterprise focuses on repeatable team performance, custom training, and better AI guidance built around your real workflow.",
     insights: [
@@ -3609,47 +3619,36 @@ function showAuth(plan){
   }
 }
 
-// ── MASTER CREDENTIALS — change these to your real login ──
-const MASTER_EMAIL = 'info@paypilotai.live';
-const MASTER_PASS  = 'icyunv220';
-
-  const TESTER_ACCOUNTS = [
-  { email: 'user1@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user2@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user3@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user4@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user5@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-];
-
-function loginDemo(){
+async function loginDemo(){
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value.trim();
-  const plan  = document.getElementById('loginPlan').value;
 
   if(!email || !pass){
     toast('Enter an email and password.');
     return;
   }
 
-  // Master login
-  if(email === MASTER_EMAIL.toLowerCase() && pass === MASTER_PASS){
+  const btn = document.querySelector('#auth .app-btn.blue');
+  if(btn){ btn.disabled = true; btn.textContent = 'Logging in...'; }
+
+  try {
+    const resp = await apiFetch('/api/call-status?type=login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
+    });
+    const data = await resp.json();
+    if(!resp.ok || !data.token){
+      toast(data.error || 'Invalid email or password.');
+      return;
+    }
+    localStorage.setItem('pp_auth_token', data.token);
     enterRealApp();
-    return;
+  } catch(e){
+    toast('Login failed — please try again.');
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = 'Login'; }
   }
-
-  // Tester login — full Pro access, unlimited calls
-  const isTester = TESTER_ACCOUNTS.find(a => a.email.toLowerCase() === email && a.password === pass);
-  if(isTester){
-    enterTesterApp();
-    return;
-  }
-
-  // No match — reject instead of silently dropping into demo mode
-  toast('Invalid email or password.');
-}
-
-function enterTesterApp(){
-  enterRealApp();
 }
 
 function enterRealApp(){
@@ -3660,16 +3659,10 @@ function enterRealApp(){
   document.getElementById('app').style.display = 'block';
   hidePricing();
 
-  // Apply pro config data
-  const cfg = planConfigs['pro'];
   document.getElementById('planPill').textContent = 'Pro — Live';
   const lp = document.getElementById('livePill');
   if(lp){ lp.textContent = '🟢 Live'; lp.style.background = '#dcfce7'; lp.style.color = '#166534'; }
   document.getElementById('metricPlan').textContent = 'Pro';
-  document.getElementById('analyticsQuality').textContent = cfg.quality;
-  document.getElementById('analyticsTime').textContent = cfg.time;
-  document.getElementById('analyticsSolved').textContent = cfg.solved;
-  document.getElementById('analyticsAdoption').textContent = cfg.adoption;
   const banner = document.getElementById('planBanner');
   banner.textContent = 'PayPilot Pro — You are live. AI responses are real and powered by your scripts.';
   banner.style.background = 'linear-gradient(135deg,#dcfce7,#d1fae5)';
@@ -3717,10 +3710,14 @@ function applyPlanDemo(plan){
   document.getElementById('metricCalls').textContent = cfg.calls;
   document.getElementById('metricResponses').textContent = cfg.responses;
   document.getElementById('metricClose').textContent = cfg.close;
-  document.getElementById('analyticsQuality').textContent = cfg.quality;
+  document.getElementById('analyticsCallsPlaced').textContent = cfg.calls;
+  document.getElementById('analyticsCallsPlacedSub').textContent = 'This session';
   document.getElementById('analyticsTime').textContent = cfg.time;
+  document.getElementById('analyticsTimeSub').textContent = 'This session';
   document.getElementById('analyticsSolved').textContent = cfg.solved;
-  document.getElementById('analyticsAdoption').textContent = cfg.adoption;
+  document.getElementById('analyticsSolvedSub').textContent = 'This session';
+  document.getElementById('analyticsClose').textContent = cfg.close;
+  document.getElementById('analyticsCloseSub').textContent = 'Won ÷ total contacts';
   document.getElementById('planBanner').textContent = cfg.banner;
 
   document.getElementById('nextStepBox').innerHTML = `
@@ -3777,6 +3774,7 @@ function applyPlanDemo(plan){
 function logout(){
   localStorage.removeItem('pp_session');
   localStorage.removeItem('pp_last_page');
+  localStorage.removeItem('pp_auth_token');
   location.href = location.pathname;
 }
 
@@ -3997,7 +3995,7 @@ async function streamResponse(inputId, outputId, system, chatMessages, maxTokens
   lastGeneratedText = '';
 
   try {
-    const resp = await fetch('/api/generate-response', {
+    const resp = await apiFetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system, messages: chatMessages, max_tokens: maxTokens || 120 })
@@ -4113,7 +4111,7 @@ async function translateResponse(){
     const systemMsg = messages.find(m => m.role === 'system');
     const chatMessages = messages.filter(m => m.role !== 'system');
 
-    const resp = await fetch('/api/generate-response', {
+    const resp = await apiFetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -4261,7 +4259,7 @@ async function fakeStripe(plan, amount){
   toast('Opening secure checkout...');
 
   try {
-    const resp = await fetch('/api/create-checkout', {
+    const resp = await apiFetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan: plan.toLowerCase() })
@@ -4285,7 +4283,7 @@ async function openBillingPortal() {
   }
   toast('Opening billing portal...');
   try {
-    const resp = await fetch('/api/billing-portal', {
+    const resp = await apiFetch('/api/billing-portal', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId })
@@ -4561,7 +4559,7 @@ async function generateBilingualResponse(text){
 
 async function generateTranslatedVersion(englishText, language){
   try {
-    const resp = await fetch('/api/generate-response', {
+    const resp = await apiFetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -4617,7 +4615,7 @@ async function sendCurrentToCall(){
 
   toast('Sending to call in ' + lang + '...');
   try {
-    const resp = await fetch('/api/twilio-speak', {
+    const resp = await apiFetch('/api/twilio-speak', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ callSid: activeTwilioCall, text: txt, language: lang })
@@ -4676,7 +4674,7 @@ async function startTwilioCall(){
   document.getElementById('twilioStatus').textContent = 'Connecting...';
 
   try {
-    const resp = await fetch('/api/twilio-call', {
+    const resp = await apiFetch('/api/twilio-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ toNumber: number })
@@ -4717,7 +4715,7 @@ async function endTwilioCall(){
     const sidToEnd = activeTwilioCall;
     stopDeepgram();
     activeTwilioCall = null;
-    fetch('/api/call-status', {
+    apiFetch('/api/call-status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ callSid: sidToEnd })
@@ -4751,7 +4749,7 @@ function startCallStatusPolling(sid){
   aiCallPollInterval = setInterval(async () => {
     if(!sid) return;
     try {
-      const resp = await fetch('/api/call-status?sid=' + sid);
+      const resp = await apiFetch('/api/call-status?sid=' + sid);
       const data = await resp.json();
       if(['completed','failed','busy','no-answer','canceled'].includes(data.status)){
         clearInterval(aiCallPollInterval);
@@ -4767,7 +4765,7 @@ function startSpeechPolling(sid){
   aiSpeechPollInterval = setInterval(async () => {
     if(!sid) return;
     try {
-      const resp = await fetch('/api/call-status?type=speech&sid=' + sid);
+      const resp = await apiFetch('/api/call-status?type=speech&sid=' + sid);
       const data = await resp.json();
       if(data.ts && data.ts !== aiLastSpeechTs && data.text){
         aiLastSpeechTs = data.ts;
@@ -4789,7 +4787,7 @@ function startEmailPolling(sid) {
   document.getElementById('hudEmailCapture').style.display = 'none';
   aiEmailPollInterval = setInterval(async () => {
     try {
-      const resp = await fetch('/api/call-email?sid=' + sid);
+      const resp = await apiFetch('/api/call-email?sid=' + sid);
       const data = await resp.json();
       if (data.capturedEmail) {
         document.getElementById('hudCapturedEmail').textContent = data.capturedEmail;
@@ -4830,7 +4828,7 @@ async function hudSendDocument() {
       message: 'Thank you for speaking with us today! Please find your agreement attached. Reply to this email with any questions.'
     };
     if (fileContent) { payload.fileContent = fileContent; payload.fileName = file.name; }
-    const resp = await fetch('/api/send-agreement', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const resp = await apiFetch('/api/send-agreement', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Failed');
     toast('Document sent to ' + email + '!');
@@ -5353,10 +5351,32 @@ function refreshDashboardMetrics(){
   set('metricCalls',      totalCalls);
   set('metricResponses',  responses);
   set('metricClose',      closePct, '%');
-  set('analyticsQuality', 89, '%');
-  set('analyticsTime',    '4.2', 'm');
+  set('analyticsCallsPlaced', totalCalls);
+  set('analyticsCallsPlacedSub', totalCalls > 0 ? 'This session' : 'No calls yet');
   set('analyticsSolved',  won);
-  set('analyticsAdoption',responses > 0 ? Math.min(99, Math.round(responses / Math.max(responses,1) * 94)) : 0, '%');
+  set('analyticsSolvedSub', won > 0 ? 'This session' : 'None yet');
+  set('analyticsClose',  closePct, '%');
+  set('analyticsCloseSub', responses > 0 ? 'Won ÷ total contacts' : 'No contacts yet');
+  refreshAvgHandleTime();
+}
+
+async function refreshAvgHandleTime(){
+  try {
+    const resp = await apiFetch('/api/call-status?type=recordings');
+    const data = await resp.json();
+    const recs = (data.recordings || []).filter(r => r.duration > 0);
+    if (!recs.length) {
+      document.getElementById('analyticsTime').textContent = '--';
+      document.getElementById('analyticsTimeSub').textContent = 'No recordings yet';
+      return;
+    }
+    const avgSec = Math.round(recs.reduce((sum, r) => sum + r.duration, 0) / recs.length);
+    document.getElementById('analyticsTime').textContent = `${Math.floor(avgSec/60)}:${String(avgSec%60).padStart(2,'0')}`;
+    document.getElementById('analyticsTimeSub').textContent = `Across ${recs.length} recording${recs.length===1?'':'s'}`;
+  } catch (e) {
+    document.getElementById('analyticsTime').textContent = '--';
+    document.getElementById('analyticsTimeSub').textContent = 'Unavailable';
+  }
 }
 refreshDashboardMetrics();
 
@@ -5413,6 +5433,10 @@ async function startAiCall(){
     toast('Enter a valid 10-digit phone number.');
     return;
   }
+  if(isOnDncList(number)){
+    toast('This number is on your Do Not Call list — call blocked.');
+    return;
+  }
   const customerName  = document.getElementById('aiCallerName').value.trim();
   const callReason    = document.getElementById('aiCallerObjective').value.trim();
   const companyName   = document.getElementById('aiCallerCompany').value.trim();
@@ -5420,15 +5444,16 @@ async function startAiCall(){
   const senderEmail   = document.getElementById('aiSenderEmail') ? document.getElementById('aiSenderEmail').value.trim() : '';
   const returnNumber  = document.getElementById('aiReturnNumber') ? document.getElementById('aiReturnNumber').value.trim() : '';
   const language      = document.getElementById('aiCallLanguage')?.value || 'en';
+  const { recordCall, disclosureText } = getComplianceCallSettings();
   const btn = document.getElementById('aiCallBtn');
   btn.disabled = true;
   btn.textContent = 'Dialing...';
 
   try {
-    const resp = await fetch('/api/ai-call', {
+    const resp = await apiFetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language }),
+      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText }),
       signal: AbortSignal.timeout(15000)
     });
     const data = await resp.json();
@@ -5480,7 +5505,7 @@ async function endAiCall(){
   // Tell Twilio to terminate the call
   if(sid){
     try {
-      await fetch('/api/call-status', {
+      await apiFetch('/api/call-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ callSid: sid })
@@ -5549,7 +5574,7 @@ async function sendAgreement(){
     const payload = { customerName, customerEmail, callReason, senderEmail, subject, message };
     if(fileContent) { payload.fileContent = fileContent; payload.fileName = file.name; }
 
-    const resp = await fetch('/api/send-agreement', {
+    const resp = await apiFetch('/api/send-agreement', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -5597,7 +5622,7 @@ async function sendQuickEmail(){
     const payload = { customerEmail: to, senderEmail: from, subject, message };
     if(fileContent){ payload.fileContent = fileContent; payload.fileName = file.name; }
 
-    const resp = await fetch('/api/send-agreement', {
+    const resp = await apiFetch('/api/send-agreement', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -5643,7 +5668,7 @@ function speakTranslated(){
 // Translate customer's foreign speech to English, then speak it to the rep
 async function translateAndSpeakToRep(foreignText, fromLang, inputBox){
   try {
-    const resp = await fetch('/api/generate-response', {
+    const resp = await apiFetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -5772,7 +5797,7 @@ async function lookupContact(){
 
   // No local match — search Google Places
   try {
-    const resp = await fetch('/api/search-company?query=' + encodeURIComponent(val));
+    const resp = await apiFetch('/api/search-company?query=' + encodeURIComponent(val));
     const data = await resp.json();
     if(loading) loading.style.display = 'none';
 
@@ -6080,6 +6105,53 @@ function removeDNC(i){
   renderDNC();
 }
 
+// The DNC list was previously decorative — nothing checked it before dialing.
+function isOnDncList(phone){
+  const digits = (phone || '').replace(/\D/g,'').slice(-10);
+  if(!digits) return false;
+  return dncNumbers.some(n => n.replace(/\D/g,'').slice(-10) === digits);
+}
+
+const COMPLIANCE_TOGGLE_IDS = ['recordingDisclosureToggle','twoPartyToggle','pauseRecordingToggle','erasureToggle'];
+const COMPLIANCE_SELECT_IDS = ['recordingRetention','contactRetention'];
+
+function saveComplianceSettings(){
+  COMPLIANCE_TOGGLE_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) localStorage.setItem('pp_compliance_' + id, el.checked ? '1' : '0');
+  });
+  COMPLIANCE_SELECT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) localStorage.setItem('pp_compliance_' + id, el.value);
+  });
+  const disclosure = document.getElementById('disclosureText');
+  if(disclosure) localStorage.setItem('pp_compliance_disclosureText', disclosure.value);
+}
+
+function loadComplianceSettings(){
+  COMPLIANCE_TOGGLE_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    const saved = localStorage.getItem('pp_compliance_' + id);
+    if(el && saved !== null) el.checked = saved === '1';
+  });
+  COMPLIANCE_SELECT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    const saved = localStorage.getItem('pp_compliance_' + id);
+    if(el && saved !== null) el.value = saved;
+  });
+  const disclosure = document.getElementById('disclosureText');
+  const savedText = localStorage.getItem('pp_compliance_disclosureText');
+  if(disclosure && savedText !== null) disclosure.value = savedText;
+}
+
+// Read once per outbound call — used to decide whether Twilio records the
+// call and whether Brandy speaks a disclosure line before anything else.
+function getComplianceCallSettings(){
+  const recordCall = localStorage.getItem('pp_compliance_recordingDisclosureToggle') !== '0';
+  const disclosureText = recordCall ? (localStorage.getItem('pp_compliance_disclosureText') || '').trim() : '';
+  return { recordCall, disclosureText };
+}
+
 function syncComplianceStatus(){
   const retention = document.getElementById('recordingRetention');
   const sub = document.getElementById('retentionStatusSub');
@@ -6087,10 +6159,38 @@ function syncComplianceStatus(){
     const labels = {'30':'30-day','90':'90-day','180':'6-month','365':'1-year','0':'No auto-delete'};
     sub.textContent = (labels[retention.value] || retention.value) + ' retention';
   }
+  saveComplianceSettings();
+}
+
+function exportMyData(){
+  const data = {};
+  for(let i = 0; i < localStorage.length; i++){
+    const key = localStorage.key(i);
+    const raw = localStorage.getItem(key);
+    try { data[key] = JSON.parse(raw); } catch { data[key] = raw; }
+  }
+  const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), data }, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `paypilot-data-export-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast('Your data export has downloaded.');
+}
+
+function deleteMyAccount(){
+  if(!confirm('This permanently deletes all data stored in this browser — contacts, call history, recordings metadata, and settings — and logs you out. This cannot be undone. Continue?')) return;
+  localStorage.clear();
+  toast('Local data deleted. If you have an active subscription, email support@paypilot.ai to cancel billing.');
+  setTimeout(() => location.reload(), 1200);
 }
 
 document.addEventListener('DOMContentLoaded', function(){
   renderDNC();
+  loadComplianceSettings();
   syncComplianceStatus();
   const consent = localStorage.getItem('pp_cookie_consent');
   if(consent) updateCookieStatus(consent);
@@ -6305,6 +6405,14 @@ async function dialNextContact() {
   }
   adCurrentIdx = nextIdx;
   const contact = adContacts[adCurrentIdx];
+
+  if (isOnDncList(contact.phone)) {
+    contact.status = 'skipped';
+    document.getElementById('adStatus').textContent = `Skipped ${contact.name || contact.phone} — on Do Not Call list.`;
+    renderAdRows();
+    return dialNextContact();
+  }
+
   contact.status = 'calling';
   const total = adContacts.filter(c => c.status !== 'skipped').length;
   const done  = adContacts.filter(c => c.status === 'done' || c.status === 'failed').length;
@@ -6320,11 +6428,12 @@ async function dialNextContact() {
   const callLanguage  = document.getElementById('adLanguage')?.value || 'en';
   const senderEmail   = document.getElementById('adSenderEmail') ? document.getElementById('adSenderEmail').value.trim() : '';
   const returnNumber  = document.getElementById('adReturnNumber') ? document.getElementById('adReturnNumber').value.trim() : '';
+  const { recordCall, disclosureText } = getComplianceCallSettings();
   try {
-    const resp = await fetch('/api/ai-call', {
+    const resp = await apiFetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company, customerEmail: contact.email, senderEmail, returnNumber, language: callLanguage })
+      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company, customerEmail: contact.email, senderEmail, returnNumber, language: callLanguage, recordCall, disclosureText })
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Call failed');
@@ -6348,7 +6457,7 @@ async function dialNextContact() {
 async function pollAdCall(contact) {
   if (!adRunning || !contact.callSid) return;
   try {
-    const resp = await fetch('/api/call-status?sid=' + contact.callSid);
+    const resp = await apiFetch('/api/call-status?sid=' + contact.callSid);
     const data = await resp.json();
 
     const isTerminal = ['completed','failed','busy','no-answer','canceled'].includes(data.status);
@@ -6360,7 +6469,7 @@ async function pollAdCall(contact) {
 
       if (timedOut) {
         // Fire-and-forget: hang up the Twilio leg without blocking the dialer advance
-        fetch('/api/call-status', {
+        apiFetch('/api/call-status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ callSid: contact.callSid })
@@ -6393,7 +6502,7 @@ async function adSendAgreementForContact(contact) {
       senderEmail, subject, message,
     };
     if (adFileContent) { payload.fileContent = adFileContent; payload.fileName = adFileName; }
-    const resp = await fetch('/api/send-agreement', {
+    const resp = await apiFetch('/api/send-agreement', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -6424,7 +6533,7 @@ async function loadCallHistory() {
   const list = document.getElementById('historyList');
   list.innerHTML = '<div style="color:#7a90b0;font-size:13px;text-align:center;padding:30px 0">Loading…</div>';
   try {
-    const resp = await fetch('/api/call-status?type=recordings');
+    const resp = await apiFetch('/api/call-status?type=recordings');
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Failed to load');
     const recs = data.recordings || [];
@@ -6468,7 +6577,7 @@ function playRecording(sid, label, callSid) {
 async function deleteRecording(sid) {
   if (!confirm('Delete this recording? This cannot be undone.')) return;
   try {
-    const resp = await fetch(`/api/call-status?sid=${sid}`, { method: 'DELETE' });
+    const resp = await apiFetch(`/api/call-status?sid=${sid}`, { method: 'DELETE' });
     if (!resp.ok) throw new Error('Delete failed');
     toast('Recording deleted.');
     loadCallHistory();
@@ -6477,12 +6586,12 @@ async function deleteRecording(sid) {
 
 async function deleteAllRecordings() {
   try {
-    const resp = await fetch('/api/call-status?type=recordings');
+    const resp = await apiFetch('/api/call-status?type=recordings');
     const data = await resp.json();
     const recs = data.recordings || [];
     if (!recs.length) return;
     if (!confirm(`Delete all ${recs.length} recording${recs.length === 1 ? '' : 's'}? This cannot be undone.`)) return;
-    await Promise.all(recs.map(rec => fetch(`/api/call-status?sid=${rec.sid}`, { method: 'DELETE' })));
+    await Promise.all(recs.map(rec => apiFetch(`/api/call-status?sid=${rec.sid}`, { method: 'DELETE' })));
     toast('All recordings deleted.');
     loadCallHistory();
   } catch(e) { toast('Error: ' + e.message); }
