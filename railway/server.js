@@ -288,11 +288,14 @@ function xmlEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function buildVoicemail(n, c, r) {
+function buildVoicemail(n, c, r, rn, s) {
   const firstName = n ? n.trim().split(/\s+/)[0] : '';
   const company = c || 'PayPilot AI';
   const reason = r ? r.slice(0, 200) : 'a quick call';
-  return `Hi${firstName ? ' ' + firstName : ''}, this is Brandy calling from ${company} about ${reason}. Sorry I missed you — feel free to give us a call back, or I'll try you again soon. Thanks, have a great day!`;
+  const callback = rn
+    ? `feel free to call us back at ${rn}`
+    : (s ? `feel free to email us at ${s}` : `feel free to give us a call back`);
+  return `Hi${firstName ? ' ' + firstName : ''}, this is Brandy calling from ${company} about ${reason}. Sorry I missed you — ${callback}, or I'll try you again soon. Thanks, have a great day!`;
 }
 
 app.all('/twiml-stream', (req, res) => {
@@ -301,6 +304,7 @@ app.all('/twiml-stream', (req, res) => {
   const c = req.query.c || '';
   const e = req.query.e || '';
   const s = req.query.s || '';
+  const rn = req.query.rn || '';
   const l = req.query.l || 'en';
   const host = process.env.RAILWAY_PUBLIC_DOMAIN ||
                req.headers['x-forwarded-host'] ||
@@ -313,7 +317,7 @@ app.all('/twiml-stream', (req, res) => {
   if (answeredBy.startsWith('machine') || answeredBy === 'fax') {
     console.log('[twiml-stream] AnsweredBy:', answeredBy, '— leaving voicemail');
     res.setHeader('Content-Type', 'text/xml');
-    return res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="Polly.Joanna-Neural">${xmlEsc(buildVoicemail(n, c, r))}</Say><Hangup/></Response>`);
+    return res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="Polly.Joanna-Neural">${xmlEsc(buildVoicemail(n, c, r, rn, s))}</Say><Hangup/></Response>`);
   }
 
   const wsUrl = `wss://${host}/twilio`;
