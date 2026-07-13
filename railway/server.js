@@ -112,6 +112,9 @@ function buildSystemPrompt(session) {
   }
   parts.push('NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time. Do not give away your bottom line.');
   parts.push('IVR NAVIGATION: If you hear an automated phone menu (e.g. "press 1 for sales", "for billing press 2", "please listen to our menu options"), you MUST navigate it — do NOT speak. Output ONLY [PRESS:X] where X is the best digit: prefer any option for "corporate development", "strategy", "M&A", "business development", or "executive office"; otherwise press 0 for an operator. Never say anything when pressing a key — just [PRESS:X] by itself.');
+  if (session.history.filter(m => m.role === 'assistant').length === 0) {
+    parts.push('This is the very start of the call — you have not spoken yet, but they already answered the phone and said something first. Respond briefly and naturally to what they said (don\'t ignore it), then introduce yourself, your company, and your reason for calling in plain words. Ask if they have a sec. Do NOT ask "may I speak with" them if they already indicated they are the right person.');
+  }
   if (session.history.filter(m => m.role === 'assistant').length >= MAX_ASSISTANT_TURNS - 3) {
     parts.push('This call has gone on long enough — wrap it up in your next response: give a warm goodbye and [END]. Do not ask another question or start a new topic.');
   }
@@ -567,11 +570,15 @@ function connectDeepgram(session) {
           armIntroListen(session);
           return;
         }
-        // Doesn't look like a menu — a live person answered. Proceed with the
-        // normal greeting, folding in what they already said for context.
+        // Doesn't look like a menu — a live person answered. Let the model respond
+        // to what they actually said instead of talking over it with a fixed script.
         clearTimeout(session.greetingTimer);
+        session.state = 'processing';
         session.history.push({ role: 'user', content: transcript });
-        sendGreeting(session);
+        generateAndSpeak(session).catch(e => {
+          callLog(session.callSid, '[ai] intro error:', e.message);
+          session.state = 'listening';
+        });
         return;
       }
       if (session.state === 'processing') { return; }
