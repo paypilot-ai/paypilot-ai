@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { issueToken, requireAuth } = require('../lib/sessionAuth');
+const { issueToken } = require('../lib/sessionAuth');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -30,7 +30,8 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
 
-  if (!requireAuth(req, res)) return;
+  // TEMPORARY: requireAuth() disabled until AUTH_SECRET etc. are set (see
+  // loginDemo() in index.html for the matching rollback).
 
   // ---- Recordings (merged from former api/recordings.js to stay under Vercel's function limit) ----
   if (req.query.type === 'recordings' || req.query.action === 'audio' || req.method === 'DELETE') {

@@ -1,10 +1,9 @@
-const { requireAuth } = require('../lib/sessionAuth');
-
+// TEMPORARY: requireAuth() disabled until AUTH_SECRET etc. are set (see
+// loginDemo() in index.html for the matching rollback).
 const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
 const API_KEY  = process.env.ELEVENLABS_API_KEY;
 
 module.exports = async function handler(req, res) {
-  if (!requireAuth(req, res)) return;
   const text = (req.query.text || '').trim().slice(0, 500);
   if (!text)    return res.status(400).send('missing text');
   if (!API_KEY) return res.status(500).send('no ElevenLabs key');
