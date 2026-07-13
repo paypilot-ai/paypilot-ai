@@ -1,5 +1,19 @@
+const fs = require('fs');
+const path = require('path');
+
 function xmlEsc(t) {
   return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+
+// Optional PDF attached to the acquisition follow-up email — commit the file to
+// assets/acquisition-overview.pdf to enable; silently omitted if absent.
+function getAcquisitionAttachment() {
+  try {
+    const buf = fs.readFileSync(path.join(__dirname, '..', 'assets', 'acquisition-overview.pdf'));
+    return [{ filename: 'PayPilot-AI-Acquisition-Overview.pdf', content: buf.toString('base64') }];
+  } catch {
+    return undefined;
+  }
 }
 function say(text) {
   return `<Say voice="Polly.Joanna-Neural">${xmlEsc(text)}</Say>`;
@@ -234,10 +248,11 @@ function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName
   const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
   const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
 
-  let subject, bodyHtml;
+  let subject, bodyHtml, attachments;
   if (isAcquisitionCall(callReason)) {
     subject  = 'PayPilot AI — Acquisition Overview';
     bodyHtml = buildAcquisitionEmail(name);
+    attachments = getAcquisitionAttachment();
   } else {
     const reason = callReason ? summarizeReason(callReason) : 'our conversation today';
     subject  = `Following up from our call — ${company}`;
@@ -262,6 +277,7 @@ function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName
       reply_to: senderEmail || fromEmail,
       subject,
       html: bodyHtml,
+      attachments,
     }),
   }).catch(() => {});
 }

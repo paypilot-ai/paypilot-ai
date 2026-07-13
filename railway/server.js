@@ -1,6 +1,8 @@
 const express = require('express');
 const { WebSocketServer, WebSocket } = require('ws');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(express.json());
@@ -24,6 +26,57 @@ function summarizeReasonForEmail(reason) {
   const summary = (match ? reason.slice(0, match.index) : reason).trim().replace(/[\s,;:—-]+$/, '');
   return summary || reason.trim();
 }
+
+function isAcquisitionCall(reason) {
+  if (!reason) return false;
+  return /acqui(re|sition)|merger|M&A/i.test(reason);
+}
+
+// Optional PDF attached to the acquisition follow-up email — commit the file to
+// assets/acquisition-overview.pdf to enable; silently omitted if absent.
+function getAcquisitionAttachment() {
+  try {
+    const buf = fs.readFileSync(path.join(__dirname, '..', 'assets', 'acquisition-overview.pdf'));
+    return [{ filename: 'PayPilot-AI-Acquisition-Overview.pdf', content: buf.toString('base64') }];
+  } catch {
+    return undefined;
+  }
+}
+
+function buildAcquisitionEmail(name) {
+  const firstName = (name || 'there').trim().split(/\s+/)[0];
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 16px;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+  <tr><td style="background:#ffffff;border-radius:12px 12px 0 0;padding:36px 40px 28px;border-bottom:1px solid #e2e8f0;">
+    <p style="margin:0 0 6px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;color:#94a3b8;letter-spacing:.06em;text-transform:uppercase;font-weight:600;">From Brandy · PayPilot AI</p>
+    <h1 style="margin:0 0 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:22px;font-weight:700;color:#0f172a;line-height:1.2;">Hi ${firstName} — here's the info I mentioned</h1>
+    <p style="margin:0 0 14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;color:#374151;line-height:1.7;">
+      Thanks for taking my call. As promised, I'm sending over the details on PayPilot AI.
+      It's a fully built, live AI phone agent platform — and we're exploring acquisition opportunities with the right partner.
+    </p>
+    <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;color:#374151;line-height:1.7;">
+      If this looks like something worth a conversation, just reply to this email and someone from our team will get back to you within 24 hours. No pressure — just wanted to make sure you had the full picture.
+    </p>
+  </td></tr>
+  <tr><td style="background:#ffffff;border-radius:0 0 12px 12px;padding:32px 40px 36px;text-align:center;">
+    <p style="margin:0 0 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;color:#374151;line-height:1.6;">
+      Interested in learning more? Reply to this email and someone from our team will follow up within 24 hours.
+    </p>
+    <a href="mailto:info@paypilotai.live?subject=PayPilot AI Acquisition Inquiry" style="display:inline-block;background:#0ea5e9;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:8px;">Reply to Connect</a>
+    <p style="margin:24px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;color:#94a3b8;">Talk soon,<br/><strong style="color:#64748b;">Brandy</strong> &nbsp;·&nbsp; PayPilot AI &nbsp;·&nbsp; <a href="https://paypilotai.live" style="color:#0ea5e9;text-decoration:none;">paypilotai.live</a></p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
 const SYSTEM_PROMPT = process.env.AI_SYSTEM_PROMPT ||
   'You are Brandy — a sharp, confident Southern saleswoman on a live outbound call. You close deals. ' +
   'ONE sentence per response — then ask a short question. Always end with a question to keep them talking. Conversational, never scripted. ' +
@@ -475,9 +528,20 @@ function sendFollowUpEmailLegacy(session) {
   session.emailSent = true;
   const firstName = (session.name || 'there').trim().split(/\s+/)[0];
   const company   = session.company  || 'PayPilot AI';
-  const reason    = session.reason ? summarizeReasonForEmail(session.reason) : 'our conversation today';
   const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
   const fromName  = process.env.FROM_NAME  || 'PayPilot AI';
+
+  let subject, html, attachments;
+  if (isAcquisitionCall(session.reason)) {
+    subject = 'PayPilot AI — Acquisition Overview';
+    html = buildAcquisitionEmail(firstName);
+    attachments = getAcquisitionAttachment();
+  } else {
+    const reason = session.reason ? summarizeReasonForEmail(session.reason) : 'our conversation today';
+    subject = `Following up from our call — ${company}`;
+    html = `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;"><h2 style="color:#0f172a;">Hi ${firstName},</h2><p style="color:#374151;font-size:16px;line-height:1.7;">Thanks so much for chatting today! As promised, I'm following up about ${reason}. If you have any questions or want to move forward, just reply to this email — I'd love to help.</p><p style="color:#64748b;font-size:14px;margin-top:28px;">Talk soon,<br/>Brandy<br/>${company}</p></div>`;
+  }
+
   console.log('[email] sending to:', session.capturedEmail);
   fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -486,8 +550,9 @@ function sendFollowUpEmailLegacy(session) {
       from: `${fromName} <${fromEmail}>`,
       to: [session.capturedEmail],
       reply_to: session.senderEmail || fromEmail,
-      subject: `Following up from our call — ${company}`,
-      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;"><h2 style="color:#0f172a;">Hi ${firstName},</h2><p style="color:#374151;font-size:16px;line-height:1.7;">Thanks so much for chatting today! As promised, I'm following up about ${reason}. If you have any questions or want to move forward, just reply to this email — I'd love to help.</p><p style="color:#64748b;font-size:14px;margin-top:28px;">Talk soon,<br/>Brandy<br/>${company}</p></div>`,
+      subject,
+      html,
+      attachments,
     }),
   }).then(async r => { const b = await r.text(); console.log('[email] Resend:', r.status, b.slice(0, 200)); })
     .catch(e => console.error('[email] error:', e.message));
