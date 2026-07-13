@@ -215,7 +215,7 @@ function sendForm(session) {
   callLog(session.callSid, '[form] sending to', session.capturedEmail);
   fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '' },
     body: JSON.stringify({
       customerName: session.name || '',
       customerEmail: session.capturedEmail,
@@ -821,7 +821,7 @@ async function generateAndSpeak(session) {
     callLog(session.callSid, '[docusign] sending agreement to', session.capturedEmail);
     fetch('https://paypilot-ai.vercel.app/api/send-agreement', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '' },
       body: JSON.stringify({
         customerName: session.name || '',
         customerEmail: session.capturedEmail,

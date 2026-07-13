@@ -3458,6 +3458,16 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
 // ============================================================
 // STATE
 // ============================================================
+// Wraps fetch() for /api/* calls — auto-attaches the signed session token
+// (issued by the real login endpoint) so protected endpoints can verify the
+// caller. Endpoints that don't require auth just ignore the extra header.
+function apiFetch(url, options = {}) {
+  const token = localStorage.getItem('pp_auth_token');
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(url, { ...options, headers });
+}
+
 let currentPlan = "pro";
 let isLiveUser = false; // true when master login used
 let currentIsReal = false; // true when master login used
@@ -3609,47 +3619,36 @@ function showAuth(plan){
   }
 }
 
-// ── MASTER CREDENTIALS — change these to your real login ──
-const MASTER_EMAIL = 'info@paypilotai.live';
-const MASTER_PASS  = 'icyunv220';
-
-  const TESTER_ACCOUNTS = [
-  { email: 'user1@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user2@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user3@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user4@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user5@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-];
-
-function loginDemo(){
+async function loginDemo(){
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value.trim();
-  const plan  = document.getElementById('loginPlan').value;
 
   if(!email || !pass){
     toast('Enter an email and password.');
     return;
   }
 
-  // Master login
-  if(email === MASTER_EMAIL.toLowerCase() && pass === MASTER_PASS){
+  const btn = document.querySelector('#auth .app-btn.blue');
+  if(btn){ btn.disabled = true; btn.textContent = 'Logging in...'; }
+
+  try {
+    const resp = await apiFetch('/api/call-status?type=login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
+    });
+    const data = await resp.json();
+    if(!resp.ok || !data.token){
+      toast(data.error || 'Invalid email or password.');
+      return;
+    }
+    localStorage.setItem('pp_auth_token', data.token);
     enterRealApp();
-    return;
+  } catch(e){
+    toast('Login failed — please try again.');
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = 'Login'; }
   }
-
-  // Tester login — full Pro access, unlimited calls
-  const isTester = TESTER_ACCOUNTS.find(a => a.email.toLowerCase() === email && a.password === pass);
-  if(isTester){
-    enterTesterApp();
-    return;
-  }
-
-  // No match — reject instead of silently dropping into demo mode
-  toast('Invalid email or password.');
-}
-
-function enterTesterApp(){
-  enterRealApp();
 }
 
 function enterRealApp(){
@@ -3777,6 +3776,7 @@ function applyPlanDemo(plan){
 function logout(){
   localStorage.removeItem('pp_session');
   localStorage.removeItem('pp_last_page');
+  localStorage.removeItem('pp_auth_token');
   location.href = location.pathname;
 }
 
@@ -3997,7 +3997,7 @@ async function streamResponse(inputId, outputId, system, chatMessages, maxTokens
   lastGeneratedText = '';
 
   try {
-    const resp = await fetch('/api/generate-response', {
+    const resp = await apiFetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system, messages: chatMessages, max_tokens: maxTokens || 120 })
@@ -4113,7 +4113,7 @@ async function translateResponse(){
     const systemMsg = messages.find(m => m.role === 'system');
     const chatMessages = messages.filter(m => m.role !== 'system');
 
-    const resp = await fetch('/api/generate-response', {
+    const resp = await apiFetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -4261,7 +4261,7 @@ async function fakeStripe(plan, amount){
   toast('Opening secure checkout...');
 
   try {
-    const resp = await fetch('/api/create-checkout', {
+    const resp = await apiFetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan: plan.toLowerCase() })
@@ -4285,7 +4285,7 @@ async function openBillingPortal() {
   }
   toast('Opening billing portal...');
   try {
-    const resp = await fetch('/api/billing-portal', {
+    const resp = await apiFetch('/api/billing-portal', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId })
@@ -4561,7 +4561,7 @@ async function generateBilingualResponse(text){
 
 async function generateTranslatedVersion(englishText, language){
   try {
-    const resp = await fetch('/api/generate-response', {
+    const resp = await apiFetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -4617,7 +4617,7 @@ async function sendCurrentToCall(){
 
   toast('Sending to call in ' + lang + '...');
   try {
-    const resp = await fetch('/api/twilio-speak', {
+    const resp = await apiFetch('/api/twilio-speak', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ callSid: activeTwilioCall, text: txt, language: lang })
@@ -4676,7 +4676,7 @@ async function startTwilioCall(){
   document.getElementById('twilioStatus').textContent = 'Connecting...';
 
   try {
-    const resp = await fetch('/api/twilio-call', {
+    const resp = await apiFetch('/api/twilio-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ toNumber: number })
@@ -4717,7 +4717,7 @@ async function endTwilioCall(){
     const sidToEnd = activeTwilioCall;
     stopDeepgram();
     activeTwilioCall = null;
-    fetch('/api/call-status', {
+    apiFetch('/api/call-status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ callSid: sidToEnd })
@@ -4751,7 +4751,7 @@ function startCallStatusPolling(sid){
   aiCallPollInterval = setInterval(async () => {
     if(!sid) return;
     try {
-      const resp = await fetch('/api/call-status?sid=' + sid);
+      const resp = await apiFetch('/api/call-status?sid=' + sid);
       const data = await resp.json();
       if(['completed','failed','busy','no-answer','canceled'].includes(data.status)){
         clearInterval(aiCallPollInterval);
@@ -4767,7 +4767,7 @@ function startSpeechPolling(sid){
   aiSpeechPollInterval = setInterval(async () => {
     if(!sid) return;
     try {
-      const resp = await fetch('/api/call-status?type=speech&sid=' + sid);
+      const resp = await apiFetch('/api/call-status?type=speech&sid=' + sid);
       const data = await resp.json();
       if(data.ts && data.ts !== aiLastSpeechTs && data.text){
         aiLastSpeechTs = data.ts;
@@ -4789,7 +4789,7 @@ function startEmailPolling(sid) {
   document.getElementById('hudEmailCapture').style.display = 'none';
   aiEmailPollInterval = setInterval(async () => {
     try {
-      const resp = await fetch('/api/call-email?sid=' + sid);
+      const resp = await apiFetch('/api/call-email?sid=' + sid);
       const data = await resp.json();
       if (data.capturedEmail) {
         document.getElementById('hudCapturedEmail').textContent = data.capturedEmail;
@@ -4830,7 +4830,7 @@ async function hudSendDocument() {
       message: 'Thank you for speaking with us today! Please find your agreement attached. Reply to this email with any questions.'
     };
     if (fileContent) { payload.fileContent = fileContent; payload.fileName = file.name; }
-    const resp = await fetch('/api/send-agreement', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const resp = await apiFetch('/api/send-agreement', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Failed');
     toast('Document sent to ' + email + '!');
@@ -5425,7 +5425,7 @@ async function startAiCall(){
   btn.textContent = 'Dialing...';
 
   try {
-    const resp = await fetch('/api/ai-call', {
+    const resp = await apiFetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language }),
@@ -5480,7 +5480,7 @@ async function endAiCall(){
   // Tell Twilio to terminate the call
   if(sid){
     try {
-      await fetch('/api/call-status', {
+      await apiFetch('/api/call-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ callSid: sid })
@@ -5549,7 +5549,7 @@ async function sendAgreement(){
     const payload = { customerName, customerEmail, callReason, senderEmail, subject, message };
     if(fileContent) { payload.fileContent = fileContent; payload.fileName = file.name; }
 
-    const resp = await fetch('/api/send-agreement', {
+    const resp = await apiFetch('/api/send-agreement', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -5597,7 +5597,7 @@ async function sendQuickEmail(){
     const payload = { customerEmail: to, senderEmail: from, subject, message };
     if(fileContent){ payload.fileContent = fileContent; payload.fileName = file.name; }
 
-    const resp = await fetch('/api/send-agreement', {
+    const resp = await apiFetch('/api/send-agreement', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -5643,7 +5643,7 @@ function speakTranslated(){
 // Translate customer's foreign speech to English, then speak it to the rep
 async function translateAndSpeakToRep(foreignText, fromLang, inputBox){
   try {
-    const resp = await fetch('/api/generate-response', {
+    const resp = await apiFetch('/api/generate-response', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -5772,7 +5772,7 @@ async function lookupContact(){
 
   // No local match — search Google Places
   try {
-    const resp = await fetch('/api/search-company?query=' + encodeURIComponent(val));
+    const resp = await apiFetch('/api/search-company?query=' + encodeURIComponent(val));
     const data = await resp.json();
     if(loading) loading.style.display = 'none';
 
@@ -6321,7 +6321,7 @@ async function dialNextContact() {
   const senderEmail   = document.getElementById('adSenderEmail') ? document.getElementById('adSenderEmail').value.trim() : '';
   const returnNumber  = document.getElementById('adReturnNumber') ? document.getElementById('adReturnNumber').value.trim() : '';
   try {
-    const resp = await fetch('/api/ai-call', {
+    const resp = await apiFetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company, customerEmail: contact.email, senderEmail, returnNumber, language: callLanguage })
@@ -6348,7 +6348,7 @@ async function dialNextContact() {
 async function pollAdCall(contact) {
   if (!adRunning || !contact.callSid) return;
   try {
-    const resp = await fetch('/api/call-status?sid=' + contact.callSid);
+    const resp = await apiFetch('/api/call-status?sid=' + contact.callSid);
     const data = await resp.json();
 
     const isTerminal = ['completed','failed','busy','no-answer','canceled'].includes(data.status);
@@ -6360,7 +6360,7 @@ async function pollAdCall(contact) {
 
       if (timedOut) {
         // Fire-and-forget: hang up the Twilio leg without blocking the dialer advance
-        fetch('/api/call-status', {
+        apiFetch('/api/call-status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ callSid: contact.callSid })
@@ -6393,7 +6393,7 @@ async function adSendAgreementForContact(contact) {
       senderEmail, subject, message,
     };
     if (adFileContent) { payload.fileContent = adFileContent; payload.fileName = adFileName; }
-    const resp = await fetch('/api/send-agreement', {
+    const resp = await apiFetch('/api/send-agreement', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -6424,7 +6424,7 @@ async function loadCallHistory() {
   const list = document.getElementById('historyList');
   list.innerHTML = '<div style="color:#7a90b0;font-size:13px;text-align:center;padding:30px 0">Loading…</div>';
   try {
-    const resp = await fetch('/api/call-status?type=recordings');
+    const resp = await apiFetch('/api/call-status?type=recordings');
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Failed to load');
     const recs = data.recordings || [];
@@ -6468,7 +6468,7 @@ function playRecording(sid, label, callSid) {
 async function deleteRecording(sid) {
   if (!confirm('Delete this recording? This cannot be undone.')) return;
   try {
-    const resp = await fetch(`/api/call-status?sid=${sid}`, { method: 'DELETE' });
+    const resp = await apiFetch(`/api/call-status?sid=${sid}`, { method: 'DELETE' });
     if (!resp.ok) throw new Error('Delete failed');
     toast('Recording deleted.');
     loadCallHistory();
@@ -6477,12 +6477,12 @@ async function deleteRecording(sid) {
 
 async function deleteAllRecordings() {
   try {
-    const resp = await fetch('/api/call-status?type=recordings');
+    const resp = await apiFetch('/api/call-status?type=recordings');
     const data = await resp.json();
     const recs = data.recordings || [];
     if (!recs.length) return;
     if (!confirm(`Delete all ${recs.length} recording${recs.length === 1 ? '' : 's'}? This cannot be undone.`)) return;
-    await Promise.all(recs.map(rec => fetch(`/api/call-status?sid=${rec.sid}`, { method: 'DELETE' })));
+    await Promise.all(recs.map(rec => apiFetch(`/api/call-status?sid=${rec.sid}`, { method: 'DELETE' })));
     toast('All recordings deleted.');
     loadCallHistory();
   } catch(e) { toast('Error: ' + e.message); }

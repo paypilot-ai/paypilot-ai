@@ -1,10 +1,36 @@
 const fs = require('fs');
+const { issueToken, requireAuth } = require('../lib/sessionAuth');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ---- Login (merged here, not a separate file, to stay under Vercel's function limit) ----
+  if (req.query.type === 'login' && req.method === 'POST') {
+    const { email, password } = req.body || {};
+    const e = (email || '').trim().toLowerCase();
+    const p = (password || '').trim();
+    if (!e || !p) return res.status(400).json({ error: 'Email and password required' });
+
+    const masterEmail = (process.env.MASTER_EMAIL || '').trim().toLowerCase();
+    const masterPass = (process.env.MASTER_PASS || '').trim();
+    if (masterEmail && masterPass && e === masterEmail && p === masterPass) {
+      return res.status(200).json({ token: issueToken(e, 'pro'), plan: 'pro', isLiveUser: true });
+    }
+
+    let testerAccounts = [];
+    try { testerAccounts = JSON.parse(process.env.TESTER_ACCOUNTS_JSON || '[]'); } catch {}
+    const tester = testerAccounts.find(a => (a.email || '').toLowerCase() === e && a.password === p);
+    if (tester) {
+      return res.status(200).json({ token: issueToken(e, tester.plan || 'pro'), plan: tester.plan || 'pro', isLiveUser: true });
+    }
+
+    return res.status(401).json({ error: 'Invalid email or password' });
+  }
+
+  if (!requireAuth(req, res)) return;
 
   // ---- Recordings (merged from former api/recordings.js to stay under Vercel's function limit) ----
   if (req.query.type === 'recordings' || req.query.action === 'audio' || req.method === 'DELETE') {

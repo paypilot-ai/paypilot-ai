@@ -90,8 +90,8 @@ The Stripe price IDs are hardcoded in `api/create-checkout.js`: `starter: price_
 | Variable | Used by | Notes |
 |---|---|---|
 | `OPENAI_API_KEY` | Both | GPT-4o, `max_tokens: 120` (Railway), `70` (TwiML) |
-| `TWILIO_ACCOUNT_SID` | Vercel API | |
-| `TWILIO_AUTH_TOKEN` | Vercel API | |
+| `TWILIO_ACCOUNT_SID` | Both | |
+| `TWILIO_AUTH_TOKEN` | Both | Also used to verify `X-Twilio-Signature` on inbound webhooks (`lib/twilioAuth.js`) |
 | `TWILIO_PHONE_NUMBER` | `ai-call.js` | |
 | `DEEPGRAM_API_KEY` | Railway + `deepgram-token.js` | |
 | `ELEVENLABS_API_KEY` | Railway | |
@@ -101,5 +101,11 @@ The Stripe price IDs are hardcoded in `api/create-checkout.js`: `starter: price_
 | `RESEND_API_KEY` | `send-agreement.js` | |
 | `AI_SYSTEM_PROMPT` | Railway only | Overrides default collections agent prompt |
 | `PORT` | Railway | Default `3000` |
+| `FORWARD_TO_NUMBER` | `ai-twiml.js` | Real phone number inbound calls forward to (E.164, e.g. `+15551234567`); no attachment support without it |
+| `AUTH_SECRET` | Both | **Required for login to work at all.** Random secret string used to sign session tokens (`lib/sessionAuth.js`). Generate one with e.g. `openssl rand -hex 32` |
+| `MASTER_EMAIL` / `MASTER_PASS` | `call-status.js` (login) | Your real login credentials — no longer hardcoded in `index.html` |
+| `TESTER_ACCOUNTS_JSON` | `call-status.js` (login) | JSON array of `{email, password, plan}` for tester accounts, e.g. `[{"email":"user1@paypilotai.live","password":"...","plan":"pro"}]` |
+| `INTERNAL_API_SECRET` | Both | Shared secret for server-to-server calls (Railway → Vercel's `send-agreement.js`) that have no user session to present. Generate with `openssl rand -hex 32` |
+| `SKIP_TWILIO_SIGNATURE_CHECK` | Both | Emergency kill-switch — set to `true` to bypass Twilio signature verification if it ever misfires in production |
 
 Local dev uses `.env.local` (not committed — the committed version has a placeholder key).
