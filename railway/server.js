@@ -228,6 +228,13 @@ function xmlEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function buildVoicemail(n, c, r) {
+  const firstName = n ? n.trim().split(/\s+/)[0] : '';
+  const company = c || 'PayPilot AI';
+  const reason = r ? r.slice(0, 200) : 'a quick call';
+  return `Hi${firstName ? ' ' + firstName : ''}, this is Brandy calling from ${company} about ${reason}. Sorry I missed you — feel free to give us a call back, or I'll try you again soon. Thanks, have a great day!`;
+}
+
 app.all('/twiml-stream', (req, res) => {
   const n = req.query.n || '';
   const r = req.query.r || '';
@@ -239,6 +246,16 @@ app.all('/twiml-stream', (req, res) => {
                req.headers['x-forwarded-host'] ||
                req.headers.host || '';
   console.log('[twiml-stream] host:', host, 'n:', n, 'r:', r, 'c:', c, 'e:', e ? '(set)' : '(none)', 's:', s ? '(set)' : '(none)', 'lang:', l, 'method:', req.method);
+
+  // Answering-machine detection (Twilio MachineDetection=Enable on the call) —
+  // leave a short voicemail instead of connecting the real-time stream.
+  const answeredBy = (req.body?.AnsweredBy || req.query.AnsweredBy || '').trim();
+  if (answeredBy.startsWith('machine') || answeredBy === 'fax') {
+    console.log('[twiml-stream] AnsweredBy:', answeredBy, '— leaving voicemail');
+    res.setHeader('Content-Type', 'text/xml');
+    return res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say voice="Polly.Joanna-Neural">${xmlEsc(buildVoicemail(n, c, r))}</Say><Hangup/></Response>`);
+  }
+
   const wsUrl = `wss://${host}/twilio`;
   // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
   const paramXml = [

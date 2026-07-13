@@ -61,7 +61,7 @@ module.exports = async function handler(req, res) {
           {
             method: 'POST',
             headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: 'true' }).toString()
+            body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: 'true', MachineDetection: 'DetectMessageEnd' }).toString()
           }
         );
         const data = await resp.json();
@@ -77,7 +77,7 @@ module.exports = async function handler(req, res) {
       {
         method: 'POST',
         headers: { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: 'true' }).toString()
+        body: new URLSearchParams({ To: e164, From: fromNumber, Url: twimlUrl, Record: 'true', MachineDetection: 'DetectMessageEnd' }).toString()
       }
     );
     const data = await response.json();
