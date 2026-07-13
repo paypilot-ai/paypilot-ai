@@ -1,11 +1,13 @@
 const { requireAuth } = require('../lib/sessionAuth');
+const { rateLimit } = require('../lib/rateLimit');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (!requireAuth(req, res)) return;
+  const auth = requireAuth(req, res);
+  if (!auth) return;
 
   if (req.method === 'GET') {
     return res.status(200).json({
@@ -15,6 +17,8 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  const rlIdentifier = auth.internal ? null : (auth.sub || undefined);
+  if (!rateLimit(req, res, { key: 'ai-call', limit: 20, windowMs: 60_000, identifier: rlIdentifier })) return;
 
   const accountSid = (process.env.TWILIO_ACCOUNT_SID || '').trim();
   const authToken  = (process.env.TWILIO_AUTH_TOKEN  || '').trim();

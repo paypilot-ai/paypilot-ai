@@ -4,12 +4,15 @@
 //  2. Wikipedia summary (free) → HQ city/state
 //  3. Google Places (phone number only — address comes from Wikipedia)
 
+const { rateLimit } = require('../lib/rateLimit');
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ found: false, error: 'Method not allowed' });
+  if (!rateLimit(req, res, { key: 'search-company', limit: 10, windowMs: 60_000 })) return;
 
   const { query } = req.query;
   if (!query?.trim()) return res.status(400).json({ found: false, error: 'Query is required' });
