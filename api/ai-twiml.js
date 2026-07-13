@@ -45,6 +45,7 @@ module.exports = async function handler(req, res) {
     const e = (req.query.e || '').trim();
     const s = (req.query.s || '').trim();
     const rn = (req.query.rn || '').trim();
+    const disc = (req.query.disc || '').trim().slice(0, 500);
 
     // Answering-machine detection (Twilio MachineDetection=Enable on the call) —
     // leave a short voicemail instead of trying to hold a live conversation.
@@ -61,8 +62,13 @@ module.exports = async function handler(req, res) {
     const history = b64enc([]);
     const action  = `https://paypilotai.live/api/ai-respond?h=${history}&amp;intro=1&amp;iattempt=0&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}`;
 
+    // Recording-consent disclosure, spoken once up front (Compliance settings)
+    // before anything else happens on the call.
+    const disclosureSay = disc ? `<Say voice="Polly.Joanna-Neural">${xmlEsc(disc)}</Say>` : '';
+
     res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
+  ${disclosureSay}
   <Gather input="speech" action="${action}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true">
   </Gather>
   <Redirect method="POST">${action}</Redirect>
