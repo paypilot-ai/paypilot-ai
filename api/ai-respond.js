@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { validateTwilioRequest } = require('../lib/twilioAuth');
 
 function xmlEsc(t) {
   return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
@@ -317,6 +318,11 @@ module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
   const reqStart = Date.now();
   try {
+    if (!validateTwilioRequest(req, process.env.TWILIO_AUTH_TOKEN)) {
+      console.error('[ai-respond] rejected request with invalid/missing Twilio signature');
+      return res.status(403).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Reject/></Response>`);
+    }
+
     const n       = (req.query.n || '').trim();
     const r       = (req.query.r || '').trim();
     const c       = (req.query.c || '').trim();
