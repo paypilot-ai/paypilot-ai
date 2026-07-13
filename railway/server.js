@@ -100,7 +100,11 @@ function buildSystemPrompt(session) {
   const base = session.prompt || SYSTEM_PROMPT;
   const parts = [base];
   if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
-  if (session.reason)  parts.push(`Background context for this call (use this to guide the conversation, don't recite it): ${session.reason}.`);
+  const shortReason = session.reason ? summarizeReasonForEmail(session.reason) : '';
+  if (shortReason) {
+    parts.push(`The reason for this call, in plain customer-facing terms: ${shortReason}. When you state why you're calling, say it plainly and specifically — never vague filler. Get to the point fast; the customer should know exactly why you called within your first response.`);
+  }
+  if (session.reason) parts.push(`Full background/strategy notes for this call (for your own context only — use to guide objections and negotiation, do NOT recite verbatim or read this to the customer): ${session.reason}.`);
   if (session.name) {
     const cleanName = session.name.trim().split(/[,\-—|]/)[0].trim().split(/\s+/).slice(0, 2).join(' ');
     parts.push(`You are speaking with ${cleanName}.`);
@@ -113,7 +117,7 @@ function buildSystemPrompt(session) {
   parts.push('NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time. Do not give away your bottom line.');
   parts.push('IVR NAVIGATION: If you hear an automated phone menu (e.g. "press 1 for sales", "for billing press 2", "please listen to our menu options"), you MUST navigate it — do NOT speak. Output ONLY [PRESS:X] where X is the best digit: prefer any option for "corporate development", "strategy", "M&A", "business development", or "executive office"; otherwise press 0 for an operator. Never say anything when pressing a key — just [PRESS:X] by itself.');
   if (session.history.filter(m => m.role === 'assistant').length === 0) {
-    parts.push('This is the very start of the call — you have not spoken yet, but they already answered the phone and said something first. Respond briefly and naturally to what they said (don\'t ignore it), then introduce yourself, your company, and your reason for calling in plain words. Ask if they have a sec. Do NOT ask "may I speak with" them if they already indicated they are the right person.');
+    parts.push('This is the very start of the call — you have not spoken yet, but they already answered the phone and said something first. Respond briefly and naturally to what they said (don\'t ignore it), then introduce yourself, your company, and state plainly and specifically why you\'re calling — one short, concrete phrase, never vague filler. Ask if they have a sec. Do NOT ask "may I speak with" them if they already indicated they are the right person.');
   }
   if (session.history.filter(m => m.role === 'assistant').length >= MAX_ASSISTANT_TURNS - 3) {
     parts.push('This call has gone on long enough — wrap it up in your next response: give a warm goodbye and [END]. Do not ask another question or start a new topic.');
