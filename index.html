@@ -2150,13 +2150,37 @@ body.modal-open{overflow:hidden}
                   </div>
                 </div>
 
-                <div style="display:grid;grid-template-columns:22px 1fr 140px 1fr 36px;gap:8px;padding:0 2px 7px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;font-weight:600">
-                  <span>#</span><span>Name</span><span>Phone</span><span>Reason / Product (overrides default)</span><span></span>
+                <div style="display:grid;grid-template-columns:22px 1fr 130px 1fr 1fr 36px;gap:8px;padding:0 2px 7px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;font-weight:600">
+                  <span>#</span><span>Name</span><span>Phone</span><span>Email</span><span>Reason / Product (overrides default)</span><span></span>
                 </div>
                 <div id="adRows" style="max-height:280px;overflow-y:auto">
                   <div style="padding:20px 0;text-align:center;color:#94a3b8;font-size:13px">No contacts yet — add a row to get started</div>
                 </div>
                 <button onclick="adAddRow()" style="margin-top:8px;width:100%;padding:9px;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:8px;color:#94a3b8;font-size:13px;cursor:pointer">+ Add Contact</button>
+
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-top:16px;">
+                  <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:12px;">✉️ Email (optional — sent to each contact's email above after their call ends)</div>
+                  <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Your Email (reply-to)</label>
+                    <input id="adSenderEmail" type="email" placeholder="you@yourcompany.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
+                  </div>
+                  <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Subject</label>
+                    <input id="adEmailSubject" type="text" placeholder="e.g. Your agreement, Follow-up from our call" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
+                  </div>
+                  <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Message (optional)</label>
+                    <textarea id="adEmailMessage" placeholder="Add a personal note, instructions, or any details..." style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;min-height:72px;resize:vertical;font-family:inherit;"></textarea>
+                  </div>
+                  <div>
+                    <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Attachment (optional — same file sent to every contact)</label>
+                    <label id="adAgreementLabel" for="adCallerAgreement" style="display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;padding:10px 14px;border:2px dashed #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;cursor:pointer;background:#fff;transition:border-color .2s,color .2s;">
+                      <span style="font-size:18px;">📎</span>
+                      <span id="adAgreementFileName">Click to attach PDF, Word, or image</span>
+                    </label>
+                    <input id="adCallerAgreement" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display:none;" onchange="adFileSelected(this)"/>
+                  </div>
+                </div>
 
                 <div style="display:flex;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap">
                   <button id="adStartBtn" onclick="startAutoDialer()" style="padding:13px 28px;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">▶ Start Dialing</button>
@@ -6107,10 +6131,34 @@ let adCurrentIdx   = -1;
 let adRunning      = false;
 let adPollTimer    = null;
 let adRowIdCounter = 0;
+let adFileContent  = null;
+let adFileName      = null;
 
-function adAddRow(name, phone, reason) {
+function adFileSelected(input) {
+  const file = input.files[0];
+  const label = document.getElementById('adAgreementFileName');
+  const wrap  = document.getElementById('adAgreementLabel');
+  if (!file) {
+    label.textContent = 'Click to attach PDF, Word, or image';
+    wrap.style.borderColor = '#e2e8f0';
+    wrap.style.color = '#94a3b8';
+    return;
+  }
+  const mb = (file.size / 1024 / 1024).toFixed(1);
+  if (file.size > 10 * 1024 * 1024) {
+    toast('File too large — max 10 MB.');
+    input.value = '';
+    label.textContent = 'Click to attach PDF, Word, or image';
+    return;
+  }
+  label.textContent = '✓ ' + file.name + ' (' + mb + ' MB)';
+  wrap.style.borderColor = '#3b82f6';
+  wrap.style.color = '#1d4ed8';
+}
+
+function adAddRow(name, phone, reason, email) {
   const id = ++adRowIdCounter;
-  adContacts.push({ id, name: name||'', phone: phone||'', reason: reason||'', status: 'pending', callSid: null });
+  adContacts.push({ id, name: name||'', phone: phone||'', email: email||'', reason: reason||'', status: 'pending', callSid: null, emailSent: false });
   renderAdRows();
 }
 
@@ -6126,6 +6174,7 @@ function adReadAllRows() {
     if (!row) return;
     c.name   = row.querySelector('.ad-name').value.trim();
     c.phone  = row.querySelector('.ad-phone').value.trim();
+    c.email  = row.querySelector('.ad-email').value.trim();
     c.reason = row.querySelector('.ad-reason').value.trim();
   });
 }
@@ -6144,10 +6193,11 @@ function renderAdRows() {
   const statusLabel = { pending:'—', calling:'📞 Calling…', done:'✓ Done', failed:'✗ Failed', skipped:'Skipped' };
   const dis = adRunning ? 'disabled' : '';
   container.innerHTML = adContacts.map((c, i) => `
-    <div id="ad-row-${c.id}" style="display:grid;grid-template-columns:22px 1fr 140px 1fr 36px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9">
+    <div id="ad-row-${c.id}" style="display:grid;grid-template-columns:22px 1fr 130px 1fr 1fr 36px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9">
       <span style="font-size:12px;color:#cbd5e1;text-align:center">${i+1}</span>
       <input class="ad-name"   value="${c.name}"   placeholder="Full name"                     style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
       <input class="ad-phone"  value="${c.phone}"  placeholder="Phone number"                  style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
+      <input class="ad-email"  value="${c.email||''}" type="email" placeholder="Email (optional)" style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
       <input class="ad-reason" value="${c.reason}" placeholder="Reason / product (or default)" style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
       <div style="text-align:center">
         ${adRunning
@@ -6171,11 +6221,29 @@ async function startAutoDialer() {
   if (!company) { toast('Enter your company name first.'); return; }
   const valid = adContacts.filter(c => c.phone.replace(/\D/g,'').length >= 10);
   if (!valid.length) { toast('Add at least one contact with a valid 10-digit phone number.'); return; }
+
+  adFileContent = null;
+  adFileName    = null;
+  const fileInput = document.getElementById('adCallerAgreement');
+  const file = fileInput && fileInput.files[0];
+  if (file) {
+    try {
+      adFileContent = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+      adFileName = file.name;
+    } catch (e) { toast('Could not read attachment — continuing without it.'); }
+  }
+
   adRunning      = true;
   adCurrentIdx   = -1;
   adContacts.forEach(c => {
-    c.status  = c.phone.replace(/\D/g,'').length >= 10 ? 'pending' : 'skipped';
-    c.callSid = null;
+    c.status    = c.phone.replace(/\D/g,'').length >= 10 ? 'pending' : 'skipped';
+    c.callSid   = null;
+    c.emailSent = false;
   });
   document.getElementById('adStartBtn').style.display = 'none';
   document.getElementById('adStopBtn').style.display  = '';
@@ -6290,6 +6358,7 @@ async function pollAdCall(contact) {
 
       contact.status = (isTerminal && data.status !== 'completed') ? 'failed' : 'done';
       try { crmAutoLog(contact.phone, contact.name, `Auto-dialer call — ${timedOut ? 'completed (timeout)' : data.status}`); } catch(e) {}
+      if (contact.status === 'done') adSendAgreementForContact(contact);
       const done  = adContacts.filter(c => c.status === 'done' || c.status === 'failed').length;
       const total = adContacts.filter(c => c.status !== 'skipped').length;
       document.getElementById('adProgress').textContent = `${done} of ${total} done`;
@@ -6298,6 +6367,32 @@ async function pollAdCall(contact) {
       setTimeout(dialNextContact, 3000);
     }
   } catch {}
+}
+
+async function adSendAgreementForContact(contact) {
+  if (contact.emailSent || !contact.email) return;
+  const subject = (document.getElementById('adEmailSubject') || {}).value?.trim() || '';
+  const message = (document.getElementById('adEmailMessage') || {}).value?.trim() || '';
+  if (!subject && !message && !adFileContent) return; // nothing configured to send
+  contact.emailSent = true;
+  const senderEmail = document.getElementById('adSenderEmail').value.trim();
+  try {
+    const payload = {
+      customerName: contact.name, customerEmail: contact.email, callReason: contact.reason,
+      senderEmail, subject, message,
+    };
+    if (adFileContent) { payload.fileContent = adFileContent; payload.fileName = adFileName; }
+    const resp = await fetch('/api/send-agreement', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Email failed');
+    try { crmAutoLog(contact.phone, contact.name, `Auto-dialer follow-up email sent to ${contact.email}`); } catch(e) {}
+  } catch (e) {
+    console.error('[dialer] email failed for', contact.email, e.message);
+  }
 }
 
 // ── Call History ─────────────────────────────────────────────────────────────
@@ -6746,7 +6841,7 @@ function crmQueueDialer(id) {
     const _reason = c.company && _defaultReason
       ? `Calling ${c.company}. ${_defaultReason}`
       : (_defaultReason || c.company || '');
-    adAddRow(c.name || '', c.phone, _reason);
+    adAddRow(c.name || '', c.phone, _reason, c.email || '');
     toast(`${c.name || c.phone} added to Auto Dialer.`);
   }, 200);
 }
@@ -6799,7 +6894,7 @@ function confirmCrmDialerImport() {
       const reason = c.company && defaultReason
         ? `Calling ${c.company}. ${defaultReason}`
         : (defaultReason || c.company || '');
-      adAddRow(c.name || '', c.phone, reason);
+      adAddRow(c.name || '', c.phone, reason, c.email || '');
       added++;
     }
   });
