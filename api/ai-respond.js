@@ -270,13 +270,15 @@ function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName
 // running away if the model never reaches that on its own.
 const MAX_TURNS = 20;
 
-function buildPrompt(customerName, companyName, callReason, turns) {
+function buildPrompt(customerName, companyName, callReason, turns, hasSpoken) {
   const company = companyName || 'our company';
   const firstName = (customerName || 'the prospect').trim().split(/\s+/)[0];
   const reason  = callReason  || 'our services';
-  const introInstruction = turns <= 1
-    ? `You just asked if you reached the right person. Once confirmed: say your name, company, and reason in plain words. One or two sentences. Ask if they have a sec.`
-    : `You already introduced yourself earlier in this call — do NOT reintroduce yourself or re-ask if you reached the right person. Read the conversation history below and respond directly to what they just said.`;
+  const introInstruction = turns > 1
+    ? `You already introduced yourself earlier in this call — do NOT reintroduce yourself or re-ask if you reached the right person. Read the conversation history below and respond directly to what they just said.`
+    : hasSpoken
+      ? `You just asked if you reached the right person. Once confirmed: say your name, company, and reason in plain words. One or two sentences. Ask if they have a sec.`
+      : `This is the very start of the call — you have not spoken yet, but they already answered the phone and said something first. Respond briefly and naturally to what they said (don't ignore it), then introduce yourself, your company, and your reason for calling in plain words. One or two sentences. Ask if they have a sec. Do NOT ask "may I speak with ${firstName}" if they already indicated they're the right person.`;
   const wrapUpNudge = turns >= MAX_TURNS - 6
     ? `\nThis call has gone on long enough — wrap it up in your next response: give a warm goodbye and write [END]. Do not ask another question or start a new topic.`
     : '';
@@ -316,8 +318,10 @@ module.exports = async function handler(req, res) {
 
     if (intro) {
       // Listening for an automated menu before Brandy ever speaks. If we hear one,
-      // press through it silently; otherwise (a live person, or nothing after a
-      // couple tries) open with the normal greeting.
+      // press through it silently; if it's an automated preamble, keep listening;
+      // if nothing at all after a couple tries, open cold with the canned greeting.
+      // If a live person spoke first, fall through to the normal turn logic below
+      // so the model responds to what they actually said instead of a fixed script.
       const ivrDigit = transcript ? detectIvrDigit(transcript) : null;
       const introAction = (nextAttempt) => `/api/ai-respond?h=${b64enc(history)}&amp;intro=1&amp;iattempt=${nextAttempt}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}`;
       if (ivrDigit && iattempt < 10) {
@@ -327,13 +331,17 @@ module.exports = async function handler(req, res) {
         // Automated system is still talking (preamble/hold message, no digit yet) — keep listening.
         return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${introAction(iattempt + 1)}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true"></Gather><Hangup/></Response>`);
       }
-      if (!transcript && iattempt < 2) {
-        return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${introAction(iattempt + 1)}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true"></Gather><Hangup/></Response>`);
+      if (!transcript) {
+        if (iattempt < 2) {
+          return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${introAction(iattempt + 1)}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true"></Gather><Hangup/></Response>`);
+        }
+        // Truly nothing heard after retries — open cold with the canned greeting.
+        const greeting = buildGreeting(n, c);
+        history.push({ role: 'assistant', content: greeting });
+        return res.status(200).send(gather(say(greeting), b64enc(history), 0, 1, n, r, c, e, s));
       }
-      const greeting = buildGreeting(n, c);
-      if (transcript) history.push({ role: 'user', content: transcript });
-      history.push({ role: 'assistant', content: greeting });
-      return res.status(200).send(gather(say(greeting), b64enc(history), 0, 1, n, r, c, e, s));
+      // A live person spoke first (not a menu) — fall through; the shared logic
+      // below pushes transcript to history and calls the model with turns=0.
     }
 
     if (!transcript) {
@@ -392,7 +400,8 @@ module.exports = async function handler(req, res) {
 
     let reply;
     try {
-      const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns) }, ...history.slice(-14)];
+      const hasSpoken = history.some(m => m.role === 'assistant');
+      const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns, hasSpoken) }, ...history.slice(-14)];
       const apiKey = process.env.OPENAI_API_KEY;
       const openaiStart = Date.now();
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
