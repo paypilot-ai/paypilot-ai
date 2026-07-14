@@ -102,7 +102,7 @@ function shouldEndCall(text) {
 // Deterministic IVR-menu detection — don't rely on the model noticing "press 1
 // for sales" in the transcript and remembering to respond with a press instead
 // of talking through it. Runs on the raw transcript before any LLM call.
-const IVR_PRESS_RE = /(?:for\s+([a-z][a-z\s]{1,40}?)\s+)?press\s+(pound|star|[0-9]|one|two|three|four|five|six|seven|eight|nine|zero)\b/gi;
+const IVR_PRESS_RE = /(?:for\s+([a-z][a-z\s]{1,40}?)\s+)?(?:press|dial|select|choose|hit)\s+(?:option\s+|the\s+)?(pound|star|[0-9]|one|two|three|four|five|six|seven|eight|nine|zero)\b/gi;
 const IVR_WORD_DIGIT = { zero:'0', one:'1', two:'2', three:'3', four:'4', five:'5', six:'6', seven:'7', eight:'8', nine:'9', pound:'#', star:'*' };
 const IVR_PRIORITY = ['corporate development', 'strategy', 'merger', 'm&a', 'business development', 'executive office', 'executive', 'operator', 'representative', 'agent'];
 function detectIvrDigit(transcript) {
@@ -177,7 +177,7 @@ function buildSystemPrompt(session, isRushed) {
     parts.push(`IMPORTANT: Conduct this entire call in ${langName}. Greet, respond, and close entirely in ${langName}.`);
   }
   parts.push('NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time. Do not give away your bottom line.');
-  parts.push('IVR NAVIGATION: If you hear an automated phone menu (e.g. "press 1 for sales", "for billing press 2", "please listen to our menu options"), you MUST navigate it — do NOT speak. Output ONLY [PRESS:X] where X is the best digit: prefer any option for "corporate development", "strategy", "M&A", "business development", or "executive office"; otherwise press 0 for an operator. Never say anything when pressing a key — just [PRESS:X] by itself.');
+  parts.push('IVR NAVIGATION: If you hear an automated phone menu (e.g. "press 1 for sales", "dial 2 for support", "select option 3", "choose 1", "for billing press/dial/select 2", "please listen to our menu options"), you MUST navigate it — do NOT speak. Output ONLY [PRESS:X] where X is the best digit: prefer any option for "corporate development", "strategy", "M&A", "business development", or "executive office"; otherwise press 0 for an operator. Never say anything when pressing a key — just [PRESS:X] by itself.');
   if (session.history.filter(m => m.role === 'assistant').length === 0) {
     parts.push('This is the very start of the call — you have not spoken yet, but they already answered the phone and said something first. Respond briefly and naturally to what they said (don\'t ignore it), then introduce yourself, your company, and state plainly and specifically why you\'re calling — one short, concrete phrase, never vague filler. Ask if they have a sec. Do NOT ask "may I speak with" them if they already indicated they are the right person.');
   }

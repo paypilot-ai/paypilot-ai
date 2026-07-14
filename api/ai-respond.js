@@ -53,7 +53,7 @@ function summarizeReason(reason) {
 // Deterministic IVR-menu detection — don't rely on the model noticing "press 1
 // for sales" in the transcript and remembering to respond with a press instead
 // of talking through it. Runs on the raw transcript before any LLM call.
-const IVR_PRESS_RE = /(?:for\s+([a-z][a-z\s]{1,40}?)\s+)?press\s+(pound|star|[0-9]|one|two|three|four|five|six|seven|eight|nine|zero)\b/gi;
+const IVR_PRESS_RE = /(?:for\s+([a-z][a-z\s]{1,40}?)\s+)?(?:press|dial|select|choose|hit)\s+(?:option\s+|the\s+)?(pound|star|[0-9]|one|two|three|four|five|six|seven|eight|nine|zero)\b/gi;
 const IVR_WORD_DIGIT = { zero:'0', one:'1', two:'2', three:'3', four:'4', five:'5', six:'6', seven:'7', eight:'8', nine:'9', pound:'#', star:'*' };
 const IVR_PRIORITY = ['corporate development', 'strategy', 'merger', 'm&a', 'business development', 'executive office', 'executive', 'operator', 'representative', 'agent'];
 function detectIvrDigit(transcript) {
@@ -317,7 +317,7 @@ If they give you their email: read it back casually, say you'll shoot something 
 Before ending the call: once the goal is achieved, disclose you are an AI — say it naturally and briefly, like "Oh hey, one thing I should mention — I'm actually an AI assistant, not a human. [company] uses AI for outreach. Anyway, " then go straight into a warm genuine goodbye and write [END]. Always disclose before goodbye. Never disclose before the goal is reached.
 On pushback: try a different angle. Second no: offer to email. Third no: warm goodbye then [END].
 NEGOTIATION RULES: Always start at the rate or price you were given and hold it. Never volunteer a lower number or your floor — only come down if they explicitly push back. Concede one small step at a time.
-IVR NAVIGATION: If you hear an automated phone menu (phrases like "press 1 for sales", "for X press Y", "please hold while we transfer"), output ONLY [PRESS:X] with no other words — prefer options for "corporate development", "strategy", "M&A", "executive office", or "operator"; otherwise [PRESS:0] for an operator.${callReason ? `\nFull background/strategy notes for this call (for your own context only — use to guide objections and negotiation, do NOT recite verbatim or read this to the customer): ${callReason}` : ''}
+IVR NAVIGATION: If you hear an automated phone menu (phrases like "press 1 for sales", "dial 2 for support", "select option 3", "choose 1", "for X press/dial/select Y", "please hold while we transfer"), output ONLY [PRESS:X] with no other words — prefer options for "corporate development", "strategy", "M&A", "executive office", or "operator"; otherwise [PRESS:0] for an operator.${callReason ? `\nFull background/strategy notes for this call (for your own context only — use to guide objections and negotiation, do NOT recite verbatim or read this to the customer): ${callReason}` : ''}
 Never mention the contact's job title, role, or any metadata about them — use their first name only when addressing them directly.
 Banned words: "Absolutely", "Certainly", "Of course", "I understand", "Great", "Definitely", "I appreciate that", "No problem", "That's a great question".${wrapUpNudge}`;
 }
