@@ -6207,6 +6207,14 @@ document.addEventListener('DOMContentLoaded', function(){
   if (stripeSessionId) localStorage.setItem('stripeSessionId', stripeSessionId);
   if (params.get('success') === 'true') toast('Subscription activated — welcome to PayPilot!');
   if (params.get('canceled') === 'true') toast('Checkout cancelled. Your plan was not changed.');
+
+  // ?plan=starter|pro|enterprise — jump straight to checkout for that plan,
+  // same path the homepage's "Get Started" buttons already use.
+  const linkedPlan = (params.get('plan') || '').toLowerCase();
+  if (['starter', 'pro', 'enterprise'].includes(linkedPlan)) {
+    enterPlanDemo(linkedPlan);
+    setTimeout(() => showPage('billing', document.querySelector('[data-page=billing]')), 100);
+  }
 });
 
 // ============================================================
