@@ -81,12 +81,16 @@ const RUSHED_RE = /\b(can'?t (really )?talk|kind ?a busy|kinda busy|pretty busy|
 // over the rest of the menu before it lists any options.
 const IVR_PREAMBLE_RE = /\b(thank you for calling|welcome to|your call (is important|may be (recorded|monitored))|please listen (carefully|closely)|menu options have changed|all (of )?our (representatives|agents|operators|lines) are (currently )?(busy|assisting)|please (continue to )?hold|please stay on the line|for quality (assurance|purposes)|to repeat this menu|if you know your party.?s extension|enter your party.?s extension|main menu|para espa(ñ|n)ol|is currently closed|business hours are|leave a message after the tone)\b/i;
 
-function buildGreeting(n, c) {
+// disc (recording-consent disclosure) is woven into the same breath as the
+// greeting, right after Brandy states her name — never played alone before a
+// greeting exists, which just reads as dead air to a real person picking up.
+function buildGreeting(n, c, disc) {
+  const discMid = disc ? ` ${disc}` : '';
   if (n) {
     const firstName = n.trim().split(/\s+/)[0];
-    return `Hi, may I speak with ${firstName}?`;
+    return `Hi, this is Brandy.${discMid} May I speak with ${firstName}?`;
   }
-  return `Hi there, this is Brandy calling from ${c || 'PayPilot AI'}. Who am I speaking with?`;
+  return `Hi there, this is Brandy calling from ${c || 'PayPilot AI'}.${discMid} Who am I speaking with?`;
 }
 
 function isAcquisitionCall(reason) {
@@ -292,12 +296,18 @@ function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName
 // running away if the model never reaches that on its own.
 const MAX_TURNS = 20;
 
-function buildPrompt(customerName, companyName, callReason, turns, hasSpoken, isRushed) {
+function buildPrompt(customerName, companyName, callReason, turns, hasSpoken, isRushed, disc) {
   const company = companyName || 'our company';
   const firstName = (customerName || 'the prospect').trim().split(/\s+/)[0];
   const shortReason = callReason ? summarizeReason(callReason) : 'our services';
   const rushedInstruction = isRushed
     ? `\nIMPORTANT — they just indicated they're busy/rushed (mid-job, driving, in a hurry). Drop the normal pitch entirely. In ONE short sentence: acknowledge you caught them at a bad time, then say what you do in the fewest possible words, then ask if you can just text them a link instead of continuing to talk. Under 20 words total. Do not ask any other questions. If they agree, thank them briefly, confirm the best number/email for the text, disclose you're an AI per the usual rule, and write [END].`
+    : '';
+  // Recording-consent disclosure — folded into the same breath as the rest of
+  // this first response, right after stating her name, never as a standalone
+  // line with a pause after it (that reads as dead air and people hang up).
+  const discInstruction = (disc && !hasSpoken && turns === 0)
+    ? `\nBefore anything else in this first response: say your name (Brandy), then in the very same breath work in this required disclosure naturally: "${disc}" Then continue straight into the rest of your opening — no pause, no gap, go directly into why you're calling.`
     : '';
   const introInstruction = turns > 1
     ? `You already introduced yourself earlier in this call — do NOT reintroduce yourself or re-ask if you reached the right person. Read the conversation history below and respond directly to what they just said.`
@@ -310,7 +320,7 @@ function buildPrompt(customerName, companyName, callReason, turns, hasSpoken, is
   return `You are Brandy, making an outbound call for ${company} to ${firstName}. The reason for this call, in plain customer-facing terms: ${shortReason}. You sound like a real person — casual, direct, warm, with real emotion. Short sentences. Contractions. No corporate language.
 Start replies with words like "So", "Yeah", "Oh", "Look", "I mean", "Honestly" — the way people actually talk on the phone.
 React emotionally: if something is funny say "Ha, yeah!" — if they hesitate say "Aw yeah, I get that."
-${introInstruction}${rushedInstruction}
+${introInstruction}${rushedInstruction}${discInstruction}
 Get to the point fast — the customer should know exactly why you called within your first response. Don't ramble or bury the reason.
 ONE sentence, then a short question. Always end your reply with a question — never leave a statement hanging without asking something.
 If they give you their email: read it back casually, say you'll shoot something over, keep talking. Do NOT end the call just because they gave an email.
@@ -336,6 +346,7 @@ module.exports = async function handler(req, res) {
     const c       = (req.query.c || '').trim();
     const e       = (req.query.e || '').trim();
     const s       = (req.query.s || '').trim();
+    const disc    = (req.query.disc || '').trim().slice(0, 500);
     const retries = parseInt(req.query.retries || '0');
     const turns   = parseInt(req.query.turns   || '0');
     const intro   = req.query.intro === '1';
@@ -354,7 +365,7 @@ module.exports = async function handler(req, res) {
       // If a live person spoke first, fall through to the normal turn logic below
       // so the model responds to what they actually said instead of a fixed script.
       const ivrDigit = transcript ? detectIvrDigit(transcript) : null;
-      const introAction = (nextAttempt) => `/api/ai-respond?h=${b64enc(history)}&amp;intro=1&amp;iattempt=${nextAttempt}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}`;
+      const introAction = (nextAttempt) => `/api/ai-respond?h=${b64enc(history)}&amp;intro=1&amp;iattempt=${nextAttempt}&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}&amp;disc=${encodeURIComponent(disc)}`;
       if (ivrDigit && iattempt < 10) {
         return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Play digits="${ivrDigit}"/><Gather input="speech" action="${introAction(iattempt + 1)}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true"></Gather><Hangup/></Response>`);
       }
@@ -367,7 +378,7 @@ module.exports = async function handler(req, res) {
           return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="${introAction(iattempt + 1)}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true"></Gather><Hangup/></Response>`);
         }
         // Truly nothing heard after retries — open cold with the canned greeting.
-        const greeting = buildGreeting(n, c);
+        const greeting = buildGreeting(n, c, disc);
         history.push({ role: 'assistant', content: greeting });
         return res.status(200).send(gather(say(greeting), b64enc(history), 0, 1, n, r, c, e, s));
       }
@@ -433,7 +444,7 @@ module.exports = async function handler(req, res) {
     try {
       const hasSpoken = history.some(m => m.role === 'assistant');
       const isRushed = RUSHED_RE.test(transcript);
-      const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns, hasSpoken, isRushed) }, ...history.slice(-14)];
+      const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns, hasSpoken, isRushed, disc) }, ...history.slice(-14)];
       const apiKey = process.env.OPENAI_API_KEY;
       const openaiStart = Date.now();
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {

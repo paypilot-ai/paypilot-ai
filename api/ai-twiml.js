@@ -59,16 +59,17 @@ module.exports = async function handler(req, res) {
     // that starts talking immediately. Speaking our greeting over it means Brandy
     // never hears (or navigates) the menu. ai-respond.js decides, once something
     // is heard (or the window times out), whether to press a digit or greet.
+    //
+    // The recording-consent disclosure (Compliance settings) is threaded through
+    // as `disc` rather than spoken here directly — saying it cold, before any
+    // greeting, leaves real callers hearing one ominous line then dead silence
+    // while we listen for an IVR menu, and they hang up. ai-respond.js folds it
+    // into the same breath as the actual greeting/opening line instead.
     const history = b64enc([]);
-    const action  = `https://paypilotai.live/api/ai-respond?h=${history}&amp;intro=1&amp;iattempt=0&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}`;
-
-    // Recording-consent disclosure, spoken once up front (Compliance settings)
-    // before anything else happens on the call.
-    const disclosureSay = disc ? `<Say voice="Polly.Joanna-Neural">${xmlEsc(disc)}</Say>` : '';
+    const action  = `https://paypilotai.live/api/ai-respond?h=${history}&amp;intro=1&amp;iattempt=0&amp;retries=0&amp;turns=0&amp;n=${encodeURIComponent(n)}&amp;r=${encodeURIComponent(r)}&amp;c=${encodeURIComponent(c)}&amp;e=${encodeURIComponent(e)}&amp;s=${encodeURIComponent(s)}&amp;disc=${encodeURIComponent(disc)}`;
 
     res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${disclosureSay}
   <Gather input="speech" action="${action}" method="POST" timeout="6" speechTimeout="2" speechModel="phone_call" language="en-US" actionOnEmptyResult="true">
   </Gather>
   <Redirect method="POST">${action}</Redirect>

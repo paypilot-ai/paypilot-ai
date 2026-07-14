@@ -180,6 +180,9 @@ function buildSystemPrompt(session, isRushed) {
   parts.push('IVR NAVIGATION: If you hear an automated phone menu (e.g. "press 1 for sales", "dial 2 for support", "select option 3", "choose 1", "for billing press/dial/select 2", "please listen to our menu options"), you MUST navigate it — do NOT speak. Output ONLY [PRESS:X] where X is the best digit: prefer any option for "corporate development", "strategy", "M&A", "business development", or "executive office"; otherwise press 0 for an operator. Never say anything when pressing a key — just [PRESS:X] by itself.');
   if (session.history.filter(m => m.role === 'assistant').length === 0) {
     parts.push('This is the very start of the call — you have not spoken yet, but they already answered the phone and said something first. Respond briefly and naturally to what they said (don\'t ignore it), then introduce yourself, your company, and state plainly and specifically why you\'re calling — one short, concrete phrase, never vague filler. Ask if they have a sec. Do NOT ask "may I speak with" them if they already indicated they are the right person.');
+    if (session.disc) {
+      parts.push(`Before anything else in this first response: say your name (Brandy), then in the very same breath work in this required disclosure naturally: "${session.disc}" Then continue straight into the rest of your opening — no pause, no gap, go directly into why you're calling.`);
+    }
   }
   if (session.history.filter(m => m.role === 'assistant').length >= MAX_ASSISTANT_TURNS - 3) {
     parts.push('This call has gone on long enough — wrap it up in your next response: give a warm goodbye and [END]. Do not ask another question or start a new topic.');
@@ -336,7 +339,11 @@ app.all('/twiml-stream', (req, res) => {
   }
 
   const wsUrl = `wss://${host}/twilio`;
-  // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases
+  // Pass params as Twilio <Parameter> elements — reliable, no URL-encoding edge cases.
+  // The recording-consent disclosure (disc) is threaded through the same way rather
+  // than spoken here directly — saying it cold, before the stream even connects,
+  // leaves real callers hearing one ominous line then dead air while the intro
+  // listener runs. sendGreeting() folds it into the same breath as the greeting.
   const paramXml = [
     n ? `<Parameter name="n" value="${xmlEsc(n)}"/>` : '',
     r ? `<Parameter name="r" value="${xmlEsc(r)}"/>` : '',
@@ -344,13 +351,11 @@ app.all('/twiml-stream', (req, res) => {
     e ? `<Parameter name="e" value="${xmlEsc(e)}"/>` : '',
     s ? `<Parameter name="s" value="${xmlEsc(s)}"/>` : '',
     l ? `<Parameter name="l" value="${xmlEsc(l)}"/>` : '',
+    disc ? `<Parameter name="disc" value="${xmlEsc(disc)}"/>` : '',
   ].join('');
-  // Recording-consent disclosure, spoken once up front (Compliance settings)
-  // before the real-time stream connects.
-  const disclosureSay = disc ? `<Say voice="Polly.Joanna-Neural">${xmlEsc(disc)}</Say>` : '';
 
   res.setHeader('Content-Type', 'text/xml');
-  res.send(`<?xml version="1.0" encoding="UTF-8"?><Response>${disclosureSay}<Connect><Stream url="${wsUrl}">${paramXml}</Stream></Connect></Response>`);
+  res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Connect><Stream url="${wsUrl}">${paramXml}</Stream></Connect></Response>`);
 });
 
 app.get('/test-realtime', (req, res) => {
@@ -493,6 +498,7 @@ function handleTwilio(ws) {
       const e = cp.e || '';
       const s = cp.s || '';
       const l = cp.l || 'en';
+      const disc = cp.disc || '';
 
       // Reconnect after DTMF — preserve existing session history and state
       const existing = sessions.get(callSid);
@@ -508,7 +514,7 @@ function handleTwilio(ws) {
         return;
       }
 
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, introAttempts: 0, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false, startedAt: Date.now() };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, introAttempts: 0, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, disc, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false, startedAt: Date.now() };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)', '| voice:', ELEVENLABS_VOICE);
@@ -722,17 +728,21 @@ function connectDeepgram(session) {
   });
 }
 
-function buildGreeting(name, company, reason) {
+// disc (recording-consent disclosure) is woven into the same breath as the
+// greeting, right after Brandy states her name — never played alone before a
+// greeting exists, which just reads as dead air to a real person picking up.
+function buildGreeting(name, company, reason, disc) {
+  const discMid = disc ? ` ${disc}` : '';
   if (name) {
     const firstName = name.trim().split(/\s+/)[0];
-    return `Hi, may I speak with ${firstName}?`;
+    return `Hi, this is Brandy.${discMid} May I speak with ${firstName}?`;
   }
   const c = company || 'PayPilot AI';
-  return `Hi there, this is Brandy calling from ${c}. Who am I speaking with?`;
+  return `Hi there, this is Brandy calling from ${c}.${discMid} Who am I speaking with?`;
 }
 
 async function sendGreeting(session) {
-  const greeting = buildGreeting(session.name, session.company, session.reason);
+  const greeting = buildGreeting(session.name, session.company, session.reason, session.disc);
   session.history.push({ role: 'assistant', content: greeting });
   pushToBrowser(session, { event: 'ai-response', text: greeting });
   await speakToTwilio(session, greeting);
