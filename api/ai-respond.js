@@ -70,6 +70,11 @@ function detectIvrDigit(transcript) {
   return options[0].digit;
 }
 
+// Deterministic "rushed/busy" detection — catches an owner who picked up mid-job
+// (truck, tools, a customer waiting) so the AI can drop the full pitch and offer
+// a fast, low-commitment out instead of talking over them.
+const RUSHED_RE = /\b(can'?t (really )?talk|kind ?a busy|kinda busy|pretty busy|swamped|slammed|in the middle of (a |something)|on a job|on the job|out on a (call|job)|make (it|this) (quick|fast)|real quick|gotta run|got to run|not (a )?good time|bad time|driving( right now)?|about to (walk|head) into|running (late|behind)|only (have|got) a (minute|sec|second)|call (you|me) back)\b/i;
+
 // IVR menus almost always open with a preamble before ever saying "press N" —
 // "Thank you for calling X, your call may be recorded..." Without recognizing
 // this, that preamble reads as a live person answering and Brandy talks right
@@ -287,10 +292,13 @@ function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName
 // running away if the model never reaches that on its own.
 const MAX_TURNS = 20;
 
-function buildPrompt(customerName, companyName, callReason, turns, hasSpoken) {
+function buildPrompt(customerName, companyName, callReason, turns, hasSpoken, isRushed) {
   const company = companyName || 'our company';
   const firstName = (customerName || 'the prospect').trim().split(/\s+/)[0];
   const shortReason = callReason ? summarizeReason(callReason) : 'our services';
+  const rushedInstruction = isRushed
+    ? `\nIMPORTANT — they just indicated they're busy/rushed (mid-job, driving, in a hurry). Drop the normal pitch entirely. In ONE short sentence: acknowledge you caught them at a bad time, then say what you do in the fewest possible words, then ask if you can just text them a link instead of continuing to talk. Under 20 words total. Do not ask any other questions. If they agree, thank them briefly, confirm the best number/email for the text, disclose you're an AI per the usual rule, and write [END].`
+    : '';
   const introInstruction = turns > 1
     ? `You already introduced yourself earlier in this call — do NOT reintroduce yourself or re-ask if you reached the right person. Read the conversation history below and respond directly to what they just said.`
     : hasSpoken
@@ -302,7 +310,7 @@ function buildPrompt(customerName, companyName, callReason, turns, hasSpoken) {
   return `You are Brandy, making an outbound call for ${company} to ${firstName}. The reason for this call, in plain customer-facing terms: ${shortReason}. You sound like a real person — casual, direct, warm, with real emotion. Short sentences. Contractions. No corporate language.
 Start replies with words like "So", "Yeah", "Oh", "Look", "I mean", "Honestly" — the way people actually talk on the phone.
 React emotionally: if something is funny say "Ha, yeah!" — if they hesitate say "Aw yeah, I get that."
-${introInstruction}
+${introInstruction}${rushedInstruction}
 Get to the point fast — the customer should know exactly why you called within your first response. Don't ramble or bury the reason.
 ONE sentence, then a short question. Always end your reply with a question — never leave a statement hanging without asking something.
 If they give you their email: read it back casually, say you'll shoot something over, keep talking. Do NOT end the call just because they gave an email.
@@ -424,7 +432,8 @@ module.exports = async function handler(req, res) {
     let reply;
     try {
       const hasSpoken = history.some(m => m.role === 'assistant');
-      const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns, hasSpoken) }, ...history.slice(-14)];
+      const isRushed = RUSHED_RE.test(transcript);
+      const messages = [{ role: 'system', content: buildPrompt(n, c, r, turns, hasSpoken, isRushed) }, ...history.slice(-14)];
       const apiKey = process.env.OPENAI_API_KEY;
       const openaiStart = Date.now();
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {

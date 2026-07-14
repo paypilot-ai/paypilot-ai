@@ -128,6 +128,11 @@ function looksAutomated(transcript) {
   return !!detectIvrDigit(transcript) || IVR_PREAMBLE_RE.test(transcript);
 }
 
+// Deterministic "rushed/busy" detection — catches an owner who picked up mid-job
+// (truck, tools, a customer waiting) so the AI can drop the full pitch and offer
+// a fast, low-commitment out instead of talking over them.
+const RUSHED_RE = /\b(can'?t (really )?talk|kind ?a busy|kinda busy|pretty busy|swamped|slammed|in the middle of (a |something)|on a job|on the job|out on a (call|job)|make (it|this) (quick|fast)|real quick|gotta run|got to run|not (a )?good time|bad time|driving( right now)?|about to (walk|head) into|running (late|behind)|only (have|got) a (minute|sec|second)|call (you|me) back)\b/i;
+
 function hangupCall(session) {
   callLog(session.callSid, '[hangup] ending call via REST + WebSocket');
   // Twilio REST API — most reliable way to end the call
@@ -150,9 +155,12 @@ const LANG_NAMES = { en:'English', es:'Spanish', pt:'Portuguese', fr:'French', z
 const MAX_CALL_DURATION_MS = 6 * 60 * 1000;
 const MAX_ASSISTANT_TURNS  = 16;
 
-function buildSystemPrompt(session) {
+function buildSystemPrompt(session, isRushed) {
   const base = session.prompt || SYSTEM_PROMPT;
   const parts = [base];
+  if (isRushed) {
+    parts.push('IMPORTANT — they just indicated they\'re busy/rushed (mid-job, driving, in a hurry). Drop the normal pitch entirely. In ONE short sentence: acknowledge you caught them at a bad time, then say what you do in the fewest possible words, then ask if you can just text them a link instead of continuing to talk. Under 20 words total. Do not ask any other questions. If they agree, thank them briefly, confirm the best number/email for the text, disclose you\'re an AI per the usual rule, and [END].');
+  }
   if (session.company) parts.push(`You are calling on behalf of ${session.company}.`);
   const shortReason = session.reason ? summarizeReasonForEmail(session.reason) : '';
   if (shortReason) {
@@ -781,7 +789,8 @@ async function generateAndSpeak(session) {
     return;
   }
 
-  const messages = [{ role: 'system', content: buildSystemPrompt(session) }, ...session.history.slice(-12)];
+  const isRushed = lastUserMsg ? RUSHED_RE.test(lastUserMsg.content) : false;
+  const messages = [{ role: 'system', content: buildSystemPrompt(session, isRushed) }, ...session.history.slice(-12)];
 
   session.state = 'speaking';
   session.speakStartTime = Date.now();
