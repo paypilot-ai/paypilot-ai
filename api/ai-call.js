@@ -1,6 +1,8 @@
 // TEMPORARY: requireAuth() disabled here until AUTH_SECRET etc. are set in
 // Vercel/Railway (see loginDemo() in index.html for the matching rollback).
 const { rateLimit } = require('../lib/rateLimit');
+const { getBearerToken, verifyToken } = require('../lib/sessionAuth');
+const { checkAndIncrementDialUsage } = require('../lib/planUsage');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,8 +18,24 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const rlIdentifier = undefined;
+
+  // Only applies to real provisioned customer accounts (a valid signed token,
+  // issued after Stripe checkout — see create-checkout.js). The master
+  // account currently has no token under the auth rollback, so it's
+  // unaffected; this only starts mattering once AUTH_SECRET is configured
+  // and a real customer has signed up.
+  const tokenPayload = verifyToken(getBearerToken(req));
+  const rlIdentifier = tokenPayload ? tokenPayload.sub : undefined;
   if (!rateLimit(req, res, { key: 'ai-call', limit: 20, windowMs: 60_000, identifier: rlIdentifier })) return;
+
+  if (tokenPayload) {
+    const usage = checkAndIncrementDialUsage(tokenPayload.sub, tokenPayload.plan);
+    if (!usage.allowed) {
+      return res.status(402).json({
+        error: `You've used all ${usage.limit} AI dials included in your ${tokenPayload.plan} plan this month. Upgrade your plan or contact support for additional dials.`,
+      });
+    }
+  }
 
   const accountSid = (process.env.TWILIO_ACCOUNT_SID || '').trim();
   const authToken  = (process.env.TWILIO_AUTH_TOKEN  || '').trim();
