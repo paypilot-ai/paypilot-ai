@@ -3697,6 +3697,49 @@ function enterRealApp(){
   toast('Welcome back, Sean.');
 }
 
+// Real provisioned customer account — reached via the magic link emailed
+// after a successful Stripe checkout (see api/create-checkout.js's webhook).
+// Same "live" treatment as enterRealApp() but generalized to the customer's
+// actual plan instead of being hardcoded to Pro/the owner's own account.
+function enterCustomerApp(plan, token){
+  if (token) localStorage.setItem('pp_auth_token', token);
+  currentPlan = plan || 'starter';
+  isLiveUser = true;
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('auth').classList.add('hidden');
+  document.getElementById('app').style.display = 'block';
+  hidePricing();
+
+  const planLabel = currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
+  document.getElementById('planPill').textContent = planLabel + ' — Live';
+  const lp = document.getElementById('livePill');
+  if(lp){ lp.textContent = '🟢 Live'; lp.style.background = '#dcfce7'; lp.style.color = '#166534'; }
+  document.getElementById('metricPlan').textContent = planLabel;
+  const banner = document.getElementById('planBanner');
+  banner.textContent = `PayPilot ${planLabel} — You are live. AI responses are real and powered by your scripts.`;
+  banner.style.background = 'linear-gradient(135deg,#dcfce7,#d1fae5)';
+  banner.style.color = '#064e3b';
+
+  document.getElementById('starterAssistNote').style.display = 'none';
+  document.getElementById('starterAnalyticsNote').style.display = 'none';
+  document.getElementById('enterpriseDashboardCard').style.display = 'none';
+
+  refreshDashboardMetrics();
+
+  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.side-btn[data-page="dashboard"]').classList.add('active');
+  const billingBtn2 = document.querySelector('.side-btn[data-page="billing"]');
+  if(billingBtn2) billingBtn2.style.display = 'none';
+  const billingMob2 = document.querySelector('.mob-nav-btn[data-mob-page="billing"]');
+  if(billingMob2) billingMob2.style.display = 'none';
+  const pricingBtn2 = document.getElementById('getPricingBtn');
+  if(pricingBtn2) pricingBtn2.style.display = 'none';
+  localStorage.setItem('pp_session', 'customer:' + currentPlan);
+  showPage('dashboard', null, false, true);
+  resetDemoState();
+  toast('Welcome to PayPilot AI!');
+}
+
 function enterPlanDemo(plan){
   currentPlan = plan || "pro";
   isLiveUser = false;
@@ -3791,6 +3834,9 @@ function logout(){
     if(!sess) return;
     if(sess === 'real'){
       enterRealApp();
+    } else if(sess.startsWith('customer:')){
+      const plan = sess.split(':')[1] || 'starter';
+      enterCustomerApp(plan);
     } else if(sess.startsWith('demo:')){
       const plan = sess.split(':')[1] || 'starter';
       enterPlanDemo(plan);
@@ -6207,6 +6253,17 @@ document.addEventListener('DOMContentLoaded', function(){
   if (stripeSessionId) localStorage.setItem('stripeSessionId', stripeSessionId);
   if (params.get('success') === 'true') toast('Subscription activated — welcome to PayPilot!');
   if (params.get('canceled') === 'true') toast('Checkout cancelled. Your plan was not changed.');
+
+  // ?token=...&plan=... — magic-link login emailed after a successful Stripe
+  // checkout (see api/create-checkout.js's webhook). Takes priority over the
+  // plain ?plan= demo-jump below, since this is a real provisioned account.
+  const magicToken = params.get('token');
+  if (magicToken) {
+    const tokenPlan = (params.get('plan') || 'starter').toLowerCase();
+    enterCustomerApp(tokenPlan, magicToken);
+    history.replaceState({}, '', location.pathname); // scrub the token from the URL bar
+    return;
+  }
 
   // ?plan=starter|pro|enterprise — jump straight to checkout for that plan,
   // same path the homepage's "Get Started" buttons already use.

@@ -71,7 +71,7 @@ Session state lives in the `sessions` Map keyed by `callSid`.
 | `deepgram-token.js` | GET | Returns `DEEPGRAM_API_KEY` to the browser for client-side transcription |
 | `search-company.js` | GET | Google Places Text Search + Place Details (top 5 results with phone/website) |
 | `send-agreement.js` | POST | Sends DocuSign link via Resend email from `info@paypilotai.live` |
-| `create-checkout.js` | POST | Creates Stripe Checkout session (keeps secret key server-side) |
+| `create-checkout.js` | POST | Creates Stripe Checkout session (keeps secret key server-side). Also handles the Stripe webhook (`checkout.session.completed`) at the same URL — Stripe deliveries carry a `Stripe-Signature` header, real checkout-creation requests never do, so the handler branches on that. Body parsing is disabled for this file (`module.exports.config = { api: { bodyParser: false } }`) so the webhook can verify Stripe's signature against the raw body; both code paths parse JSON manually as a result. |
 
 Some files use `module.exports` (CommonJS) and some use `export default` (ESM) — Vercel handles both.
 
@@ -85,6 +85,10 @@ Login is checked in `loginDemo()` against hardcoded master credentials and a `TE
 
 The Stripe price IDs are hardcoded in `api/create-checkout.js`: `starter: price_1TQdvP84nVx3JlYAn5pAbYAb`, `pro: price_1TQdx284nVx3JlYAHl6dGlci`.
 
+**Real customer signup flow:** `?plan=starter|pro|enterprise` on the URL jumps straight into the Get Started flow for that plan (same path the homepage's "Get Started" buttons use), landing on Billing where `fakeStripe()` calls `create-checkout.js` to start a real Stripe Checkout session. On successful payment, Stripe's webhook (same file, see above) issues a signed session token (`lib/sessionAuth.js`'s `issueToken`) and emails a magic login link — `?token=...&plan=...` — via Resend. The frontend's `DOMContentLoaded` handler picks up that param, stores the token, and calls `enterCustomerApp(plan, token)` (parallel to `enterRealApp()`, but generalized to the customer's actual plan instead of hardcoded to the owner's own Pro account). The session persists across reloads as `pp_session = 'customer:<plan>'`. Requires `AUTH_SECRET` and `STRIPE_WEBHOOK_SECRET` to be configured — without `AUTH_SECRET`, `issueToken()` throws and the webhook just logs an error and acknowledges Stripe without provisioning anything.
+
+**Per-customer usage cap:** `lib/planUsage.js` enforces a best-effort, in-memory dial cap (Starter: 25/mo, Pro: 100/mo) in `ai-call.js`, keyed by the token's email — only applies when a valid signed token is present on the request, so the master account (which has no token under the current auth rollback, see below) is unaffected. Not persistent — resets on cold start/redeploy, since this project has no database. Real metered overage billing (charging Stripe for dials beyond the plan limit) would need persistent storage and Stripe usage records; not implemented.
+
 ## Environment Variables
 
 | Variable | Used by | Notes |
@@ -97,8 +101,10 @@ The Stripe price IDs are hardcoded in `api/create-checkout.js`: `starter: price_
 | `ELEVENLABS_API_KEY` | Railway | |
 | `ELEVENLABS_VOICE_ID` | Railway | Default: `EXAVITQu4vr4xnSDxMaL` |
 | `STRIPE_SECRET_KEY` | `create-checkout.js` | Never sent to browser |
+| `STRIPE_WEBHOOK_SECRET` | `create-checkout.js` | Signing secret for the Stripe webhook (Developers → Webhooks → your endpoint → Signing secret). Point the webhook at `https://paypilotai.live/api/create-checkout`, subscribed to `checkout.session.completed` |
 | `GOOGLE_PLACES_KEY` | `search-company.js` | |
-| `RESEND_API_KEY` | `send-agreement.js` | |
+| `RESEND_API_KEY` | `send-agreement.js`, `ai-respond.js`, `create-checkout.js` | |
+| `FROM_EMAIL` / `FROM_NAME` | `ai-respond.js`, `create-checkout.js` | Sender identity for outbound emails. Defaults: `info@paypilotai.live` / `PayPilot AI` |
 | `AI_SYSTEM_PROMPT` | Railway only | Overrides default collections agent prompt |
 | `PORT` | Railway | Default `3000` |
 | `FORWARD_TO_NUMBER` | `ai-twiml.js` | Real phone number inbound calls forward to (E.164, e.g. `+15551234567`); no attachment support without it |
