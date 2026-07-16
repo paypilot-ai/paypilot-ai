@@ -194,8 +194,12 @@ async function sendDTMF(session, digit) {
   const accountSid = TWILIO_ACCOUNT_SID;
   const authToken  = TWILIO_AUTH_TOKEN;
   if (!accountSid || !authToken || !session.callSid) return;
-  const host = process.env.RAILWAY_PUBLIC_DOMAIN || '';
-  if (!host) { callLog(session.callSid, '[dtmf] skipped — RAILWAY_PUBLIC_DOMAIN not set'); return; }
+  // Prefer the host captured from the original /twiml-stream request (works
+  // whether or not RAILWAY_PUBLIC_DOMAIN is configured) — falling back to the
+  // env var alone left DTMF silently broken on every call whenever that var
+  // wasn't set, regardless of which IVR menu was hit.
+  const host = session.host || process.env.RAILWAY_PUBLIC_DOMAIN || '';
+  if (!host) { callLog(session.callSid, '[dtmf] skipped — no host available (neither session.host nor RAILWAY_PUBLIC_DOMAIN set)'); return; }
 
   const wsUrl = `wss://${host}/twilio`;
   const paramXml = [
@@ -352,6 +356,7 @@ app.all('/twiml-stream', (req, res) => {
     s ? `<Parameter name="s" value="${xmlEsc(s)}"/>` : '',
     l ? `<Parameter name="l" value="${xmlEsc(l)}"/>` : '',
     disc ? `<Parameter name="disc" value="${xmlEsc(disc)}"/>` : '',
+    host ? `<Parameter name="host" value="${xmlEsc(host)}"/>` : '',
   ].join('');
 
   res.setHeader('Content-Type', 'text/xml');
@@ -499,6 +504,7 @@ function handleTwilio(ws) {
       const s = cp.s || '';
       const l = cp.l || 'en';
       const disc = cp.disc || '';
+      const host = cp.host || '';
 
       // Reconnect after DTMF — preserve existing session history and state
       const existing = sessions.get(callSid);
@@ -514,7 +520,7 @@ function handleTwilio(ws) {
         return;
       }
 
-      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, introAttempts: 0, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, disc, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false, startedAt: Date.now() };
+      session = { callSid, streamSid, twilioWs: ws, browserWs: null, dgWs: null, markResolvers: {}, ttsAbort: null, bargedIn: false, greetingTimer: null, introAttempts: 0, state: 'greeting', speakGen: 0, turnId: 0, history: [], prompt: null, name: n, company: c, reason: r, language: l, disc, host, capturedEmail: e || null, emailFromSpeech: false, senderEmail: s || null, docuSignSent: false, emailSent: false, startedAt: Date.now() };
       sessions.set(callSid, session);
       dgAudioLogged = false;
       callLog(callSid, '[call] started | name:', n || '(none)', '| company:', c || '(none)', '| voice:', ELEVENLABS_VOICE);
