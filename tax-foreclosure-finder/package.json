@@ -1,0 +1,13 @@
+{
+  "name": "tax-foreclosure-finder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One-stop tracker for finding, researching, and pursuing tax foreclosure (and other cheap) property deals.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tax Foreclosure Finder</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏚️</text></svg>" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">🏚️ Tax Foreclosure Finder</div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="properties">Properties</button>
+    <button class="tab-btn" data-tab="import">Import List</button>
+    <button class="tab-btn" data-tab="counties">Counties</button>
+    <button class="tab-btn" data-tab="routine">Weekly Routine</button>
+    <button class="tab-btn" data-tab="settings">Settings</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- DASHBOARD -->
+  <section id="tab-dashboard" class="tab-panel active">
+    <div class="stat-grid" id="statGrid"></div>
+    <div class="panel">
+      <h2>Upcoming Auctions (next 14 days)</h2>
+      <table class="data-table" id="upcomingTable">
+        <thead><tr><th>Owner</th><th>Address</th><th>Auction Date</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="empty-note" id="upcomingEmpty">No auctions scheduled in the next 14 days.</p>
+    </div>
+  </section>
+
+  <!-- PROPERTIES -->
+  <section id="tab-properties" class="tab-panel">
+    <div class="panel-header">
+      <h2>Properties</h2>
+      <button class="btn primary" id="btnAddProperty">+ Add Property</button>
+    </div>
+    <div class="filters">
+      <input type="text" id="filterSearch" placeholder="Search owner, address, parcel #..." />
+      <select id="filterCounty"><option value="">All counties</option></select>
+      <select id="filterStatus">
+        <option value="">All statuses</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="propertiesTable">
+        <thead>
+          <tr>
+            <th>Owner</th><th>Address</th><th>County</th><th>Parcel #</th>
+            <th>Taxes Owed</th><th>Est. Value</th><th>Max Bid</th><th>Auction Date</th><th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="empty-note" id="propertiesEmpty">No properties yet. Add one or paste a county list under "Import List".</p>
+  </section>
+
+  <!-- IMPORT -->
+  <section id="tab-import" class="tab-panel">
+    <h2>Import a County List</h2>
+    <p class="hint">Paste a delinquent tax list copied from a county PDF/spreadsheet (comma, tab, or pipe separated, with a header row). We'll guess which column is which — you can fix the mapping before saving anything.</p>
+    <label class="field-label">County (optional, applied to all imported rows)</label>
+    <select id="importCounty"><option value="">— none —</option></select>
+    <textarea id="importText" rows="8" placeholder="Owner,Address,Parcel Number,Taxes Owed,Estimated Value,Auction Date&#10;John Doe,123 Main St,1234-56-7890,4200,95000,2026-09-15"></textarea>
+    <div class="actions">
+      <button class="btn" id="btnParseImport">Preview</button>
+    </div>
+    <div id="importPreviewWrap" class="hidden">
+      <h3>Map columns</h3>
+      <div id="mappingRow" class="mapping-row"></div>
+      <div class="table-wrap">
+        <table class="data-table" id="importPreviewTable"><thead></thead><tbody></tbody></table>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btnCommitImport">Import All Rows</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- COUNTIES -->
+  <section id="tab-counties" class="tab-panel">
+    <div class="panel-header">
+      <h2>Counties</h2>
+      <button class="btn primary" id="btnAddCounty">+ Add County</button>
+    </div>
+    <p class="hint">Store each county's GIS search URL as a template (use <code>{parcel}</code> or <code>{address}</code> as placeholders) so property records can auto-link to the right GIS lookup.</p>
+    <div class="table-wrap">
+      <table class="data-table" id="countiesTable">
+        <thead><tr><th>Name</th><th>GIS URL Template</th><th>Tax Office</th><th>Contact</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- WEEKLY ROUTINE -->
+  <section id="tab-routine" class="tab-panel">
+    <h2>Weekly Routine</h2>
+    <p class="hint">Resets automatically every week. Work through this every Saturday.</p>
+    <ul class="routine-list" id="routineList"></ul>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="tab-settings" class="tab-panel">
+    <h2>Outreach Letter Template</h2>
+    <p class="hint">Placeholders: <code>{owner}</code> <code>{address}</code> <code>{parcel_number}</code> <code>{county}</code> <code>{taxes_owed}</code> <code>{estimated_value}</code> <code>{date}</code></p>
+    <textarea id="letterTemplate" rows="14"></textarea>
+    <div class="actions">
+      <button class="btn primary" id="btnSaveLetterTemplate">Save Template</button>
+      <span id="letterSaveNote" class="save-note"></span>
+    </div>
+  </section>
+
+</main>
+
+<!-- Property detail/edit modal -->
+<div id="propertyModal" class="modal hidden">
+  <div class="modal-content wide">
+    <button class="modal-close" data-close>&times;</button>
+    <h2 id="propertyModalTitle">Property</h2>
+    <div class="modal-tabs">
+      <button class="modal-tab-btn active" data-mtab="details">Details</button>
+      <button class="modal-tab-btn" data-mtab="research">Research</button>
+      <button class="modal-tab-btn" data-mtab="deal">Deal Math</button>
+      <button class="modal-tab-btn" data-mtab="outreach">Outreach</button>
+      <button class="modal-tab-btn" data-mtab="links">Quick Links</button>
+    </div>
+
+    <form id="propertyForm">
+      <div class="mtab-panel active" data-mpanel="details">
+        <div class="form-grid">
+          <div><label>Owner</label><input name="owner" /></div>
+          <div><label>Address *</label><input name="address" required /></div>
+          <div><label>County</label><select name="countyId"><option value="">— none —</option></select></div>
+          <div><label>Parcel Number</label><input name="parcelNumber" /></div>
+          <div><label>Sale Type</label>
+            <select name="saleType">
+              <option value="tax_foreclosure">Tax Foreclosure</option>
+              <option value="mortgage_foreclosure">Mortgage Foreclosure</option>
+              <option value="tax_lien">Tax Lien</option>
+            </select>
+          </div>
+          <div><label>Status</label><select name="status"></select></div>
+          <div><label>Auction Date</label><input type="date" name="auctionDate" /></div>
+          <div class="span2"><label>Notes</label><textarea name="notes" rows="3"></textarea></div>
+        </div>
+      </div>
+
+      <div class="mtab-panel" data-mpanel="research">
+        <div class="form-grid">
+          <div><label>Buildable?</label><select name="isBuildable"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label>Flood Zone?</label><select name="floodZone"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label>Easement?</label><select name="hasEasement"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label>Legal Access Road?</label><select name="hasAccessRoad"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label>Utilities Nearby?</label><select name="utilitiesAvailable"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label>HOA?</label><select name="hoa"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label>Mobile Homes Allowed?</label><select name="mobileHomesAllowed"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label class="checkbox-label"><input type="checkbox" name="titleSearchDone" /> Title search done</label></div>
+          <div class="span2"><label>Title Issues Found</label><textarea name="titleIssues" rows="3" placeholder="IRS liens, HOA liens, judgments, easements..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="mtab-panel" data-mpanel="deal">
+        <div class="form-grid">
+          <div><label>Taxes Owed ($)</label><input type="number" name="taxesOwed" step="0.01" /></div>
+          <div><label>Estimated Market Value ($)</label><input type="number" name="estimatedValue" step="0.01" /></div>
+          <div><label>Estimated Repair Cost ($)</label><input type="number" name="repairCost" step="0.01" /></div>
+          <div><label>Desired Profit Cushion ($)</label><input type="number" name="profitCushion" step="0.01" /></div>
+        </div>
+        <div class="deal-summary" id="dealSummary"></div>
+      </div>
+
+      <div class="mtab-panel" data-mpanel="outreach">
+        <div class="outreach-grid">
+          <div>
+            <h3>Log a contact attempt</h3>
+            <div class="form-grid">
+              <div><label>Date</label><input type="date" id="contactDate" /></div>
+              <div><label>Method</label>
+                <select id="contactMethod">
+                  <option value="call">Call</option>
+                  <option value="letter">Letter</option>
+                  <option value="door">Door knock</option>
+                  <option value="email">Email</option>
+                </select>
+              </div>
+              <div class="span2"><label>Outcome / Notes</label><textarea id="contactNotes" rows="2"></textarea></div>
+            </div>
+            <button type="button" class="btn" id="btnLogContact">Log Contact</button>
+            <ul class="contact-log" id="contactLog"></ul>
+          </div>
+          <div>
+            <h3>Generate Letter</h3>
+            <button type="button" class="btn" id="btnGenLetter">Generate from template</button>
+            <textarea id="generatedLetter" rows="14" readonly></textarea>
+            <button type="button" class="btn" id="btnCopyLetter">Copy to clipboard</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mtab-panel" data-mpanel="links">
+        <p class="hint">Auto-built research links for this address (verify accuracy — some link formats vary by site/county).</p>
+        <div class="quick-links" id="quickLinks"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn danger" id="btnDeleteProperty">Delete</button>
+        <div>
+          <button type="button" class="btn" data-close>Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- County modal -->
+<div id="countyModal" class="modal hidden">
+  <div class="modal-content">
+    <button class="modal-close" data-close>&times;</button>
+    <h2 id="countyModalTitle">County</h2>
+    <form id="countyForm">
+      <div class="form-grid one-col">
+        <div><label>Name * (e.g. "Cabarrus", without the word "County" — the letter template adds it)</label><input name="name" required /></div>
+        <div><label>GIS URL Template</label><input name="gisUrlTemplate" placeholder="https://gis.county.gov/search?parcel={parcel}" /></div>
+        <div><label>Tax Office URL</label><input name="taxOfficeUrl" placeholder="https://county.gov/tax-office" /></div>
+        <div><label>Tax Office Contact</label><input name="taxOfficeContact" placeholder="phone / email" /></div>
+        <div><label>Notes</label><textarea name="notes" rows="3"></textarea></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn danger" id="btnDeleteCounty">Delete</button>
+        <div>
+          <button type="button" class="btn" data-close>Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
