@@ -918,7 +918,7 @@ async function streamOpenAIAndSpeak(session, messages, callerTurn) {
     if (session.turnId !== callerTurn) { aiResp.body.cancel().catch(() => {}); return null; }
 
     const elUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream-input` +
-      `?model_id=${ELEVENLABS_VOICE_SETTINGS.model_id}&output_format=pcm_16000&optimize_streaming_latency=4` +
+      `?model_id=${ELEVENLABS_VOICE_SETTINGS.model_id}&output_format=pcm_16000&optimize_streaming_latency=2` +
       `&xi_api_key=${ELEVENLABS_KEY}`;
     const elWs = new WebSocket(elUrl, { headers: { 'xi-api-key': ELEVENLABS_KEY } });
 
@@ -1070,7 +1070,7 @@ async function callOpenAI(messages) {
 const ELEVENLABS_VOICE_SETTINGS = {
   model_id: 'eleven_turbo_v2_5',
   voice_settings: {
-    stability: 0.42,
+    stability: 0.5,
     similarity_boost: 0.80,
     style: 0.16,
     use_speaker_boost: true,
@@ -1116,7 +1116,7 @@ async function streamTTS(session, text, gen) {
     // boost as the rest of Brandy's speech instead of bypassing it — ElevenLabs'
     // default output level plus straight mulaw encoding sounds noticeably quiet
     // over a phone line.
-    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000&optimize_streaming_latency=4`, {
+    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}/stream?output_format=pcm_16000&optimize_streaming_latency=2`, {
       method: 'POST', headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: prepareForSpeech(text), ...ELEVENLABS_VOICE_SETTINGS }),
       signal: ctrl.signal
