@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Penny Deal Scanner</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2f3a;
+    --text: #e7e9ee;
+    --muted: #9aa2b1;
+    --accent: #ff6f00;
+    --good: #2ecc71;
+    --warn: #f1c40f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 20px; margin: 0; }
+  header .tag { color: var(--muted); font-size: 13px; }
+  main { padding: 24px; max-width: 1000px; margin: 0 auto; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--muted); }
+  input, select {
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  button {
+    background: var(--accent);
+    color: #111;
+    border: none;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .checkbox-field { flex-direction: row; align-items: center; gap: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; }
+  tr.penny td:first-child { border-left: 3px solid var(--accent); }
+  .price { font-weight: 600; }
+  .price.verified { color: var(--good); }
+  .price.reported { color: var(--warn); }
+  .price.none { color: var(--muted); font-weight: 400; }
+  a { color: #6ea8ff; }
+  .status-bar { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .status-bar span.bad { color: #ff6b6b; }
+  .status-bar span.ok { color: var(--good); }
+  .empty { color: var(--muted); padding: 24px 0; text-align: center; }
+  .disclaimer {
+    font-size: 12px; color: var(--muted); border-top: 1px solid var(--border);
+    padding-top: 14px; margin-top: 14px; line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🔎 Penny Deal Scanner</h1>
+  <span class="tag">Home Depot &middot; personal use only</span>
+</header>
+<main>
+  <div class="panel">
+    <div class="controls">
+      <div class="field">
+        <label for="zip">Zip code</label>
+        <input id="zip" placeholder="e.g. 30301" inputmode="numeric" />
+      </div>
+      <div class="field">
+        <label for="storeLookupBtn">&nbsp;</label>
+        <button id="storeLookupBtn" type="button">Find store</button>
+      </div>
+      <div class="field">
+        <label for="store">Store #</label>
+        <input id="store" placeholder="e.g. 0121" />
+      </div>
+      <div class="field">
+        <label for="keywords">Search terms (comma separated)</label>
+        <input id="keywords" placeholder="clearance, special buy of the day" style="width:280px" />
+      </div>
+      <div class="field">
+        <label for="scanBtn">&nbsp;</label>
+        <button id="scanBtn" type="button">Scan now</button>
+      </div>
+    </div>
+    <div class="controls" style="margin-top:12px">
+      <div class="field checkbox-field">
+        <input type="checkbox" id="autoRefresh" />
+        <label for="autoRefresh">Auto-refresh every</label>
+      </div>
+      <div class="field">
+        <select id="interval">
+          <option value="15">15 min</option>
+          <option value="30" selected>30 min</option>
+          <option value="60">60 min</option>
+        </select>
+      </div>
+    </div>
+    <div class="status-bar" id="statusBar"></div>
+  </div>
+
+  <div class="panel">
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>SKU</th>
+          <th>Reported</th>
+          <th>Live price</th>
+          <th>Community source</th>
+          <th>Link</th>
+        </tr>
+      </thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+    <div class="empty" id="emptyState">No scans yet. Enter a zip or store number and click "Scan now".</div>
+  </div>
+
+  <div class="disclaimer">
+    Unofficial personal tool — not affiliated with or endorsed by The Home Depot. "Reported" prices come from
+    community posts (unverified, may be outdated or wrong). "Live price" is what Home Depot's own site currently
+    shows for that item, when it could be checked. True penny prices are usually a register-only markdown that
+    doesn't show online, even at $0.00-something reported — always confirm at checkout before making a special trip.
+    Scans are rate-limited and best-effort; Home Depot may block automated requests at any time.
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const state = {
+  zip: localStorage.getItem('pds_zip') || '',
+  store: localStorage.getItem('pds_store') || '',
+  keywords: localStorage.getItem('pds_keywords') || '',
+  interval: localStorage.getItem('pds_interval') || '30',
+  autoRefresh: localStorage.getItem('pds_auto') === '1',
+};
+$('zip').value = state.zip;
+$('store').value = state.store;
+$('keywords').value = state.keywords;
+$('interval').value = state.interval;
+$('autoRefresh').checked = state.autoRefresh;
+
+let timer = null;
+
+function saveState() {
+  localStorage.setItem('pds_zip', $('zip').value.trim());
+  localStorage.setItem('pds_store', $('store').value.trim());
+  localStorage.setItem('pds_keywords', $('keywords').value.trim());
+  localStorage.setItem('pds_interval', $('interval').value);
+  localStorage.setItem('pds_auto', $('autoRefresh').checked ? '1' : '0');
+}
+
+function fmtPrice(v) {
+  return typeof v === 'number' ? `$${v.toFixed(2)}` : null;
+}
+
+function renderStatus(sources, scannedAt) {
+  const bar = $('statusBar');
+  const parts = [];
+  parts.push(`Last scan: ${new Date(scannedAt).toLocaleTimeString()}`);
+  parts.push(`<span class="${sources.reddit.ok ? 'ok' : 'bad'}">Reddit: ${sources.reddit.ok ? sources.reddit.leadCount + ' leads' : 'unavailable'}</span>`);
+  parts.push(`<span class="${sources.homedepotClearance.ok ? 'ok' : 'bad'}">HD clearance: ${sources.homedepotClearance.ok ? sources.homedepotClearance.itemCount + ' items' : 'unavailable'}</span>`);
+  parts.push(`Verified ${sources.verifiedCount}/${sources.verificationAttempted} against live pricing`);
+  bar.innerHTML = parts.map((p) => `<span>${p}</span>`).join('');
+}
+
+function renderDeals(deals) {
+  const body = $('resultsBody');
+  const empty = $('emptyState');
+  body.innerHTML = '';
+  if (!deals.length) {
+    empty.style.display = 'block';
+    $('resultsTable').style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  $('resultsTable').style.display = 'table';
+
+  for (const d of deals) {
+    const tr = document.createElement('tr');
+    if (d.pennyMention) tr.classList.add('penny');
+    const reported = fmtPrice(d.reportedPrice);
+    const verified = fmtPrice(d.verifiedPrice);
+    tr.innerHTML = `
+      <td>${d.title ? escapeHtml(d.title) : '<span style="color:var(--muted)">Unknown item</span>'}</td>
+      <td>${d.sku}</td>
+      <td class="price ${reported ? 'reported' : 'none'}">${reported || '—'}</td>
+      <td class="price ${verified ? 'verified' : 'none'}">${verified || 'unverified'}</td>
+      <td>${d.community ? `r/${escapeHtml(d.community.subreddit)} (${d.community.score}↑) — <a href="${d.community.permalink}" target="_blank" rel="noopener">post</a>` : '—'}</td>
+      <td>${d.verifiedUrl ? `<a href="${d.verifiedUrl}" target="_blank" rel="noopener">view</a>` : '—'}</td>
+    `;
+    body.appendChild(tr);
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function scanNow() {
+  saveState();
+  const zip = $('zip').value.trim();
+  const store = $('store').value.trim();
+  const keywords = $('keywords').value.trim();
+  const btn = $('scanBtn');
+  btn.disabled = true;
+  btn.textContent = 'Scanning…';
+  try {
+    const params = new URLSearchParams();
+    if (zip) params.set('zip', zip);
+    if (store) params.set('store', store);
+    if (keywords) params.set('keywords', keywords);
+    const res = await fetch(`/api/scan?${params.toString()}`);
+    const data = await res.json();
+    renderStatus(data.sources, data.scannedAt);
+    renderDeals(data.deals);
+  } catch (err) {
+    $('statusBar').innerHTML = `<span class="bad">Scan failed: ${escapeHtml(err.message)}</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Scan now';
+  }
+}
+
+async function lookupStore() {
+  const zip = $('zip').value.trim();
+  if (!zip) return;
+  const btn = $('storeLookupBtn');
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/store-lookup?zip=${encodeURIComponent(zip)}`);
+    const data = await res.json();
+    if (data.ok && data.storeId) {
+      $('store').value = data.storeId;
+      saveState();
+    } else {
+      alert('Could not auto-detect a store for that zip. Enter your store number manually — check a recent receipt or the Home Depot app.');
+    }
+  } catch (err) {
+    alert('Store lookup failed: ' + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function setupAutoRefresh() {
+  if (timer) clearInterval(timer);
+  if ($('autoRefresh').checked) {
+    const minutes = parseInt($('interval').value, 10);
+    timer = setInterval(scanNow, minutes * 60 * 1000);
+  }
+}
+
+$('scanBtn').addEventListener('click', scanNow);
+$('storeLookupBtn').addEventListener('click', lookupStore);
+$('autoRefresh').addEventListener('change', () => { saveState(); setupAutoRefresh(); });
+$('interval').addEventListener('change', () => { saveState(); setupAutoRefresh(); });
+
+setupAutoRefresh();
+if (state.zip || state.store) scanNow();
+</script>
+</body>
+</html>

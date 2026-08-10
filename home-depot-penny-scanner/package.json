@@ -1,0 +1,16 @@
+{
+  "name": "home-depot-penny-scanner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal-use dashboard that surfaces possible Home Depot penny/clearance deals from community reports and official clearance listings.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
