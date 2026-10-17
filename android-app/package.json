@@ -1,0 +1,20 @@
+{
+  "name": "paypilot-ai-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PayPilot AI Android app (Capacitor shell around paypilotai.live)",
+  "scripts": {
+    "sync": "cap sync android",
+    "assets": "capacitor-assets generate --android --iconBackgroundColor '#060c18' --iconBackgroundColorDark '#060c18' --splashBackgroundColor '#060c18' --splashBackgroundColorDark '#060c18'"
+  },
+  "dependencies": {
+    "@capacitor-community/speech-recognition": "^7.0.1",
+    "@capacitor-community/text-to-speech": "^8.0.2",
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3"
+  }
+}

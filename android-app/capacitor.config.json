@@ -1,0 +1,16 @@
+{
+  "appId": "live.paypilotai.app",
+  "appName": "PayPilot AI",
+  "webDir": "www",
+  "server": {
+    "url": "https://paypilotai.live",
+    "androidScheme": "https",
+    "allowNavigation": ["paypilotai.live", "*.paypilotai.live"],
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "backgroundColor": "#060c18",
+    "allowMixedContent": false,
+    "appendUserAgent": "PayPilotAndroid/1.0"
+  }
+}
