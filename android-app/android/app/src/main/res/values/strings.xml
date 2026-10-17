@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PayPilot AI</string>
+    <string name="title_activity_main">PayPilot AI</string>
+    <string name="package_name">live.paypilotai.app</string>
+    <string name="custom_url_scheme">live.paypilotai.app</string>
+</resources>

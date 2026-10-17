@@ -1,0 +1,101 @@
+name: Android app
+
+on:
+  push:
+    branches: [main, android-app]
+    paths: ['android-app/**', '.github/workflows/android.yml']
+  pull_request:
+    paths: ['android-app/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HAS_SIGNING_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    defaults:
+      run:
+        working-directory: android-app
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: android-app/package-lock.json
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Show Android SDK
+        run: echo "ANDROID_HOME=$ANDROID_HOME" && ls "$ANDROID_HOME/platforms" || true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync Capacitor project
+        run: npx cap sync android
+
+      - name: Build test APK (installable on any Android phone)
+        working-directory: android-app/android
+        run: |
+          set -o pipefail
+          echo "::notice::ANDROID_HOME=$ANDROID_HOME platforms: $(ls "$ANDROID_HOME/platforms" | tr '\n' ' ') build-tools: $(ls "$ANDROID_HOME/build-tools" | tr '\n' ' ')"
+          if ! ./gradlew --no-daemon assembleDebug 2>&1 | tee gradle.log; then
+            msg=$(grep -A25 "What went wrong" gradle.log | head -40 | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+            [ -z "$msg" ] && msg=$(grep -iE "error|exception" gradle.log | head -30 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g')
+            echo "::error title=Gradle build failed::$msg"
+            exit 1
+          fi
+
+      - name: Upload test APK
+        uses: actions/upload-artifact@v5
+        with:
+          name: PayPilotAI-test-apk
+          path: android-app/android/app/build/outputs/apk/debug/app-debug.apk
+
+      # A direct .apk link for phones: GitHub Releases → "Android test build".
+      - name: Publish test APK to GitHub Releases
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk PayPilotAI.apk
+          gh release delete android-test --yes --cleanup-tag 2>/dev/null || true
+          gh release create android-test PayPilotAI.apk \
+            --prerelease --target "$GITHUB_SHA" \
+            --title "Android test build" \
+            --notes "Test build of the PayPilot AI Android app from ${GITHUB_REF_NAME} (${GITHUB_SHA::7}). On your Android phone, tap PayPilotAI.apk below, open it, and allow installs from your browser when asked."
+
+      # Play Store bundle — only runs once the signing secrets are added under
+      # Settings → Secrets and variables → Actions.
+      - name: Decode signing key
+        if: env.HAS_SIGNING_KEY == 'true'
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/release.jks"
+
+      - name: Build signed Play Store bundle (.aab)
+        if: env.HAS_SIGNING_KEY == 'true'
+        working-directory: android-app/android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+        run: ./gradlew --no-daemon bundleRelease
+
+      - name: Upload Play Store bundle
+        if: env.HAS_SIGNING_KEY == 'true'
+        uses: actions/upload-artifact@v5
+        with:
+          name: PayPilotAI-play-store-aab
+          path: android-app/android/app/build/outputs/bundle/release/app-release.aab
