@@ -8,6 +8,9 @@ on:
     paths: ['android-app/**', '.github/workflows/android.yml']
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -57,6 +60,19 @@ jobs:
         with:
           name: PayPilotAI-test-apk
           path: android-app/android/app/build/outputs/apk/debug/app-debug.apk
+
+      # A direct .apk link for phones: GitHub Releases → "Android test build".
+      - name: Publish test APK to GitHub Releases
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk PayPilotAI.apk
+          gh release delete android-test --yes --cleanup-tag 2>/dev/null || true
+          gh release create android-test PayPilotAI.apk \
+            --prerelease --target "$GITHUB_SHA" \
+            --title "Android test build" \
+            --notes "Test build of the PayPilot AI Android app from ${GITHUB_REF_NAME} (${GITHUB_SHA::7}). On your Android phone, tap PayPilotAI.apk below, open it, and allow installs from your browser when asked."
 
       # Play Store bundle — only runs once the signing secrets are added under
       # Settings → Secrets and variables → Actions.
