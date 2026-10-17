@@ -7,7 +7,7 @@ android {
         applicationId "live.paypilotai.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode (System.getenv("ANDROID_VERSION_CODE") ?: "1").toInteger()
+        versionCode = Integer.parseInt(System.getenv("ANDROID_VERSION_CODE") ?: "1")
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -22,17 +22,17 @@ android {
         release {
             def ksPath = System.getenv("ANDROID_KEYSTORE_PATH")
             if (ksPath) {
-                storeFile file(ksPath)
-                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                storeFile = file(ksPath)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
             }
         }
     }
     buildTypes {
         release {
             if (System.getenv("ANDROID_KEYSTORE_PATH")) {
-                signingConfig signingConfigs.release
+                signingConfig = signingConfigs.release
             }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
