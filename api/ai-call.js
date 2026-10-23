@@ -14,6 +14,8 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
+      ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
+      code_version: 'brandy-elevenlabs-3',
     });
   }
 
