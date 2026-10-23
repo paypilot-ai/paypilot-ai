@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-4',
+      code_version: 'brandy-elevenlabs-5',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -108,10 +108,15 @@ module.exports = async function handler(req, res) {
       // The agent saved in ElevenLabs is a plain receptionist for inbound calls.
       // Each outbound call sends its own client prompt and greeting here, so no
       // client info is stored in ElevenLabs.
+      // Recording disclosure must be spoken up front, so it goes in the opening line.
+      const disclosure = shouldRecord ? (disclosureText || '').trim().slice(0, 500) : '';
+      const greeting = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} Do you have thirty seconds? I'll be quick.`;
       const prompt = `You are Brandy, an AI voice agent calling on behalf of ${company}, speaking live on the phone. You are calling ${name || 'the person who answers'}. Keep every reply to 1-2 short sentences. This is a conversation, not a script.
 
 CLIENT SCRIPT (why you're calling, what you offer, and your goal for this call):
 ${script}
+
+OPENING: The call has just connected and the person is picking up. Wait for them to say hello, then say exactly: "${greeting}" If they say nothing for a couple of seconds, say it anyway. Never talk over their hello.
 
 HOW TO RUN THE CALL:
 1. Say why you're calling and confirm you're speaking with the right person.
@@ -131,9 +136,6 @@ RULES:
 - If you don't know something, say someone from ${company} will follow up with the details. Never guess.
 - A clear no means thank them and end the call. Don't push.
 - If asked whether you're an AI, say yes, you're an AI assistant for ${company}.`;
-      // Recording disclosure must be spoken up front, so it goes in the opening line.
-      const disclosure = shouldRecord ? (disclosureText || '').trim().slice(0, 500) : '';
-      const firstMessage = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} Do you have thirty seconds? I'll be quick.`;
       const body = {
         agent_id: elAgent,
         agent_phone_number_id: elPhoneId,
@@ -141,7 +143,7 @@ RULES:
         telephony_call_config: { twilio_call_recording_enabled: shouldRecord },
         conversation_initiation_client_data: {
           conversation_config_override: {
-            agent: { first_message: firstMessage, prompt: { prompt } },
+            agent: { first_message: '', prompt: { prompt } }, // empty first_message = wait for their hello
           },
         },
       };
