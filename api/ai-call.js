@@ -78,27 +78,48 @@ module.exports = async function handler(req, res) {
     const isEnglish = !language || String(language).toLowerCase().startsWith('en');
     if (elKey && elAgent && elPhoneId && isEnglish) {
       const company = (companyName || '').trim() || 'our team';
+      const script  = (callReason || '').trim().slice(0, 4000)
+        || 'No client script was provided for this call. Say you are calling to briefly follow up, ask if this is a good time, and say someone will reach out with details. Do not describe any product, price, or offer.';
+      // The agent saved in ElevenLabs is a plain receptionist for inbound calls.
+      // Each outbound call sends its own client prompt and greeting here, so no
+      // client info is stored in ElevenLabs.
+      const prompt = `You are Brandy, an AI voice agent calling on behalf of ${company}, speaking live on the phone. You are calling ${name || 'the person who answers'}. Keep every reply to 1-2 short sentences. This is a conversation, not a script.
+
+CLIENT SCRIPT (why you're calling, what you offer, and your goal for this call):
+${script}
+
+HOW TO RUN THE CALL:
+1. Say why you're calling and confirm you're speaking with the right person.
+2. Ask one short question to learn whether this is relevant to them.
+3. Listen for their need or pain point, then connect it to the offer in one sentence.
+4. Ask for the next step the client script sets as the goal.
+5. If they agree, get their name and email, repeat the email back to confirm, and end warmly.
+
+GETTING AN EMAIL OR PHONE NUMBER:
+- After you ask for it, say nothing until they have clearly finished. People pause between letters, numbers and "at" or "dot"; a pause is not the end.
+- If they stop partway (for example, they haven't said the domain yet), say only "Mm-hm" or "Go ahead" and keep listening.
+- When they finish, read the whole thing back once and ask "Is that right?" If they correct any part, read the corrected version back.
+
+RULES:
+- Talk like a person. Ask one question at a time, then stop and listen.
+- Only state facts, prices, and offers that appear in the client script. Never make up numbers, features, integrations, or customer names.
+- If you don't know something, say someone from ${company} will follow up with the details. Never guess.
+- A clear no means thank them and end the call. Don't push.
+- If asked whether you're an AI, say yes, you're an AI assistant for ${company}.`;
+      // Recording disclosure must be spoken up front, so it goes in the opening line.
+      const disclosure = shouldRecord ? (disclosureText || '').trim().slice(0, 500) : '';
+      const firstMessage = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} Do you have thirty seconds? I'll be quick.`;
       const body = {
         agent_id: elAgent,
         agent_phone_number_id: elPhoneId,
         to_number: e164,
         telephony_call_config: { twilio_call_recording_enabled: shouldRecord },
         conversation_initiation_client_data: {
-          dynamic_variables: {
-            agent_name: 'Brandy',
-            company_name: company,
-            customer_name: name || 'the person who answers',
-            call_script: (callReason || '').trim().slice(0, 4000) || 'No client script was provided for this call. Say you are calling to briefly follow up, ask if this is a good time, and say someone will reach out with details. Do not describe any product, price, or offer.',
+          conversation_config_override: {
+            agent: { first_message: firstMessage, prompt: { prompt } },
           },
         },
       };
-      // Recording disclosure must be spoken up front, so put it in the opening line.
-      const disclosure = shouldRecord ? (disclosureText || '').trim().slice(0, 500) : '';
-      if (disclosure) {
-        body.conversation_initiation_client_data.conversation_config_override = {
-          agent: { first_message: `Hi, this is Brandy with ${company}. ${disclosure} Do you have thirty seconds? I'll be quick.` },
-        };
-      }
       const elResp = await fetch('https://api.elevenlabs.io/v1/convai/twilio/outbound-call', {
         method: 'POST',
         headers: { 'xi-api-key': elKey, 'Content-Type': 'application/json' },
