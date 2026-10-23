@@ -4,6 +4,11 @@ const { rateLimit } = require('../lib/rateLimit');
 const { getBearerToken, verifyToken } = require('../lib/sessionAuth');
 const { checkAndIncrementDialUsage } = require('../lib/planUsage');
 
+// ElevenLabs agent (Brandy). IDs default to Brandy's; env vars can override them.
+const EL_HOSTS = ['https://api.us.elevenlabs.io', 'https://api.elevenlabs.io'];
+const elAgentId       = () => (process.env.ELEVENLABS_AGENT_ID || 'agent_8701m5jkzbzfe8ybw4k8qx3vpypk').trim();
+const elPhoneNumberId = () => (process.env.ELEVENLABS_PHONE_NUMBER_ID || 'phnum_8701m5myv1fdfkhv648njchgttc4').trim();
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -11,12 +16,30 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method === 'GET') {
-    return res.status(200).json({
+    const status = {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-3',
-    });
+      code_version: 'brandy-elevenlabs-4',
+    };
+    // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
+    // number. Read-only: it places no call and never returns the key.
+    if (req.query && req.query.check && status.ELEVENLABS_configured) {
+      const key = process.env.ELEVENLABS_API_KEY.trim();
+      status.elevenlabs_check = {};
+      for (const host of EL_HOSTS) {
+        const out = {};
+        for (const [label, path] of [['agent', `/v1/convai/agents/${elAgentId()}`], ['phone_number', `/v1/convai/phone-numbers/${elPhoneNumberId()}`]]) {
+          try {
+            const r = await fetch(host + path, { headers: { 'xi-api-key': key } });
+            const d = await r.json().catch(() => ({}));
+            out[label] = r.ok ? 'ok' : `${r.status}: ${(d.detail && (d.detail.message || d.detail.status || JSON.stringify(d.detail))) || d.message || 'error'}`.slice(0, 300);
+          } catch (e) { out[label] = 'network error: ' + e.message; }
+        }
+        status.elevenlabs_check[host.replace('https://', '')] = out;
+      }
+    }
+    return res.status(200).json(status);
   }
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -75,8 +98,8 @@ module.exports = async function handler(req, res) {
     // Used only when the key is set and the call is in English; otherwise
     // the existing Railway / TwiML paths below run exactly as before.
     const elKey     = (process.env.ELEVENLABS_API_KEY || '').trim();
-    const elAgent   = (process.env.ELEVENLABS_AGENT_ID || 'agent_8701m5jkzbzfe8ybw4k8qx3vpypk').trim();
-    const elPhoneId = (process.env.ELEVENLABS_PHONE_NUMBER_ID || 'phnum_8701m5myv1fdfkhv648njchgttc4').trim();
+    const elAgent   = elAgentId();
+    const elPhoneId = elPhoneNumberId();
     const isEnglish = !language || String(language).toLowerCase().startsWith('en');
     if (elKey && elAgent && elPhoneId && isEnglish) {
       const company = (companyName || '').trim() || 'our team';
@@ -122,17 +145,21 @@ RULES:
           },
         },
       };
-      const elResp = await fetch('https://api.elevenlabs.io/v1/convai/twilio/outbound-call', {
-        method: 'POST',
-        headers: { 'xi-api-key': elKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const elData = await elResp.json().catch(() => ({}));
-      if (elResp.ok && elData.success !== false && elData.callSid) {
-        return res.status(200).json({ callSid: elData.callSid, conversationId: elData.conversation_id, status: 'queued', to: e164, mode: 'elevenlabs' });
+      // The phone number was imported through ElevenLabs' US servers, so try the
+      // US host first and the global host second.
+      for (const host of EL_HOSTS) {
+        const elResp = await fetch(`${host}/v1/convai/twilio/outbound-call`, {
+          method: 'POST',
+          headers: { 'xi-api-key': elKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const elData = await elResp.json().catch(() => ({}));
+        if (elResp.ok && elData.success !== false && elData.callSid) {
+          return res.status(200).json({ callSid: elData.callSid, conversationId: elData.conversation_id, status: 'queued', to: e164, mode: 'elevenlabs' });
+        }
+        // If ElevenLabs refuses the call, log it and fall through to the old paths so dialing never stops.
+        console.error('[ai-call] ElevenLabs outbound failed', host, elResp.status, elData.message || JSON.stringify(elData.detail || elData));
       }
-      // If ElevenLabs refuses the call, log it and fall through to the old paths so dialing never stops.
-      console.error('[ai-call] ElevenLabs outbound failed', elResp.status, elData.message || JSON.stringify(elData.detail || elData));
     }
 
     // Try Railway (OpenAI Realtime + ElevenLabs) first
