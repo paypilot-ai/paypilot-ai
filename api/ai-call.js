@@ -69,11 +69,12 @@ module.exports = async function handler(req, res) {
     const disc = shouldRecord ? encodeURIComponent((disclosureText || '').trim().slice(0, 500)) : '';
 
     // Preferred: ElevenLabs agent (Brandy). Faster replies, runs several calls at once.
-    // Used only when all three env vars are set and the call is in English; otherwise
+    // Agent and phone IDs default to Brandy's; only ELEVENLABS_API_KEY must be set.
+    // Used only when the key is set and the call is in English; otherwise
     // the existing Railway / TwiML paths below run exactly as before.
     const elKey     = (process.env.ELEVENLABS_API_KEY || '').trim();
-    const elAgent   = (process.env.ELEVENLABS_AGENT_ID || '').trim();
-    const elPhoneId = (process.env.ELEVENLABS_PHONE_NUMBER_ID || '').trim();
+    const elAgent   = (process.env.ELEVENLABS_AGENT_ID || 'agent_8701m5jkzbzfe8ybw4k8qx3vpypk').trim();
+    const elPhoneId = (process.env.ELEVENLABS_PHONE_NUMBER_ID || 'phnum_8701m5myv1fdfkhv648njchgttc4').trim();
     const isEnglish = !language || String(language).toLowerCase().startsWith('en');
     if (elKey && elAgent && elPhoneId && isEnglish) {
       const company = (companyName || '').trim() || 'our team';
