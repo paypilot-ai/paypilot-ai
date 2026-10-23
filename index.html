@@ -5505,7 +5505,9 @@ async function startAiCall(){
     const resp = await apiFetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText }),
+      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText,
+        emailSubject: (document.getElementById('aiEmailSubject') || {}).value?.trim() || '',
+        emailMessage: (document.getElementById('aiEmailMessage') || {}).value?.trim() || '' }),
       signal: AbortSignal.timeout(15000)
     });
     const data = await resp.json();
@@ -6504,7 +6506,9 @@ async function dialNextContact() {
     const resp = await apiFetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company, customerEmail: contact.email, senderEmail, returnNumber, language: callLanguage, recordCall, disclosureText })
+      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company, customerEmail: contact.email, senderEmail, returnNumber, language: callLanguage, recordCall, disclosureText,
+        emailSubject: (document.getElementById('adEmailSubject') || {}).value?.trim() || '',
+        emailMessage: (document.getElementById('adEmailMessage') || {}).value?.trim() || '' })
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Call failed');

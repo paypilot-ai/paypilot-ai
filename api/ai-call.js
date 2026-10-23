@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-6',
+      code_version: 'brandy-elevenlabs-7',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -73,7 +73,7 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText } = req.body || {};
+  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText, emailSubject, emailMessage } = req.body || {};
   if (!toNumber) return res.status(400).json({ error: 'Phone number required' });
 
   const cleaned = toNumber.replace(/\D/g, '');
@@ -151,6 +151,8 @@ RULES:
             customer_name: name,
             call_reason: (callReason || '').trim().slice(0, 2000),
             sender_email: (senderEmail || '').trim(),
+            email_subject: String(emailSubject || '').trim().slice(0, 200),
+            email_message: String(emailMessage || '').trim().slice(0, 3000),
           },
           conversation_config_override: {
             agent: { first_message: '', prompt: { prompt } }, // empty first_message = wait for their hello

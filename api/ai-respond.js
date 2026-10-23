@@ -277,8 +277,8 @@ function sendFollowUpEmail(customerEmail, senderEmail, customerName, companyName
     </div>`;
   }
 
-  // fire-and-forget for TwiML callers; returned so other callers can await it
-  return fetch('https://api.resend.com/emails', {
+  // fire-and-forget — don't block the TwiML response
+  fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendKey}` },
     body: JSON.stringify({
@@ -494,6 +494,3 @@ module.exports = async function handler(req, res) {
     return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response>${say("Sorry about that, I'll call you right back!")}<Hangup/></Response>`);
   }
 };
-
-// Reused by api/brandy-email.js (ElevenLabs Brandy's follow-up email tool).
-module.exports.sendFollowUpEmail = sendFollowUpEmail;
