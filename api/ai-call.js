@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-8',
+      code_version: 'brandy-elevenlabs-9',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -128,9 +128,9 @@ ${script}
 
 OPENING: The call has just connected and the person is picking up. Wait for them to say hello, then say exactly: "${greeting}" If they say nothing for a couple of seconds, say it anyway. Never talk over their hello.
 
-HOW TO RUN THE CALL:
-1. Say why you're calling and confirm you're speaking with the right person.
-2. Ask one short question to learn whether this is relevant to them.
+HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
+1. Confirm you're speaking with the right person. Ask only that, then wait.
+2. Say why you're calling in one sentence and ask one short question to learn whether this is relevant to them. Then wait.
 3. Listen for their need or pain point, then connect it to the offer in one sentence.
 4. Ask for the next step the client script sets as the goal.
 5. If they agree, get their name and email and repeat the email back to confirm.
@@ -142,7 +142,8 @@ GETTING AN EMAIL OR PHONE NUMBER:
 - When they finish, read the whole thing back once and ask "Is that right?" If they correct any part, read the corrected version back.
 
 RULES:
-- Talk like a person. Ask one question at a time, then stop and listen.
+- Ask exactly ONE question per turn, and make it the last thing you say. Never stack two questions. Then stop and let them answer.
+- Talk like a person, and keep each turn short so they can get a word in.
 - Only state facts, prices, and offers that appear in the client script. Never make up numbers, features, integrations, or customer names.
 - If you don't know something, say someone from ${company} will follow up with the details. Never guess.
 - A clear no means thank them and end the call. Don't push.
