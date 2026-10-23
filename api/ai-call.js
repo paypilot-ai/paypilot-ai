@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-5',
+      code_version: 'brandy-elevenlabs-6',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -123,7 +123,8 @@ HOW TO RUN THE CALL:
 2. Ask one short question to learn whether this is relevant to them.
 3. Listen for their need or pain point, then connect it to the offer in one sentence.
 4. Ask for the next step the client script sets as the goal.
-5. If they agree, get their name and email, repeat the email back to confirm, and end warmly.
+5. If they agree, get their name and email and repeat the email back to confirm.
+6. As soon as they confirm the email is right, call the send_follow_up_email tool with that email and their name, tell them it's on its way, and end warmly.
 
 GETTING AN EMAIL OR PHONE NUMBER:
 - After you ask for it, say nothing until they have clearly finished. People pause between letters, numbers and "at" or "dot"; a pause is not the end.
@@ -142,6 +143,15 @@ RULES:
         to_number: e164,
         telephony_call_config: { twilio_call_recording_enabled: shouldRecord },
         conversation_initiation_client_data: {
+          // Not used in the prompt; api/brandy-email.js reads these back from
+          // ElevenLabs to verify the call and build the follow-up email.
+          dynamic_variables: {
+            paypilot_call: 'yes',
+            company_name: (companyName || '').trim(),
+            customer_name: name,
+            call_reason: (callReason || '').trim().slice(0, 2000),
+            sender_email: (senderEmail || '').trim(),
+          },
           conversation_config_override: {
             agent: { first_message: '', prompt: { prompt } }, // empty first_message = wait for their hello
           },
