@@ -7,7 +7,7 @@ const brandyEmail = require('../lib/brandyEmail');
 const liveCall = require('../lib/liveCall');
 const leads = require('../lib/leads');
 const takeMessage = require('../lib/takeMessage');
-const { buildPlan } = require('../lib/callPlan');
+const { buildPlan, voicemailFrom } = require('../lib/callPlan');
 const { PERSONA } = require('../lib/brandyPersona');
 const { charlotteWeather } = require('../lib/weather');
 const inboundRoute = require('../lib/inboundRoute');
@@ -55,7 +55,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-53',
+      code_version: 'brandy-elevenlabs-54',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -156,7 +156,7 @@ module.exports = async function handler(req, res) {
       // Make sense of whatever the customer typed (script, notes, training
       // material...) before dialing. Falls back to the raw notes if it fails.
       const [plan, weather] = await Promise.all([
-        callReason ? buildPlan({ notes: script, company, contact: business ? `${name} at ${business}` : name }) : null,
+        callReason ? buildPlan({ notes: script, company, contact: business ? `${name} at ${business}` : name, callback: returnNumber }) : null,
         charlotteWeather(),
       ]);
       const scriptSection = plan
@@ -169,6 +169,16 @@ ${script}`
 ${script}
 
 HOW TO READ THE CLIENT SCRIPT: people write it in every style. Work out the goal and the steps yourself. Skip stage directions ("long pause"), headings, internal training notes and voicemail sections (use those only if you reach voicemail). If it names a human rep as the caller, you are still Brandy. If it has blanks or placeholders like [Client], say something natural instead ("one of your customers"). Treat "if they..." sections as responses to use only when that happens.`;
+      // Voicemail Brandy leaves (voicemail_detection tool plays {{pp_voicemail}}).
+      const spokenNum = (n) => { const d = String(n || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); return d.length === 10 ? `${d.slice(0, 3)}, ${d.slice(3, 6)}, ${d.slice(6)}` : ''; };
+      const cb = spokenNum(returnNumber);
+      const vmFirst = name.split(/\s+/)[0] || '';
+      const voicemail = (voicemailFrom(plan) || [
+        `Hi${vmFirst ? ' ' + vmFirst : ''}, this is Brandy with ${company}.`,
+        `I'm just giving you a quick call and I'd love to connect.`,
+        cb ? `You can reach us at ${cb}. Again, that's ${cb}.` : `I'll try you again soon.`,
+        `Thanks so much, have a great day!`,
+      ].join(' ')).replace(/[\[\]{}]/g, '').slice(0, 600);
       // Professional opener: who's calling, the disclosure, then ask for the contact by name.
       const firstName = name.split(/\s+/)[0] || '';
       const greeting = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} ${firstName ? `Is this ${firstName}?` : 'Who do I have the pleasure of speaking with?'}`;
@@ -240,7 +250,7 @@ AUTOMATED PHONE MENUS (most companies have one):
 - If it says "press # to confirm" or "press * to repeat", do that. If it repeats the same menu twice, press 0 or say "representative".
 - On hold music, stay quiet and wait. Don't talk until a live person speaks.
 - When a real person answers, start fresh with your normal opening ("Hi, this is Brandy with ${company}...") and follow the rules below.
-- If it sends you to voicemail, follow the voicemail part of the client's notes if there is one; otherwise leave nothing and end the call.
+- VOICEMAIL: if you reach a voicemail greeting ("leave a message after the tone", "the person you are calling is not available", a mailbox beep), don't talk to it. Use the voicemail_detection tool right away; it leaves the prepared message and hangs up.
 
 HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
 1. DON'T ASSUME WHO ANSWERED. Your opening asked if it's ${firstName || 'the right person'}; only treat them as that person after a clear yes ("yes", "speaking", "this is he/she", "that's me"). Until then, don't use the name and don't start the conversation.
@@ -304,6 +314,7 @@ RULES:
             pp_account: leads.accountFor(req),   // whose call this is; Captured Leads filters on it
             pp_to: e164,                          // lets a callback from this number reach this customer (lib/inboundRoute.js)
             pp_msg_to: 'none', pp_msg_company: 'none', pp_route_sig: 'none', // used only on inbound calls; must not be empty
+            pp_voicemail: voicemail,
             // Signed copy of the follow-up email details (lib/brandyEmail.js). Never empty.
             ...brandyEmail.signEmailDetails({
               c: (companyName || '').trim(), s: (senderEmail || '').trim(), n: name,
