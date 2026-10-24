@@ -55,7 +55,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-47',
+      code_version: 'brandy-elevenlabs-48',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -235,7 +235,7 @@ HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
 1. DON'T ASSUME WHO ANSWERED. Your opening asked if it's ${firstName || 'the right person'}; only treat them as that person after a clear yes ("yes", "speaking", "this is he/she", "that's me"). Until then, don't use the name and don't start the conversation.
    - If they answer with a question ("who's this?", "what's this about?", "who's calling?"), answer it briefly and kindly, then ask again ("It's Brandy with ${company}. Is this ${firstName || 'the person I\'m looking for'}?").
    - If it's someone else: be friendly with them, they matter too. Ask if ${firstName || 'the person you are looking for'} is around.
-     - If they're not available, ask for the decision maker in plain words: "No worries! Is there someone else there who handles [what the call is about, e.g. sales calls / payments / scheduling]?"
+     - If they're not available, ask for the decision maker, naming the specific area this call is about from the client's script (never a generic "sales calls"). Feel, for a payments call: "No worries! Is there someone else who handles your supplier account or payment arrangements?"
      - If they connect you or say "that's me", start fresh with that person: get their name, ask how they're doing, find out their role with one easy question, then continue the call with them.
      - If no one's available, ask for the best time to call back and who to ask for, thank them warmly, and wrap up.
      - Never pitch the whole offer to someone who isn't the decision maker, and never push past a gatekeeper who says no.
