@@ -47,7 +47,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-18',
+      code_version: 'brandy-elevenlabs-19',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -206,6 +206,7 @@ RULES:
             paypilot_call: 'yes',
             pp_account: leads.accountFor(req),   // whose call this is; Captured Leads filters on it
             pp_to: e164,                          // lets a callback from this number reach this customer (lib/inboundRoute.js)
+            pp_msg_to: 'none', pp_msg_company: 'none', pp_route_sig: 'none', // used only on inbound calls; must not be empty
             company_name: (companyName || '').trim(),
             customer_name: name,
             call_reason: (callReason || '').trim().slice(0, 2000),
