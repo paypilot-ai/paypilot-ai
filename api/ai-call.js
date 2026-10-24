@@ -19,6 +19,8 @@ module.exports = async function handler(req, res) {
 
   // Brandy's follow-up email tool (ElevenLabs calls this mid-call).
   if (req.method === 'POST' && req.query && req.query.action === 'brandy-email') return brandyEmail(req, res);
+  // "🎧 Listen": fork a live call's audio to Railway so the browser can hear it.
+  if (req.method === 'POST' && req.query && req.query.action === 'listen') return liveCall.listen(req, res);
   // Live Assist "Live Call": click-to-call through the rep's phone (see lib/liveCall.js).
   if (req.query && req.query.action === 'live-say') return liveCall.say(req, res);
   if (req.method === 'POST' && req.query && req.query.action === 'live-answered') return liveCall.answered(req, res);
@@ -32,7 +34,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-12',
+      code_version: 'brandy-elevenlabs-13',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.

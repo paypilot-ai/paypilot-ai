@@ -482,10 +482,50 @@ wss.on('connection', (ws, req) => {
     catch (e) { console.error('[realtime] crash on connect:', e.message, e.stack); ws.close(); }
   } else if (url.pathname === '/browser') {
     handleBrowser(ws, url.searchParams.get('callSid'));
+  } else if (url.pathname === '/listen-twilio') {
+    handleListenSource(ws);
+  } else if (url.pathname === '/listen') {
+    handleListener(ws, url.searchParams.get('callSid'));
   } else {
     ws.close(1008, 'Unknown path');
   }
 });
+
+// ── Live listen ("🎧 Listen" in the AI Caller) ─────────────────────────────
+// Vercel asks Twilio to fork a live call's audio here (/listen-twilio). We
+// relay it, untouched (mulaw 8 kHz, both tracks), to any browser listening
+// on /listen?callSid=. Nothing runs when nobody is listening.
+const listeners = new Map(); // callSid -> Set<WebSocket>
+
+function handleListenSource(ws) {
+  let callSid = null;
+  ws.on('message', (raw) => {
+    let msg;
+    try { msg = JSON.parse(raw); } catch { return; }
+    if (msg.event === 'start') {
+      callSid = msg.start && msg.start.callSid;
+      console.log('[listen] audio fork started for', callSid);
+    } else if (msg.event === 'media' && callSid) {
+      const set = listeners.get(callSid);
+      if (!set || !set.size) return;
+      const out = JSON.stringify({ t: msg.media.track === 'inbound' ? 'in' : 'out', p: msg.media.payload });
+      for (const l of set) if (l.readyState === WebSocket.OPEN) l.send(out);
+    } else if (msg.event === 'stop') {
+      const set = listeners.get(callSid);
+      if (set) for (const l of set) { try { l.send(JSON.stringify({ t: 'end' })); } catch {} }
+    }
+  });
+}
+
+function handleListener(ws, callSid) {
+  if (!callSid || !/^CA[0-9a-f]{32}$/i.test(callSid)) { ws.close(1008, 'Bad callSid'); return; }
+  if (!listeners.has(callSid)) listeners.set(callSid, new Set());
+  listeners.get(callSid).add(ws);
+  ws.on('close', () => {
+    const set = listeners.get(callSid);
+    if (set) { set.delete(ws); if (!set.size) listeners.delete(callSid); }
+  });
+}
 
 function handleTwilio(ws) {
   let session = null;

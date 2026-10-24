@@ -5523,6 +5523,7 @@ async function startAiCall(){
     if(!resp.ok) throw new Error(data.error || 'Call failed');
 
     activeAiCallSid = data.callSid;
+    window.hudCallSid = data.callSid;
     saveCallMeta(data.callSid, customerName, companyName, callReason, number);
     document.getElementById('aiCallerFormCard').style.display = 'none';
     document.getElementById('callHud').style.display = 'block';
@@ -5552,6 +5553,65 @@ async function startAiCall(){
   }
 }
 
+
+// ── 🎧 Live listen ─────────────────────────────────────────────────────────
+// Hears an in-progress AI call: Twilio forks the call audio to the Railway
+// server, which relays it here. Both sides (Brandy + the person) are played.
+let listenWs = null, listenCtx = null, listenHeads = { in: 0, out: 0 }, listenSid = null;
+const MULAW = (() => { const t = new Float32Array(256); for (let i = 0; i < 256; i++) { let u = ~i & 255, sign = u & 0x80, exp = (u >> 4) & 7, man = u & 15; let x = ((man << 3) + 0x84) << exp; x -= 0x84; t[i] = (sign ? -x : x) / 32768; } return t; })();
+
+function setListenBtn(on, label) {
+  const b = document.getElementById('hudListenBtn');
+  if (!b) return;
+  b.textContent = label || (on ? '🔇 Stop' : '🎧 Listen');
+  b.style.background = on ? 'rgba(59,130,246,.45)' : 'rgba(59,130,246,.18)';
+}
+
+async function toggleListenLive() {
+  if (listenWs) { stopListenLive(); return; }
+  const callSid = window.hudCallSid;
+  if (!callSid) { toast('No live call to listen to yet.'); return; }
+  setListenBtn(true, '… Connecting');
+  try {
+    listenCtx = new (window.AudioContext || window.webkitAudioContext)();
+    await listenCtx.resume();
+    const resp = await apiFetch('/api/ai-call?action=listen', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ callSid }) });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Could not start listening');
+    listenSid = callSid;
+    listenHeads = { in: 0, out: 0 };
+    listenWs = new WebSocket(data.listenUrl);
+    listenWs.onopen = () => { setListenBtn(true); toast('Listening live. Only you can hear this.'); };
+    listenWs.onmessage = (ev) => {
+      let m; try { m = JSON.parse(ev.data); } catch { return; }
+      if (m.t === 'end') { stopListenLive(); return; }
+      if (!listenCtx || (m.t !== 'in' && m.t !== 'out')) return;
+      const bin = atob(m.p), n = bin.length;
+      const buf = listenCtx.createBuffer(1, n, 8000), ch = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) ch[i] = MULAW[bin.charCodeAt(i)];
+      const src = listenCtx.createBufferSource(); src.buffer = buf; src.connect(listenCtx.destination);
+      const now = listenCtx.currentTime;
+      let at = listenHeads[m.t];
+      if (at < now + 0.05 || at > now + 1.0) at = now + 0.12;   // small buffer; resync if we drift
+      src.start(at); listenHeads[m.t] = at + buf.duration;
+    };
+    listenWs.onclose = () => { if (listenWs) stopListenLive(); };
+    listenWs.onerror = () => { toast('Live audio connection dropped.'); };
+  } catch (e) {
+    toast('Listen failed: ' + e.message);
+    stopListenLive();
+  }
+}
+
+function stopListenLive() {
+  const ws = listenWs, sid = listenSid;
+  listenWs = null; listenSid = null;
+  if (ws) { try { ws.close(); } catch {} }
+  if (listenCtx) { try { listenCtx.close(); } catch {} listenCtx = null; }
+  if (sid) apiFetch('/api/ai-call?action=listen', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ callSid: sid, stop: true }) }).catch(() => {});
+  setListenBtn(false);
+}
+
 async function endAiCall(){
   if(aiCallPollInterval){ clearInterval(aiCallPollInterval); aiCallPollInterval = null; }
   stopSpeechPolling();
@@ -5559,6 +5619,7 @@ async function endAiCall(){
   stopMatrixAnimation();
   const sid = activeAiCallSid;
   activeAiCallSid = null;
+  stopListenLive();
   document.getElementById('callHud').style.display = 'none';
   document.getElementById('aiCallerFormCard').style.display = 'block';
   const btn = document.getElementById('aiCallBtn');
@@ -6453,6 +6514,7 @@ function adShowHud(label, progress) {
 }
 
 function adHideHud() {
+  stopListenLive();
   stopMatrixAnimation();
   document.getElementById('callHud').style.display = 'none';
   document.getElementById('aiCallerFormCard').style.display = 'block';
@@ -6522,6 +6584,8 @@ async function dialNextContact() {
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Call failed');
     contact.callSid   = data.callSid;
+    window.hudCallSid = data.callSid;
+    stopListenLive();
     contact.startedAt = Date.now();
     saveCallMeta(data.callSid, contact.name, company, contact.reason || defaultReason, contact.phone);
     if (adPollTimer) clearInterval(adPollTimer);
@@ -7428,6 +7492,7 @@ window.showPage = function(pageId, btn) {
   </div>
 
   <div style="display:flex;gap:10px;">
+    <button id="hudListenBtn" onclick="toggleListenLive()" style="flex:1;padding:10px;background:rgba(59,130,246,.18);color:#93c5fd;border:1px solid rgba(59,130,246,.5);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;">🎧 Listen</button>
     <button onclick="endAiCall()" style="flex:1;padding:10px;background:rgba(239,68,68,.2);color:#f87171;border:1px solid rgba(239,68,68,.5);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(239,68,68,.5);">■ End Call</button>
     <button id="sendAgreementBtn" onclick="sendAgreement()" style="flex:2;padding:10px;background:rgba(0,255,136,.12);color:#00ff88;border:1px solid rgba(0,255,136,.4);border-radius:10px;font-weight:700;cursor:pointer;font-family:monospace;font-size:13px;text-shadow:0 0 6px rgba(0,255,136,.5);">✉️ Send Email</button>
   </div>
