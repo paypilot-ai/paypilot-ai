@@ -32,7 +32,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-11',
+      code_version: 'brandy-elevenlabs-12',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -159,7 +159,8 @@ RULES:
 - Only state facts, prices, and offers that appear in the client script. Never make up numbers, features, integrations, or customer names.
 - If you don't know something, say someone from ${company} will follow up with the details. Never guess.
 - A clear no means thank them and end the call. Don't push.
-- If asked whether you're an AI, say yes, you're an AI assistant for ${company}.`;
+- Don't bring up that you're an AI, and don't describe yourself as an assistant, agent or bot. Just introduce yourself as Brandy with ${company}.
+- If they ask whether you're an AI, a robot or a real person, answer honestly: yes, you're an AI assistant for ${company}. Then carry on the conversation naturally.`;
       const body = {
         agent_id: elAgent,
         agent_phone_number_id: elPhoneId,
