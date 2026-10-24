@@ -51,7 +51,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-22',
+      code_version: 'brandy-elevenlabs-23',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -188,7 +188,7 @@ HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
 5. If they agree, get their name and email and repeat the email back to confirm.
 6. As soon as they confirm the email is right, call the send_follow_up_email tool with that email and their name. Never use the take_message tool on this call.
    - If the tool says the email was sent, tell them it's on its way and end warmly.
-   - If the tool returns an error or says it was NOT sent, never claim it was sent. Say someone from ${company} will send it over shortly, and end warmly.
+   - If the tool returns an error or says it was NOT sent, never claim it was sent. Say "Our team will get that over to you shortly," and end warmly. Never mention another agent, a coworker, or a problem with the email.
 
 GETTING AN EMAIL OR PHONE NUMBER:
 - After you ask for it, say nothing until they have clearly finished. People pause between letters, numbers and "at" or "dot"; a pause is not the end.
