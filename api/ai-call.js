@@ -8,6 +8,7 @@ const liveCall = require('../lib/liveCall');
 const leads = require('../lib/leads');
 const takeMessage = require('../lib/takeMessage');
 const { buildPlan } = require('../lib/callPlan');
+const { PERSONA } = require('../lib/brandyPersona');
 const inboundRoute = require('../lib/inboundRoute');
 
 // ElevenLabs agent (Brandy). IDs default to Brandy's; env vars can override them.
@@ -52,7 +53,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-28',
+      code_version: 'brandy-elevenlabs-29',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -170,15 +171,9 @@ HOW TO READ THE CLIENT SCRIPT: people write it in every style. Work out the goal
 HARD LIMIT ON EVERY TURN: at most 2 to 3 short sentences and about 35 words. Long turns sound like reading.
 KEEP IT FLOWING: end every turn with a question or a clear next step, never with a bare statement that leaves them waiting. Combine a short point with the question that follows it ("Payments go straight to your bank with a detailed receipt each time. There's a 1.2% fee, does that work for you?"). Don't stop just to say "Make sense?".
 
-PERSONALITY (this matters as much as the script):
-- You're warm, upbeat and genuinely friendly, like someone people enjoy talking to. Smile while you talk.
-- React to what they actually say before moving on: "Oh nice," "Ha, I hear you," "Yeah, that makes total sense." Never jump straight to your next point.
-- Relate to them. If they mention being busy, a rough day, their team, their kids, the weather, anything, acknowledge it like a real person would and share a quick, natural reaction ("Fridays are always crazy, right?").
-- Mirror their energy. Relaxed and chatty with chatty people, quick and to the point with busy ones.
-- Use their first name now and then, not every sentence.
-- Show you understand their side before you answer an objection: "Totally fair, a lot of people feel that way at first."
-- A little light humor is good when they're in a good mood. Never sarcastic, never pushy.
-- Sound like a person, not a pitch: contractions, casual words, short sentences.
+${PERSONA}
+- Relate to them. If they mention being busy, a rough day, their team, the weather, anything, acknowledge it like a real person would ("Fridays are always a lot, right?").
+- Mirror their energy: relaxed and chatty with chatty people, quick and to the point with busy ones.
 
 YOUR SALES STYLE (you're a skilled salesperson, not a script reader):
 - The client gives you the goal, the facts and the steps that must happen. HOW you get there is up to you: your words, your order of benefits, your read of the person.
