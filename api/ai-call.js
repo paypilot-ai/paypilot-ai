@@ -54,7 +54,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-33',
+      code_version: 'brandy-elevenlabs-34',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -167,7 +167,8 @@ HOW TO READ THE CLIENT SCRIPT: people write it in every style. Work out the goal
       // Professional opener: who's calling, the disclosure, then ask for the contact by name.
       const firstName = name.split(/\s+/)[0] || '';
       const greeting = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} ${firstName ? `Is this ${firstName}?` : 'Who do I have the pleasure of speaking with?'}`;
-      const prompt = `You are Brandy, calling on behalf of ${company}, speaking live on the phone. You are calling ${name || 'the person who answers'}. This is a live conversation, not a script.
+      const nowEt = new Date().toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'long', hour: 'numeric', minute: '2-digit' });
+      const prompt = `You are Brandy, calling on behalf of ${company}, speaking live on the phone. It's ${nowEt} Eastern time right now (handy for small talk; their local time may differ). You are calling ${name || 'the person who answers'}. This is a live conversation, not a script.
 
 HARD LIMIT ON EVERY TURN: at most 2 to 3 short sentences and about 35 words. Long turns sound like reading.
 KEEP IT FLOWING: end every turn with a question or a clear next step, never with a bare statement that leaves them waiting. Combine a short point with the question that follows it ("Payments go straight to your bank with a detailed receipt each time. There's a 1.2% fee, does that work for you?"). Don't stop just to say "Make sense?".
