@@ -43,6 +43,7 @@ module.exports = async function handler(req, res) {
 
   // Captured Leads list (see lib/leads.js).
   if (req.method === 'GET' && req.query && req.query.action === 'leads') return leads.list(req, res);
+  if (req.method === 'GET' && req.query && req.query.action === 'call-audio') return leads.audio(req, res);
   if (req.method === 'POST' && req.query && req.query.action === 'leads-delete') {
     if (!rateLimit(req, res, { key: 'leads-delete', limit: 20, windowMs: 60_000 })) return;
     return leads.remove(req, res);
@@ -53,7 +54,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-29',
+      code_version: 'brandy-elevenlabs-30',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.

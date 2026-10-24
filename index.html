@@ -2263,7 +2263,7 @@ body.modal-open{overflow:hidden}
               <div id="leadsTableWrap" style="overflow-x:auto;display:none;">
                 <table style="width:100%;border-collapse:collapse;font-size:13px;">
                   <thead><tr style="text-align:left;color:#64748b;border-bottom:1px solid #e2e8f0;">
-                    <th style="padding:8px 6px;width:28px;"><input type="checkbox" id="leadsSelectAll" onchange="toggleAllLeads(this.checked)" title="Select all" style="cursor:pointer;"></th><th style="padding:8px 6px;">Date</th><th style="padding:8px 6px;">Name</th><th style="padding:8px 6px;">Email</th><th style="padding:8px 6px;">Phone</th><th style="padding:8px 6px;">Interest</th><th style="padding:8px 6px;">Callback</th><th style="padding:8px 6px;">Notes</th><th style="padding:8px 6px;width:32px;"></th>
+                    <th style="padding:8px 6px;width:28px;"><input type="checkbox" id="leadsSelectAll" onchange="toggleAllLeads(this.checked)" title="Select all" style="cursor:pointer;"></th><th style="padding:8px 6px;">Date</th><th style="padding:8px 6px;">Name</th><th style="padding:8px 6px;">Email</th><th style="padding:8px 6px;">Phone</th><th style="padding:8px 6px;">Interest</th><th style="padding:8px 6px;">Callback</th><th style="padding:8px 6px;">Details</th><th style="padding:8px 6px;">Notes</th><th style="padding:8px 6px;width:32px;"></th>
                   </tr></thead>
                   <tbody id="leadsBody"></tbody>
                 </table>
@@ -3386,7 +3386,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
           <div class="page-header"><h2 class="page-title">🎙️ Call History</h2></div>
           <div class="card" style="margin-bottom:20px">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
-              <div style="font-size:14px;color:rgba(255,255,255,.55)">Recordings from your AI calls — click to play</div>
+              <div style="font-size:14px;color:rgba(255,255,255,.55)">Every call Brandy makes or answers, with a summary. Click ▶ to listen.</div>
               <div style="display:flex;gap:8px;">
                 <button class="app-btn blue" onclick="loadCallHistory()" style="padding:8px 18px;font-size:13px">↻ Refresh</button>
                 <button onclick="deleteAllRecordings()" style="padding:8px 16px;font-size:13px;font-weight:600;border:1.5px solid #fee2e2;border-radius:10px;background:#fff5f5;color:#ef4444;cursor:pointer;">Delete All</button>
@@ -5718,6 +5718,7 @@ async function loadLeads() {
         <td style="padding:8px 6px;white-space:nowrap;">${leadEsc(phone) || '—'}</td>
         <td style="padding:8px 6px;color:${color};font-weight:600;white-space:nowrap;">${label}</td>
         <td style="padding:8px 6px;">${leadEsc(l.callback) || '—'}</td>
+        <td style="padding:8px 6px;color:#334155;min-width:140px;">${l.details ? leadEsc(l.details).split(' | ').join('<br>') : '—'}</td>
         <td style="padding:8px 6px;color:#334155;min-width:220px;">${notes}</td>
         <td style="padding:8px 6px;"><button onclick="deleteLeads(['${leadEsc(l.id)}'])" title="Delete this lead" style="border:none;background:none;cursor:pointer;font-size:15px;color:#94a3b8;padding:0;">🗑</button></td>
       </tr>`;
@@ -5783,7 +5784,7 @@ async function deleteLeads(ids) {
 
 function downloadLeadsCsv() {
   if (!leadsData.length) { toast('Refresh first — there are no leads to download yet.'); return; }
-  const cols = [['Date', 'date'], ['Name', 'name'], ['Email', 'email'], ['Phone', 'phone'], ['Interest', 'interest'], ['Callback', 'callback'], ['Notes', 'notes'], ['Company', 'company'], ['Number called', 'called_number'], ['Call summary', 'summary']];
+  const cols = [['Date', 'date'], ['Name', 'name'], ['Email', 'email'], ['Phone', 'phone'], ['Interest', 'interest'], ['Callback', 'callback'], ['Details (PIN, account, address...)', 'details'], ['Notes', 'notes'], ['Company', 'company'], ['Number called', 'called_number'], ['Call summary', 'summary']];
   const cell = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
   const rows = [cols.map((c) => cell(c[0])).join(',')].concat(leadsData.map((l) => cols.map(([, k]) => cell(k === 'name' ? (l.name || l.contact) : l[k])).join(',')));
   const blob = new Blob([rows.join('\r\n')], { type: 'text/csv' });
@@ -6860,38 +6861,94 @@ function getCallMeta() {
   try { return JSON.parse(localStorage.getItem('pp_call_meta') || '{}'); } catch { return {}; }
 }
 
+// Brandy's calls (ElevenLabs) plus older recordings saved in Twilio.
+let historyBrandyCalls = [];
+let historyTwilioRecs = [];
+let historyAudioUrl = null;
+
+function historyRow({ play, label, sub, extra, del }) {
+  return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(13,27,46,.08)">
+    ${play ? `<button onclick="${play}" title="Play" style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:none;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;font-size:16px;cursor:pointer">▶</button>` : '<div style="width:36px;flex-shrink:0"></div>'}
+    <div style="flex:1;min-width:0">
+      <div style="font-size:14px;font-weight:600;color:#0d1b2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</div>
+      <div style="font-size:12px;color:#7a90b0">${sub}</div>
+      ${extra ? `<div style="font-size:12px;color:#475569;margin-top:3px;line-height:1.45">${extra}</div>` : ''}
+    </div>
+    <button onclick="${del}" title="Delete" style="flex-shrink:0;background:none;border:none;color:#ef4444;font-size:18px;cursor:pointer;padding:4px 8px">🗑</button>
+  </div>`;
+}
+
 async function loadCallHistory() {
   const list = document.getElementById('historyList');
   list.innerHTML = '<div style="color:#7a90b0;font-size:13px;text-align:center;padding:30px 0">Loading…</div>';
+  const [brandy, twilio] = await Promise.all([
+    apiFetch('/api/ai-call?action=leads').then(async (r) => { const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Could not load calls'); return d.leads || []; }).catch((e) => ({ error: e.message })),
+    apiFetch('/api/call-status?type=recordings').then(async (r) => { const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Could not load recordings'); return d.recordings || []; }).catch((e) => ({ error: e.message })),
+  ]);
+  historyBrandyCalls = Array.isArray(brandy) ? brandy : [];
+  historyTwilioRecs = Array.isArray(twilio) ? twilio : [];
+  const meta = getCallMeta();
+  const fmtDur = (sec) => sec ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : '';
+  const items = [];
+
+  historyBrandyCalls.forEach((c) => {
+    const who = c.name || c.contact || '';
+    const inbound = c.direction === 'inbound';
+    const label = leadEsc([who || (inbound ? 'Incoming call' : 'AI call'), c.company].filter(Boolean).join(' @ '));
+    const sub = [inbound ? '📥 Incoming' : '📤 Brandy called', c.called_number, c.date ? new Date(c.date).toLocaleString() : '', fmtDur(c.duration_secs)].filter(Boolean).join(' · ');
+    items.push({ t: c.date || '', html: historyRow({
+      play: c.has_audio ? `playBrandyCall('${leadEsc(c.id)}', this)` : '',
+      label, sub,
+      extra: c.processing ? '<em>Still processing…</em>' : leadEsc(c.summary || ''),
+      del: `deleteBrandyCall('${leadEsc(c.id)}')`,
+    }) });
+  });
+
+  historyTwilioRecs.forEach((rec) => {
+    const m = meta[rec.callSid] || {};
+    const raw = [m.name, m.company].filter(Boolean).join(' @ ') || rec.friendlyName || rec.toNumber || rec.callSid;
+    const label = leadEsc(raw);
+    const sub = [m.toNumber || rec.toNumber || '', rec.dateCreated ? new Date(rec.dateCreated).toLocaleString() : '', fmtDur(rec.duration)].filter(Boolean).join(' · ');
+    items.push({ t: rec.dateCreated ? new Date(rec.dateCreated).toISOString() : '', html: historyRow({
+      play: `playRecording('${rec.sid}','${String(raw).replace(/['"\\]/g, '')}','${rec.callSid}')`,
+      label, sub, extra: m.reason ? leadEsc(m.reason) : '',
+      del: `deleteRecording('${rec.sid}')`,
+    }) });
+  });
+
+  items.sort((a, b) => (a.t < b.t ? 1 : -1));
+  const errs = [brandy, twilio].filter((x) => x && x.error).map((x) => x.error);
+  if (!items.length) {
+    list.innerHTML = errs.length
+      ? `<div style="color:#ef4444;font-size:13px;text-align:center;padding:20px 0">Error: ${leadEsc(errs.join(' · '))}</div>`
+      : '<div style="color:#7a90b0;font-size:13px;text-align:center;padding:30px 0">No calls yet. Calls show up here about a minute after they end.</div>';
+    return;
+  }
+  list.innerHTML = items.map((i) => i.html).join('') +
+    (errs.length ? `<div style="color:#b45309;font-size:12px;padding:10px 0">Some calls couldn't load: ${leadEsc(errs.join(' · '))}</div>` : '');
+}
+
+async function playBrandyCall(id, btn) {
+  const player = document.getElementById('historyPlayer');
+  const audio  = document.getElementById('historyAudio');
+  const lbl    = document.getElementById('historyPlayerLabel');
+  const c = historyBrandyCalls.find((x) => x.id === id) || {};
+  lbl.textContent = 'Loading recording…';
+  player.style.display = 'block';
+  if (btn) btn.disabled = true;
   try {
-    const resp = await apiFetch('/api/call-status?type=recordings');
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Failed to load');
-    const recs = data.recordings || [];
-    if (!recs.length) {
-      list.innerHTML = '<div style="color:#7a90b0;font-size:13px;text-align:center;padding:30px 0">No recordings yet — calls are recorded automatically.</div>';
-      return;
-    }
-    const meta = getCallMeta();
-    list.innerHTML = recs.map(rec => {
-      const m = meta[rec.callSid] || {};
-      const label = [m.name, m.company].filter(Boolean).join(' @ ') || rec.friendlyName || rec.toNumber || rec.callSid;
-      const phone = m.toNumber || rec.toNumber || '';
-      const reason = m.reason ? `<span style="color:#7a90b0;font-size:12px;margin-left:8px">${m.reason}</span>` : '';
-      const dur = rec.duration ? `${Math.floor(rec.duration/60)}:${String(rec.duration%60).padStart(2,'0')}` : '--';
-      const date = rec.dateCreated ? new Date(rec.dateCreated).toLocaleString() : '';
-      const subtitle = [phone, date, dur].filter(Boolean).join(' · ');
-      return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(13,27,46,.08)" data-sid="${rec.sid}" data-label="${label}">
-        <button onclick="playRecording('${rec.sid}','${label.replace(/'/g,"\\'")}','${rec.callSid}')" style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:none;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;font-size:16px;cursor:pointer">▶</button>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:600;color:#0d1b2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}${reason}</div>
-          <div style="font-size:12px;color:#7a90b0">${subtitle}</div>
-        </div>
-        <button onclick="deleteRecording('${rec.sid}')" title="Delete" style="flex-shrink:0;background:none;border:none;color:#ef4444;font-size:18px;cursor:pointer;padding:4px 8px">🗑</button>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    list.innerHTML = `<div style="color:#ef4444;font-size:13px;text-align:center;padding:20px 0">Error: ${e.message}</div>`;
+    const r = await apiFetch(`/api/ai-call?action=call-audio&id=${encodeURIComponent(id)}`);
+    if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.error || 'Could not load the recording'); }
+    const blob = await r.blob();
+    if (historyAudioUrl) URL.revokeObjectURL(historyAudioUrl);
+    historyAudioUrl = URL.createObjectURL(blob);
+    audio.src = historyAudioUrl;
+    lbl.textContent = [c.name || c.contact || 'Call', c.date ? new Date(c.date).toLocaleString() : ''].filter(Boolean).join(' · ');
+    audio.play().catch(() => {});
+  } catch (e) {
+    lbl.textContent = 'Error: ' + e.message;
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
@@ -6905,6 +6962,17 @@ function playRecording(sid, label, callSid) {
   audio.play();
 }
 
+async function deleteBrandyCall(id) {
+  if (!confirm('Delete this call? This removes its recording, transcript and captured lead details, and cannot be undone.')) return;
+  try {
+    const r = await apiFetch('/api/ai-call?action=leads-delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: [id] }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !(d.deleted || []).length) throw new Error(d.error || 'Delete failed');
+    toast('Call deleted.');
+    loadCallHistory();
+  } catch (e) { toast('Error: ' + e.message); }
+}
+
 async function deleteRecording(sid) {
   if (!confirm('Delete this recording? This cannot be undone.')) return;
   try {
@@ -6916,14 +6984,14 @@ async function deleteRecording(sid) {
 }
 
 async function deleteAllRecordings() {
+  const n = historyBrandyCalls.length + historyTwilioRecs.length;
+  if (!n) { toast('Nothing to delete.'); return; }
+  if (!confirm(`Delete all ${n} call${n === 1 ? '' : 's'}? This removes recordings, transcripts and captured lead details, and cannot be undone.`)) return;
   try {
-    const resp = await apiFetch('/api/call-status?type=recordings');
-    const data = await resp.json();
-    const recs = data.recordings || [];
-    if (!recs.length) return;
-    if (!confirm(`Delete all ${recs.length} recording${recs.length === 1 ? '' : 's'}? This cannot be undone.`)) return;
-    await Promise.all(recs.map(rec => apiFetch(`/api/call-status?sid=${rec.sid}`, { method: 'DELETE' })));
-    toast('All recordings deleted.');
+    const ids = historyBrandyCalls.map((c) => c.id);
+    if (ids.length) await apiFetch('/api/ai-call?action=leads-delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
+    await Promise.all(historyTwilioRecs.map((rec) => apiFetch(`/api/call-status?sid=${rec.sid}`, { method: 'DELETE' })));
+    toast('All calls deleted.');
     loadCallHistory();
   } catch(e) { toast('Error: ' + e.message); }
 }
