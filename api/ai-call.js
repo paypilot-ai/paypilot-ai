@@ -10,6 +10,7 @@ const takeMessage = require('../lib/takeMessage');
 const { buildPlan, voicemailFrom } = require('../lib/callPlan');
 const { PERSONA } = require('../lib/brandyPersona');
 const { charlotteWeather } = require('../lib/weather');
+const { pastConversations } = require('../lib/callMemory');
 const inboundRoute = require('../lib/inboundRoute');
 
 // ElevenLabs agent (Brandy). IDs default to Brandy's; env vars can override them.
@@ -55,7 +56,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-54',
+      code_version: 'brandy-elevenlabs-55',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -155,9 +156,10 @@ module.exports = async function handler(req, res) {
       const disclosure = shouldRecord ? (disclosureText || '').trim().slice(0, 500) : '';
       // Make sense of whatever the customer typed (script, notes, training
       // material...) before dialing. Falls back to the raw notes if it fails.
-      const [plan, weather] = await Promise.all([
+      const [plan, weather, history] = await Promise.all([
         callReason ? buildPlan({ notes: script, company, contact: business ? `${name} at ${business}` : name, callback: returnNumber }) : null,
         charlotteWeather(),
+        pastConversations({ account: leads.accountFor(req), toNumber: e164 }),
       ]);
       const scriptSection = plan
         ? `CALL PLAN (prepared from the client's notes; follow it):
@@ -239,6 +241,16 @@ HOW TO SOUND HUMAN ON THE PHONE:
 - If the client script is written word for word, treat it as notes. Never say its sentences as written; say each point your own way, in pieces, across several turns.
 
 ${scriptSection}
+${history ? `
+YOU'VE TALKED WITH THIS PERSON BEFORE (most recent first):
+${history}
+
+How to use this:
+- Greet them like someone you know: "Hey ${name.split(/\s+/)[0] || 'there'}, it's Brandy again with ${company}! Good to talk to you again." Skip re-introducing the whole offer.
+- Bring up one personal thing from last time if there is one, naturally ("How was the beach?"), and pick up where you left off.
+- Don't re-ask anything they already gave you. If you have their email, confirm it instead ("Still best at that gmail?").
+- If they said no last time, respect it: be brief, ask if anything's changed, and don't push.
+- Never say you have notes or records; just remember like a person would. If something here seems wrong, go with what they say now.` : ''}
 
 OPENING: The call has just connected. If you hear a recording or phone menu, follow AUTOMATED PHONE MENUS instead. If a person picks up, wait for them to say hello, then say exactly: "${greeting}" If they say nothing for a couple of seconds, say it anyway. Never talk over their hello.
 
