@@ -1,15 +1,29 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/partners", "destination": "/partners.html" }
+    {
+      "source": "/partners",
+      "destination": "/partners.html"
+    }
   ],
   "headers": [
     {
       "source": "/(.*\\.html)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" },
-        { "key": "Pragma", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/ai-call.js": {
+      "maxDuration": 30
+    }
+  }
 }

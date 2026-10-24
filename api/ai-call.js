@@ -7,6 +7,7 @@ const brandyEmail = require('../lib/brandyEmail');
 const liveCall = require('../lib/liveCall');
 const leads = require('../lib/leads');
 const takeMessage = require('../lib/takeMessage');
+const { buildPlan } = require('../lib/callPlan');
 const inboundRoute = require('../lib/inboundRoute');
 
 // ElevenLabs agent (Brandy). IDs default to Brandy's; env vars can override them.
@@ -51,7 +52,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-27',
+      code_version: 'brandy-elevenlabs-28',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -148,6 +149,19 @@ module.exports = async function handler(req, res) {
       // client info is stored in ElevenLabs.
       // Recording disclosure must be spoken up front, so it goes in the opening line.
       const disclosure = shouldRecord ? (disclosureText || '').trim().slice(0, 500) : '';
+      // Make sense of whatever the customer typed (script, notes, training
+      // material...) before dialing. Falls back to the raw notes if it fails.
+      const plan = callReason ? await buildPlan({ notes: script, company, contact: name }) : null;
+      const scriptSection = plan
+        ? `CALL PLAN (prepared from the client's notes; follow it):
+${plan}
+
+CLIENT'S ORIGINAL NOTES (reference for exact wording, numbers and details only; the plan above decides what to do, and you never read these aloud):
+${script}`
+        : `CLIENT SCRIPT (why you're calling, what you offer, and your goal for this call):
+${script}
+
+HOW TO READ THE CLIENT SCRIPT: people write it in every style. Work out the goal and the steps yourself. Skip stage directions ("long pause"), headings, internal training notes and voicemail sections (use those only if you reach voicemail). If it names a human rep as the caller, you are still Brandy. If it has blanks or placeholders like [Client], say something natural instead ("one of your customers"). Treat "if they..." sections as responses to use only when that happens.`;
       // Professional opener: who's calling, the disclosure, then ask for the contact by name.
       const firstName = name.split(/\s+/)[0] || '';
       const greeting = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} ${firstName ? `May I speak with ${firstName}, please?` : 'How are you doing today?'}`;
@@ -166,6 +180,14 @@ PERSONALITY (this matters as much as the script):
 - A little light humor is good when they're in a good mood. Never sarcastic, never pushy.
 - Sound like a person, not a pitch: contractions, casual words, short sentences.
 
+YOUR SALES STYLE (you're a skilled salesperson, not a script reader):
+- The client gives you the goal, the facts and the steps that must happen. HOW you get there is up to you: your words, your order of benefits, your read of the person.
+- Be consultative. Ask a good question, really listen, and tie the offer to what THEY care about (speed, saving time, less hassle, money, peace of mind). Pick the one benefit that fits them instead of listing everything.
+- Be confident and assume the next step is natural ("Let's get you set up"), but never pushy.
+- On an objection: acknowledge it, ask what's behind it if it isn't clear, then answer with the client's facts. Only offer a concession or discount the client allows, and only after a real attempt to address the concern first.
+- Use small check-ins to move forward ("Would that help with the checks you're waiting on?").
+- Know when to stop: a clear no gets a gracious thank-you, and anything required by the client still gets done (for example verifying their info).
+
 HOW TO SOUND HUMAN ON THE PHONE (most important):
 - The client script is background, not lines to read. Never recite it or copy its wording. Say the gist in your own casual words, the way you'd explain it to a friend.
 - Never use written-English constructions like "which is a...", "that offers...", or lists of features. Mention one thing at a time, and only if it fits what they just said.
@@ -177,8 +199,7 @@ HOW TO SOUND HUMAN ON THE PHONE (most important):
 - Emotion cues: you may start a line with ONE short cue in square brackets, like [warm], [upbeat], [curious], [reassuring], [sympathetic] or [chuckles], when it fits the moment. Use one on roughly every second or third line, vary them, and never use the same cue twice in a row. The cue is not spoken; it only shapes your tone.
 - If the client script is written word for word, treat it as notes. Never say its sentences as written; say each point your own way, in pieces, across several turns.
 
-CLIENT SCRIPT (why you're calling, what you offer, and your goal for this call):
-${script}
+${scriptSection}
 
 OPENING: The call has just connected and the person is picking up. Wait for them to say hello, then say exactly: "${greeting}" If they say nothing for a couple of seconds, say it anyway. Never talk over their hello.
 
