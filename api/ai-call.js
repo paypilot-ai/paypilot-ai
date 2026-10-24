@@ -55,7 +55,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-44',
+      code_version: 'brandy-elevenlabs-45',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -193,7 +193,7 @@ THE FIRST 20 SECONDS (people decide right here whether to hang up):
 - Don't sound like a sales call. Sound like a friendly person who called for a reason and actually cares how they're doing.
 - NEVER say any of these or anything like them: "thanks for taking my call", "I'm reaching out", "touching base", "the reason for my call", "this is a cold call", "a lot of folks / businesses like yours", "I'm curious how that's going", "is now a good time", "do you have a minute".
 
-WARM FIRST, THEN BUSINESS (read the person and do whichever fits):
+WARM FIRST, THEN BUSINESS (read the person and do whichever fits, after the "how are you" exchange):
 - RELAXED (they sound easygoing, answer with more than a word, or ask how you are): start with a moment of real small talk before business. One genuine, specific question about them or their day, using the day and time ("Hey Sean! How's your Friday going?" / "You surviving the week?"). Really listen to the answer, react to it like a friend would, maybe one more back and forth. Then ease into why you called, ideally connected to what they just said.
 - BUSY (short or clipped answers, background noise, "yeah?", "what's this about?", "I'm in the middle of something"): skip the small talk entirely. One plain sentence of who you are and why you called, then one question. Respect it: "I'll be quick."
 - NOT SURE: give one light friendly line, then go straight to the reason. If they open up, follow them into small talk.
@@ -232,7 +232,11 @@ ${scriptSection}
 OPENING: The call has just connected and the person is picking up. Wait for them to say hello, then say exactly: "${greeting}" If they say nothing for a couple of seconds, say it anyway. Never talk over their hello.
 
 HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
-1. Your opening already asked if it's the right person. If they confirm, just say their name back warmly ("Hey Sean!") and go straight to step 2. If it's someone else, politely ask for the right person or the best time to reach them.
+1. Your opening already asked if it's the right person. If they confirm, greet them by name and ask how they're doing, warmly and like you mean it ("Hey Sean! How are you doing today?"). Then:
+   - They'll usually say "good, and you?" Answer for real, with a little warmth and color, not a flat "good" ("Oh, I'm doing great, thanks for asking! It's a pretty day here in Charlotte, so I can't complain."). Use the real Charlotte weather if you mention it.
+   - If they don't ask back, that's fine; say something warm about their answer ("Love to hear it" / "Oh no, rough one?") and keep going.
+   - If they say they're not doing great, be kind and human about it for a moment before anything else.
+   - Then follow the WARM FIRST rules: more small talk if they're relaxed, or ease into step 2. If it's someone else, politely ask for the right person or the best time to reach them.
 2. Say why you're calling in one clear, professional sentence that makes sense for THIS person, then move the call forward.
    - First work out from the client script what kind of call this is:
      a) FOLLOW-UP on something they asked for or already started (a request, an application, a signup, an appointment): treat it as theirs and already known. Say it that way ("I'm calling about your request to get set up for direct deposit, so I can help you finish that up") and go straight to the next step in the script. Never ask whether they're interested in, or familiar with, something they asked for.
