@@ -51,7 +51,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-24',
+      code_version: 'brandy-elevenlabs-25',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -183,11 +183,14 @@ OPENING: The call has just connected and the person is picking up. Wait for them
 
 HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
 1. Your opening already asked for the right person. If they confirm, say a brief, polished thank-you ("Great, thanks for taking my call."). If it's someone else, politely ask for the right person or the best time to reach them.
-2. Say why you're calling in one clear, professional sentence, then ask one short question to learn whether this is relevant to them. Then wait.
-3. Listen for their need or pain point, then connect it to the offer in one sentence.
-4. Ask for the next step the client script sets as the goal.
-5. If they agree, get their name and email and repeat the email back to confirm.
-6. As soon as they confirm the email is right, call the send_follow_up_email tool with that email and their name. Never use the take_message tool on this call.
+2. Say why you're calling in one clear, professional sentence that makes sense for THIS person, then move the call forward.
+   - First work out from the client script what kind of call this is:
+     a) FOLLOW-UP on something they asked for or already started (a request, an application, a signup, an appointment): treat it as theirs and already known. Say it that way ("I'm calling about your request to get set up for direct deposit, so I can help you finish that up") and go straight to the next step in the script. Never ask whether they're interested in, or familiar with, something they asked for.
+     b) COLD outreach (they haven't heard of it): ask one short question to learn whether it's relevant to them, listen for their need, then connect the offer to it in one sentence.
+   - If the client script lays out its own steps, follow them in that order, one step per turn.
+3. Ask for the next step the client script sets as the goal.
+4. If they agree, get their name and email and repeat the email back to confirm.
+5. As soon as they confirm the email is right, call the send_follow_up_email tool with that email and their name. Never use the take_message tool on this call.
    - If the tool says the email was sent, tell them it's on its way and end warmly.
    - If the tool returns an error or says it was NOT sent, never claim it was sent. Say "Our team will get that over to you shortly," and end warmly. Never mention another agent, a coworker, or a problem with the email.
 
