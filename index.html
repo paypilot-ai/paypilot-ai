@@ -2035,27 +2035,45 @@ body.modal-open{overflow:hidden}
             }
             #matrixCanvas { animation:faceGlow 3.5s ease-in-out infinite; }
             .ai-wave-bar { width:4px; background:#00ff88; border-radius:3px; transition:height .09s ease; }
+            /* Compact, wide layout */
+            #aicaller .ai-wrap { max-width:1180px; margin:0 auto; padding:18px 0 8px; }
+            #aicaller input:not([type=checkbox]):not([type=file]), #aicaller select, #aicaller textarea { padding:9px 12px !important; border-radius:10px !important; font-size:14px; }
+            #aicaller label { margin-bottom:4px !important; }
+            #aicaller .ai-cols { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:18px; align-items:start; margin-bottom:14px; }
+            #aicaller .ai-cols > div > div { margin-bottom:10px !important; }
+            #aicaller .ai-email-box { padding:14px 16px !important; margin:0 !important; border-radius:14px !important; }
+            #aicaller .ai-email-box > div { margin-bottom:10px !important; }
+            #aicaller .ai-email-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+            #aicaller .ai-email-grid > div { margin:0 !important; }
+            #aicaller .ai-email-grid .full { grid-column:1/-1; }
+            #aicaller #aiCallerFormCard { padding:18px 20px !important; margin-bottom:14px !important; }
+            #aicaller #leadsCard { padding:16px 20px !important; }
+            #aicaller #leadsTableWrap { max-height:420px; overflow-y:auto !important; }
+            #aicaller #leadsTableWrap thead th { position:sticky; top:0; background:#fff; z-index:1; }
+            @media (max-width: 900px) {
+              #aicaller .ai-cols, #aicaller .ai-email-grid { grid-template-columns:1fr; }
+              #aicaller #leadsTableWrap table { min-width:720px; }
+            }
           </style>
-          <div style="max-width:560px; margin:0 auto; padding:32px 0;">
-            <div style="margin-bottom:28px;">
-              <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#6b7fa3;margin-bottom:8px;">Enterprise Feature</div>
-              <h2 style="margin:0 0 8px;font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;color:#0f172a;">AI Auto-Caller</h2>
-              <p style="margin:0;color:#64748b;font-size:15px;line-height:1.6;">The AI dials the number, delivers the opening, listens to the prospect, and handles the full conversation — no rep needed.</p>
+          <div class="ai-wrap">
+            <div style="margin-bottom:14px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+              <h2 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#0f172a;">AI Auto-Caller</h2>
+              <p style="margin:0;color:#64748b;font-size:14px;">Brandy dials, opens, listens and handles the whole conversation. No rep needed.</p>
             </div>
 
             <!-- FORM CARD — hidden when call is active -->
             <div id="aiCallerFormCard" style="background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:28px;margin-bottom:20px;">
 
               <!-- Mode tabs -->
-              <div style="display:flex;gap:0;margin-bottom:22px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">
+              <div style="display:flex;gap:0;margin-bottom:14px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;max-width:420px">
                 <button id="tabSingleCall" onclick="setCallerTab('single')" style="flex:1;padding:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff">📞 Single Call</button>
                 <button id="tabAutoDialer" onclick="setCallerTab('auto')" style="flex:1;padding:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#f8fafc;color:#64748b">📋 Auto Dialer</button>
               </div>
 
               <!-- SINGLE CALL panel -->
               <div id="panelSingleCall">
-              <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:16px;">📞 Start an AI Call</div>
-
+              <div class="ai-cols">
+              <div><!-- left: call details -->
               <div style="margin-bottom:16px;">
                 <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Your Company Name</label>
                 <input id="aiCallerCompany" type="text" placeholder="e.g. Acme Payment Solutions" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
@@ -2084,7 +2102,7 @@ body.modal-open{overflow:hidden}
                       <b>3. One concrete, checkable goal</b> (e.g. "get her to confirm her email for the DocuSign link") so the AI knows exactly when the call is done instead of rambling.
                     </div>
                   </details>
-                  <textarea id="aiCallerObjective" rows="4" placeholder="Example: We're calling to enroll Jennifer's company (Midwest Supply Co.) into our early payment program — invoices paid in 1-2 business days instead of net 30-60. Standard fee is 1.2% of invoice value, negotiable to 0.95%. Common objections: fee too high, prefers checks, owner approval needed, security concerns. Goal: overcome objections and get her to agree to receive a DocuSign enrollment form." style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;resize:vertical;font-family:inherit;line-height:1.5;"></textarea>
+                  <textarea id="aiCallerObjective" rows="5" placeholder="Example: We're calling to enroll Jennifer's company (Midwest Supply Co.) into our early payment program — invoices paid in 1-2 business days instead of net 30-60. Standard fee is 1.2% of invoice value, negotiable to 0.95%. Common objections: fee too high, prefers checks, owner approval needed, security concerns. Goal: overcome objections and get her to agree to receive a DocuSign enrollment form." style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;resize:vertical;font-family:inherit;line-height:1.5;"></textarea>
                 </div>
                 <div>
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Call Language</label>
@@ -2103,8 +2121,10 @@ body.modal-open{overflow:hidden}
                 </div>
               </div>
 
-              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:20px;">
-                <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:12px;">✉️ Email (optional — send after close)</div>
+              </div><!-- end left -->
+              <div class="ai-email-box" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:20px;">
+                <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:12px;">✉️ Follow-up email (optional)</div>
+                <div class="ai-email-grid">
                 <div style="margin-bottom:12px;">
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Your Email (reply-to)</label>
                   <input id="aiSenderEmail" type="email" placeholder="you@yourcompany.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
@@ -2113,27 +2133,29 @@ body.modal-open{overflow:hidden}
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Customer Email</label>
                   <input id="aiCallerEmail" type="email" placeholder="customer@email.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
                 </div>
-                <div style="margin-bottom:12px;">
+                <div class="full" style="margin-bottom:12px;">
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Subject</label>
                   <input id="aiEmailSubject" type="text" placeholder="e.g. Your agreement, Follow-up from our call" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
                 </div>
-                <div style="margin-bottom:12px;">
+                <div class="full" style="margin-bottom:12px;">
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Message (optional)</label>
                   <textarea id="aiEmailMessage" placeholder="Add a personal note, instructions, or any details..." style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;min-height:72px;resize:vertical;font-family:inherit;"></textarea>
                 </div>
                 <div style="margin-bottom:12px;">
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Return Phone Number (optional)</label>
-                  <input id="aiReturnNumber" type="tel" placeholder="e.g. (555) 123-4567 — mentioned if she leaves a voicemail" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
+                  <input id="aiReturnNumber" type="tel" placeholder="Said if she leaves a voicemail" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
                 </div>
                 <div>
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Attachment (optional)</label>
                   <label id="aiAgreementLabel" for="aiCallerAgreement" style="display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;padding:10px 14px;border:2px dashed #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;cursor:pointer;background:#fff;transition:border-color .2s,color .2s;">
                     <span style="font-size:18px;">📎</span>
-                    <span id="aiAgreementFileName">Click to attach PDF, Word, or image</span>
+                    <span id="aiAgreementFileName">Attach PDF, Word or image</span>
                   </label>
                   <input id="aiCallerAgreement" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display:none;" onchange="aiFileSelected(this)"/>
                 </div>
+                </div><!-- end email grid -->
               </div>
+              </div><!-- end ai-cols -->
 
               <button id="aiCallBtn" onclick="startAiCall()" style="width:100%;padding:14px;background:linear-gradient(135deg,#1a6fff,#7c3aed);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.03em;">🤖 Launch AI Call</button>
               </div><!-- end panelSingleCall -->
@@ -2186,8 +2208,9 @@ body.modal-open{overflow:hidden}
                 </div>
                 <button onclick="adAddRow()" style="margin-top:8px;width:100%;padding:9px;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:8px;color:#94a3b8;font-size:13px;cursor:pointer">+ Add Contact</button>
 
-                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-top:16px;">
-                  <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:12px;">✉️ Email (optional — sent to each contact's email above after their call ends)</div>
+                <div class="ai-email-box" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-top:16px;">
+                  <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:12px;">✉️ Follow-up email (optional, sent to each contact's email above)</div>
+                  <div class="ai-email-grid">
                   <div style="margin-bottom:12px;">
                     <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Your Email (reply-to)</label>
                     <input id="adSenderEmail" type="email" placeholder="you@yourcompany.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
@@ -2196,22 +2219,23 @@ body.modal-open{overflow:hidden}
                     <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Subject</label>
                     <input id="adEmailSubject" type="text" placeholder="e.g. Your agreement, Follow-up from our call" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
                   </div>
-                  <div style="margin-bottom:12px;">
+                  <div class="full" style="margin-bottom:12px;">
                     <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Message (optional)</label>
                     <textarea id="adEmailMessage" placeholder="Add a personal note, instructions, or any details..." style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;min-height:72px;resize:vertical;font-family:inherit;"></textarea>
                   </div>
                   <div style="margin-bottom:12px;">
                     <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Return Phone Number (optional)</label>
-                    <input id="adReturnNumber" type="tel" placeholder="e.g. (555) 123-4567 — mentioned if she leaves a voicemail" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
+                    <input id="adReturnNumber" type="tel" placeholder="Said if she leaves a voicemail" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#fff;"/>
                   </div>
                   <div>
-                    <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Attachment (optional — same file sent to every contact)</label>
+                    <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Attachment (optional, same file for everyone)</label>
                     <label id="adAgreementLabel" for="adCallerAgreement" style="display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;padding:10px 14px;border:2px dashed #e2e8f0;border-radius:10px;font-size:13px;color:#94a3b8;cursor:pointer;background:#fff;transition:border-color .2s,color .2s;">
                       <span style="font-size:18px;">📎</span>
-                      <span id="adAgreementFileName">Click to attach PDF, Word, or image</span>
+                      <span id="adAgreementFileName">Attach PDF, Word or image</span>
                     </label>
                     <input id="adCallerAgreement" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display:none;" onchange="adFileSelected(this)"/>
                   </div>
+                  </div><!-- end email grid -->
                 </div>
 
                 <div style="display:flex;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap">
@@ -2237,7 +2261,7 @@ body.modal-open{overflow:hidden}
               <div style="font-size:12px;color:#64748b;margin-bottom:12px;">Name, email, phone and notes from each AI call. New calls appear about a minute after they end.</div>
               <div id="leadsStatus" style="font-size:13px;color:#64748b;">Click Refresh to load your leads.</div>
               <div id="leadsTableWrap" style="overflow-x:auto;display:none;">
-                <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:720px;">
+                <table style="width:100%;border-collapse:collapse;font-size:13px;">
                   <thead><tr style="text-align:left;color:#64748b;border-bottom:1px solid #e2e8f0;">
                     <th style="padding:8px 6px;width:28px;"><input type="checkbox" id="leadsSelectAll" onchange="toggleAllLeads(this.checked)" title="Select all" style="cursor:pointer;"></th><th style="padding:8px 6px;">Date</th><th style="padding:8px 6px;">Name</th><th style="padding:8px 6px;">Email</th><th style="padding:8px 6px;">Phone</th><th style="padding:8px 6px;">Interest</th><th style="padding:8px 6px;">Callback</th><th style="padding:8px 6px;">Notes</th><th style="padding:8px 6px;width:32px;"></th>
                   </tr></thead>
@@ -5689,12 +5713,12 @@ async function loadLeads() {
       return `<tr style="border-bottom:1px solid #f1f5f9;vertical-align:top;">
         <td style="padding:8px 6px;"><input type="checkbox" class="lead-check" value="${leadEsc(l.id)}" onchange="updateLeadsDeleteBtn()" style="cursor:pointer;"></td>
         <td style="padding:8px 6px;white-space:nowrap;">${leadEsc(when)}</td>
-        <td style="padding:8px 6px;font-weight:600;">${leadEsc(name)}${l.company ? `<div style="font-weight:400;color:#94a3b8;font-size:11px;">for ${leadEsc(l.company)}</div>` : ''}</td>
+        <td style="padding:8px 6px;font-weight:600;white-space:nowrap;">${leadEsc(name)}${l.company ? `<div style="font-weight:400;color:#94a3b8;font-size:11px;">for ${leadEsc(l.company)}</div>` : ''}</td>
         <td style="padding:8px 6px;">${l.email ? `<a href="mailto:${leadEsc(l.email)}">${leadEsc(l.email)}</a>` : '—'}</td>
         <td style="padding:8px 6px;white-space:nowrap;">${leadEsc(phone) || '—'}</td>
         <td style="padding:8px 6px;color:${color};font-weight:600;white-space:nowrap;">${label}</td>
         <td style="padding:8px 6px;">${leadEsc(l.callback) || '—'}</td>
-        <td style="padding:8px 6px;color:#334155;max-width:320px;">${notes}</td>
+        <td style="padding:8px 6px;color:#334155;min-width:220px;">${notes}</td>
         <td style="padding:8px 6px;"><button onclick="deleteLeads(['${leadEsc(l.id)}'])" title="Delete this lead" style="border:none;background:none;cursor:pointer;font-size:15px;color:#94a3b8;padding:0;">🗑</button></td>
       </tr>`;
     }).join('');
