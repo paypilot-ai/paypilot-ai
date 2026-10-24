@@ -4761,6 +4761,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function startTwilioCall(){
+  if (currentPlan === 'starter') { toast('Click-to-call is a Pro feature. Upgrade to Pro to use it.'); return; }
   // Prevent multiple simultaneous calls
   if(activeTwilioCall){
     toast('A call is already in progress. End it before starting a new one.');
@@ -5615,6 +5616,7 @@ function setListenBtn(on, label) {
 
 async function toggleListenLive() {
   if (listenWs) { stopListenLive(); return; }
+  if (currentPlan === 'starter') { toast('Listen live is a Pro feature. Upgrade to Pro to use it.'); return; }
   const callSid = window.hudCallSid;
   if (!callSid) { toast('No live call to listen to yet.'); return; }
   setListenBtn(true, '… Connecting');
