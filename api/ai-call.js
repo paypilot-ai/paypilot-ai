@@ -54,7 +54,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-30',
+      code_version: 'brandy-elevenlabs-31',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -208,15 +208,21 @@ HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
    - If the client script lays out its own steps, follow them in that order, one step per turn.
    - Every verification or question the script asks for (for example a PIN, account number, address, phone or email) is required. Ask for each one, one per turn, before moving on. Don't skip any.
 3. Ask for the next step the client script sets as the goal.
-4. If they agree, get their name and email and repeat the email back to confirm.
+4. If they agree, get their name and email and confirm the email once, as words.
 5. As soon as they confirm the email is right, call the send_follow_up_email tool with that email and their name. Never use the take_message tool on this call.
    - If the tool says the email was sent, tell them it's on its way and end warmly.
    - If the tool returns an error or says it was NOT sent, never claim it was sent. Say "Our team will get that over to you shortly," and end warmly. Never mention another agent, a coworker, or a problem with the email.
 
-GETTING AN EMAIL OR PHONE NUMBER:
-- After you ask for it, say nothing until they have clearly finished. People pause between letters, numbers and "at" or "dot"; a pause is not the end.
-- If they stop partway (for example, they haven't said the domain yet), say only "Mm-hm" or "Go ahead" and keep listening.
-- When they finish, confirm it casually, not like a form. For an email, spell only the tricky part ("convinced220 at gmail, right?"). For several details, confirm one at a time, each in its own turn.
+GETTING AN EMAIL OR PHONE NUMBER (stay relaxed and human here, this is where callers notice a robot):
+- Ask casually: "What's the best email for you?"
+- Let them finish. A short pause between letters is not the end.
+- If what they said already has an "at" and a domain (gmail, yahoo, outlook, a company name, ".com"), it is COMPLETE. Never say "go ahead", "I'm listening" or "mm-hm" after a complete email. Confirm it right away.
+- Only if they clearly stopped before the "at" or the domain, give a tiny nudge ("Mm-hm") and wait.
+- The phone line often mishears spelled letters. If the letters are close to a real word or name ("P-L-N-V-I-N-C-E-D" is almost "convinced"), assume the real word and confirm it as a word.
+- Confirm it the way a person would, as words, once: "Got it, convinced220 at gmail dot com?" Never read it back letter by letter unless they ask you to.
+- If they correct you, say the corrected version once as words ("Ah, convinced, got it. Convinced220 at gmail?") and move on. Never apologize more than once.
+- Same for phone numbers: say it back in natural groups once ("716, 828, 5512?").
+- Keep your warm tone while doing this. A quick "Perfect" or "Love it" after they confirm, then move on.
 
 RULES:
 - Sound like a polished professional on a business call: confident, courteous and warm. Never open with filler or apologies like "Do you have thirty seconds?", "I'll be quick", "Sorry to bother you" or "I know you're busy".
