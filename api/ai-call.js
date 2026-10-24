@@ -55,7 +55,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-51',
+      code_version: 'brandy-elevenlabs-52',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -115,7 +115,7 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const { toNumber, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText, emailSubject, emailMessage } = req.body || {};
+  const { toNumber, customerName, businessName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText, emailSubject, emailMessage } = req.body || {};
   if (!toNumber) return res.status(400).json({ error: 'Phone number required' });
 
   const cleaned = toNumber.replace(/\D/g, '');
@@ -145,6 +145,7 @@ module.exports = async function handler(req, res) {
     const isEnglish = !language || String(language).toLowerCase().startsWith('en');
     if (elKey && elAgent && elPhoneId && isEnglish) {
       const company = (companyName || '').trim() || 'our team';
+      const business = String(businessName || '').trim().slice(0, 120);
       const script  = (callReason || '').trim().slice(0, 15000)  // long word-for-word scripts must reach her whole
         || 'No client script was provided for this call. Say you are calling to briefly follow up, ask if this is a good time, and say someone will reach out with details. Do not describe any product, price, or offer.';
       // The agent saved in ElevenLabs is a plain receptionist for inbound calls.
@@ -155,7 +156,7 @@ module.exports = async function handler(req, res) {
       // Make sense of whatever the customer typed (script, notes, training
       // material...) before dialing. Falls back to the raw notes if it fails.
       const [plan, weather] = await Promise.all([
-        callReason ? buildPlan({ notes: script, company, contact: name }) : null,
+        callReason ? buildPlan({ notes: script, company, contact: business ? `${name} at ${business}` : name }) : null,
         charlotteWeather(),
       ]);
       const scriptSection = plan
@@ -172,7 +173,7 @@ HOW TO READ THE CLIENT SCRIPT: people write it in every style. Work out the goal
       const firstName = name.split(/\s+/)[0] || '';
       const greeting = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} ${firstName ? `Is this ${firstName}?` : 'Who do I have the pleasure of speaking with?'}`;
       const nowEt = new Date().toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'long', hour: 'numeric', minute: '2-digit' });
-      const prompt = `You are Brandy, calling on behalf of ${company}, speaking live on the phone. It's ${nowEt} Eastern time right now (handy for small talk; their local time may differ). ${weather ? `Weather in Charlotte right now: ${weather}. Use this if weather comes up; never make weather up.` : `You don't know today's weather; if asked, keep it vague and playful and ask about theirs.`} You are calling ${name || 'the person who answers'}. This is a live conversation, not a script.
+      const prompt = `You are Brandy, calling on behalf of ${company}, speaking live on the phone. It's ${nowEt} Eastern time right now (handy for small talk; their local time may differ). ${weather ? `Weather in Charlotte right now: ${weather}. Use this if weather comes up; never make weather up.` : `You don't know today's weather; if asked, keep it vague and playful and ask about theirs.`} You are calling ${name || 'the person who answers'}${business ? ` at ${business}` : ''}. ${business ? `The business you're calling is ${business}; if someone else answers without saying the business name, confirm it ("Is this ${business}?").` : `You don't know the name of the business you're calling.`} This is a live conversation, not a script.
 
 HARD LIMIT ON EVERY TURN: at most 2 to 3 short sentences and about 35 words. Long turns sound like reading.
 KEEP IT FLOWING: end every turn with a question, never with a bare statement that leaves them waiting. During small talk that question is about the small talk, not business. Combine a short point with the question that follows it ("Payments go straight to your bank with a detailed receipt each time. There's a 1.2% fee, does that work for you?"). Don't stop just to say "Make sense?".
@@ -299,6 +300,7 @@ RULES:
               sub: String(emailSubject || '').trim().slice(0, 200), msg: String(emailMessage || '').trim().slice(0, 3000),
             }),
             company_name: (companyName || '').trim(),
+            business_name: business || 'none',
             customer_name: name,
             call_reason: (callReason || '').trim().slice(0, 2000),
             sender_email: (senderEmail || '').trim(),

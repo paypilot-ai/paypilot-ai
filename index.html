@@ -2079,10 +2079,14 @@ body.modal-open{overflow:hidden}
                 <input id="aiCallerCompany" type="text" placeholder="e.g. Acme Payment Solutions" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
               </div>
 
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
                 <div>
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Customer Name</label>
                   <input id="aiCallerName" type="text" placeholder="John Smith" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Their Business <span style="font-weight:400;color:#94a3b8;">(optional)</span></label>
+                  <input id="aiCallerBusiness" type="text" placeholder="e.g. Midwest Supply Co." style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
                 </div>
                 <div>
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Phone Number</label>
@@ -2200,8 +2204,8 @@ body.modal-open{overflow:hidden}
                   </div>
                 </div>
 
-                <div style="display:grid;grid-template-columns:22px 1fr 130px 1fr 1fr 36px;gap:8px;padding:0 2px 7px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;font-weight:600">
-                  <span>#</span><span>Name</span><span>Phone</span><span>Email</span><span>Reason / Product (overrides default)</span><span></span>
+                <div style="display:grid;grid-template-columns:22px 1fr 1fr 130px 1fr 1fr 36px;gap:8px;padding:0 2px 7px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;font-weight:600">
+                  <span>#</span><span>Name</span><span>Business</span><span>Phone</span><span>Email</span><span>Reason / Product (overrides default)</span><span></span>
                 </div>
                 <div id="adRows" style="max-height:280px;overflow-y:auto">
                   <div style="padding:20px 0;text-align:center;color:#94a3b8;font-size:13px">No contacts yet — add a row to get started</div>
@@ -5571,6 +5575,7 @@ async function startAiCall(){
     return;
   }
   const customerName  = document.getElementById('aiCallerName').value.trim();
+  const businessName  = (document.getElementById('aiCallerBusiness') || {}).value?.trim() || '';
   const callReason    = document.getElementById('aiCallerObjective').value.trim();
   const companyName   = document.getElementById('aiCallerCompany').value.trim();
   const customerEmail = document.getElementById('aiCallerEmail') ? document.getElementById('aiCallerEmail').value.trim() : '';
@@ -5586,10 +5591,10 @@ async function startAiCall(){
     const resp = await apiFetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number, customerName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText,
+      body: JSON.stringify({ toNumber: number, customerName, businessName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText,
         emailSubject: (document.getElementById('aiEmailSubject') || {}).value?.trim() || '',
         emailMessage: (document.getElementById('aiEmailMessage') || {}).value?.trim() || '' }),
-      signal: AbortSignal.timeout(15000)
+      signal: AbortSignal.timeout(35000)   // the call-planning step can take ~10s before dialing
     });
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Call failed');
@@ -5713,7 +5718,7 @@ async function loadLeads() {
       return `<tr style="border-bottom:1px solid #f1f5f9;vertical-align:top;">
         <td style="padding:8px 6px;"><input type="checkbox" class="lead-check" value="${leadEsc(l.id)}" onchange="updateLeadsDeleteBtn()" style="cursor:pointer;"></td>
         <td style="padding:8px 6px;white-space:nowrap;">${leadEsc(when)}</td>
-        <td style="padding:8px 6px;font-weight:600;white-space:nowrap;">${leadEsc(name)}${l.company ? `<div style="font-weight:400;color:#94a3b8;font-size:11px;">for ${leadEsc(l.company)}</div>` : ''}</td>
+        <td style="padding:8px 6px;font-weight:600;white-space:nowrap;">${leadEsc(name)}${l.business ? `<div style="font-weight:400;color:#475569;font-size:12px;">${leadEsc(l.business)}</div>` : ''}${l.company ? `<div style="font-weight:400;color:#94a3b8;font-size:11px;">called for ${leadEsc(l.company)}</div>` : ''}</td>
         <td style="padding:8px 6px;">${l.email ? `<a href="mailto:${leadEsc(l.email)}">${leadEsc(l.email)}</a>` : '—'}</td>
         <td style="padding:8px 6px;white-space:nowrap;">${leadEsc(phone) || '—'}</td>
         <td style="padding:8px 6px;color:${color};font-weight:600;white-space:nowrap;">${label}</td>
@@ -5802,7 +5807,7 @@ function fillCallExample() {
 
 function downloadLeadsCsv() {
   if (!leadsData.length) { toast('Refresh first — there are no leads to download yet.'); return; }
-  const cols = [['Date', 'date'], ['Name', 'name'], ['Email', 'email'], ['Phone', 'phone'], ['Interest', 'interest'], ['Callback', 'callback'], ['Details (PIN, account, address...)', 'details'], ['Notes', 'notes'], ['Company', 'company'], ['Number called', 'called_number'], ['Call summary', 'summary']];
+  const cols = [['Date', 'date'], ['Name', 'name'], ['Business', 'business'], ['Email', 'email'], ['Phone', 'phone'], ['Interest', 'interest'], ['Callback', 'callback'], ['Details (PIN, account, address...)', 'details'], ['Notes', 'notes'], ['Company', 'company'], ['Number called', 'called_number'], ['Call summary', 'summary']];
   const cell = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
   const rows = [cols.map((c) => cell(c[0])).join(',')].concat(leadsData.map((l) => cols.map(([, k]) => cell(k === 'name' ? (l.name || l.contact) : l[k])).join(',')));
   const blob = new Blob([rows.join('\r\n')], { type: 'text/csv' });
@@ -6610,9 +6615,9 @@ function adFileSelected(input) {
   wrap.style.color = '#1d4ed8';
 }
 
-function adAddRow(name, phone, reason, email) {
+function adAddRow(name, phone, reason, email, business) {
   const id = ++adRowIdCounter;
-  adContacts.push({ id, name: name||'', phone: phone||'', email: email||'', reason: reason||'', status: 'pending', callSid: null, emailSent: false });
+  adContacts.push({ id, name: name||'', business: business||'', phone: phone||'', email: email||'', reason: reason||'', status: 'pending', callSid: null, emailSent: false });
   renderAdRows();
 }
 
@@ -6627,6 +6632,7 @@ function adReadAllRows() {
     const row = document.getElementById('ad-row-' + c.id);
     if (!row) return;
     c.name   = row.querySelector('.ad-name').value.trim();
+    c.business = row.querySelector('.ad-business').value.trim();
     c.phone  = row.querySelector('.ad-phone').value.trim();
     c.email  = row.querySelector('.ad-email').value.trim();
     c.reason = row.querySelector('.ad-reason').value.trim();
@@ -6647,9 +6653,10 @@ function renderAdRows() {
   const statusLabel = { pending:'—', calling:'📞 Calling…', done:'✓ Done', failed:'✗ Failed', skipped:'Skipped' };
   const dis = adRunning ? 'disabled' : '';
   container.innerHTML = adContacts.map((c, i) => `
-    <div id="ad-row-${c.id}" style="display:grid;grid-template-columns:22px 1fr 130px 1fr 1fr 36px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9">
+    <div id="ad-row-${c.id}" style="display:grid;grid-template-columns:22px 1fr 1fr 130px 1fr 1fr 36px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9">
       <span style="font-size:12px;color:#cbd5e1;text-align:center">${i+1}</span>
       <input class="ad-name"   value="${c.name}"   placeholder="Full name"                     style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
+      <input class="ad-business" value="${(c.business||'').replace(/"/g,'&quot;')}" placeholder="Business (optional)" style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
       <input class="ad-phone"  value="${c.phone}"  placeholder="Phone number"                  style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
       <input class="ad-email"  value="${c.email||''}" type="email" placeholder="Email (optional)" style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
       <input class="ad-reason" value="${c.reason}" placeholder="Reason / product (or default)" style="padding:7px 10px;font-size:13px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:100%;box-sizing:border-box" ${dis}>
@@ -6779,7 +6786,7 @@ async function dialNextContact() {
     const resp = await apiFetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, callReason: contact.reason || defaultReason, companyName: company, customerEmail: contact.email, senderEmail, returnNumber, language: callLanguage, recordCall, disclosureText,
+      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, businessName: contact.business || '', callReason: contact.reason || defaultReason, companyName: company, customerEmail: contact.email, senderEmail, returnNumber, language: callLanguage, recordCall, disclosureText,
         emailSubject: (document.getElementById('adEmailSubject') || {}).value?.trim() || '',
         emailMessage: (document.getElementById('adEmailMessage') || {}).value?.trim() || '' })
     });
@@ -7375,10 +7382,7 @@ function crmQueueDialer(id) {
   setTimeout(() => {
     setCallerTab('auto');
     const _defaultReason = document.getElementById('adReason')?.value.trim() || '';
-    const _reason = c.company && _defaultReason
-      ? `Calling ${c.company}. ${_defaultReason}`
-      : (_defaultReason || c.company || '');
-    adAddRow(c.name || '', c.phone, _reason, c.email || '');
+    adAddRow(c.name || '', c.phone, _defaultReason, c.email || '', c.company || '');
     toast(`${c.name || c.phone} added to Auto Dialer.`);
   }, 200);
 }
@@ -7428,10 +7432,7 @@ function confirmCrmDialerImport() {
   checked.forEach(id => {
     const c = contacts.find(x => x.id === id);
     if (c && c.phone) {
-      const reason = c.company && defaultReason
-        ? `Calling ${c.company}. ${defaultReason}`
-        : (defaultReason || c.company || '');
-      adAddRow(c.name || '', c.phone, reason, c.email || '');
+      adAddRow(c.name || '', c.phone, defaultReason || '', c.email || '', c.company || '');
       added++;
     }
   });
