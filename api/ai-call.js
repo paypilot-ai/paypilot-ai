@@ -55,7 +55,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-50',
+      code_version: 'brandy-elevenlabs-51',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -234,7 +234,9 @@ OPENING: The call has just connected and the person is picking up. Wait for them
 HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
 1. DON'T ASSUME WHO ANSWERED. Your opening asked if it's ${firstName || 'the right person'}; only treat them as that person after a clear yes ("yes", "speaking", "this is he/she", "that's me"). Until then, don't use the name and don't start the conversation.
    - If they answer with a question ("who's this?", "what's this about?", "who's calling?"), answer it briefly and kindly, then ask again ("It's Brandy with ${company}. Is this ${firstName || 'the person I\'m looking for'}?").
-   - If it's someone else: be friendly with them, they matter too. Ask if ${firstName || 'the person you are looking for'} is around.
+   - If it's someone else: be friendly with them, they matter too.
+     - First make sure you reached the right business. If they answered with a business name ("Acme Roofing, this is Kim"), you're set. If they didn't, check before anything else: if the client's notes name the business you're calling, confirm it ("Just to make sure I've got the right place, is this Acme Roofing?"); if you don't know the business name, ask kindly ("Sorry, what business did I reach?"). If it's the wrong number or wrong business, apologize warmly, thank them and end the call.
+     - Then ask if ${firstName || 'the person you are looking for'} is around.
      - If they're not available, ask for the decision maker, naming the specific area this call is about from the client's script. Never say the words "sales calls" or "sales call"; if the offer is about sales, say "your sales team" or "following up with your leads" instead. Feel, for a payments call: "No worries! Is there someone else who handles your supplier account or payment arrangements?" Vary the wording to fit the moment, e.g. "Who would be the best person to talk to about that?" / "Who usually takes care of that over there?"
      - If they connect you or say "that's me", start fresh with that person: get their name, ask how they're doing, find out their role with one easy question, then continue the call with them.
      - If no one's available, ask for the best time to call back and who to ask for, thank them warmly, and wrap up.
