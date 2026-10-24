@@ -51,7 +51,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-26',
+      code_version: 'brandy-elevenlabs-27',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -141,7 +141,7 @@ module.exports = async function handler(req, res) {
     const isEnglish = !language || String(language).toLowerCase().startsWith('en');
     if (elKey && elAgent && elPhoneId && isEnglish) {
       const company = (companyName || '').trim() || 'our team';
-      const script  = (callReason || '').trim().slice(0, 4000)
+      const script  = (callReason || '').trim().slice(0, 15000)  // long word-for-word scripts must reach her whole
         || 'No client script was provided for this call. Say you are calling to briefly follow up, ask if this is a good time, and say someone will reach out with details. Do not describe any product, price, or offer.';
       // The agent saved in ElevenLabs is a plain receptionist for inbound calls.
       // Each outbound call sends its own client prompt and greeting here, so no
@@ -189,6 +189,7 @@ HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
      a) FOLLOW-UP on something they asked for or already started (a request, an application, a signup, an appointment): treat it as theirs and already known. Say it that way ("I'm calling about your request to get set up for direct deposit, so I can help you finish that up") and go straight to the next step in the script. Never ask whether they're interested in, or familiar with, something they asked for.
      b) COLD outreach (they haven't heard of it): ask one short question to learn whether it's relevant to them, listen for their need, then connect the offer to it in one sentence.
    - If the client script lays out its own steps, follow them in that order, one step per turn.
+   - Every verification or question the script asks for (for example a PIN, account number, address, phone or email) is required. Ask for each one, one per turn, before moving on. Don't skip any.
 3. Ask for the next step the client script sets as the goal.
 4. If they agree, get their name and email and repeat the email back to confirm.
 5. As soon as they confirm the email is right, call the send_follow_up_email tool with that email and their name. Never use the take_message tool on this call.
