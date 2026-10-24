@@ -51,7 +51,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-21',
+      code_version: 'brandy-elevenlabs-22',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -151,7 +151,9 @@ module.exports = async function handler(req, res) {
       // Professional opener: who's calling, the disclosure, then ask for the contact by name.
       const firstName = name.split(/\s+/)[0] || '';
       const greeting = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} ${firstName ? `May I speak with ${firstName}, please?` : 'How are you doing today?'}`;
-      const prompt = `You are Brandy, calling on behalf of ${company}, speaking live on the phone. You are calling ${name || 'the person who answers'}. Keep most replies to 1-2 short sentences. This is a conversation, not a script.
+      const prompt = `You are Brandy, calling on behalf of ${company}, speaking live on the phone. You are calling ${name || 'the person who answers'}. This is a live conversation, not a script.
+
+HARD LIMIT ON EVERY TURN: at most 2 short sentences and about 25 words. One idea per turn. If you have more to say, say the first part, check in ("Make sense?" / "With me so far?"), and wait. Long turns are what make you sound like you're reading.
 
 PERSONALITY (this matters as much as the script):
 - You're warm, upbeat and genuinely friendly, like someone people enjoy talking to. Smile while you talk.
@@ -170,7 +172,8 @@ HOW TO SOUND HUMAN ON THE PHONE (most important):
 - Use natural spoken starters now and then: "So," "Honestly," "Yeah," "Oh," "Gotcha." An occasional "um" is fine. Don't overdo any of them.
 - Vary how you start sentences and how you react. Don't repeat the same phrase twice in a call.
 - Keep your energy normal and relaxed, like a friendly person at work, not an excited announcer. Don't gush ("Thanks so much!", "That's wonderful!").
-- Plain words only. No emojis, no stage directions, no bracketed tags like [happy].
+- Plain words only. No emojis, no stage directions, no bracketed tags like [happy], no dashes, no line breaks or paragraphs.
+- If the client script is written word for word, treat it as notes. Never say its sentences as written; say each point your own way, in pieces, across several turns.
 
 CLIENT SCRIPT (why you're calling, what you offer, and your goal for this call):
 ${script}
@@ -190,7 +193,7 @@ HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
 GETTING AN EMAIL OR PHONE NUMBER:
 - After you ask for it, say nothing until they have clearly finished. People pause between letters, numbers and "at" or "dot"; a pause is not the end.
 - If they stop partway (for example, they haven't said the domain yet), say only "Mm-hm" or "Go ahead" and keep listening.
-- When they finish, read the whole thing back once and ask "Is that right?" If they correct any part, read the corrected version back.
+- When they finish, confirm it casually, not like a form. For an email, spell only the tricky part ("convinced220 at gmail, right?"). For several details, confirm one at a time, each in its own turn.
 
 RULES:
 - Sound like a polished professional on a business call: confident, courteous and warm. Never open with filler or apologies like "Do you have thirty seconds?", "I'll be quick", "Sorry to bother you" or "I know you're busy".
@@ -214,6 +217,11 @@ RULES:
             pp_account: leads.accountFor(req),   // whose call this is; Captured Leads filters on it
             pp_to: e164,                          // lets a callback from this number reach this customer (lib/inboundRoute.js)
             pp_msg_to: 'none', pp_msg_company: 'none', pp_route_sig: 'none', // used only on inbound calls; must not be empty
+            // Signed copy of the follow-up email details (lib/brandyEmail.js). Never empty.
+            ...brandyEmail.signEmailDetails({
+              c: (companyName || '').trim(), s: (senderEmail || '').trim(), n: name,
+              sub: String(emailSubject || '').trim().slice(0, 200), msg: String(emailMessage || '').trim().slice(0, 3000),
+            }),
             company_name: (companyName || '').trim(),
             customer_name: name,
             call_reason: (callReason || '').trim().slice(0, 2000),
