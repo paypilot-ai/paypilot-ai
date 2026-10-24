@@ -2094,7 +2094,7 @@ body.modal-open{overflow:hidden}
                 <div style="grid-column:1/-1;">
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:4px;">Call Context &amp; Objective <span style="font-weight:400;color:#94a3b8;">— the more detail, the sharper the rebuttals</span></label>
                   <details style="margin-bottom:6px;">
-                    <summary style="font-size:12px;color:#2563eb;cursor:pointer;font-weight:600;">💡 What makes a perfect call?</summary>
+                    <summary style="font-size:12px;color:#2563eb;cursor:pointer;font-weight:600;">💡 What makes a perfect call? <a href="#" onclick="event.preventDefault();event.stopPropagation();fillCallExample();" style="margin-left:10px;color:#7c3aed;text-decoration:none;">📝 Fill in an example</a></summary>
                     <div style="font-size:12px;color:#64748b;line-height:1.5;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;margin-top:6px;">
                       Write one paragraph that covers three things — the AI only knows what's here:<br/>
                       <b>1. The offer, with real numbers</b> (company name, fee/price, and your negotiable floor) so it can hold a number and concede gradually instead of guessing.<br/>
@@ -2102,7 +2102,7 @@ body.modal-open{overflow:hidden}
                       <b>3. One concrete, checkable goal</b> (e.g. "get her to confirm her email for the DocuSign link") so the AI knows exactly when the call is done instead of rambling.
                     </div>
                   </details>
-                  <textarea id="aiCallerObjective" rows="5" placeholder="Example: We're calling to enroll Jennifer's company (Midwest Supply Co.) into our early payment program — invoices paid in 1-2 business days instead of net 30-60. Standard fee is 1.2% of invoice value, negotiable to 0.95%. Common objections: fee too high, prefers checks, owner approval needed, security concerns. Goal: overcome objections and get her to agree to receive a DocuSign enrollment form." style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;resize:vertical;font-family:inherit;line-height:1.5;"></textarea>
+                  <textarea id="aiCallerObjective" rows="5" placeholder="What you're selling, the price, the goal of the call, and common objections. Any style works: a full script or a few notes. Tap 📝 Fill in an example to see one." style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;resize:vertical;font-family:inherit;line-height:1.5;"></textarea>
                 </div>
                 <div>
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Call Language</label>
@@ -5780,6 +5780,24 @@ async function deleteLeads(ids) {
     const all = document.getElementById('leadsSelectAll'); if (all) all.checked = false;
     updateLeadsDeleteBtn();
   }
+}
+
+// "📝 Fill in an example" next to Call Context & Objective.
+function fillCallExample() {
+  const box = document.getElementById('aiCallerObjective');
+  if (!box) return;
+  if (box.value.trim() && !confirm('Replace what you wrote with the example?')) return;
+  box.value = [
+    'Selling: Solar panel installation for homeowners, $0 down.',
+    'Price: About $120 a month on a 20-year plan. The roof assessment is free.',
+    'Goal: Book a free 15-minute roof assessment this week.',
+    'If they say "too expensive": most customers pay less than their current electric bill.',
+    'If they say "I rent": thank them and end the call politely.',
+  ].join('\n');
+  box.focus();
+  box.setSelectionRange(0, 0);
+  box.scrollTop = 0;
+  toast('Example added. Swap in your own offer, price and goal.');
 }
 
 function downloadLeadsCsv() {
