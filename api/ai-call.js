@@ -7,6 +7,7 @@ const brandyEmail = require('../lib/brandyEmail');
 const liveCall = require('../lib/liveCall');
 const leads = require('../lib/leads');
 const takeMessage = require('../lib/takeMessage');
+const inboundRoute = require('../lib/inboundRoute');
 
 // ElevenLabs agent (Brandy). IDs default to Brandy's; env vars can override them.
 const EL_HOSTS = ['https://api.us.elevenlabs.io', 'https://api.elevenlabs.io'];
@@ -21,6 +22,8 @@ module.exports = async function handler(req, res) {
 
   // Brandy's follow-up email tool (ElevenLabs calls this mid-call).
   if (req.method === 'POST' && req.query && req.query.action === 'brandy-email') return brandyEmail(req, res);
+  // Inbound calls: ElevenLabs asks who Brandy should answer for (see lib/inboundRoute.js).
+  if (req.method === 'POST' && req.query && req.query.action === 'inbound-route') return inboundRoute(req, res);
   // Inbound calls: Brandy takes a message and emails it to PayPilot.
   if (req.method === 'POST' && req.query && req.query.action === 'take-message') {
     if (!rateLimit(req, res, { key: 'take-message', limit: 10, windowMs: 60_000 })) return;
@@ -44,7 +47,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-17',
+      code_version: 'brandy-elevenlabs-18',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -202,6 +205,7 @@ RULES:
           dynamic_variables: {
             paypilot_call: 'yes',
             pp_account: leads.accountFor(req),   // whose call this is; Captured Leads filters on it
+            pp_to: e164,                          // lets a callback from this number reach this customer (lib/inboundRoute.js)
             company_name: (companyName || '').trim(),
             customer_name: name,
             call_reason: (callReason || '').trim().slice(0, 2000),
