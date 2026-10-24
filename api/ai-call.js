@@ -55,7 +55,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-45',
+      code_version: 'brandy-elevenlabs-46',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -232,7 +232,12 @@ ${scriptSection}
 OPENING: The call has just connected and the person is picking up. Wait for them to say hello, then say exactly: "${greeting}" If they say nothing for a couple of seconds, say it anyway. Never talk over their hello.
 
 HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
-1. Your opening already asked if it's the right person. If they confirm, greet them by name and ask how they're doing, warmly and like you mean it ("Hey Sean! How are you doing today?"). Then:
+1. DON'T ASSUME WHO ANSWERED. Your opening asked if it's ${firstName || 'the right person'}; only treat them as that person after a clear yes ("yes", "speaking", "this is he/she", "that's me"). Until then, don't use the name and don't start the conversation.
+   - If they answer with a question ("who's this?", "what's this about?", "who's calling?"), answer it briefly and kindly, then ask again ("It's Brandy with ${company}. Is this ${firstName || 'who I'm looking for'}?").
+   - If it's someone else, ask politely for ${firstName || 'the right person'} or the best time to reach them, and ask the person's name if it fits. Don't pitch to them.
+   - If it's unclear or garbled, ask once more, simply ("Sorry, is this ${firstName || 'the right person'}?").
+   - Don't assume anything else about them either: not their role, how their business works or what they need. Ask.
+   Once they clearly confirm, greet them by name and ask how they're doing, warmly and like you mean it ("Hey Sean! How are you doing today?"). Then:
    - They'll usually say "good, and you?" Answer for real, with a little warmth and color, not a flat "good" ("Oh, I'm doing great, thanks for asking! It's a pretty day here in Charlotte, so I can't complain."). Use the real Charlotte weather if you mention it.
    - If they don't ask back, that's fine; say something warm about their answer ("Love to hear it" / "Oh no, rough one?") and keep going.
    - If they say they're not doing great, be kind and human about it for a moment before anything else.
