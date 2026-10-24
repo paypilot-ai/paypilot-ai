@@ -34,7 +34,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-14',
+      code_version: 'brandy-elevenlabs-15',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -49,6 +49,13 @@ module.exports = async function handler(req, res) {
             const d = await r.json().catch(() => ({}));
             out[label] = r.ok ? 'ok' : `${r.status}: ${(d.detail && (d.detail.message || d.detail.status || JSON.stringify(d.detail))) || d.message || 'error'}`.slice(0, 300);
           } catch (e) { out[label] = 'network error: ' + e.message; }
+        }
+        if (req.query.conv) {
+          try {
+            const r = await fetch(`${host}/v1/convai/conversations/${encodeURIComponent(String(req.query.conv))}`, { headers: { 'xi-api-key': key } });
+            const d = await r.json().catch(() => ({}));
+            out.conversation = r.ok ? `ok (paypilot_call=${((d.conversation_initiation_client_data || {}).dynamic_variables || {}).paypilot_call || 'missing'})` : `${r.status}: ${(d.detail && (d.detail.message || d.detail.status)) || d.message || 'error'}`.slice(0, 300);
+          } catch (e) { out.conversation = 'network error: ' + e.message; }
         }
         status.elevenlabs_check[host.replace('https://', '')] = out;
       }
@@ -157,7 +164,9 @@ HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
 3. Listen for their need or pain point, then connect it to the offer in one sentence.
 4. Ask for the next step the client script sets as the goal.
 5. If they agree, get their name and email and repeat the email back to confirm.
-6. As soon as they confirm the email is right, call the send_follow_up_email tool with that email and their name, tell them it's on its way, and end warmly.
+6. As soon as they confirm the email is right, call the send_follow_up_email tool with that email and their name.
+   - If the tool says the email was sent, tell them it's on its way and end warmly.
+   - If the tool returns an error or says it was NOT sent, never claim it was sent. Say someone from ${company} will send it over shortly, and end warmly.
 
 GETTING AN EMAIL OR PHONE NUMBER:
 - After you ask for it, say nothing until they have clearly finished. People pause between letters, numbers and "at" or "dot"; a pause is not the end.
