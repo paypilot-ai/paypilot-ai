@@ -5,6 +5,7 @@ const { getBearerToken, verifyToken } = require('../lib/sessionAuth');
 const { checkAndIncrementDialUsage } = require('../lib/planUsage');
 const brandyEmail = require('../lib/brandyEmail');
 const liveCall = require('../lib/liveCall');
+const leads = require('../lib/leads');
 
 // ElevenLabs agent (Brandy). IDs default to Brandy's; env vars can override them.
 const EL_HOSTS = ['https://api.us.elevenlabs.io', 'https://api.elevenlabs.io'];
@@ -29,12 +30,15 @@ module.exports = async function handler(req, res) {
     return liveCall.start(req, res);
   }
 
+  // Captured Leads list (see lib/leads.js).
+  if (req.method === 'GET' && req.query && req.query.action === 'leads') return leads.list(req, res);
+
   if (req.method === 'GET') {
     const status = {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-15',
+      code_version: 'brandy-elevenlabs-16',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -191,6 +195,7 @@ RULES:
           // ElevenLabs to verify the call and build the follow-up email.
           dynamic_variables: {
             paypilot_call: 'yes',
+            pp_account: leads.accountFor(req),   // whose call this is; Captured Leads filters on it
             company_name: (companyName || '').trim(),
             customer_name: name,
             call_reason: (callReason || '').trim().slice(0, 2000),

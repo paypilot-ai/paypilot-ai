@@ -2200,6 +2200,27 @@ body.modal-open{overflow:hidden}
 
             </div>
 
+            <!-- CAPTURED LEADS — what people told Brandy on calls -->
+            <div id="leadsCard" style="background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:24px;margin-bottom:20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px;">
+                <h3 style="margin:0;font-size:18px;color:#0f172a;">📋 Captured Leads</h3>
+                <div style="display:flex;gap:8px;">
+                  <button onclick="loadLeads()" id="leadsRefreshBtn" style="padding:9px 14px;border:1px solid #e2e8f0;border-radius:10px;background:#fff;font-weight:600;cursor:pointer;font-size:13px;">↻ Refresh</button>
+                  <button onclick="downloadLeadsCsv()" style="padding:9px 14px;border:none;border-radius:10px;background:#1a6fff;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">⬇ Download CSV</button>
+                </div>
+              </div>
+              <div style="font-size:12px;color:#64748b;margin-bottom:12px;">Name, email, phone and notes from each AI call. New calls appear about a minute after they end.</div>
+              <div id="leadsStatus" style="font-size:13px;color:#64748b;">Click Refresh to load your leads.</div>
+              <div id="leadsTableWrap" style="overflow-x:auto;display:none;">
+                <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:720px;">
+                  <thead><tr style="text-align:left;color:#64748b;border-bottom:1px solid #e2e8f0;">
+                    <th style="padding:8px 6px;">Date</th><th style="padding:8px 6px;">Name</th><th style="padding:8px 6px;">Email</th><th style="padding:8px 6px;">Phone</th><th style="padding:8px 6px;">Interest</th><th style="padding:8px 6px;">Callback</th><th style="padding:8px 6px;">Notes</th>
+                  </tr></thead>
+                  <tbody id="leadsBody"></tbody>
+                </table>
+              </div>
+            </div>
+
             <!-- FULL-SIZE MATRIX AI AVATAR — replaces form when call is active -->
             <!-- hidden state holders — never shown, just referenced by JS -->
             <div id="aiCallStatus" style="display:none;">
@@ -3866,6 +3887,7 @@ function showPage(id, el, fromPopState, replaceState){
   localStorage.setItem('pp_last_page', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if (id === 'aicaller' && typeof loadLeads === 'function') { try { loadLeads(); } catch(e){} }
   document.getElementById('pageTitle').textContent = ({
     dashboard:'Dashboard',
     assist:'Live Assist',
@@ -5612,6 +5634,64 @@ function stopListenLive() {
   setListenBtn(false);
 }
 
+
+// ── 📋 Captured Leads ─────────────────────────────────────────────────────
+let leadsData = [];
+const leadEsc = (t) => String(t == null ? '' : t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const LEAD_INTEREST = { interested: ['Interested', '#16a34a'], maybe: ['Maybe', '#d97706'], not_interested: ['Not interested', '#dc2626'], unknown: ['—', '#94a3b8'] };
+
+async function loadLeads() {
+  const status = document.getElementById('leadsStatus');
+  const btn = document.getElementById('leadsRefreshBtn');
+  if (!status) return;
+  status.style.display = 'block';
+  status.textContent = 'Loading…';
+  if (btn) btn.disabled = true;
+  try {
+    const resp = await apiFetch('/api/ai-call?action=leads');
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Could not load leads');
+    leadsData = data.leads || [];
+    const body = document.getElementById('leadsBody');
+    body.innerHTML = leadsData.map((l) => {
+      const [label, color] = LEAD_INTEREST[l.interest] || LEAD_INTEREST.unknown;
+      const when = l.date ? new Date(l.date).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+      const name = l.name || l.contact || '—';
+      const phone = l.phone || l.called_number || '';
+      const notes = l.processing ? '<em style="color:#94a3b8">Still processing…</em>' : leadEsc(l.notes || l.summary);
+      return `<tr style="border-bottom:1px solid #f1f5f9;vertical-align:top;">
+        <td style="padding:8px 6px;white-space:nowrap;">${leadEsc(when)}</td>
+        <td style="padding:8px 6px;font-weight:600;">${leadEsc(name)}${l.company ? `<div style="font-weight:400;color:#94a3b8;font-size:11px;">for ${leadEsc(l.company)}</div>` : ''}</td>
+        <td style="padding:8px 6px;">${l.email ? `<a href="mailto:${leadEsc(l.email)}">${leadEsc(l.email)}</a>` : '—'}</td>
+        <td style="padding:8px 6px;white-space:nowrap;">${leadEsc(phone) || '—'}</td>
+        <td style="padding:8px 6px;color:${color};font-weight:600;white-space:nowrap;">${label}</td>
+        <td style="padding:8px 6px;">${leadEsc(l.callback) || '—'}</td>
+        <td style="padding:8px 6px;color:#334155;max-width:320px;">${notes}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('leadsTableWrap').style.display = leadsData.length ? 'block' : 'none';
+    status.textContent = leadsData.length ? '' : 'No leads yet. They show up here after Brandy finishes a call.';
+    status.style.display = leadsData.length ? 'none' : 'block';
+  } catch (e) {
+    status.textContent = 'Could not load leads: ' + e.message;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function downloadLeadsCsv() {
+  if (!leadsData.length) { toast('Refresh first — there are no leads to download yet.'); return; }
+  const cols = [['Date', 'date'], ['Name', 'name'], ['Email', 'email'], ['Phone', 'phone'], ['Interest', 'interest'], ['Callback', 'callback'], ['Notes', 'notes'], ['Company', 'company'], ['Number called', 'called_number'], ['Call summary', 'summary']];
+  const cell = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const rows = [cols.map((c) => cell(c[0])).join(',')].concat(leadsData.map((l) => cols.map(([, k]) => cell(k === 'name' ? (l.name || l.contact) : l[k])).join(',')));
+  const blob = new Blob([rows.join('\r\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'paypilot-leads-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
 async function endAiCall(){
   if(aiCallPollInterval){ clearInterval(aiCallPollInterval); aiCallPollInterval = null; }
   stopSpeechPolling();
@@ -5620,6 +5700,7 @@ async function endAiCall(){
   const sid = activeAiCallSid;
   activeAiCallSid = null;
   stopListenLive();
+  setTimeout(() => { try { loadLeads(); } catch(e){} }, 60000);
   document.getElementById('callHud').style.display = 'none';
   document.getElementById('aiCallerFormCard').style.display = 'block';
   const btn = document.getElementById('aiCallBtn');
