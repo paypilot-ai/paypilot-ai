@@ -2237,6 +2237,7 @@ body.modal-open{overflow:hidden}
               <div class="call-status idle" id="twilioStatus">Ready</div>
             </div>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <input class="input" id="repPhoneNumber" placeholder="Your phone (we call you first)" style="flex:1; min-width:180px; margin-bottom:0;" oninput="try{localStorage.setItem('pp_rep_phone',this.value)}catch(e){}" />
               <input class="input" id="twilioNumber" placeholder="Supplier phone number (10 digits)" style="flex:1; margin-bottom:0;" />
               <button class="app-btn blue" onclick="startTwilioCall()" id="twilioCallBtn">Call Now</button>
               <button class="app-btn" onclick="endTwilioCall()" id="twilioEndBtn" style="display:none;background:#c0392b;border-color:#c0392b;color:#fff;font-weight:700;">&#9632; End Call</button>
@@ -2251,7 +2252,7 @@ body.modal-open{overflow:hidden}
               </select>
               <span class="subtle" id="callLangNote" style="font-size:12px;">Rep sees English, supplier hears their language.</span>
             </div>
-            <div class="subtle" id="twilioInfo" style="margin-top:8px; font-size:12px;">Call minutes billed at $0.04/min. The supplier will hear a brief notice that the call is recorded.</div>
+            <div class="subtle" id="twilioInfo" style="margin-top:8px; font-size:12px;">PayPilot calls your phone first, then connects the supplier. Put your phone on speaker so PayPilot can hear both sides.</div>
           </div>
 
           <!-- LIVE TRANSCRIPTION PANEL -->
@@ -4670,7 +4671,7 @@ async function sendCurrentToCall(){
     const resp = await apiFetch('/api/twilio-speak', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ callSid: activeTwilioCall, text: txt, language: lang })
+      body: JSON.stringify({ callSid: activeTwilioCall, conference: activeLiveConference, text: txt, language: lang })
     });
     const data = await resp.json();
     if(data.success) toast('Response played to supplier in ' + lang + '.');
@@ -4685,6 +4686,7 @@ async function sendToCall(){ sendCurrentToCall(); }
 // LIVE CALL FEATURE
 // ============================================================
 let activeTwilioCall = null;
+let activeLiveConference = null; // Live Call conference name (rep + supplier)
 let detectedLanguage = 'English'; // auto-detected from Deepgram
 let translatedSpanishResponse = ''; // Spanish version of last response
 
@@ -4708,6 +4710,10 @@ function setCallLanguage(lang){
   }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  try { const el = document.getElementById('repPhoneNumber'); const v = localStorage.getItem('pp_rep_phone'); if (el && v) el.value = v; } catch(e){}
+});
+
 async function startTwilioCall(){
   // Prevent multiple simultaneous calls
   if(activeTwilioCall){
@@ -4726,22 +4732,24 @@ async function startTwilioCall(){
   document.getElementById('twilioStatus').textContent = 'Connecting...';
 
   try {
-    const resp = await apiFetch('/api/twilio-call', {
+    const repNumber = (document.getElementById('repPhoneNumber') || {}).value?.trim() || '';
+    const resp = await apiFetch('/api/ai-call?action=live-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number })
+      body: JSON.stringify({ toNumber: number, repNumber })
     });
 
     const data = await resp.json();
     if(!resp.ok) throw new Error(data.error || 'Call failed');
 
     activeTwilioCall = data.callSid;
+    activeLiveConference = data.conference || null;
     updateSendToCallBtn();
-    document.getElementById('twilioStatus').textContent = 'Call in progress';
-    document.getElementById('twilioInfo').textContent = 'Connected — PayPilot is listening. Supplier: ' + number;
+    document.getElementById('twilioStatus').textContent = 'Calling your phone';
+    document.getElementById('twilioInfo').textContent = 'Answer your phone — PayPilot will connect you to ' + number + '. Put it on speaker so PayPilot can hear both sides.';
     document.getElementById('twilioCallBtn').style.display = 'none';
     document.getElementById('twilioEndBtn').style.display = 'block';
-    toast('Call connected. PayPilot is listening...');
+    toast('Calling your phone now — answer to connect.');
 
     // Start mic if not already running
     if(!micActive){
@@ -4767,6 +4775,7 @@ async function endTwilioCall(){
     const sidToEnd = activeTwilioCall;
     stopDeepgram();
     activeTwilioCall = null;
+    activeLiveConference = null;
     apiFetch('/api/call-status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -4779,7 +4788,7 @@ async function endTwilioCall(){
     document.getElementById('twilioCallBtn').textContent = 'Call Now';
     document.getElementById('twilioCallBtn').disabled = false;
     document.getElementById('twilioEndBtn').style.display = 'none';
-    document.getElementById('twilioInfo').textContent = 'Call minutes billed at $0.04/min. The supplier will hear a brief notice that the call is recorded.';
+    document.getElementById('twilioInfo').textContent = 'PayPilot calls your phone first, then connects the supplier. Put your phone on speaker so PayPilot can hear both sides.';
     clearCallMemory();
     toast('Call ended. Memory cleared for next call.');
   } catch(e) {

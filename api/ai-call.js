@@ -4,6 +4,7 @@ const { rateLimit } = require('../lib/rateLimit');
 const { getBearerToken, verifyToken } = require('../lib/sessionAuth');
 const { checkAndIncrementDialUsage } = require('../lib/planUsage');
 const brandyEmail = require('../lib/brandyEmail');
+const liveCall = require('../lib/liveCall');
 
 // ElevenLabs agent (Brandy). IDs default to Brandy's; env vars can override them.
 const EL_HOSTS = ['https://api.us.elevenlabs.io', 'https://api.elevenlabs.io'];
@@ -12,19 +13,26 @@ const elPhoneNumberId = () => (process.env.ELEVENLABS_PHONE_NUMBER_ID || 'phnum_
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   // Brandy's follow-up email tool (ElevenLabs calls this mid-call).
   if (req.method === 'POST' && req.query && req.query.action === 'brandy-email') return brandyEmail(req, res);
+  // Live Assist "Live Call": click-to-call through the rep's phone (see lib/liveCall.js).
+  if (req.query && req.query.action === 'live-say') return liveCall.say(req, res);
+  if (req.method === 'POST' && req.query && req.query.action === 'live-answered') return liveCall.answered(req, res);
+  if (req.method === 'POST' && req.query && req.query.action === 'live-call') {
+    if (!rateLimit(req, res, { key: 'live-call', limit: 20, windowMs: 60_000 })) return;
+    return liveCall.start(req, res);
+  }
 
   if (req.method === 'GET') {
     const status = {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-10',
+      code_version: 'brandy-elevenlabs-11',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.

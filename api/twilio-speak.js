@@ -17,7 +17,17 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Twilio credentials not configured' });
   }
 
-  const { callSid, text, language } = req.body || {};
+  const { callSid, text, language, conference } = req.body || {};
+  // Live Call (Live Assist) runs as a conference between rep and supplier;
+  // announce into it so the call stays connected.
+  if (conference && text) {
+    try {
+      await require('../lib/liveCall').announce(req, conference, text, language);
+      return res.status(200).json({ success: true });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
   if (!callSid || !text) return res.status(400).json({ error: 'callSid and text required' });
 
   const voices = {
