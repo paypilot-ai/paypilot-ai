@@ -9,6 +9,7 @@ const leads = require('../lib/leads');
 const takeMessage = require('../lib/takeMessage');
 const { buildPlan } = require('../lib/callPlan');
 const { PERSONA } = require('../lib/brandyPersona');
+const { charlotteWeather } = require('../lib/weather');
 const inboundRoute = require('../lib/inboundRoute');
 
 // ElevenLabs agent (Brandy). IDs default to Brandy's; env vars can override them.
@@ -54,7 +55,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-40',
+      code_version: 'brandy-elevenlabs-41',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -153,7 +154,10 @@ module.exports = async function handler(req, res) {
       const disclosure = shouldRecord ? (disclosureText || '').trim().slice(0, 500) : '';
       // Make sense of whatever the customer typed (script, notes, training
       // material...) before dialing. Falls back to the raw notes if it fails.
-      const plan = callReason ? await buildPlan({ notes: script, company, contact: name }) : null;
+      const [plan, weather] = await Promise.all([
+        callReason ? buildPlan({ notes: script, company, contact: name }) : null,
+        charlotteWeather(),
+      ]);
       const scriptSection = plan
         ? `CALL PLAN (prepared from the client's notes; follow it):
 ${plan}
@@ -168,10 +172,10 @@ HOW TO READ THE CLIENT SCRIPT: people write it in every style. Work out the goal
       const firstName = name.split(/\s+/)[0] || '';
       const greeting = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} ${firstName ? `Is this ${firstName}?` : 'Who do I have the pleasure of speaking with?'}`;
       const nowEt = new Date().toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'long', hour: 'numeric', minute: '2-digit' });
-      const prompt = `You are Brandy, calling on behalf of ${company}, speaking live on the phone. It's ${nowEt} Eastern time right now (handy for small talk; their local time may differ). You are calling ${name || 'the person who answers'}. This is a live conversation, not a script.
+      const prompt = `You are Brandy, calling on behalf of ${company}, speaking live on the phone. It's ${nowEt} Eastern time right now (handy for small talk; their local time may differ). ${weather ? `Weather in Charlotte right now: ${weather}. Use this if weather comes up; never make weather up.` : `You don't know today's weather; if asked, keep it vague and playful and ask about theirs.`} You are calling ${name || 'the person who answers'}. This is a live conversation, not a script.
 
 HARD LIMIT ON EVERY TURN: at most 2 to 3 short sentences and about 35 words. Long turns sound like reading.
-KEEP IT FLOWING: end every turn with a question or a clear next step, never with a bare statement that leaves them waiting. Combine a short point with the question that follows it ("Payments go straight to your bank with a detailed receipt each time. There's a 1.2% fee, does that work for you?"). Don't stop just to say "Make sense?".
+KEEP IT FLOWING: end every turn with a question, never with a bare statement that leaves them waiting. During small talk that question is about the small talk, not business. Combine a short point with the question that follows it ("Payments go straight to your bank with a detailed receipt each time. There's a 1.2% fee, does that work for you?"). Don't stop just to say "Make sense?".
 
 ${PERSONA}
 - Relate to them. If they mention being busy, a rough day, their team, the weather, anything, acknowledge it like a real person would ("Fridays are always a lot, right?").
