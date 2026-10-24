@@ -2230,6 +2230,7 @@ body.modal-open{overflow:hidden}
                 <h3 style="margin:0;font-size:18px;color:#0f172a;">📋 Captured Leads</h3>
                 <div style="display:flex;gap:8px;">
                   <button onclick="loadLeads()" id="leadsRefreshBtn" style="padding:9px 14px;border:1px solid #e2e8f0;border-radius:10px;background:#fff;font-weight:600;cursor:pointer;font-size:13px;">↻ Refresh</button>
+                  <button onclick="deleteSelectedLeads()" id="leadsDeleteBtn" disabled style="padding:9px 14px;border:1px solid #fecaca;border-radius:10px;background:#fff;color:#dc2626;font-weight:600;cursor:pointer;font-size:13px;opacity:.5;">🗑 Delete selected</button>
                   <button onclick="downloadLeadsCsv()" style="padding:9px 14px;border:none;border-radius:10px;background:#1a6fff;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">⬇ Download CSV</button>
                 </div>
               </div>
@@ -2238,7 +2239,7 @@ body.modal-open{overflow:hidden}
               <div id="leadsTableWrap" style="overflow-x:auto;display:none;">
                 <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:720px;">
                   <thead><tr style="text-align:left;color:#64748b;border-bottom:1px solid #e2e8f0;">
-                    <th style="padding:8px 6px;">Date</th><th style="padding:8px 6px;">Name</th><th style="padding:8px 6px;">Email</th><th style="padding:8px 6px;">Phone</th><th style="padding:8px 6px;">Interest</th><th style="padding:8px 6px;">Callback</th><th style="padding:8px 6px;">Notes</th>
+                    <th style="padding:8px 6px;width:28px;"><input type="checkbox" id="leadsSelectAll" onchange="toggleAllLeads(this.checked)" title="Select all" style="cursor:pointer;"></th><th style="padding:8px 6px;">Date</th><th style="padding:8px 6px;">Name</th><th style="padding:8px 6px;">Email</th><th style="padding:8px 6px;">Phone</th><th style="padding:8px 6px;">Interest</th><th style="padding:8px 6px;">Callback</th><th style="padding:8px 6px;">Notes</th><th style="padding:8px 6px;width:32px;"></th>
                   </tr></thead>
                   <tbody id="leadsBody"></tbody>
                 </table>
@@ -5686,6 +5687,7 @@ async function loadLeads() {
       const phone = l.phone || l.called_number || '';
       const notes = l.processing ? '<em style="color:#94a3b8">Still processing…</em>' : leadEsc(l.notes || l.summary);
       return `<tr style="border-bottom:1px solid #f1f5f9;vertical-align:top;">
+        <td style="padding:8px 6px;"><input type="checkbox" class="lead-check" value="${leadEsc(l.id)}" onchange="updateLeadsDeleteBtn()" style="cursor:pointer;"></td>
         <td style="padding:8px 6px;white-space:nowrap;">${leadEsc(when)}</td>
         <td style="padding:8px 6px;font-weight:600;">${leadEsc(name)}${l.company ? `<div style="font-weight:400;color:#94a3b8;font-size:11px;">for ${leadEsc(l.company)}</div>` : ''}</td>
         <td style="padding:8px 6px;">${l.email ? `<a href="mailto:${leadEsc(l.email)}">${leadEsc(l.email)}</a>` : '—'}</td>
@@ -5693,15 +5695,65 @@ async function loadLeads() {
         <td style="padding:8px 6px;color:${color};font-weight:600;white-space:nowrap;">${label}</td>
         <td style="padding:8px 6px;">${leadEsc(l.callback) || '—'}</td>
         <td style="padding:8px 6px;color:#334155;max-width:320px;">${notes}</td>
+        <td style="padding:8px 6px;"><button onclick="deleteLeads(['${leadEsc(l.id)}'])" title="Delete this lead" style="border:none;background:none;cursor:pointer;font-size:15px;color:#94a3b8;padding:0;">🗑</button></td>
       </tr>`;
     }).join('');
     document.getElementById('leadsTableWrap').style.display = leadsData.length ? 'block' : 'none';
+    const all = document.getElementById('leadsSelectAll'); if (all) all.checked = false;
+    updateLeadsDeleteBtn();
     status.textContent = leadsData.length ? '' : 'No leads yet. They show up here after Brandy finishes a call.';
     status.style.display = leadsData.length ? 'none' : 'block';
   } catch (e) {
     status.textContent = 'Could not load leads: ' + e.message;
   } finally {
     if (btn) btn.disabled = false;
+  }
+}
+
+function selectedLeadIds() {
+  return [...document.querySelectorAll('#leadsBody .lead-check:checked')].map((c) => c.value);
+}
+function updateLeadsDeleteBtn() {
+  const btn = document.getElementById('leadsDeleteBtn');
+  if (!btn) return;
+  const n = selectedLeadIds().length;
+  btn.disabled = !n;
+  btn.style.opacity = n ? '1' : '.5';
+  btn.textContent = n ? `🗑 Delete selected (${n})` : '🗑 Delete selected';
+}
+function toggleAllLeads(on) {
+  document.querySelectorAll('#leadsBody .lead-check').forEach((c) => { c.checked = on; });
+  updateLeadsDeleteBtn();
+}
+function deleteSelectedLeads() {
+  const ids = selectedLeadIds();
+  if (ids.length) deleteLeads(ids);
+}
+async function deleteLeads(ids) {
+  const n = ids.length;
+  if (!confirm(`Delete ${n === 1 ? 'this lead' : n + ' leads'}? This permanently removes the lead details, transcript and recording, and can't be undone. Download the CSV first if you want a copy.`)) return;
+  const btn = document.getElementById('leadsDeleteBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Deleting…'; }
+  try {
+    const resp = await apiFetch('/api/ai-call?action=leads-delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.error || 'Could not delete');
+    const gone = new Set(data.deleted || []);
+    leadsData = leadsData.filter((l) => !gone.has(l.id));
+    document.querySelectorAll('#leadsBody .lead-check').forEach((c) => { if (gone.has(c.value)) c.closest('tr').remove(); });
+    if (!leadsData.length) {
+      document.getElementById('leadsTableWrap').style.display = 'none';
+      const status = document.getElementById('leadsStatus');
+      status.textContent = 'No leads yet. They show up here after Brandy finishes a call.';
+      status.style.display = 'block';
+    }
+    const failed = (data.failed || []).length;
+    toast(failed ? `Deleted ${gone.size}. ${failed} couldn't be deleted — try again.` : `Deleted ${gone.size === 1 ? '1 lead' : gone.size + ' leads'}.`);
+  } catch (e) {
+    toast('Could not delete: ' + e.message);
+  } finally {
+    const all = document.getElementById('leadsSelectAll'); if (all) all.checked = false;
+    updateLeadsDeleteBtn();
   }
 }
 
