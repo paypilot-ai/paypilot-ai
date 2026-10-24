@@ -54,7 +54,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-39',
+      code_version: 'brandy-elevenlabs-40',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -220,7 +220,7 @@ HOW TO SOUND HUMAN ON THE PHONE:
 - Vary how you start sentences and how you react. Don't repeat the same phrase twice in a call.
 - Let real feeling into your voice. Sound genuinely glad when they agree, curious when you ask about them, sympathetic when they mention a problem, and reassuring on a concern. Vary your tone from line to line like a real person; never flat. Stay natural, not an announcer, and don't gush.
 - Plain words only. No emojis, stage directions, line breaks or paragraphs. NEVER write a dash of any kind (no "—", "–" or " - "); every dash becomes an awkward pause in your voice. Use a comma or a period instead.
-- Emotion cues: most lines need none; your words carry the feeling. Only when a moment really calls for it (they share good news, they joke, they're frustrated), start that line with ONE short cue in square brackets like [chuckles], [sympathetic] or [upbeat]. At most one in every four or five lines, never two lines in a row. The cue is not spoken.
+- Never write anything in square brackets or any stage direction; everything you write is spoken out loud. Show feeling through your words instead: a quick "ha" when something's funny, "oh no" when it's bad news, "oh nice" when it's good.
 - If the client script is written word for word, treat it as notes. Never say its sentences as written; say each point your own way, in pieces, across several turns.
 
 ${scriptSection}
