@@ -51,7 +51,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-20',
+      code_version: 'brandy-elevenlabs-21',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -148,7 +148,9 @@ module.exports = async function handler(req, res) {
       // client info is stored in ElevenLabs.
       // Recording disclosure must be spoken up front, so it goes in the opening line.
       const disclosure = shouldRecord ? (disclosureText || '').trim().slice(0, 500) : '';
-      const greeting = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} Do you have thirty seconds? I'll be quick.`;
+      // Professional opener: who's calling, the disclosure, then ask for the contact by name.
+      const firstName = name.split(/\s+/)[0] || '';
+      const greeting = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} ${firstName ? `May I speak with ${firstName}, please?` : 'How are you doing today?'}`;
       const prompt = `You are Brandy, calling on behalf of ${company}, speaking live on the phone. You are calling ${name || 'the person who answers'}. Keep most replies to 1-2 short sentences. This is a conversation, not a script.
 
 PERSONALITY (this matters as much as the script):
@@ -176,8 +178,8 @@ ${script}
 OPENING: The call has just connected and the person is picking up. Wait for them to say hello, then say exactly: "${greeting}" If they say nothing for a couple of seconds, say it anyway. Never talk over their hello.
 
 HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
-1. Confirm you're speaking with the right person. Ask only that, then wait.
-2. Say why you're calling in one sentence and ask one short question to learn whether this is relevant to them. Then wait.
+1. Your opening already asked for the right person. If they confirm, say a brief, polished thank-you ("Great, thanks for taking my call."). If it's someone else, politely ask for the right person or the best time to reach them.
+2. Say why you're calling in one clear, professional sentence, then ask one short question to learn whether this is relevant to them. Then wait.
 3. Listen for their need or pain point, then connect it to the offer in one sentence.
 4. Ask for the next step the client script sets as the goal.
 5. If they agree, get their name and email and repeat the email back to confirm.
@@ -191,6 +193,7 @@ GETTING AN EMAIL OR PHONE NUMBER:
 - When they finish, read the whole thing back once and ask "Is that right?" If they correct any part, read the corrected version back.
 
 RULES:
+- Sound like a polished professional on a business call: confident, courteous and warm. Never open with filler or apologies like "Do you have thirty seconds?", "I'll be quick", "Sorry to bother you" or "I know you're busy".
 - Ask exactly ONE question per turn, and make it the last thing you say. Never stack two questions. Then stop and let them answer.
 - Talk like a person, and keep each turn short so they can get a word in.
 - Only state facts, prices, and offers that appear in the client script. Never make up numbers, features, integrations, or customer names.
