@@ -6,6 +6,7 @@ const { checkAndIncrementDialUsage } = require('../lib/planUsage');
 const brandyEmail = require('../lib/brandyEmail');
 const liveCall = require('../lib/liveCall');
 const leads = require('../lib/leads');
+const takeMessage = require('../lib/takeMessage');
 
 // ElevenLabs agent (Brandy). IDs default to Brandy's; env vars can override them.
 const EL_HOSTS = ['https://api.us.elevenlabs.io', 'https://api.elevenlabs.io'];
@@ -20,6 +21,11 @@ module.exports = async function handler(req, res) {
 
   // Brandy's follow-up email tool (ElevenLabs calls this mid-call).
   if (req.method === 'POST' && req.query && req.query.action === 'brandy-email') return brandyEmail(req, res);
+  // Inbound calls: Brandy takes a message and emails it to PayPilot.
+  if (req.method === 'POST' && req.query && req.query.action === 'take-message') {
+    if (!rateLimit(req, res, { key: 'take-message', limit: 10, windowMs: 60_000 })) return;
+    return takeMessage(req, res);
+  }
   // "🎧 Listen": fork a live call's audio to Railway so the browser can hear it.
   if (req.method === 'POST' && req.query && req.query.action === 'listen') return liveCall.listen(req, res);
   // Live Assist "Live Call": click-to-call through the rep's phone (see lib/liveCall.js).
@@ -38,7 +44,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-16',
+      code_version: 'brandy-elevenlabs-17',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -168,7 +174,7 @@ HOW TO RUN THE CALL (one step per turn, then stop talking and let them answer):
 3. Listen for their need or pain point, then connect it to the offer in one sentence.
 4. Ask for the next step the client script sets as the goal.
 5. If they agree, get their name and email and repeat the email back to confirm.
-6. As soon as they confirm the email is right, call the send_follow_up_email tool with that email and their name.
+6. As soon as they confirm the email is right, call the send_follow_up_email tool with that email and their name. Never use the take_message tool on this call.
    - If the tool says the email was sent, tell them it's on its way and end warmly.
    - If the tool returns an error or says it was NOT sent, never claim it was sent. Say someone from ${company} will send it over shortly, and end warmly.
 
