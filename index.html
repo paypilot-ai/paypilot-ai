@@ -2573,6 +2573,7 @@ body.modal-open{overflow:hidden}
                 Import CSV
                 <input type="file" accept=".csv" style="display:none" onchange="crmImportCsv(event)" />
               </label>
+              <button onclick="lfOpen()" style="padding:9px 16px;font-size:13px;font-weight:700;border:1.5px solid #d1fae5;border-radius:10px;background:#f0fdf4;color:#059669;cursor:pointer;">Find Leads</button>
               <button class="app-btn blue" onclick="crmOpenModal(null)" style="padding:9px 20px;font-size:14px;font-weight:700;">+ Add Contact</button>
               <button onclick="crmDeleteAllConfirm()" style="padding:9px 16px;font-size:13px;font-weight:600;border:1.5px solid #fee2e2;border-radius:10px;background:#fff5f5;color:#ef4444;cursor:pointer;">Delete All</button>
             </div>
@@ -2668,6 +2669,33 @@ body.modal-open{overflow:hidden}
         </section>
 
         <!-- CRM Add/Edit Modal -->
+        <!-- Lead Finder -->
+        <div id="lfModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this&&!lfRunning)lfClose()">
+          <div style="background:#fff;border-radius:20px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:800;color:#0d1b2e;">Find Leads</div>
+              <button onclick="lfClose()" style="border:none;background:none;font-size:22px;color:#94a3b8;cursor:pointer;">&#x2715;</button>
+            </div>
+            <p style="font-size:13px;color:#64748b;margin:0 0 16px;">Finds real, open businesses with a listed phone number and adds them to your CRM as New Leads. Duplicates of numbers already in your CRM are skipped.</p>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:8px;">Industries</div>
+            <div id="lfIndustries" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;margin-bottom:16px;"></div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:8px;">Area</div>
+            <select id="lfArea" class="input" style="margin-bottom:16px;">
+              <option value="all">Nationwide (30 largest US metros)</option>
+            </select>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:8px;">How many leads</div>
+            <input id="lfTarget" class="input" type="number" min="20" max="2000" value="500" style="margin-bottom:16px;" />
+            <div id="lfProgress" style="display:none;background:#f8fbff;border:1px solid #e2eaf4;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#0d1b2e;">
+              <div style="height:6px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-bottom:8px;"><div id="lfBar" style="height:100%;width:0;background:#059669;transition:width .3s;"></div></div>
+              <div id="lfStatus"></div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+              <button id="lfStopBtn" onclick="lfStop()" style="display:none;padding:10px 18px;font-size:14px;font-weight:700;border:1.5px solid #fecaca;border-radius:10px;background:#fff;color:#ef4444;cursor:pointer;">Stop</button>
+              <button id="lfStartBtn" class="app-btn blue" onclick="lfStart()" style="padding:10px 22px;font-size:14px;font-weight:700;">Find Leads</button>
+            </div>
+          </div>
+        </div>
+
         <div id="crmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)crmCloseModal()">
           <div style="background:#fff;border-radius:22px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.22);" onclick="event.stopPropagation()">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
@@ -7587,6 +7615,119 @@ function crmImportCsv(event) {
     event.target.value = '';
   };
   reader.readAsText(file);
+}
+
+// ── Lead Finder ──────────────────────────────────────────────────────────────
+const LF_INDUSTRIES = [
+  ['insurance agency', 'Insurance agencies', true],
+  ['solar company', 'Solar companies', true],
+  ['staffing agency', 'Staffing agencies', true],
+  ['mortgage broker', 'Mortgage brokers', true],
+  ['real estate brokerage', 'Real estate brokerages', true],
+  ['software company', 'Software / SaaS', true],
+  ['home security company', 'Home security', true],
+  ['merchant services payment processing', 'Merchant services', true],
+  ['car dealership', 'Auto dealerships', false],
+  ['call center', 'Call centers', false],
+  ['marketing agency', 'Marketing agencies', false],
+  ['roofing company', 'Roofing companies', false],
+];
+const LF_CITIES = ['New York, NY','Los Angeles, CA','Chicago, IL','Houston, TX','Phoenix, AZ','Philadelphia, PA','San Antonio, TX','San Diego, CA','Dallas, TX','Austin, TX','Jacksonville, FL','Fort Worth, TX','Columbus, OH','Charlotte, NC','Indianapolis, IN','San Francisco, CA','Seattle, WA','Denver, CO','Nashville, TN','Washington, DC','Boston, MA','Las Vegas, NV','Atlanta, GA','Miami, FL','Tampa, FL','Orlando, FL','Minneapolis, MN','Kansas City, MO','Raleigh, NC','Salt Lake City, UT'];
+let lfRunning = false, lfCancel = false;
+
+function lfOpen() {
+  const box = document.getElementById('lfIndustries');
+  if (!box.children.length) {
+    box.innerHTML = LF_INDUSTRIES.map(([q, label, on]) =>
+      `<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#0d1b2e;padding:7px 10px;border:1px solid #e2eaf4;border-radius:9px;cursor:pointer;">
+        <input type="checkbox" class="lf-ind" value="${q}" data-label="${label}" ${on ? 'checked' : ''} style="accent-color:#059669;"> ${label}</label>`).join('');
+    const area = document.getElementById('lfArea');
+    LF_CITIES.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; area.appendChild(o); });
+  }
+  document.getElementById('lfModal').style.display = 'flex';
+}
+function lfClose() {
+  if (lfRunning) { lfStop(); }
+  document.getElementById('lfModal').style.display = 'none';
+}
+function lfStop() { lfCancel = true; }
+
+async function lfFetch(params) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const r = await fetch('/api/search-company?action=leads&' + new URLSearchParams(params));
+    if (r.status === 429) { await new Promise(ok => setTimeout(ok, ((+r.headers.get('Retry-After')) || 15) * 1000)); continue; }
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+    if (data.retry) { await new Promise(ok => setTimeout(ok, 2500)); continue; }
+    return data;
+  }
+  return { results: [] };
+}
+
+async function lfStart() {
+  if (lfRunning) return;
+  const inds = [...document.querySelectorAll('.lf-ind:checked')].map(cb => [cb.value, cb.dataset.label]);
+  if (!inds.length) { toast('Pick at least one industry.'); return; }
+  const area = document.getElementById('lfArea').value;
+  const cities = area === 'all' ? LF_CITIES : [area];
+  const target = Math.max(20, Math.min(2000, parseInt(document.getElementById('lfTarget').value, 10) || 500));
+
+  // Spread across cities first so a nationwide list isn't all from one place.
+  const jobs = [];
+  for (const city of cities) for (const ind of inds) jobs.push({ city, ind });
+  for (let i = jobs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [jobs[i], jobs[j]] = [jobs[j], jobs[i]]; }
+
+  const digits = p => (p || '').replace(/\D/g, '').slice(-10);
+  const seen = new Set(crmLoad().map(c => digits(c.phone)).filter(Boolean));
+  let added = 0, searched = 0;
+  lfRunning = true; lfCancel = false;
+  document.getElementById('lfProgress').style.display = 'block';
+  document.getElementById('lfStartBtn').style.display = 'none';
+  document.getElementById('lfStopBtn').style.display = 'inline-block';
+  const status = t => { document.getElementById('lfStatus').textContent = t; document.getElementById('lfBar').style.width = Math.min(100, added / target * 100) + '%'; };
+
+  try {
+    const singleArea = cities.length === 1;
+    for (const job of jobs) {
+      if (lfCancel || added >= target) break;
+      let token = null, pages = 0;
+      do {
+        status(`Searching ${job.ind[1].toLowerCase()} in ${job.city}… ${added} of ${target} leads added`);
+        const data = token ? await lfFetch({ pagetoken: token }) : await lfFetch({ q: `${job.ind[0]} in ${job.city}` });
+        searched++;
+        const fresh = [];
+        for (const r of data.results || []) {
+          const d = digits(r.phone);
+          if (d.length < 10 || seen.has(d)) continue;
+          seen.add(d);
+          fresh.push({
+            id: crmUid(), name: r.company, company: r.company, phone: r.phone, email: '',
+            industry: job.ind[1], website: r.website || '', address: r.address || '', source: 'Lead Finder',
+            stage: 'lead',
+            notes: [{ id: crmUid(), date: new Date().toISOString(), text: `Found by Lead Finder · ${job.ind[1]} · ${r.address || job.city}${r.website ? ' · ' + r.website : ''}` }],
+            createdAt: new Date().toISOString(), lastContact: null,
+          });
+          if (added + fresh.length >= target) break;
+        }
+        if (fresh.length) { const all = crmLoad(); all.unshift(...fresh); crmSaveAll(all); added += fresh.length; }
+        token = data.nextPageToken;
+        pages++;
+        // Nationwide: one page per city/industry keeps the list spread out.
+        // Single city: go deeper (Google allows up to 3 pages).
+        if (token && singleArea && pages < 3 && added < target && !lfCancel) await new Promise(ok => setTimeout(ok, 2000));
+        else token = null;
+      } while (token);
+    }
+    status(lfCancel ? `Stopped. Added ${added} leads to your CRM.` : `Done. Added ${added} leads with phone numbers to your CRM.`);
+    toast(`${added} new leads added to CRM.`);
+  } catch (e) {
+    status(`Stopped after ${added} leads: ${e.message}`);
+  } finally {
+    lfRunning = false;
+    document.getElementById('lfStartBtn').style.display = 'inline-block';
+    document.getElementById('lfStopBtn').style.display = 'none';
+    crmRender();
+  }
 }
 
 // ── Reports ──────────────────────────────────────────────────────────────────

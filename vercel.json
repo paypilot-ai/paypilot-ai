@@ -24,6 +24,9 @@
   "functions": {
     "api/ai-call.js": {
       "maxDuration": 30
+    },
+    "api/search-company.js": {
+      "maxDuration": 30
     }
   }
 }

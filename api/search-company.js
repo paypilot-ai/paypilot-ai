@@ -5,6 +5,7 @@
 //  3. Google Places (phone number only — address comes from Wikipedia)
 
 const { rateLimit } = require('../lib/rateLimit');
+const { handleLeadSearch } = require('../lib/leadFinder');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,6 +13,7 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ found: false, error: 'Method not allowed' });
+  if (req.query.action === 'leads') return handleLeadSearch(req, res);
   if (!rateLimit(req, res, { key: 'search-company', limit: 10, windowMs: 60_000 })) return;
 
   const { query } = req.query;
