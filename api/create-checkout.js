@@ -39,6 +39,61 @@ async function sendWelcomeEmail(email, plan, token) {
   }
 }
 
+// Tell the owner about every new paid signup.
+async function notifyOwner(session, email, plan) {
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) return;
+  const fromEmail = process.env.FROM_EMAIL || 'info@paypilotai.live';
+  const to = (process.env.SIGNUP_NOTIFY_EMAIL || 'info@paypilotai.live').split(',').map(x => x.trim()).filter(Boolean);
+  const esc = (v) => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const name = session.customer_details?.name || '';
+  const phone = session.customer_details?.phone || '';
+  const amount = typeof session.amount_total === 'number'
+    ? `$${(session.amount_total / 100).toFixed(2)} ${String(session.currency || 'usd').toUpperCase()}` : '';
+  const when = new Date().toLocaleString('en-US', { timeZone: 'America/New_York', dateStyle: 'medium', timeStyle: 'short' });
+  const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const rows = [['Name', name], ['Email', email], ['Phone', phone], ['Plan', planName], ['Paid', amount], ['When', when + ' ET']]
+    .filter(([, v]) => v)
+    .map(([k, v]) => `<tr><td style="padding:6px 16px 6px 0;color:#64748b;">${k}</td><td style="padding:6px 0;color:#0f172a;font-weight:600;">${esc(v)}</td></tr>`).join('');
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendKey}` },
+      body: JSON.stringify({
+        from: `PayPilot AI <${fromEmail}>`, to, reply_to: email,
+        subject: `New signup: ${name || email} (${planName})`,
+        html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;"><h2 style="color:#0f172a;margin:0 0 12px;">New PayPilot AI signup</h2><table style="font-size:15px;border-collapse:collapse;">${rows}</table><p style="color:#64748b;font-size:13px;margin-top:20px;">Reply to this email to reach them directly.</p></div>`,
+      }),
+    });
+    if (!r.ok) console.error('[stripe-webhook] owner signup alert failed:', r.status, (await r.text()).slice(0, 200));
+  } catch (e) {
+    console.error('[stripe-webhook] owner signup alert failed:', e.message);
+  }
+}
+
+// Look up a Checkout Session fresh from Stripe and alert the owner exactly once
+// (marked on the session itself, so a page refresh or a webhook retry won't
+// send a second alert). Runs from the success page and from the webhook.
+async function notifyOwnerOnce(sessionId) {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key || !/^cs_[A-Za-z0-9_]+$/.test(String(sessionId || ''))) return false;
+  const auth = { Authorization: 'Bearer ' + key };
+  const r = await fetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`, { headers: auth });
+  if (!r.ok) return false;
+  const session = await r.json();
+  const paid = session.status === 'complete' && ['paid', 'no_payment_required'].includes(session.payment_status);
+  if (!paid || session.metadata?.owner_notified === '1') return false;
+  // Claim it first, so two near-simultaneous runs don't both send.
+  await fetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`, {
+    method: 'POST',
+    headers: { ...auth, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ 'metadata[owner_notified]': '1' }).toString(),
+  });
+  const email = session.customer_details?.email || session.customer_email || '(no email given)';
+  await notifyOwner(session, email, session.metadata?.plan || 'starter');
+  return true;
+}
+
 async function handleWebhook(req, res, rawBody) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   const sig = req.headers['stripe-signature'];
@@ -54,6 +109,7 @@ async function handleWebhook(req, res, rawBody) {
     const session = event.data?.object || {};
     const email = session.customer_details?.email || session.customer_email;
     const plan = session.metadata?.plan || 'starter';
+    try { await notifyOwnerOnce(session.id); } catch (e) { console.error('[stripe-webhook] signup alert:', e.message); }
     if (!email) {
       console.error('[stripe-webhook] checkout.session.completed with no customer email — cannot provision account');
       return res.status(200).json({ received: true });
@@ -93,6 +149,13 @@ module.exports = async function handler(req, res) {
   let body;
   try { body = JSON.parse(rawBody || '{}'); } catch { body = {}; }
   const { plan, successUrl, cancelUrl } = body;
+
+  // Success page reports the finished checkout so the owner hears about it
+  // even if the Stripe webhook isn't set up.
+  if (body.action === 'confirm') {
+    try { await notifyOwnerOnce(body.sessionId); } catch (e) { console.error('[checkout-confirm]', e.message); }
+    return res.status(200).json({ ok: true });
+  }
 
   const priceId = PRICE_IDS[plan];
   if (!priceId) return res.status(400).json({ error: 'Invalid plan' });

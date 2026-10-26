@@ -6566,6 +6566,10 @@ document.addEventListener('DOMContentLoaded', function(){
   const params = new URLSearchParams(window.location.search);
   const stripeSessionId = params.get('session_id');
   if (stripeSessionId) localStorage.setItem('stripeSessionId', stripeSessionId);
+  if (params.get('success') === 'true' && stripeSessionId) {
+    fetch('/api/create-checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'confirm', sessionId: stripeSessionId }) }).catch(() => {});
+  }
   if (params.get('success') === 'true') toast('Subscription activated — welcome to PayPilot!');
   if (params.get('canceled') === 'true') toast('Checkout cancelled. Your plan was not changed.');
 
