@@ -7433,7 +7433,8 @@ function closeCrmDialerImportModal() {
 
 function renderCrmDialerPicker() {
   const stageF = document.getElementById('crmDialerStageFilter').value;
-  let contacts = crmLoad().filter(c => c.phone);
+  // Only real phone numbers (an email in the phone field can't be dialed).
+  let contacts = crmLoad().filter(c => c.phone && !c.phone.includes('@') && c.phone.replace(/\D/g, '').length >= 7);
   if (stageF) contacts = contacts.filter(c => c.stage === stageF);
   const list = document.getElementById('crmDialerPickerList');
   if (!contacts.length) {
@@ -7465,7 +7466,7 @@ function confirmCrmDialerImport() {
   let added = 0;
   checked.forEach(id => {
     const c = contacts.find(x => x.id === id);
-    if (c && c.phone) {
+    if (c && c.phone && !c.phone.includes('@')) {
       adAddRow(c.name || '', c.phone, defaultReason || '', c.email || '', c.company || '');
       added++;
     }
@@ -7542,10 +7543,13 @@ function crmImportCsv(event) {
     const iCompany = find(['company', 'business', 'organization', 'organisation', 'account', 'vendor', 'supplier'], ['number', 'phone', 'email', 'id']);
     const iFirst   = find(['firstname', 'first']);
     const iLast    = find(['lastname', 'last']);
-    const iName    = find(['contactname', 'fullname', 'name'], ['company', 'business', 'first', 'last', 'user', 'file']);
+    const iName    = find(['contactname', 'fullname', 'name', 'contact', 'owner', 'person'], ['company', 'business', 'first', 'last', 'user', 'file', 'email', 'mail', 'phone', 'number', 'title', 'id', 'date']);
     const contacts = crmLoad();
     const keyOf = c => ((c.name || '') + '|' + (c.company || '')).toLowerCase();
     const byKey = new Map(contacts.map(c => [keyOf(c), c]));
+    // Earlier imports put the business name in Name and left Business blank.
+    const byBareName = new Map(contacts.filter(c => !c.company).map(c => [(c.name || '').toLowerCase(), c]));
+    const isPhone = v => !!v && !v.includes('@') && v.replace(/\D/g, '').length >= 7;
     let added = 0, updated = 0;
     for (let i = 1; i < rows.length; i++) {
       const cols = rows[i];
@@ -7553,12 +7557,15 @@ function crmImportCsv(event) {
       const company = get(iCompany);
       let name = get(iName) || [get(iFirst), get(iLast)].filter(Boolean).join(' ') || company;
       if (!name) continue;
-      const phone = get(iPhone), email = get(iEmail);
-      const existing = byKey.get(keyOf({ name, company }));
+      let phone = get(iPhone), email = get(iEmail);
+      // Never store an email (or other text) as a phone number.
+      if (phone && !isPhone(phone)) { if (!email && phone.includes('@')) email = phone; phone = ''; }
+      const existing = byKey.get(keyOf({ name, company })) || (company && byBareName.get(company.toLowerCase()));
       if (existing) {
-        // Re-importing the same file fills in what's missing instead of duplicating.
+        // Re-importing the same file fixes and fills in details instead of duplicating.
         let changed = false;
-        if (!existing.phone && phone) { existing.phone = phone; changed = true; }
+        if (!isPhone(existing.phone) && (existing.phone || phone)) { existing.phone = phone; changed = true; }
+        if (company && !existing.company) { existing.company = company; if (name !== company) existing.name = name; changed = true; }
         if (!existing.email && email) { existing.email = email; changed = true; }
         if (!existing.company && company) { existing.company = company; changed = true; }
         if (changed) updated++;
