@@ -3719,12 +3719,14 @@ function loginDemo(){
   }
 
   if(email === MASTER_EMAIL.toLowerCase() && pass === MASTER_PASS){
+    localStorage.setItem('pp_account_email', email);
     enterRealApp();
     return;
   }
 
   const isTester = TESTER_ACCOUNTS.find(a => a.email.toLowerCase() === email && a.password === pass);
   if(isTester){
+    localStorage.setItem('pp_account_email', email);
     enterRealApp();
     return;
   }
@@ -3899,6 +3901,7 @@ function logout(){
   localStorage.removeItem('pp_session');
   localStorage.removeItem('pp_last_page');
   localStorage.removeItem('pp_auth_token');
+  localStorage.removeItem('pp_account_email');
   location.href = location.pathname;
 }
 
@@ -7024,7 +7027,36 @@ async function deleteAllRecordings() {
 // ═══════════════════════════════════════════════
 // CRM
 // ═══════════════════════════════════════════════
-const CRM_KEY = 'pp_crm_contacts';
+// Every CRM key is scoped to the logged-in account, so each business only
+// sees its own contacts, notes, filters and files on a shared browser.
+function ppAccountId() {
+  try {
+    const t = localStorage.getItem('pp_auth_token');
+    if (t) {
+      let b = t.split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
+      while (b.length % 4) b += '=';
+      const p = JSON.parse(atob(b));
+      if (p && p.sub) return String(p.sub).toLowerCase();
+    }
+  } catch {}
+  const e = localStorage.getItem('pp_account_email');
+  if (e) return e.toLowerCase();
+  const s = localStorage.getItem('pp_session') || '';
+  if (s === 'real') return MASTER_EMAIL.toLowerCase();
+  return s.startsWith('demo:') ? 'demo' : 'guest';
+}
+function crmKey(base) {
+  const acct = ppAccountId();
+  const key = base + ':' + acct;
+  // One-time move: data saved before scoping belonged to the owner account.
+  try {
+    if (acct === MASTER_EMAIL.toLowerCase() && localStorage.getItem(key) === null) {
+      const legacy = localStorage.getItem(base);
+      if (legacy !== null) { localStorage.setItem(key, legacy); localStorage.removeItem(base); }
+    }
+  } catch {}
+  return key;
+}
 const CRM_STAGES = {
   lead:      { label:'New Lead',      color:'#64748b', bg:'rgba(100,116,139,.12)' },
   contacted: { label:'Contacted',     color:'#0369a1', bg:'rgba(3,105,161,.12)'  },
@@ -7035,13 +7067,15 @@ const CRM_STAGES = {
 };
 
 function crmLoad() {
-  try { return JSON.parse(localStorage.getItem(CRM_KEY) || '[]'); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(crmKey('pp_crm_contacts')) || '[]'); } catch { return []; }
 }
 function crmSaveAll(contacts) {
-  localStorage.setItem(CRM_KEY, JSON.stringify(contacts));
+  localStorage.setItem(crmKey('pp_crm_contacts'), JSON.stringify(contacts));
 }
 function crmUid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  // Longer random part: bulk imports (hundreds of rows in the same millisecond)
+  // could otherwise give two contacts the same id.
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,10) + Math.random().toString(36).slice(2,6);
 }
 
 function crmInit() {
@@ -7606,16 +7640,16 @@ function crmSaveFilter() {
     lastContact: document.getElementById('rptLastContact')?.value || '',
     followUp:    document.getElementById('rptFollowUp')?.value || '',
   };
-  const saved = JSON.parse(localStorage.getItem('pp_crm_filters') || '[]');
+  const saved = JSON.parse(localStorage.getItem(crmKey('pp_crm_filters')) || '[]');
   saved.push(filter);
-  localStorage.setItem('pp_crm_filters', JSON.stringify(saved));
+  localStorage.setItem(crmKey('pp_crm_filters'), JSON.stringify(saved));
   crmRenderSavedFilters();
 }
 
 function crmRenderSavedFilters() {
   const el = document.getElementById('rptSavedFilters');
   if (!el) return;
-  const saved = JSON.parse(localStorage.getItem('pp_crm_filters') || '[]');
+  const saved = JSON.parse(localStorage.getItem(crmKey('pp_crm_filters')) || '[]');
   if (!saved.length) { el.innerHTML = ''; return; }
   el.innerHTML = `<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;">Saved Filters</div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -7627,7 +7661,7 @@ function crmRenderSavedFilters() {
 }
 
 function crmLoadFilter(id) {
-  const saved = JSON.parse(localStorage.getItem('pp_crm_filters') || '[]');
+  const saved = JSON.parse(localStorage.getItem(crmKey('pp_crm_filters')) || '[]');
   const f = saved.find(x => x.id === id);
   if (!f) return;
   document.getElementById('rptStage').value       = f.stage || '';
@@ -7638,28 +7672,27 @@ function crmLoadFilter(id) {
 }
 
 function crmDeleteFilter(id) {
-  const saved = JSON.parse(localStorage.getItem('pp_crm_filters') || '[]').filter(f => f.id !== id);
-  localStorage.setItem('pp_crm_filters', JSON.stringify(saved));
+  const saved = JSON.parse(localStorage.getItem(crmKey('pp_crm_filters')) || '[]').filter(f => f.id !== id);
+  localStorage.setItem(crmKey('pp_crm_filters'), JSON.stringify(saved));
   crmRenderSavedFilters();
 }
 
 // ── File Attachments ──────────────────────────────────────────────────────────
-const CRM_FILES_KEY = 'pp_crm_files';
 const MAX_FILE_BYTES = 512 * 1024; // 500 KB
 const MAX_FILES_PER_CONTACT = 3;
 
 function crmGetFileMeta(contactId) {
   try {
-    const all = JSON.parse(localStorage.getItem(CRM_FILES_KEY) || '{}');
+    const all = JSON.parse(localStorage.getItem(crmKey('pp_crm_files')) || '{}');
     return all[contactId] || [];
   } catch { return []; }
 }
 
 function crmSaveFileMeta(contactId, files) {
   try {
-    const all = JSON.parse(localStorage.getItem(CRM_FILES_KEY) || '{}');
+    const all = JSON.parse(localStorage.getItem(crmKey('pp_crm_files')) || '{}');
     all[contactId] = files;
-    localStorage.setItem(CRM_FILES_KEY, JSON.stringify(all));
+    localStorage.setItem(crmKey('pp_crm_files'), JSON.stringify(all));
   } catch {}
 }
 
@@ -7688,9 +7721,9 @@ function crmAttachFile(contactId, event) {
     try {
       const fileId = crmUid();
       const meta = { id: fileId, name: file.name, size: file.size, type: file.type, date: new Date().toISOString() };
-      const allData = JSON.parse(localStorage.getItem('pp_crm_files_data') || '{}');
+      const allData = JSON.parse(localStorage.getItem(crmKey('pp_crm_files_data')) || '{}');
       allData[fileId] = e.target.result;
-      localStorage.setItem('pp_crm_files_data', JSON.stringify(allData));
+      localStorage.setItem(crmKey('pp_crm_files_data'), JSON.stringify(allData));
       existing.push(meta);
       crmSaveFileMeta(contactId, existing);
       const listEl = document.getElementById('crmAttachList_' + contactId);
@@ -7705,7 +7738,7 @@ function crmAttachFile(contactId, event) {
 
 function crmDownloadFile(contactId, fileId) {
   try {
-    const allData = JSON.parse(localStorage.getItem('pp_crm_files_data') || '{}');
+    const allData = JSON.parse(localStorage.getItem(crmKey('pp_crm_files_data')) || '{}');
     const data = allData[fileId];
     if (!data) { alert('File not found.'); return; }
     const meta = crmGetFileMeta(contactId).find(f => f.id === fileId);
@@ -7721,9 +7754,9 @@ function crmDeleteFile(contactId, fileId) {
   const files = crmGetFileMeta(contactId).filter(f => f.id !== fileId);
   crmSaveFileMeta(contactId, files);
   try {
-    const allData = JSON.parse(localStorage.getItem('pp_crm_files_data') || '{}');
+    const allData = JSON.parse(localStorage.getItem(crmKey('pp_crm_files_data')) || '{}');
     delete allData[fileId];
-    localStorage.setItem('pp_crm_files_data', JSON.stringify(allData));
+    localStorage.setItem(crmKey('pp_crm_files_data'), JSON.stringify(allData));
   } catch {}
   const listEl = document.getElementById('crmAttachList_' + contactId);
   if (listEl) listEl.innerHTML = crmRenderAttachments(contactId);
