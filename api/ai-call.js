@@ -156,8 +156,15 @@ module.exports = async function handler(req, res) {
       const disclosure = shouldRecord ? (disclosureText || '').trim().slice(0, 500) : '';
       // Make sense of whatever the customer typed (script, notes, training
       // material...) before dialing. Falls back to the raw notes if it fails.
+      // Website for the voicemail: PayPilot's own calls use paypilotai.live;
+      // other clients use the first website found in their notes.
+      const isPayPilot = /pay\s*pilot/i.test(company);
+      const urlMatch = script.match(/\b(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|net|org|live|io|ai|co|us|biz|info|app))\b/i);
+      const website = isPayPilot ? 'paypilotai.live' : (urlMatch ? urlMatch[1].toLowerCase() : '');
+      const spokenSite = website === 'paypilotai.live' ? 'pay pilot A I dot live'
+        : website.replace(/\./g, ' dot ');
       const [plan, weather, history] = await Promise.all([
-        callReason ? buildPlan({ notes: script, company, contact: business ? `${name} at ${business}` : name, callback: returnNumber }) : null,
+        callReason ? buildPlan({ notes: script, company, contact: business ? `${name} at ${business}` : name, callback: returnNumber, website: spokenSite }) : null,
         charlotteWeather(),
         pastConversations({ account: leads.accountFor(req), toNumber: e164 }),
       ]);
@@ -175,12 +182,17 @@ HOW TO READ THE CLIENT SCRIPT: people write it in every style. Work out the goal
       const spokenNum = (n) => { const d = String(n || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); return d.length === 10 ? `${d.slice(0, 3)}, ${d.slice(3, 6)}, ${d.slice(6)}` : ''; };
       const cb = spokenNum(returnNumber);
       const vmFirst = name.split(/\s+/)[0] || '';
-      const voicemail = (voicemailFrom(plan) || [
+      const voicemailBase = (voicemailFrom(plan) || [
         `Hi${vmFirst ? ' ' + vmFirst : ''}, this is Brandy with ${company}.`,
         `I'm just giving you a quick call and I'd love to connect.`,
         cb ? `You can reach us at ${cb}. Again, that's ${cb}.` : `I'll try you again soon.`,
         `Thanks so much, have a great day!`,
       ].join(' ')).replace(/[\[\]{}]/g, '').slice(0, 600);
+      // Always give the website on the voicemail when there is one.
+      const siteLine = spokenSite ? `You can also check us out at ${spokenSite}.` : '';
+      const voicemail = siteLine && !/\bdot\b|\.(com|net|org|live|io|ai|co)\b/i.test(voicemailBase)
+        ? voicemailBase.replace(/\s*(Thanks[^.!]*[.!]?\s*|Have a great[^.!]*[.!]?\s*)$/i, (end) => ` ${siteLine} ${end.trim()}`).replace(/^(?!.*check us out)(.*)$/s, `$1 ${siteLine}`).trim()
+        : voicemailBase;
       // Professional opener: who's calling, the disclosure, then ask for the contact by name.
       const firstName = name.split(/\s+/)[0] || '';
       const greeting = `Hi, this is Brandy with ${company}.${disclosure ? ' ' + disclosure : ''} ${firstName ? `Is this ${firstName}?` : 'Who do I have the pleasure of speaking with?'}`;
