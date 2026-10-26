@@ -56,7 +56,7 @@ module.exports = async function handler(req, res) {
       TWILIO_configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER),
       OPENAI_configured: !!process.env.OPENAI_API_KEY,
       ELEVENLABS_configured: !!(process.env.ELEVENLABS_API_KEY || '').trim(),
-      code_version: 'brandy-elevenlabs-55',
+      code_version: 'brandy-elevenlabs-56',
     };
     // ?check=1 asks ElevenLabs whether the key can see Brandy and her phone
     // number. Read-only: it places no call and never returns the key.
@@ -338,7 +338,7 @@ RULES:
             pp_account: leads.accountFor(req),   // whose call this is; Captured Leads filters on it
             pp_to: e164,                          // lets a callback from this number reach this customer (lib/inboundRoute.js)
             pp_msg_to: 'none', pp_msg_company: 'none', pp_route_sig: 'none', // used only on inbound calls; must not be empty
-            pp_voicemail: voicemail,
+            pp_voicemail: `... ... ... ${voicemail}`, // leading pause: let the beep finish first
             // Signed copy of the follow-up email details (lib/brandyEmail.js). Never empty.
             ...brandyEmail.signEmailDetails({
               c: (companyName || '').trim(), s: (senderEmail || '').trim(), n: name,
