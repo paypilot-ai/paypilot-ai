@@ -7502,38 +7502,81 @@ function crmQuickCall(id) {
   }, 200);
 }
 
+// Proper CSV parsing: handles quoted fields with commas ("Acme, Inc."),
+// escaped quotes, and Windows line endings. The old split(',') shifted
+// columns whenever a field contained a comma, which dropped phone numbers.
+function crmParseCsv(text) {
+  const rows = []; let row = [], field = '', inQ = false;
+  text = text.replace(/^﻿/, '');
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQ) {
+      if (ch === '"') { if (text[i+1] === '"') { field += '"'; i++; } else inQ = false; }
+      else field += ch;
+    } else if (ch === '"') inQ = true;
+    else if (ch === ',') { row.push(field); field = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i+1] === '\n') i++;
+      row.push(field); field = '';
+      if (row.some(c => c.trim())) rows.push(row);
+      row = [];
+    } else field += ch;
+  }
+  row.push(field);
+  if (row.some(c => c.trim())) rows.push(row);
+  return rows.map(r => r.map(c => c.trim()));
+}
+
 function crmImportCsv(event) {
   const file = event.target.files?.[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    const lines = e.target.result.split('\n').filter(Boolean);
-    if (lines.length < 2) { alert('CSV must have a header row and at least one data row.'); return; }
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z]/g,''));
-    const idx = k => headers.findIndex(h => h.includes(k));
-    const iName = idx('name'); const iPhone = idx('phone'); const iEmail = idx('email'); const iCompany = idx('company');
+    const rows = crmParseCsv(e.target.result);
+    if (rows.length < 2) { alert('CSV must have a header row and at least one data row.'); return; }
+    const headers = rows[0].map(h => h.toLowerCase().replace(/[^a-z]/g, ''));
+    // First header matching any of the words, skipping excluded ones.
+    const find = (words, not = []) => headers.findIndex(h => words.some(w => h.includes(w)) && !not.some(n => h.includes(n)));
+    const iPhone   = find(['phone', 'tel', 'mobile', 'cell', 'number', 'contactno'], ['fax', 'ext', 'account', 'invoice', 'tax', 'zip', 'id']);
+    const iEmail   = find(['email', 'mail']);
+    const iCompany = find(['company', 'business', 'organization', 'organisation', 'account', 'vendor', 'supplier'], ['number', 'phone', 'email', 'id']);
+    const iFirst   = find(['firstname', 'first']);
+    const iLast    = find(['lastname', 'last']);
+    const iName    = find(['contactname', 'fullname', 'name'], ['company', 'business', 'first', 'last', 'user', 'file']);
     const contacts = crmLoad();
-    let added = 0;
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
-      const name = iName >= 0 ? cols[iName] : '';
+    const keyOf = c => ((c.name || '') + '|' + (c.company || '')).toLowerCase();
+    const byKey = new Map(contacts.map(c => [keyOf(c), c]));
+    let added = 0, updated = 0;
+    for (let i = 1; i < rows.length; i++) {
+      const cols = rows[i];
+      const get = idx => (idx >= 0 ? (cols[idx] || '') : '').trim();
+      const company = get(iCompany);
+      let name = get(iName) || [get(iFirst), get(iLast)].filter(Boolean).join(' ') || company;
       if (!name) continue;
-      contacts.push({
-        id: crmUid(),
-        name,
-        company: iCompany >= 0 ? cols[iCompany] : '',
-        phone:   iPhone  >= 0 ? cols[iPhone]  : '',
-        email:   iEmail  >= 0 ? cols[iEmail]  : '',
-        stage: 'lead',
-        notes: [],
-        createdAt: new Date().toISOString(),
-        lastContact: null,
-      });
-      added++;
+      const phone = get(iPhone), email = get(iEmail);
+      const existing = byKey.get(keyOf({ name, company }));
+      if (existing) {
+        // Re-importing the same file fills in what's missing instead of duplicating.
+        let changed = false;
+        if (!existing.phone && phone) { existing.phone = phone; changed = true; }
+        if (!existing.email && email) { existing.email = email; changed = true; }
+        if (!existing.company && company) { existing.company = company; changed = true; }
+        if (changed) updated++;
+        continue;
+      }
+      const c = {
+        id: crmUid(), name, company, phone, email,
+        stage: 'lead', notes: [], createdAt: new Date().toISOString(), lastContact: null,
+      };
+      contacts.push(c); byKey.set(keyOf(c), c); added++;
     }
     crmSaveAll(contacts);
     crmRender();
-    alert(`Imported ${added} contacts.`);
+    const noPhone = contacts.filter(c => !c.phone).length;
+    let msg = `Imported ${added} new contacts` + (updated ? `, filled in details on ${updated} existing ones` : '') + '.';
+    if (iPhone < 0) msg += `\n\nNo phone column was found. Columns in this file: ${rows[0].join(', ')}`;
+    else if (noPhone) msg += `\n\n${noPhone} contacts still have no phone number.`;
+    alert(msg);
     event.target.value = '';
   };
   reader.readAsText(file);
