@@ -116,7 +116,15 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const { toNumber, customerName, businessName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText, emailSubject, emailMessage } = req.body || {};
+  const { toNumber, customerName, businessName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText, emailSubject, emailMessage, tone } = req.body || {};
+  // AI Tone from Settings. Whitelisted so only these fixed lines reach the prompt.
+  const TONE_GUIDE = {
+    Warm: 'Lean into your warmth: unhurried, friendly, plenty of genuine reactions.',
+    Confident: 'Lean confident: assured and decisive, treat the next step as natural, but stay friendly and never pushy.',
+    Direct: 'Lean direct: get to the point quickly and keep turns short. Keep small talk to a line unless they start it, and never brush them off.',
+    Calm: 'Lean calm: patient, measured pace, extra reassuring, never rushed.',
+  };
+  const toneLine = TONE_GUIDE[tone] || TONE_GUIDE.Warm;
   if (!toNumber) return res.status(400).json({ error: 'Phone number required' });
 
   const cleaned = toNumber.replace(/\D/g, '');
@@ -205,6 +213,8 @@ KEEP IT FLOWING: end every turn with a question, never with a bare statement tha
 ${PERSONA}
 - Relate to them. If they mention being busy, a rough day, their team, the weather, anything, acknowledge it like a real person would ("Fridays are always a lot, right?").
 - Mirror their energy: relaxed and chatty with chatty people, quick and to the point with busy ones.
+
+TONE FOR THIS CALL (set by the client; stay Brandy, just adjust your delivery): ${toneLine}
 
 YOUR SALES STYLE (you're a skilled salesperson, not a script reader):
 - The client gives you the goal, the facts and the steps that must happen. HOW you get there is up to you: your words, your order of benefits, your read of the person.
