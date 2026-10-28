@@ -2894,6 +2894,15 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
                 <option value="enterprise">Enterprise</option>
               </select>
 
+              <label class="label" style="color:var(--text-2);font-size:11px;">AI Tone</label>
+              <select class="select" id="settingsTone" style="border:1.5px solid #dbeafe;background:#f8fbff;color:var(--text);font-size:14px;font-weight:600;">
+                <option value="Warm" selected>Warm (friendly, empathetic)</option>
+                <option value="Confident">Confident (assured, decisive)</option>
+                <option value="Direct">Direct (straight to the point)</option>
+                <option value="Calm">Calm (patient, measured)</option>
+              </select>
+              <div style="font-size:12px;color:var(--text-2);margin:-6px 0 4px;line-height:1.5;">Sets how Brandy sounds on AI Auto-Caller calls and the default tone for Live Call Assist suggestions.</div>
+
               <!-- Save/reset with more presence -->
               <div style="margin-top:28px;display:flex;flex-direction:column;gap:10px;">
                 <button class="app-btn blue" onclick="saveSettings()" style="width:100%;padding:14px;font-size:15px;font-weight:800;">Save Settings</button>
@@ -3217,7 +3226,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
               <div style="display:flex;flex-direction:column;gap:12px;">
                 <div style="display:flex;gap:14px;align-items:flex-start;">
                   <div style="min-width:28px;height:28px;background:#16a34a;color:#fff;border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;">1</div>
-                  <div><strong style="color:#14532d;">Go to Settings</strong><br><span style="color:#166534;font-size:14px;">Enter your name, company name, and select your default tone. This personalizes every AI response.</span></div>
+                  <div><strong style="color:#14532d;">Go to Settings</strong><br><span style="color:#166534;font-size:14px;">Enter your name and company name, and pick your AI Tone. This shapes how Brandy sounds on every call.</span></div>
                 </div>
                 <div style="display:flex;gap:14px;align-items:flex-start;">
                   <div style="min-width:28px;height:28px;background:#16a34a;color:#fff;border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;">2</div>
@@ -3323,7 +3332,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
                     <div style="font-size:13px;color:var(--muted);">Personalize your workspace</div>
                   </div>
                 </div>
-                <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;">Set your name, company name, preferred AI tone (Confident, Warm, Direct, or Calm), and default call language. These settings shape how the AI sounds on every call — set them once and you're good to go.</p>
+                <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;">Set your name, company name, and AI Tone (Warm, Confident, Direct, or Calm). The tone shapes how Brandy sounds on every AI Auto-Caller call and is the default for Live Call Assist suggestions. Set it once and you're good to go.</p>
               </div>
 
               <!-- Compliance -->
@@ -3362,7 +3371,7 @@ I'm reaching out because we process payments to you on behalf of [Client Name], 
 
                 <details style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;cursor:pointer;">
                   <summary style="font-size:14px;font-weight:700;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;">Can I change how the AI sounds? <span style="color:#94a3b8;">▾</span></summary>
-                  <p style="margin:12px 0 0;font-size:14px;color:#475569;line-height:1.7;">Yes. Go to <strong>Settings</strong> and pick your tone: <em>Confident</em> (direct, assertive), <em>Warm</em> (friendly, empathetic), <em>Direct</em> (straight to the point), or <em>Calm</em> (patient, measured). You can also change the tone mid-call from the Call Assist panel.</p>
+                  <p style="margin:12px 0 0;font-size:14px;color:#475569;line-height:1.7;">Yes. Go to <strong>Settings</strong> → <strong>AI Tone</strong> and pick <em>Warm</em> (friendly, empathetic), <em>Confident</em> (assured, decisive), <em>Direct</em> (straight to the point), or <em>Calm</em> (patient, measured), then click <strong>Save Settings</strong>. Brandy uses it on your next AI Auto-Caller call. In Live Call Assist you can also switch the tone of suggested replies mid-call with the Tone dropdown.</p>
                 </details>
 
                 <details style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;cursor:pointer;">
@@ -4366,15 +4375,33 @@ function saveSettings(){
   const plan = document.getElementById('profilePlan').value;
   document.getElementById('profileNameView').textContent = name;
   document.getElementById('avatarBox').textContent = name.charAt(0).toUpperCase();
+  applyAiTone(document.getElementById('settingsTone').value);
   if(!isLiveUser) enterPlanDemo(plan);
   toast('Settings saved.');
 }
+
+// AI tone: saved in Settings, sent with every AI Auto-Caller call, and used as
+// the default for the Live Call Assist tone dropdown.
+const AI_TONES = ['Warm', 'Confident', 'Direct', 'Calm'];
+function getAiTone(){
+  let t = '';
+  try { t = localStorage.getItem('pp_ai_tone') || ''; } catch(e) {}
+  return AI_TONES.includes(t) ? t : 'Warm';
+}
+function applyAiTone(tone){
+  if (!AI_TONES.includes(tone)) tone = 'Warm';
+  try { localStorage.setItem('pp_ai_tone', tone); } catch(e) {}
+  const s = document.getElementById('settingsTone'); if (s) s.value = tone;
+  const live = document.getElementById('toneSelect'); if (live) live.value = tone;
+}
+document.addEventListener('DOMContentLoaded', () => applyAiTone(getAiTone()));
 
 function resetSettings(){
   document.getElementById('profileName').value = 'Sean';
   document.getElementById('profileBio').value = 'Charismatic sales rep using AI to move faster on live calls.';
   document.getElementById('profileCompany').value = 'PayPilot AI';
   document.getElementById('profilePlan').value = currentPlan;
+  document.getElementById('settingsTone').value = 'Warm';
 }
 
 // ============================================================
@@ -5594,7 +5621,7 @@ async function startAiCall(){
     const resp = await apiFetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: number, customerName, businessName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText,
+      body: JSON.stringify({ toNumber: number, customerName, businessName, callReason, companyName, customerEmail, senderEmail, returnNumber, language, recordCall, disclosureText, tone: getAiTone(),
         emailSubject: (document.getElementById('aiEmailSubject') || {}).value?.trim() || '',
         emailMessage: (document.getElementById('aiEmailMessage') || {}).value?.trim() || '' }),
       signal: AbortSignal.timeout(35000)   // the call-planning step can take ~10s before dialing
@@ -6789,7 +6816,7 @@ async function dialNextContact() {
     const resp = await apiFetch('/api/ai-call', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, businessName: contact.business || '', callReason: contact.reason || defaultReason, companyName: company, customerEmail: contact.email, senderEmail, returnNumber, language: callLanguage, recordCall, disclosureText,
+      body: JSON.stringify({ toNumber: contact.phone, customerName: contact.name, businessName: contact.business || '', callReason: contact.reason || defaultReason, companyName: company, customerEmail: contact.email, senderEmail, returnNumber, language: callLanguage, recordCall, disclosureText, tone: getAiTone(),
         emailSubject: (document.getElementById('adEmailSubject') || {}).value?.trim() || '',
         emailMessage: (document.getElementById('adEmailMessage') || {}).value?.trim() || '' })
     });
