@@ -2079,6 +2079,14 @@ body.modal-open{overflow:hidden}
               <div id="panelSingleCall">
               <div class="ai-cols">
               <div><!-- left: call details -->
+              <!-- Saved prompts (single) -->
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;">
+                <span style="font-size:12px;font-weight:700;color:#0f172a;">💾 Saved Prompts</span>
+                <select id="spSelect_single" onfocus="spRefresh(this.value)" onchange="spLoad('single')" style="flex:1;min-width:160px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;background:#fff;outline:none;"><option value="">Choose a saved prompt…</option></select>
+                <button type="button" onclick="spSave('single')" style="padding:7px 12px;font-size:12px;font-weight:600;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#1a6fff;cursor:pointer;">Save</button>
+                <button type="button" onclick="spRename('single')" style="padding:7px 12px;font-size:12px;font-weight:600;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#475569;cursor:pointer;">Rename</button>
+                <button type="button" onclick="spDelete('single')" style="padding:7px 12px;font-size:12px;font-weight:600;border:1px solid #fecaca;border-radius:8px;background:#fff;color:#ef4444;cursor:pointer;">Delete</button>
+              </div>
               <div style="margin-bottom:16px;">
                 <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Your Company Name</label>
                 <input id="aiCallerCompany" type="text" placeholder="e.g. Acme Payment Solutions" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
@@ -2171,6 +2179,14 @@ body.modal-open{overflow:hidden}
 
               <!-- AUTO DIALER panel -->
               <div id="panelAutoDialer" style="display:none">
+              <!-- Saved prompts (dialer) -->
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;">
+                <span style="font-size:12px;font-weight:700;color:#0f172a;">💾 Saved Prompts</span>
+                <select id="spSelect_dialer" onfocus="spRefresh(this.value)" onchange="spLoad('dialer')" style="flex:1;min-width:160px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;background:#fff;outline:none;"><option value="">Choose a saved prompt…</option></select>
+                <button type="button" onclick="spSave('dialer')" style="padding:7px 12px;font-size:12px;font-weight:600;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#1a6fff;cursor:pointer;">Save</button>
+                <button type="button" onclick="spRename('dialer')" style="padding:7px 12px;font-size:12px;font-weight:600;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#475569;cursor:pointer;">Rename</button>
+                <button type="button" onclick="spDelete('dialer')" style="padding:7px 12px;font-size:12px;font-weight:600;border:1px solid #fecaca;border-radius:8px;background:#fff;color:#ef4444;cursor:pointer;">Delete</button>
+              </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
                   <div>
                     <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Company Name</label>
@@ -4428,6 +4444,74 @@ function applyAiTone(tone){
   const live = document.getElementById('toneSelect'); if (live) live.value = tone;
 }
 document.addEventListener('DOMContentLoaded', () => applyAiTone(getAiTone()));
+
+// Saved prompts: save the company name and reason/script on the AI Caller and
+// Auto-Dialer screens under a name, then load them back with one tap. Kept in
+// this browser, separately for each signed-in account.
+const SP_FIELDS = { single: ['aiCallerCompany', 'aiCallerObjective'], dialer: ['adCompany', 'adReason'] };
+function spKey(){
+  let acct = '';
+  try { acct = localStorage.getItem('pp_account_email') || ''; } catch(e) {}
+  return 'pp_saved_prompts:' + acct.toLowerCase();
+}
+function spAll(){
+  try { const v = JSON.parse(localStorage.getItem(spKey()) || '[]'); return Array.isArray(v) ? v : []; } catch(e) { return []; }
+}
+function spStore(list){
+  try { localStorage.setItem(spKey(), JSON.stringify(list)); return true; }
+  catch(e) { alert('Could not save prompts in this browser.'); return false; }
+}
+function spRefresh(selectName){
+  const list = spAll().sort((x, y) => x.name.localeCompare(y.name));
+  Object.keys(SP_FIELDS).forEach(kind => {
+    const sel = document.getElementById('spSelect_' + kind);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Choose a saved prompt…</option>';
+    list.forEach(p => { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name; sel.appendChild(o); });
+    if (selectName) sel.value = selectName;
+  });
+}
+function spLoad(kind){
+  const sel = document.getElementById('spSelect_' + kind);
+  const p = spAll().find(x => x.name === sel.value);
+  if (!p) return;
+  const [co, re] = SP_FIELDS[kind];
+  document.getElementById(co).value = p.company || '';
+  document.getElementById(re).value = p.reason || '';
+}
+function spSave(kind){
+  const [co, re] = SP_FIELDS[kind];
+  const company = document.getElementById(co).value.trim();
+  const reason = document.getElementById(re).value.trim();
+  if (!reason) { alert('Type a reason or script first, then save it.'); return; }
+  const current = document.getElementById('spSelect_' + kind).value;
+  const name = (prompt('Name this prompt (e.g. "Investor cold call"):', current || company) || '').trim();
+  if (!name) return;
+  const list = spAll();
+  const i = list.findIndex(x => x.name.toLowerCase() === name.toLowerCase());
+  if (i >= 0 && !confirm('"' + list[i].name + '" already exists. Replace it?')) return;
+  const item = { name, company, reason, updated: Date.now() };
+  if (i >= 0) list[i] = item; else list.push(item);
+  if (spStore(list)) spRefresh(name);
+}
+function spRename(kind){
+  const old = document.getElementById('spSelect_' + kind).value;
+  if (!old) { alert('Choose a saved prompt to rename.'); return; }
+  const name = (prompt('New name:', old) || '').trim();
+  if (!name || name === old) return;
+  const list = spAll();
+  if (list.some(x => x.name.toLowerCase() === name.toLowerCase() && x.name !== old)) { alert('A prompt with that name already exists.'); return; }
+  const p = list.find(x => x.name === old); if (!p) return;
+  p.name = name;
+  if (spStore(list)) spRefresh(name);
+}
+function spDelete(kind){
+  const name = document.getElementById('spSelect_' + kind).value;
+  if (!name) { alert('Choose a saved prompt to delete.'); return; }
+  if (!confirm('Delete "' + name + '"?')) return;
+  if (spStore(spAll().filter(x => x.name !== name))) spRefresh();
+}
+document.addEventListener('DOMContentLoaded', () => spRefresh());
 
 function resetSettings(){
   document.getElementById('profileName').value = 'Sean';
