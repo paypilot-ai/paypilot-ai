@@ -2091,6 +2091,11 @@ body.modal-open{overflow:hidden}
                 <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Your Company Name</label>
                 <input id="aiCallerCompany" type="text" placeholder="e.g. Acme Payment Solutions" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
               </div>
+              <!-- Brandy's tone (single) -->
+              <div style="margin-bottom:16px;">
+                <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Brandy's Tone</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="tone-pill" data-tone="Warm" onclick="applyAiTone('Warm')" style="flex:1;min-width:70px;padding:9px 10px;font-size:13px;font-weight:600;border:1px solid #e2e8f0;border-radius:10px;background:#fff;color:#475569;cursor:pointer;">Warm</button><button type="button" class="tone-pill" data-tone="Confident" onclick="applyAiTone('Confident')" style="flex:1;min-width:70px;padding:9px 10px;font-size:13px;font-weight:600;border:1px solid #e2e8f0;border-radius:10px;background:#fff;color:#475569;cursor:pointer;">Confident</button><button type="button" class="tone-pill" data-tone="Direct" onclick="applyAiTone('Direct')" style="flex:1;min-width:70px;padding:9px 10px;font-size:13px;font-weight:600;border:1px solid #e2e8f0;border-radius:10px;background:#fff;color:#475569;cursor:pointer;">Direct</button><button type="button" class="tone-pill" data-tone="Calm" onclick="applyAiTone('Calm')" style="flex:1;min-width:70px;padding:9px 10px;font-size:13px;font-weight:600;border:1px solid #e2e8f0;border-radius:10px;background:#fff;color:#475569;cursor:pointer;">Calm</button></div>
+              </div>
 
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
                 <div>
@@ -2197,6 +2202,11 @@ body.modal-open{overflow:hidden}
                     <input id="adReason" type="text" placeholder="e.g. Solar panel financing offer" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;"/>
                   </div>
                 </div>
+                <!-- Brandy's tone (dialer) -->
+              <div style="margin-bottom:16px;">
+                <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Brandy's Tone</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="tone-pill" data-tone="Warm" onclick="applyAiTone('Warm')" style="flex:1;min-width:70px;padding:9px 10px;font-size:13px;font-weight:600;border:1px solid #e2e8f0;border-radius:10px;background:#fff;color:#475569;cursor:pointer;">Warm</button><button type="button" class="tone-pill" data-tone="Confident" onclick="applyAiTone('Confident')" style="flex:1;min-width:70px;padding:9px 10px;font-size:13px;font-weight:600;border:1px solid #e2e8f0;border-radius:10px;background:#fff;color:#475569;cursor:pointer;">Confident</button><button type="button" class="tone-pill" data-tone="Direct" onclick="applyAiTone('Direct')" style="flex:1;min-width:70px;padding:9px 10px;font-size:13px;font-weight:600;border:1px solid #e2e8f0;border-radius:10px;background:#fff;color:#475569;cursor:pointer;">Direct</button><button type="button" class="tone-pill" data-tone="Calm" onclick="applyAiTone('Calm')" style="flex:1;min-width:70px;padding:9px 10px;font-size:13px;font-weight:600;border:1px solid #e2e8f0;border-radius:10px;background:#fff;color:#475569;cursor:pointer;">Calm</button></div>
+              </div>
                 <div style="margin-bottom:16px;">
                   <label style="font-size:12px;font-weight:600;color:#0f172a;display:block;margin-bottom:6px;">Call Language</label>
                   <select id="adLanguage" style="width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;outline:none;background:#fff;">
@@ -4477,6 +4487,12 @@ function applyAiTone(tone){
   try { localStorage.setItem('pp_ai_tone', tone); } catch(e) {}
   const s = document.getElementById('settingsTone'); if (s) s.value = tone;
   const live = document.getElementById('toneSelect'); if (live) live.value = tone;
+  document.querySelectorAll('.tone-pill').forEach(btn => {
+    const on = btn.dataset.tone === tone;
+    btn.style.background = on ? '#1a6fff' : '#fff';
+    btn.style.color = on ? '#fff' : '#475569';
+    btn.style.borderColor = on ? '#1a6fff' : '#e2e8f0';
+  });
 }
 document.addEventListener('DOMContentLoaded', () => applyAiTone(getAiTone()));
 
