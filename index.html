@@ -3797,22 +3797,12 @@ function showAuth(plan){
   }
 }
 
-// TEMPORARY: server-side auth (lib/sessionAuth.js) is built and merged, but
-// its env vars (AUTH_SECRET etc.) aren't configured in Vercel/Railway yet.
-// Falling back to the old client-side check so login keeps working until
-// that setup is done — swap back to the apiFetch('/api/call-status?type=login')
-// flow once the env vars are set.
+// Login is checked server-side by /api/call-status?type=login against the
+// MASTER_EMAIL / MASTER_PASS / TESTER_ACCOUNTS_JSON env vars. No passwords live
+// in this file. MASTER_EMAIL below is only used to recognize the owner session.
 const MASTER_EMAIL = 'info@paypilotai.live';
-const MASTER_PASS  = 'icyunv220';
-const TESTER_ACCOUNTS = [
-  { email: 'user1@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user2@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user3@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user4@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-  { email: 'user5@paypilotai.live', password: 'PayPilot2025!', plan: 'pro' },
-];
 
-function loginDemo(){
+async function loginDemo(){
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value.trim();
 
@@ -3821,20 +3811,23 @@ function loginDemo(){
     return;
   }
 
-  if(email === MASTER_EMAIL.toLowerCase() && pass === MASTER_PASS){
+  try {
+    const r = await fetch('/api/call-status?type=login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const d = await r.json().catch(() => ({}));
+    if(!r.ok || !d.token){
+      toast(d.error === 'Invalid email or password' || r.status === 401 ? 'Invalid email or password.' : 'Login is unavailable right now. Try again.');
+      return;
+    }
+    localStorage.setItem('pp_auth_token', d.token);
     localStorage.setItem('pp_account_email', email);
     enterRealApp();
-    return;
+  } catch (e) {
+    toast('Login is unavailable right now. Try again.');
   }
-
-  const isTester = TESTER_ACCOUNTS.find(a => a.email.toLowerCase() === email && a.password === pass);
-  if(isTester){
-    localStorage.setItem('pp_account_email', email);
-    enterRealApp();
-    return;
-  }
-
-  toast('Invalid email or password.');
 }
 
 function enterRealApp(){

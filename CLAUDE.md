@@ -81,7 +81,7 @@ A single-file SPA (~5 300 lines). All CSS is in `<style>`, all JS is in `<script
 
 Key JS globals: `currentPlan`, `isLiveUser`, `callActive`, `lastGeneratedText`, `planConfigs` (feature flags per plan), `smartReplies` (canned objection responses).
 
-Login is checked in `loginDemo()` against hardcoded master credentials and a `TESTER_ACCOUNTS` array. Demo users hit `DEMO_RESPONSE_LIMIT = 3` before being prompted to upgrade.
+Login is checked server-side: `loginDemo()` POSTs to `/api/call-status?type=login`, which compares against the `MASTER_EMAIL` / `MASTER_PASS` / `TESTER_ACCOUNTS_JSON` env vars and returns a signed token stored as `pp_auth_token`. No passwords live in `index.html`. Demo users hit `DEMO_RESPONSE_LIMIT = 3` before being prompted to upgrade.
 
 The Stripe price IDs are hardcoded in `api/create-checkout.js`: `starter: price_1TQdvP84nVx3JlYAn5pAbYAb`, `pro: price_1TQdx284nVx3JlYAHl6dGlci`.
 
